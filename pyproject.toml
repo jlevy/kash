@@ -1,0 +1,83 @@
+# ---- Project Info and Dependencies ----
+
+[project.urls]
+Repository = "https://github.com/jlevy/kash-core"
+# Homepage = "https://..."
+
+[project]
+name = "kash-core"
+description = "The knowledge agent shell (core)"
+authors = [
+    { name="Joshua Levy", email="joshua@cal.berkeley.edu" },
+]
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.11,<4.0"
+dynamic = ["version"]
+
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+    "pytest>=8.3.4",
+    "ruff>=0.4.10",
+    "usort>=1.0.8.post1",
+    "mypy>=1.15.0",
+    "codespell>=2.4.1",
+    "rich>=13.9.4",
+]
+
+[project.scripts]
+# Add script entry points here.
+# kash-core = "kash_core:main"
+
+
+# ---- Build system ----
+
+# Dynamic versioning from:
+# https://github.com/ninoseki/uv-dynamic-versioning/
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = "true"
+
+
+# ---- Settings ----
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+ignore = ["E402", "E731", "E712"]
+
+[tool.mypy]
+disable_error_code = [
+    "import-untyped",
+]
+
+[tool.codespell]
+# ignore-words-list = "foo,bar"
+# skip = "foo.py,bar.py"
+
+[tool.pytest.ini_options]
+python_files = ["*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+testpaths = [
+    "src",
+    "tests",
+]
+norecursedirs = []
+filterwarnings = []
