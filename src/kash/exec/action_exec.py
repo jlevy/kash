@@ -8,6 +8,7 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_SKIP, EMOJI_SUCCESS, EMOJI_TIMING
 from kash.errors import ContentError, InvalidOutput, NONFATAL_EXCEPTIONS
 from kash.exec.fetch_url_metadata import fetch_url_item_metadata
+from kash.exec.precondition_defs import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
 from kash.lang_tools.inflection import plural
@@ -46,8 +47,7 @@ def assemble_action_input(ws: Workspace, *input_args: CommandArg) -> ActionInput
     if input_items:
         log.message("Assembling metadata for input items:\n%s", fmt_lines(input_items))
         input_items = [
-            fetch_url_item_metadata(item) if item.url or item.is_url_resource() else item
-            for item in input_items
+            fetch_url_item_metadata(item) if is_url_item(item) else item for item in input_items
         ]
 
     return ActionInput(input_items)

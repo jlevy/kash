@@ -611,9 +611,6 @@ class Item:
 
         raise ValueError(f"Cannot convert item of type {self.format} to HTML: {self}")
 
-    def is_url_resource(self) -> bool:
-        return self.type == ItemType.resource and self.format == Format.url and self.url is not None
-
     def _copy_and_update(
         self, other: Optional[Item] = None, update_timestamp: bool = False, **other_updates
     ) -> Dict[str, Any]:

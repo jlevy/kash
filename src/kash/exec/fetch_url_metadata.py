@@ -43,7 +43,7 @@ def fetch_url_item_metadata(item: Item, use_cache: bool = True, refetch: bool = 
         )
         return item
 
-    if not item.url or not item.is_url_resource():
+    if not item.url:
         raise InvalidInput(f"No URL for item: {item.fmt_loc()}")
 
     url = canonicalize_url(item.url)

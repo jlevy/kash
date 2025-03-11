@@ -10,15 +10,25 @@ from pathlib import Path
 
 from kash.config.init import kash_import_all
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import LogLevel
+from kash.config.settings import APP_NAME, LogLevel
 from kash.config.setup import setup
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_stdio import get_log_path, run_mcp_server_stdio
+from kash.version import get_version
 from kash.workspaces.workspaces import get_workspace, sandbox_dir
+
+__version__ = get_version()
+
+APP_VERSION = f"{APP_NAME} {__version__}"
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+    )
     parser.add_argument(
         "--workspace",
         default=sandbox_dir(),

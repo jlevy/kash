@@ -74,9 +74,8 @@ def get_published_tools() -> List[Tool]:
                 "\n".join(pprint.pformat(t.inputSchema) for t in tools),
             )
             return tools
-    except Exception as e:
-        log.error("Error listing tools: %s", e)
-        log.exception(e)
+    except Exception:
+        log.exception("Error listing tools")
         return []
 
 
@@ -218,8 +217,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> List[TextContent]:
         ).formatted_for_client()
 
     except Exception as e:
-        log.error("Error running mcp tool: %s", e)
-        log.exception(e)
+        log.exception("Error running mcp tool")
         return ToolResult(
             action=action,
             captured_output=capture.output,
@@ -241,9 +239,20 @@ def create_base_server() -> Server:
 
     @app.call_tool()
     async def handle_tool(name: str, arguments: dict) -> List[TextContent]:
-        if name not in _mcp_published_actions.copy():
-            raise ValueError(f"Unknown tool: {name}")
+        try:
+            if name not in _mcp_published_actions.copy():
+                log.error(f"Unknown tool requested: {name}")
+                raise ValueError(f"Unknown tool: {name}")
 
-        return await asyncio.to_thread(run_mcp_tool, name, arguments)
+            log.info(f"Handling tool call: {name} with arguments: {arguments}")
+            return await asyncio.to_thread(run_mcp_tool, name, arguments)
+        except Exception as e:
+            log.exception(f"Error handling tool call {name}")
+            return [
+                TextContent(
+                    text=f"Error executing tool {name}: {e}",
+                    type="text",
+                )
+            ]
 
     return app
