@@ -79,17 +79,17 @@ class MediaService(ABC):
     An audio or video service like YouTube, Vimeo, Spotify, etc.
     """
 
-    @abstractmethod
-    def canonicalize_and_type(self, url: Url) -> Tuple[Optional[Url], Optional[MediaUrlType]]:
-        """Convert a URL into a canonical form for this service, including a unique id and URL type."""
-        pass
-
     def canonicalize(self, url: Url) -> Optional[Url]:
         """Convert a URL into a canonical form for this service."""
         return self.canonicalize_and_type(url)[0]
 
     @abstractmethod
-    def get_media_id(self, url: Url) -> str:
+    def canonicalize_and_type(self, url: Url) -> Tuple[Optional[Url], Optional[MediaUrlType]]:
+        """Convert a URL into a canonical form for this service, including a unique id and URL type."""
+        pass
+
+    @abstractmethod
+    def get_media_id(self, url: Url) -> Optional[str]:
         """Extract the media ID from a URL. Only for episodes and videos. None for channels etc."""
         pass
 

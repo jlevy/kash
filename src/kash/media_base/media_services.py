@@ -29,7 +29,7 @@ def register_media_service(*services: MediaService) -> None:
     Register more media services.
     """
     new_services = list(s for s in services if s not in _media_services.copy())
-    log.message("Registering new media services: %s", new_services)
+    log.info("Registering new media services: %s", new_services)
     _media_services.update(lambda services: services + new_services)
 
 
