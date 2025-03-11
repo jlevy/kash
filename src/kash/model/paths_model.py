@@ -104,7 +104,8 @@ class StorePath(BasePath):  # type: ignore
 
         # XXX Ugly but not sure of a simpler way to initialize ourselves
         # exactly like a Path in __new__.
-        self._raw_paths = path._raw_paths  # type: ignore
+        if hasattr(path, "_raw_paths"):  # Needed for Python 3.12 and 3.13
+            self._raw_paths = path._raw_paths  # type: ignore
         if hasattr(self, "_load_parts"):  # Needed for Python 3.12 but not 3.13
             self._load_parts()  # type: ignore
 

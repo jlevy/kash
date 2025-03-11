@@ -10,7 +10,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    override,
     ParamSpec,
     Set,
     Tuple,
@@ -22,6 +21,7 @@ from typing import (
 from funlog import format_func_call
 from prettyfmt import fmt_lines
 from pydantic.dataclasses import dataclass as pydantic_dataclass, is_pydantic_dataclass
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition

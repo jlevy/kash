@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from functools import cache
 from logging import ERROR, Formatter, INFO
 from pathlib import Path
-from typing import Any, cast, IO, Optional, override, Tuple
+from typing import Any, cast, IO, Optional, Tuple
 
 import rich
 from rich import reconfigure
@@ -18,6 +18,7 @@ from rich.logging import RichHandler
 from rich.theme import Theme
 from slugify import slugify
 from strif import atomic_output_file, new_timestamped_uid
+from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
 

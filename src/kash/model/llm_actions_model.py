@@ -1,7 +1,6 @@
-from typing import override
-
 from chopdiff.divs import CHUNK, ORIGINAL, RESULT, TextNode
 from pydantic.dataclasses import dataclass
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput

@@ -4,11 +4,12 @@ from kash.config.lazy_imports import import_start_time  # usort:skip
 import os
 import time
 from os.path import expanduser
-from typing import Callable, cast, List, Optional, override
+from typing import Callable, cast, List, Optional
 
 from prompt_toolkit.formatted_text import FormattedText
 from pygments.token import Token
 from strif import abbrev_str
+from typing_extensions import override
 from xonsh.built_ins import XSH
 from xonsh.environ import xonshrc_context
 from xonsh.execer import Execer

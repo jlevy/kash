@@ -39,11 +39,14 @@ class ArgCount:
         if self == ArgCount(0, 0):
             return "No arguments"
         elif self.min_args == self.max_args:
-            return f"Exactly {self.min_args} {"argument" if self.min_args == 1 else "arguments"}"
+            unit = "argument" if self.min_args == 1 else "arguments"
+            return f"Exactly {self.min_args} {unit}"
         elif self.max_args is None:
-            return f"{self.min_args} or more {"argument" if self.min_args == 1 else "arguments"}"
+            unit = "argument" if self.min_args == 1 else "arguments"
+            return f"{self.min_args} or more {unit}"
         else:
-            return f"{self.min_args} to {self.max_args} {"argument" if self.max_args == 1 else "arguments"}"
+            unit = "argument" if self.max_args == 1 else "arguments"
+            return f"{self.min_args} to {self.max_args} {unit}"
 
 
 ANY_ARGS = ArgCount(0, None)

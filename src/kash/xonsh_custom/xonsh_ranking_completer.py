@@ -1,7 +1,8 @@
 import time
-from typing import Any, Iterator, List, override, Tuple
+from typing import Any, Iterator, List, Tuple
 
 from funlog import format_duration
+from typing_extensions import override
 from xonsh.completer import Completer
 from xonsh.parsers.completion_context import CompletionContext
 

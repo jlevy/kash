@@ -5,7 +5,7 @@ from dataclasses import field, Field as DataclassField, replace
 from enum import Enum
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, cast, Dict, List, Optional, override, Type, TypeVar
+from typing import Any, cast, Dict, List, Optional, Type, TypeVar
 
 from chopdiff.docs import DiffFilter
 from chopdiff.docs.token_diffs import DIFF_FILTER_NONE
@@ -14,6 +14,7 @@ from flowmark import fill_text
 from prettyfmt import abbrev_obj, fmt_lines
 from pydantic.dataclasses import dataclass, rebuild_dataclass
 from pydantic.json_schema import JsonSchemaValue
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition, InvalidInput

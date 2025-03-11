@@ -119,7 +119,7 @@ class IgnoreChecker(IgnoreFilter):
         return self.matches(path, is_dir=is_dir)
 
     def __repr__(self) -> str:
-        return f"IgnoreChecker({"; ".join(self.pattern_strs())})"
+        return f"IgnoreChecker({'; '.join(self.pattern_strs())})"
 
 
 ignore_none: IgnoreFilter = lambda path, is_dir=False: False

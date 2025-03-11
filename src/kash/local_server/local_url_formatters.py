@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional, override
+from typing import Optional
 
 from rich.style import Style
-
 from rich.text import Text
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_HINT
 from kash.errors import InvalidState
-
 from kash.model.paths_model import StorePath
 from kash.shell_output.kerm_codes import KriLink, TextTooltip, UIAction, UIActionType
 from kash.util.atomic_var import AtomicVar

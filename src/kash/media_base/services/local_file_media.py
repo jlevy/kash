@@ -2,10 +2,11 @@ import os
 import shlex
 import subprocess  # Add this import
 from pathlib import Path
-from typing import Dict, List, Optional, override, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from strif import copyfile_atomic
+from typing_extensions import override
 
 from kash.config.logger import get_log_file_stream, get_logger
 from kash.errors import FileNotFound, InvalidInput
