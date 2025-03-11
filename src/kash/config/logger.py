@@ -229,18 +229,11 @@ def _do_logging_setup(log_settings: LogSettings):
 
     litellm.suppress_debug_info = True  # Suppress overly prominent exception messages.
 
-    try:
-        from weasyprint import LOGGER, PROGRESS_LOGGER  # type: ignore  # noqa: F401
-    except ImportError:
-        pass
-
     log_levels = {
         None: INFO,
         "LiteLLM": INFO,
         "LiteLLM Router": INFO,
         "LiteLLM Proxy": INFO,
-        "weasyprint": ERROR,
-        "weasyprint.progress": ERROR,
     }
 
     for logger_name, level in log_levels.items():
