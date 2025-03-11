@@ -114,8 +114,12 @@ vcs = "git"
 style = "pep440"
 bump = "true"
 
+# Explicitly configure top-level namespace for hatch.
 [tool.hatch.build.targets.wheel]
 packages = ["src/kash"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/kash" = "kash"
 
 # ---- Settings ----
 
