@@ -1,7 +1,8 @@
 # Additions to standard GitHub .gitignore:
 tmp/
 trash/
-.kmd/
+.kash/
+attic/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

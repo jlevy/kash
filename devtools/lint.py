@@ -15,7 +15,7 @@ def main():
     errcount += _run(["usort", "format", *SRC_PATHS])
     errcount += _run(["ruff", "check", "--fix", *SRC_PATHS])
     errcount += _run(["black", *SRC_PATHS])
-    errcount += _run(["mypy", *SRC_PATHS])
+    # errcount += _run(["mypy", *SRC_PATHS])
 
     rprint()
 

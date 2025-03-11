@@ -1,0 +1,49 @@
+<div class="long-text container max-w-3xl mx-auto bg-white py-8 px-16 shadow-lg">
+  <h1 class="text-center text-4xl mt-6 mb-6">{{ title }}</h1>
+  <div>
+    <!-- Navigation Tabs -->
+    {% if show_tabs %}
+    <nav>
+      {% for tab in tabs %}
+      <button
+        class="tab-button {% if loop.first %}tab-button-active{% else %}tab-button-inactive{% endif %}"
+        onclick="showTab('{{ tab.id }}', this)"
+      >
+        {{ tab.label }}
+      </button>
+      {% endfor %}
+    </nav>
+    {% endif %}
+    <div class="tab-content mt-8">
+      <!-- Tab Content -->
+      {% for tab in tabs %}
+      <div
+        id="{{ tab.id }}"
+        class="tab-pane {% if not loop.first %}hidden{% endif %}"
+      >
+        {% if tab.thumbnail_url %}
+        <img class="thumbnail" src="{{ tab.thumbnail_url }}" alt="{{ tab.label }}" />
+        {% endif %}
+        {% if show_tabs %} <h2 class="text-2xl">{{ tab.label }}</h2> {% endif %}
+        <p>{{ tab.content_html | safe }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <!-- TODO: Footer info (match with pdf export) -->
+</div>
+
+<script>
+  function showTab(tabId, element) {
+    document.querySelectorAll(".tab-pane").forEach((tab) => {
+      tab.classList.add("hidden");
+    });
+    document.getElementById(tabId).classList.remove("hidden");
+    document.querySelectorAll(".tab-button").forEach((btn) => {
+      btn.classList.remove("tab-button-active");
+      btn.classList.add("tab-button-inactive");
+    });
+    element.classList.add("tab-button-active");
+    element.classList.remove("tab-button-inactive");
+  }
+</script>

@@ -5,5 +5,5 @@ package_author_email: joshua@cal.berkeley.edu
 package_author_name: Joshua Levy
 package_description: The knowledge agent shell (core)
 package_github_org: jlevy
-package_module: kash_core
-package_name: kash-core
+package_module: kash_shell
+package_name: kash-shell

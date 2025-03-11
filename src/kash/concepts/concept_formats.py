@@ -1,0 +1,25 @@
+from typing import List
+
+from kash.lang_tools.capitalization import capitalize_cms
+from kash.text_formatting.markdown_util import extract_bullet_points
+
+
+def canonicalize_concept(concept: str) -> str:
+    """
+    Convert a concept string (general name, person, etc.) to a canonical form.
+    Drop any extraneous Markdown bullets.
+    """
+    return capitalize_cms(concept.strip("-* "))
+
+
+def normalize_concepts(concepts: List[str]) -> List[str]:
+    return sorted(set(canonicalize_concept(concept) for concept in concepts))
+
+
+def concepts_from_bullet_points(markdown_text: str) -> List[str]:
+    """
+    Parse, normalize, capitalize, sort, and then remove exact duplicates from a Markdown
+    list of concepts as bullet points.
+    """
+    concepts = extract_bullet_points(markdown_text)
+    return normalize_concepts(concepts)

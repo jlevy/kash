@@ -1,0 +1,194 @@
+/* Content styles */
+
+.highlight {
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.citation {
+  font-family: var(--font-sans);
+  color: var(--color-secondary);
+  display: inline-block;
+  height: 1.3rem;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  border-radius: 0.2rem;
+  padding: 0 0.4rem;
+}
+
+/* More novel bracket ideas: [❲⟦⟪⟬〔〘〚〖 ]❳⟧⟫⟭ 〕〙〛〗 */
+.citation::before {
+  content: "[";
+}
+
+.citation::after {
+  content: "]";
+}
+
+.citation:hover {
+  background-color: var(--color-hover-bg);
+  color: var(--color-primary);
+}
+
+.chunk {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-top: 1px dashed var(--color-hint);
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  color: var(--color-secondary);
+  margin: 2rem 0;
+}
+
+.summary {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  margin: 2rem 0;
+  padding: 1rem;
+}
+
+.summary::before {
+  content: "Summary";
+  display: block;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.concepts {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  font-weight: bold;
+  margin: 2rem 0;
+  padding: 1rem;
+  border: 1px solid var(--color-hint);
+  column-count: 3;
+  column-gap: 2rem;
+  padding-top: 3.5rem;
+  position: relative;
+}
+
+.concepts::before {
+  content: "Concepts";
+  display: block;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+
+  /* Hack to center the header above the columns */
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+}
+
+.full-text {
+  margin: 1rem 0;
+}
+
+/* Tabbed webpage */
+
+.tab-button {
+  flex: 1 1 auto;
+  /* Allow the buttons to grow and shrink as needed */
+  min-width: 5rem;
+  max-width: 10rem;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  padding: 0 0.5rem;
+  border-bottom-width: 2px;
+  outline: none;
+}
+
+.tab-button-active {
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+}
+
+.tab-button-inactive {
+  color: var(--color-secondary);
+  border-color: transparent;
+}
+
+.tab-button-inactive:hover {
+  border-color: var(--color-hover);
+}
+
+.hidden {
+  display: none;
+}
+
+/* Video gallery */
+
+.video-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.video-item {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.video-item iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+/* Paragraph annotations */
+
+.annotated-para {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.annotated-para .para-caption {
+  width: 25%;
+  font-size: var(--font-size-smaller);
+  order: 2;
+  align-self: center;
+  margin-left: 1.5rem;
+  font-family: var(--font-sans);
+  color: var(--color-secondary);
+  border-left: 1px solid var(--color-hint);
+  padding-left: 0.5rem;
+}
+
+.annotated-para .para {
+  width: 75%;
+  order: 1;
+}
+
+/* Image styles */
+
+.frame-capture {
+  max-width: 225px;
+  border: 1px solid var(--color-hint);
+  border-radius: 0.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}

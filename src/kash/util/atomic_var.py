@@ -1,0 +1,105 @@
+import copy as copy_module
+import threading
+from typing import Callable, Generic, TypeVar
+
+T = TypeVar("T")
+
+
+class AtomicVar(Generic[T]):
+    """
+    `AtomicVar` is a simple zero-dependency thread-safe variable that works
+    for any type.
+
+    Often the standard "Pythonic" approach is to use locks directly, but for
+    some common use cases, `AtomicVar` may be simpler and more readable.
+
+    Other options include `threading.Event` (for shared booleans),
+    `threading.Queue` (for producer-consumer queues), and `multiprocessing.Value`
+    (for process-safe primitives).
+
+    Examples:
+
+    ```python
+    # Immutable types are always safe:
+    count = AtomicVar(0)
+    count.update(lambda x: x + 5)  # In any thread.
+    count.set(0)  # In any thread.
+    current_count = count.value  # In any thread.
+
+    # Useful for flags:
+    global_flag = AtomicVar(False)
+    global_flag.set(True)  # In any thread.
+    if global_flag:  # In any thread.
+        print("Flag is set")
+
+    # Works on any type, including lists and dicts, but consider using `copy` or
+    # `deepcopy` to access the value:
+    my_list = AtomicVar([1, 2, 3])
+    my_list.update(lambda x: x.append(4))  # In any thread.
+    my_list_copy = my_list.copy()  # In any thread.
+    ```
+    """
+
+    def __init__(self, initial_value: T):
+        self._value: T = initial_value
+        self.lock = threading.Lock()
+
+    @property
+    def value(self) -> T:
+        """
+        Current value. For immutable types, this is thread safe. For mutable types,
+        consider using `copy` or `deepcopy` instead.
+        """
+        with self.lock:
+            return self._value
+
+    def copy(self) -> T:
+        """
+        Shallow copy of the current value.
+        """
+        with self.lock:
+            return copy_module.copy(self._value)
+
+    def deepcopy(self) -> T:
+        """
+        Deep copy of the current value.
+        """
+        with self.lock:
+            return copy_module.deepcopy(self._value)
+
+    def set(self, new_value: T) -> None:
+        with self.lock:
+            self._value = new_value
+
+    def swap(self, new_value: T) -> T:
+        """
+        Set to new value and return the old value.
+        """
+        with self.lock:
+            old_value = self._value
+            self._value = new_value
+            return old_value
+
+    def update(self, fn: Callable[[T], T]) -> T:
+        """
+        Update value with a function and return the new value.
+
+        The update can be done in place or may return a new (non-None) value.
+        """
+        with self.lock:
+            result = fn(self._value)
+            if result is not None:
+                self._value = result
+            return result
+
+    def __bool__(self) -> bool:
+        """
+        Truthiness matches that of the underlying value.
+        """
+        return bool(self.value)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.value!r})"
+
+    def __str__(self) -> str:
+        return str(self.value)

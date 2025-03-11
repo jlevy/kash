@@ -1,12 +1,12 @@
 # ---- Project Info and Dependencies ----
 
 [project.urls]
-Repository = "https://github.com/jlevy/kash-core"
+Repository = "https://github.com/jlevy/kash-shell"
 # Homepage = "https://..."
 
 [project]
-name = "kash-core"
-description = "The knowledge agent shell (core)"
+name = "kash-shell"
+description = "The knowledge agent shell"
 authors = [
     { name="Joshua Levy", email="joshua@cal.berkeley.edu" },
 ]
@@ -15,7 +15,70 @@ license = "AGPL-3.0-or-later"
 requires-python = ">=3.11,<4.0"
 dynamic = ["version"]
 
-dependencies = []
+dependencies = [
+    "dunamai>=1.23.0",
+    "pydantic>=2.10.6",
+    # My tools:
+    "strif>=2.0.0",
+    "funlog>=0.1.2",
+    "prettyfmt>=0.1.7",
+    "flowmark>=0.2.1",
+    "frontmatter-format>=0.1.6",
+    "chopdiff>=0.1.2",
+    # python-magic is most current and works with libmagic on macOS and Linux.
+    # on Windows, python-magic-bin seems like the best option.
+    "python-magic>=0.4.27; platform_system == 'Linux' or platform_system == 'Darwin'",
+    "python-magic-bin>=0.4.14; platform_system == 'Windows'",
+    "regex>=2024.11.6",
+    "cachetools>=5.5.2",
+    # Shell essentials:
+    "humanfriendly>=10.0",
+    "xonsh>=0.19.2",
+    "prompt-toolkit>=3.0.50",
+    "rich>=13.9.4",
+    "click>=8.1.8",
+    "setproctitle>=1.3.5",
+    "python-dotenv>=1.0.1",
+    "send2trash>=1.8.3",
+    "ripgrepy>=2.1.0",
+    "pyperclip>=1.9.0",
+    "colour>=0.1.5",
+    "thefuzz>=0.22.1",
+    "python-slugify>=8.0.4",
+    "tldr>=3.3.0",
+    "jinja2>=3.1.6",
+    "cydifflib>=1.1.0",
+    "pygments>=2.19.1",
+    "inflect>=7.5.0",
+    "tenacity>=9.0.0",
+    "lazyasd>=0.1.4",
+    "pathspec>=0.12.1",
+    "patch-ng>=1.18.1",
+    "inquirerpy>=0.3.4",
+    # LLM essentials:
+    "tiktoken>=0.9.0",
+    "openai>=1.65.3",
+    "litellm>=1.62.4",
+    # Basic text handling and web scraping:
+    "readabilipy>=0.3.0",
+    "markdownify>=0.14.1",
+    "justext>=3.0.2",
+    "cssselect>=1.2.0",
+    # Minimal media handling:
+    "pydub>=0.25.1",
+    # audioop-lts is a backport of audioop for Python 3.13 and later needed for pydub.
+    "audioop-lts>=0.2.1; python_version >= '3.13'",
+    "deepgram-sdk>=3.10.1",
+    # Data science:
+    "scipy>=1.15.2",
+    "pandas>=2.2.3",
+    # Server deps:
+    "fastapi>=0.115.11",
+    "uvicorn>=0.34.0",
+    # MCP:
+    "mcp>=1.3.0",
+    "anyio>=4.8.0",
+]
 
 [dependency-groups]
 dev = [
@@ -29,8 +92,8 @@ dev = [
 ]
 
 [project.scripts]
-# Add script entry points here.
-# kash-core = "kash_core:main"
+kash = "kash.shell_main:main"
+kash_mcp = "kash.mcp.mcp_main:main"
 
 
 # ---- Build system ----
@@ -50,14 +113,16 @@ vcs = "git"
 style = "pep440"
 bump = "true"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/kash"]
 
 # ---- Settings ----
 
 [tool.black]
-line-length = 88
+line-length = 100
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 
 [tool.ruff.lint]
 ignore = ["E402", "E731", "E712"]
@@ -68,8 +133,9 @@ disable_error_code = [
 ]
 
 [tool.codespell]
-# ignore-words-list = "foo,bar"
+ignore-words-list = "iTerm,Numbe,caf"
 # skip = "foo.py,bar.py"
+
 
 [tool.pytest.ini_options]
 python_files = ["*.py"]
@@ -79,5 +145,14 @@ testpaths = [
     "src",
     "tests",
 ]
-norecursedirs = []
-filterwarnings = []
+norecursedirs = ["src/kash/xontrib"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:.*deprecated.*",
+    "ignore:.*Deprecation.*",
+    "ignore::RuntimeWarning:xonsh.tools",
+    "ignore::SyntaxWarning:pydub.utils",
+    "ignore::UserWarning:pydantic",
+]
+# Dev convenience: Temporarily rename a file to a stash pattern to stop tracking it.
+addopts = "--ignore-glob='stash.*' --ignore-glob='*.stash.*'"

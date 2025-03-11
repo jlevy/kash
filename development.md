@@ -3,8 +3,8 @@
 This project is set up to use [uv](https://docs.astral.sh/uv/) to manage Python and
 dependencies. First, be sure you have uv installed.
 
-Then [fork](https://github.com/jlevy/kash-core/fork) this
-repo (having your own fork will make it easier to contribute),
+Then [fork](https://github.com/jlevy/kash-shell/fork) this repo (having your own fork
+will make it easier to contribute),
 [check out](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository),
 the code, and install the package dependencies:
 

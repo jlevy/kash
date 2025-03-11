@@ -1,0 +1,294 @@
+<style>
+.item-view {
+  font-family: var(--font-sans);
+  {# TODO: Consider putting a border to indicate type of info. But have to
+     make sure it does not grow the tooltip inadverently. #}
+  {# border-left: 3px solid var(--color-border-accent);
+  display: flex;
+  flex-direction: column; #}
+}
+
+.item-header {
+  padding: 0.5rem 1rem 0rem 1rem;
+  border-bottom: 1px solid var(--color-border-hint); 
+}
+
+.item-meta {
+}
+
+.item-type {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  font-size: var(--font-size-smaller);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding-right: 1rem;
+}
+
+.item-format, .item-state {
+  padding-right: 1rem;
+}
+
+.item-label {
+  color: var(--color-secondary);
+}
+
+.item-path {
+  background-color: var(--color-bg-header);
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono-small);
+  line-height: 1.2;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--color-border-hint);
+  {# box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); #}
+}
+
+.path-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center; 
+  gap: 0.5rem;
+  max-width: calc(100% - 6rem);
+}
+
+.path-icon {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-large);
+  margin-right: 0.5rem;
+}
+
+.path-text {
+  word-break: break-all;
+  font-weight: 700;
+  font-size: var(--font-size-mono);
+}
+
+.copy-icon-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.open-external {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+}
+
+.action-icon {
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--color-secondary);
+  transition: color 0.2s;
+}
+
+.action-icon:hover {
+  color: var(--color-primary);
+}
+
+.item-content {
+  {# background-color: var(--color-bg); #}
+}
+
+.item-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  padding: 0.5rem 0 0.3rem 0;
+}
+
+h1.item-title {
+  margin: 0;
+}
+
+.item-body {
+  {# border-top: 1px solid var(--color-border); #}
+}
+
+.item-file-info {
+  {# font-family: var(--font-sans); #}
+  padding: 0.5rem 0;
+  {# font-size: var(--font-size-mono-small); #}
+  word-break: break-word;
+}
+
+.item-file-info pre {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  letter-spacing: 0;
+}
+
+.item-url {
+  padding: 0.5rem 0;
+}
+
+.item-url a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.item-url a:hover {
+  text-decoration: underline;
+}
+
+.item-description {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  padding: 0.5rem 0;
+}
+
+.item-body {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  color: var(--color-secondary);
+  font-size: var(--font-size-mono-small);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.item-footer {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-smaller);
+  color: var(--color-secondary);
+}
+
+.border-top-dashed {
+  border-top: 1px dashed var(--color-border-hint);
+}
+
+.border-top-solid {
+  border-top: 1px solid var(--color-border-hint);
+}
+
+.action-icons {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.url-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+</style>
+
+<div class="item-view">
+
+  <div class="item-path">
+    <div class="path-group">
+      <div class="path-icon">
+        {{ nerd_icon.icon_char }}
+      </div>
+      <div class="path-text">
+        {{ item.store_path or item.external_path or path }}
+      </div>
+    </div>
+    <div class="action-icons">
+      <div data-value="{{ item.store_path or item.external_path }}" onclick="copyDataValue(this)" title="Copy path">
+        <i data-feather="copy" class="action-icon"></i>
+      </div>
+      {% if page_url %}
+        <div data-value="{{ page_url }}" onclick="copyDataValue(this)" title="Copy link">
+          <i data-feather="link" class="action-icon"></i>
+        </div>
+        <a href="{{ page_url }}" target="_blank" rel="noopener noreferrer">
+          <i data-feather="external-link" class="action-icon"></i>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+    <div class="item-header">
+      {% if not brief_header %}
+        <div class="item-meta">
+          {% if item.type %}
+            <span class="item-type">{{ item.type.value }}</span>
+          {% endif %}
+          {% if item.format %}
+            <span class="item-label">Format:</span> <span class="item-format">{{ item.format.value }}</span>
+          {% endif %}
+          {% if item.state %}
+            <span class="item-label">State:</span> <span class="item-state">{{ item.state.value }}</span>
+          {% endif %}
+        </div>
+
+        {% if item.title %}
+          <h1 class="item-title">{{ item.title }}</h1>
+        {% endif %}
+
+        {% if item.url %}
+          <div class="item-url">
+            <div class="url-container">
+              <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.url }}</a>
+              <i data-feather="copy" class="action-icon" onclick="copyDataValue(this.parentElement)" title="Copy URL"></i>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% if file_info_html %}
+        <div class="item-file-info">{{ file_info_html | safe }}</div>
+      {% endif %}
+
+      {% if not brief_header %}
+        {% if item.description %}
+          <div class="item-description">
+            {{ item.description }}
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+  <div class="item-content">
+    {% if body_text %}
+      <div class="item-body">{{ body_text }}</div>
+    {% endif %}
+
+    {% if footer_note %}
+      {% if body_text_truncated %}
+        <div class="item-footer border-top-dashed">
+          {{ footer_note }}
+        </div>
+      {% else %}
+        <div class="item-footer border-top-solid">
+          {{ footer_note }}
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function copyText(element, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const iconElement = element.firstElementChild;
+    if (iconElement) {
+      iconElement.setAttribute('data-feather', 'check');
+      feather.replace();
+      
+      setTimeout(() => {
+        iconElement.setAttribute('data-feather', 'copy');
+        feather.replace();
+      }, 1000);
+    }
+  })
+}
+
+function copyDataValue(element) {
+  const value = element.getAttribute('data-value');
+  if (value) {
+    copyText(element, value);
+  }
+}
+
+// Initialize Feather icons
+document.addEventListener('DOMContentLoaded', () => {
+  feather.replace();
+});
+</script>

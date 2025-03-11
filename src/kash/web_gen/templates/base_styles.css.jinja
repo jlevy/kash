@@ -1,0 +1,192 @@
+:root {
+  font-size: 16px;
+  {# Adding Hack Nerd Font to all fonts for icon support, if it is installed. #}
+  --font-sans: "Varta", sans-serif, "Hack Nerd Font";
+  --font-serif: "PT Serif", serif, "Hack Nerd Font";
+  --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
+
+  --font-size-large: 1.2rem;
+  --font-size-normal: 1rem;
+  --font-size-small: 0.95rem;
+  --font-size-smaller: 0.85rem;
+  --font-size-mono: 0.8rem;
+  --font-size-mono-small: 0.75rem;
+  --font-size-mono-tiny: 0.7rem;
+
+  --console-char-width: 88;
+  --console-width: calc(var(--console-char-width) + 2rem);
+}
+
+{{ color_defs|safe }}
+
+::selection {
+  background-color: var(--color-selection);
+  color: inherit;
+}
+
+{# TODO: Fix PDF issues and re-enable for prettier emoji. #}
+{# @font-face {
+  font-family: "Noto Emoji";
+  src: url("https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap");
+  /* Emoji Unicode ranges */
+  unicode-range: 
+    U+1F300-1F9FF,  /* Miscellaneous Symbols and Pictographs + Supplemental */
+    U+1F600-1F64F,  /* Emoticons */
+    U+2600-26FF,    /* Miscellaneous Symbols */
+    U+2700-27BF,    /* Dingbats */
+    U+FE00-FE0F,    /* Variation Selectors */
+    U+1F900-1F9FF;  /* Supplemental Symbols and Pictographs */ 
+} #}
+
+/* Scrollbar coloring. */
+/* For Webkit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 0; /* Hide horizontal scrollbars */
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar);
+  border-radius: 4px;
+  transition: color 0.2s ease-in-out;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-hover);
+}
+* { /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar) var(--color-bg);
+}
+
+body {
+  font-family: var(--font-serif);
+  color: var(--color-text);
+  line-height: 1.3;
+  padding: 0;  /* No padding so we can have full width elements. */
+  margin: auto;
+  background-color: var(--color-bg);
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.7rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Long text stylings, for nicely formatting blog post length or longer texts. */
+
+.long-text h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.long-text h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.long-text h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.long-text h4 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+ul {
+  list-style-type: none;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+  padding-left: 0;
+}
+
+li {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  position: relative;
+}
+
+ul>li::before {
+  content: "▪︎";
+  position: absolute;
+  left: -1rem;
+  font-size: 0.9rem;
+}
+
+ol {
+  list-style-type: decimal;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+blockquote {
+  border-left: 4px solid var(--color-primary);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  color: var(--color-secondary);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  letter-spacing: -0.025em;
+  padding: 0.2rem 0.4rem;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  letter-spacing: -0.025em;
+  {# overflow-x: auto; #}
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  /* Allow wrapping */
+  justify-content: center;
+  /* Center the content */
+  gap: 1rem;
+  /* Add some space between the buttons */
+}

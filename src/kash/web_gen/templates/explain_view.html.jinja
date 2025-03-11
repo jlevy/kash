@@ -1,0 +1,49 @@
+<style>
+.explain-view {
+  {# border-left: 3px solid var(--color-border-accent); #}
+  max-width: 850px;
+  {# width: var(--console-width); #}
+  padding: 1rem;
+  position: relative;
+}
+
+.explain-content {
+  font-size: var(--font-size-mono);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.open-external {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.action-icon {
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--color-secondary);
+  transition: color 0.2s;
+}
+
+.action-icon:hover {
+  color: var(--color-primary);
+}
+</style>
+
+<div class="explain-view">
+  {% if page_url %}
+  <a href="{{ page_url }}" target="_blank" rel="noopener noreferrer" class="open-external">
+    <i data-feather="external-link" class="action-icon"></i>
+  </a>
+  {% endif %}
+  <pre class="explain-content">{{ help_html | safe }}</pre>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  feather.replace();
+});
+</script> 
