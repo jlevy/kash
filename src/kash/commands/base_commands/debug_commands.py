@@ -172,7 +172,7 @@ def debug_command(command_or_action: str) -> None:
 
 
 @kash_command
-def reload_kash() -> None:
+def reload_system() -> None:
     """
     Experimental! Reload the kash package and all its submodules. Also restarts
     the local the local server. Not perfect! But sometimes useful for development.
@@ -199,3 +199,16 @@ def reload_kash() -> None:
     restart_local_server()
 
     # TODO Re-register commands and actions.
+
+
+@kash_command
+def reload_commands_and_actions() -> None:
+    """
+    Reload all commands and actions. This can be needed to register newly imported
+    Python files that define commands or actions with the shell.
+    """
+    from kash.xonsh_custom.customize_xonsh import reload_shell_commands_and_actions
+    from kash.xonsh_custom.shell_load_commands import log_command_action_info
+
+    reload_shell_commands_and_actions()
+    log_command_action_info()

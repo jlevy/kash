@@ -14,6 +14,8 @@ import kash.exec.command_registry
 import kash.shell_output.shell_output
 import kash.util.format_utils
 import kash.xonsh_custom.customize_xonsh
+import kash.xonsh_custom.shell_load_commands
+import kash.xonsh_custom.xonsh_env
 from kash.config.logger import get_logger
 from kash.exec.action_registry import reload_all_action_classes
 
@@ -38,7 +40,7 @@ def load(*paths: str) -> None:
 
     # Now reload all actions into the environment so the new action is visible.
     actions = reload_all_action_classes()
-    kash.xonsh_custom.customize_xonsh._register_actions_in_shell(actions)
+    kash.xonsh_custom.shell_load_commands._register_actions_in_shell(actions)
 
     kash.shell_output.shell_output.cprint(
         "Imported extensions and reloaded actions: %s",
@@ -47,7 +49,7 @@ def load(*paths: str) -> None:
     # TODO: Track and expose to the user which extensions are loaded.
 
 
-kash.xonsh_custom.customize_xonsh.set_alias("load", load)
+kash.xonsh_custom.xonsh_env.set_alias("load", load)
 
 try:
     kash.xonsh_custom.customize_xonsh.customize_xonsh()

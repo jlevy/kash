@@ -4,7 +4,7 @@ from typing import Dict, Type
 from cachetools import Cache, cached
 from prettyfmt import fmt_lines
 
-from kash.action_defs import import_actions
+from kash.action_defs import import_core_actions
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.model.actions_model import Action
@@ -45,9 +45,9 @@ def register_action_class(cls: Type[Action]):
 
 
 @cached(_action_classes_cache)
-def get_all_action_classes(base_only: bool = False) -> Dict[str, Type[Action]]:
+def get_all_action_classes() -> Dict[str, Type[Action]]:
     tallies: Dict[str, int] = {}
-    import_actions(base_only, tallies)
+    import_core_actions(tallies)
 
     if len(_action_classes) == 0:
         log.error("No actions found! Was there an import error?")
@@ -62,16 +62,16 @@ def get_all_action_classes(base_only: bool = False) -> Dict[str, Type[Action]]:
     return dict(_action_classes)
 
 
-def look_up_action_class(action_name: str, base_only: bool = False) -> Type[Action]:
-    actions = get_all_action_classes(base_only=base_only)
+def look_up_action_class(action_name: str) -> Type[Action]:
+    actions = get_all_action_classes()
     if action_name not in actions:
         raise InvalidInput(f"Action not found: `{action_name}`")
     return actions[action_name]
 
 
-def reload_all_action_classes(base_only: bool = False) -> Dict[str, Type[Action]]:
+def reload_all_action_classes() -> Dict[str, Type[Action]]:
     clear_action_cache()
-    return get_all_action_classes(base_only=base_only)
+    return get_all_action_classes()
 
 
 @cached(_action_instances_cache)

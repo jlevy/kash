@@ -6,7 +6,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cache
-from logging import ERROR, Formatter, INFO
+from logging import Formatter, INFO
 from pathlib import Path
 from typing import Any, cast, IO, Optional, Tuple
 

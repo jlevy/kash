@@ -8,7 +8,7 @@ import logging
 import os
 from pathlib import Path
 
-from kash.config.init import kash_import_all
+from kash.config.init import kash_reload_all
 from kash.config.logger_basic import basic_logging_setup
 from kash.config.settings import APP_NAME, LogLevel
 from kash.config.setup import setup
@@ -47,7 +47,7 @@ def main():
     base_dir = Path(args.workspace)
 
     setup(rich_logging=False)
-    kash_import_all()
+    kash_reload_all()
 
     ws = get_workspace(base_dir, auto_init=True)
 

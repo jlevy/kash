@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from kash.model.actions_model import Action
 
 
-def kash_import_all() -> Tuple[Dict[str, Callable], Dict[str, Type["Action"]]]:
+def kash_reload_all() -> Tuple[Dict[str, Callable], Dict[str, Type["Action"]]]:
     """
     Import all kash modules that define actions and commands.
     """
