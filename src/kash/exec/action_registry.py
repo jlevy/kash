@@ -4,7 +4,7 @@ from typing import Dict, Type
 from cachetools import Cache, cached
 from prettyfmt import fmt_lines
 
-from kash.action_defs import import_core_actions
+from kash.actions import import_core_actions
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.model.actions_model import Action

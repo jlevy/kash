@@ -9,7 +9,7 @@ Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 """
 
 # Using absolute imports to avoid polluting the user's shell namespace.
-import kash.action_defs
+import kash.actions
 import kash.exec.command_registry
 import kash.shell_output.shell_output
 import kash.util.format_utils

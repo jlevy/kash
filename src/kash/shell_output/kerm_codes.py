@@ -83,7 +83,7 @@ from kash.shell_tools.osc_tools import osc8_link, osc8_link_codes, osc8_link_ric
 KC_VERSION = 0
 """Version of the Kerm codes format. Update when we make breaking changes."""
 
-KYRM_OSC = 77
+KERM_OSC = 77
 """A lucky OSC code not used by other applications."""
 
 KUI_PROTOCOL = "kui:"
@@ -208,7 +208,7 @@ class UIElement(BaseModel):
         """
         Convert to an OSC 77 code.
         """
-        return osc_code(KYRM_OSC, self.as_json())
+        return osc_code(KERM_OSC, self.as_json())
 
 
 class TooltipElement(UIElement):
