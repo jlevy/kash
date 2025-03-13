@@ -1,4 +1,5 @@
 import importlib
+import logging
 import pkgutil
 import sys
 import types
@@ -6,19 +7,9 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, TypeAlias
 
 
+log = logging.getLogger(__name__)
+
 Tallies: TypeAlias = Dict[str, int]
-
-
-def _import_all_files(path: Path, base_package: str, tallies: Optional[Tallies] = None) -> Tallies:
-    if tallies is None:
-        tallies = {}
-
-    current_package = __name__
-    for _module_finder, module_name, _is_pkg in pkgutil.iter_modules(path=[str(path)]):
-        importlib.import_module(f"{base_package}.{module_name}", current_package)
-        tallies[base_package] = tallies.get(base_package, 0) + 1
-
-    return tallies
 
 
 def import_subdirs(
@@ -28,7 +19,7 @@ def import_subdirs(
     tallies: Optional[Tallies] = None,
 ):
     """
-    Import all files in the given subdirectories.
+    Import all files in the given subdirectories of a single parent directory.
     """
     if tallies is None:
         tallies = {}
@@ -39,9 +30,36 @@ def import_subdirs(
             raise FileNotFoundError(f"Subdirectory not found: {full_path}")
 
         package_name = f"{parent_package_name}.{subdir_name}"
-        _import_all_files(full_path, package_name, tallies)
+        for _module_finder, module_name, _is_pkg in pkgutil.iter_modules(path=[str(full_path)]):
+            importlib.import_module(f"{package_name}.{module_name}")  # Propagate import errors
+            tallies[package_name] = tallies.get(package_name, 0) + 1
 
     return tallies
+
+
+def import_namespace_modules(namespace: str) -> Dict[str, types.ModuleType]:
+    """
+    Find and import all modules or packages within a namespace package.
+    Returns a dictionary mapping module names to their imported module objects.
+    """
+    importlib.import_module(namespace)  # Propagate import errors
+
+    # Get the package to access its __path__
+    package = sys.modules.get(namespace)
+    if not package or not hasattr(package, "__path__"):
+        raise ImportError(f"`{namespace}` is not a package or namespace package")
+
+    log.info(f"Discovering modules in `{namespace}` namespace, searching: {package.__path__}")
+
+    # Iterate through all modules in the namespace package
+    modules = {}
+    for _finder, module_name, _ispkg in pkgutil.iter_modules(package.__path__, f"{namespace}."):
+        log.info(f"Importing module: {module_name}")
+        module = importlib.import_module(module_name)  # Propagate import errors
+        modules[module_name] = module
+
+    log.info(f"Imported {len(modules)} modules from namespace `{namespace}`")
+    return modules
 
 
 def recursive_reload(

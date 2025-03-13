@@ -30,8 +30,12 @@ def format_markdown_template(
 ) -> ActionResult:
     """
     Format the given text documents into a single document using the given
-    template. The variables must be unique matching prefixes of the filename
-    of each item, e.g. {body} for a file named `body.md` or `body_new_01.md`.
+    template. This is a simple way to generate combined docs from individual
+    pieces or sections, e.g. assembling a readme from a few docs.
+
+    As a convenience, the variables in the template need only be unique
+    matching prefixes of the filename of each item, e.g. {body} for a file
+    named `body.md` or `body_new_01.md`.
     """
     template_path = md_template
     items = input.items

@@ -21,7 +21,6 @@ def markdownify(item: Item) -> Item:
 
     url, html_content = get_url_html(item)
     page_data = extract_text_readabilipy(url, html_content)
-
     markdown_content = markdownify_convert(page_data.clean_html)
 
     output_item = item.derived_copy(
