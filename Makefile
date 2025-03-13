@@ -19,6 +19,9 @@ test:
 build:
 	uv build
 
+upgrade:
+	uv sync --upgrade
+
 clean:
 	-rm -rf dist/
 	-rm -rf *.egg-info/
