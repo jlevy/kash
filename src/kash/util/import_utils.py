@@ -27,6 +27,9 @@ def import_subdirs(
     subdir_names: List[str],
     tallies: Optional[Tallies] = None,
 ):
+    """
+    Import all files in the given subdirectories.
+    """
     if tallies is None:
         tallies = {}
 

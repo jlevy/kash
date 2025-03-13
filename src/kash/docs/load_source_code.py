@@ -107,10 +107,10 @@ def load_source_code() -> SourceCode:
             # TODO: Include additional dep libs like chopdiff TextDoc too?
         ),
         file_formats_src=read_source_code(kash_base_path / "file_tools" / "file_formats_model.py"),
-        core_action_defs_src=read_source_code(kash_base_path / "action_defs" / "core_actions"),
+        core_action_defs_src=read_source_code(kash_base_path / "actions" / "core_actions"),
         example_action_src=read_source_code(
-            kash_base_path / "action_defs" / "core_actions" / "strip_html.py",
-            kash_base_path / "action_defs" / "core_actions" / "summarize_as_bullets.py",
+            kash_base_path / "actions" / "core_actions" / "strip_html.py",
+            kash_base_path / "actions" / "core_actions" / "summarize_as_bullets.py",
         ),
     )
     log.info("Loaded sources: %s", str(code))

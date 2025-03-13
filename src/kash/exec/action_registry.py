@@ -1,13 +1,14 @@
+from pathlib import Path
 from threading import Lock
-from typing import Dict, Type
+from typing import Dict, List, Optional, Type
 
 from cachetools import Cache, cached
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_lines, fmt_path
 
-from kash.actions import import_core_actions
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.model.actions_model import Action
+from kash.util.import_utils import import_subdirs, Tallies
 
 
 log = get_logger(__name__)
@@ -44,20 +45,44 @@ def register_action_class(cls: Type[Action]):
         clear_action_cache()
 
 
-@cached(_action_classes_cache)
-def get_all_action_classes() -> Dict[str, Type[Action]]:
-    tallies: Dict[str, int] = {}
-    import_core_actions(tallies)
+def import_action_subdirs(
+    subdirs: List[str],
+    package_name: Optional[str],
+    parent_dir: Path,
+    tallies: Optional[Tallies] = None,
+):
+    """
+    Hook to call from `__init__.py` in a directory containing actions,
+    so that they are auto-registered on import.
 
-    if len(_action_classes) == 0:
-        log.error("No actions found! Was there an import error?")
+    Usage:
+    ```
+    import_action_subdirs(["subdir_name"], __package__, Path(__file__).parent)
+    ```
+    """
+    if tallies is None:
+        tallies = {}
+    prev_count = len(_action_classes)
 
-    log.info(
-        "Loaded actions: %s actions in %s directories:\n%s",
-        len(_action_classes),
+    if not package_name:
+        raise ValueError(f"Package name missing importing actions: {fmt_path(parent_dir)}")
+
+    import_subdirs(package_name, parent_dir, subdirs, tallies)
+    reload_all_action_classes()
+
+    log.message(
+        "Loaded actions: %s new actions in %s directories:\n%s",
+        len(_action_classes) - prev_count,
         len(tallies),
         fmt_lines(f"{k}: {v} files" for k, v in tallies.items()),
     )
+
+
+@cached(_action_classes_cache)
+def get_all_action_classes() -> Dict[str, Type[Action]]:
+    if len(_action_classes) == 0:
+        log.error("No actions found! Was there an import error?")
+
     # Return a copy for safety.
     return dict(_action_classes)
 
