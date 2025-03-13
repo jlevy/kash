@@ -19,7 +19,7 @@ from xonsh.completers.tools import (
 )
 from xonsh.parsers.completion_context import CommandContext
 
-from kash.actions.core_actions.assistant_chat import assistant_chat
+from kash.actions.core.assistant_chat import assistant_chat
 from kash.completions.completion_types import CompletionGroup, ScoredCompletion
 from kash.completions.completions import (
     get_command_and_action_completions,
