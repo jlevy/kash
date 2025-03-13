@@ -35,9 +35,11 @@ def import_subdirs(
 
     for subdir_name in subdir_names:
         full_path = parent_dir / subdir_name
-        if full_path.is_dir():
-            package_name = f"{parent_package_name}.{subdir_name}"
-            _import_all_files(full_path, package_name, tallies)
+        if not full_path.is_dir():
+            raise FileNotFoundError(f"Subdirectory not found: {full_path}")
+
+        package_name = f"{parent_package_name}.{subdir_name}"
+        _import_all_files(full_path, package_name, tallies)
 
     return tallies
 

@@ -45,7 +45,9 @@ def register_all_commands() -> None:
     """
     import kash.commands  # noqa: F401
 
-    log.info("Command registry: %d commands registered.", len(_commands))
+    if not hasattr(register_all_commands, "_has_logged"):
+        log.info("Command registry: %d commands registered.", len(_commands))
+        register_all_commands._has_logged = True
 
 
 def get_all_commands() -> Dict[str, CommandFunction]:

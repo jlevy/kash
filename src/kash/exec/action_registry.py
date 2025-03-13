@@ -70,10 +70,11 @@ def import_action_subdirs(
     import_subdirs(package_name, parent_dir, subdirs, tallies)
     reload_all_action_classes()
 
-    log.message(
-        "Loaded actions: %s new actions in %s directories:\n%s",
+    log.info(
+        "Loaded actions: %s new actions in %s directories below %s:\n%s",
         len(_action_classes) - prev_count,
         len(tallies),
+        fmt_path(parent_dir),
         fmt_lines(f"{k}: {v} files" for k, v in tallies.items()),
     )
 

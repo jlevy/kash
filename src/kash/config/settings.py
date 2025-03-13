@@ -38,6 +38,32 @@ LOCAL_SERVER_PORTS_MAX = 30
 SERVER_LOG_FILE = str(GLOBAL_KASH_DIR / "logs" / "{name}_{port}.log")
 
 
+class LogLevel(Enum):
+    debug = DEBUG
+    info = INFO
+    warning = WARNING
+    message = WARNING  # Same as warning, just for important console messages.
+    error = ERROR
+
+    @classmethod
+    def parse(cls, level_str: str):
+        canon_name = level_str.strip().lower()
+        if canon_name == "warn":
+            canon_name = "warning"
+        try:
+            return cls[canon_name]
+        except KeyError:
+            raise ValueError(
+                f"Invalid log level: `{level_str}`. Valid options are: {', '.join(f'`{name}`' for name in cls.__members__)}"
+            )
+
+    def __str__(self):
+        return self.name
+
+
+DEFAULT_LOG_LEVEL = LogLevel.parse(os.environ.get("KASH_LOG_LEVEL", "warning"))
+
+
 def resolve_and_create_dirs(path: Path | str, is_dir: bool = False) -> Path:
     """
     Resolve a path to an absolute path, handling ~ for the home directory
@@ -76,29 +102,6 @@ def find_rcfiles() -> list[Path]:
         return [rcfile_path]
     else:
         return []
-
-
-class LogLevel(Enum):
-    debug = DEBUG
-    info = INFO
-    warning = WARNING
-    message = WARNING  # Same as warning, just for important console messages.
-    error = ERROR
-
-    @classmethod
-    def parse(cls, level_str: str):
-        canon_name = level_str.strip().lower()
-        if canon_name == "warn":
-            canon_name = "warning"
-        try:
-            return cls[canon_name]
-        except KeyError:
-            raise ValueError(
-                f"Invalid log level: `{level_str}`. Valid options are: {', '.join(f'`{name}`' for name in cls.__members__)}"
-            )
-
-    def __str__(self):
-        return self.name
 
 
 @dataclass
@@ -160,7 +163,7 @@ _settings = Settings(
     default_editor="nano",
     use_sandbox=True,
     file_log_level=LogLevel.info,
-    console_log_level=LogLevel.warning,
+    console_log_level=DEFAULT_LOG_LEVEL,
     local_server_ports_start=LOCAL_SERVER_PORT_START,
     local_server_ports_max=LOCAL_SERVER_PORTS_MAX,
     local_server_port=0,
