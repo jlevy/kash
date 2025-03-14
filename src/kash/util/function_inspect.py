@@ -1,7 +1,9 @@
 import inspect
+import types
+from collections.abc import Callable
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import Any, Callable, get_args, get_origin, List, Optional, Type, Union
+from typing import Any, Union, cast, get_args, get_origin
 
 NO_DEFAULT = Parameter.empty
 
@@ -9,9 +11,9 @@ NO_DEFAULT = Parameter.empty
 @dataclass(frozen=True)
 class FuncParam:
     name: str
-    type: Optional[Type]
+    type: type | None
     default: Any
-    position: Optional[int]
+    position: int | None
     is_varargs: bool
 
     @property
@@ -25,7 +27,7 @@ class FuncParam:
         return self.default != NO_DEFAULT
 
 
-def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> List[FuncParam]:
+def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> list[FuncParam]:
     """
     Get names and types of parameters on a Python function. Just a convenience wrapper
     around `inspect.signature` to give parameter names, types, and default values.
@@ -42,7 +44,7 @@ def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> Li
     """
     unwrapped = inspect.unwrap(func) if unwrap else func
     signature = inspect.signature(unwrapped)
-    params: List[FuncParam] = []
+    params: list[FuncParam] = []
 
     for i, param in enumerate(signature.parameters.values()):
         is_positional = param.kind in (
@@ -54,7 +56,7 @@ def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> Li
         has_default = param.default != NO_DEFAULT
 
         # Get type from type annotation or default value.
-        param_type: Optional[Type] = None
+        param_type: type | None = None
         if param.annotation != Parameter.empty:
             param_type = _extract_simple_type(param.annotation)
         elif param.default is not Parameter.empty:
@@ -72,7 +74,7 @@ def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> Li
     return params
 
 
-def _extract_simple_type(annotation: Any) -> Optional[Type]:
+def _extract_simple_type(annotation: Any) -> type | None:
     """
     Extract a single Type from an annotation that is an explicit simple type (like `str` or
     an enum) or a simple Union (such as `str` from `Optional[str]`). Return None if it's not
@@ -81,6 +83,13 @@ def _extract_simple_type(annotation: Any) -> Optional[Type]:
     if isinstance(annotation, type):
         return annotation
 
+    # Handle pipe syntax (str | None) from Python 3.10+
+    if hasattr(types, "UnionType") and isinstance(annotation, types.UnionType):
+        args = get_args(annotation)
+        non_none_args = [arg for arg in args if arg is not type(None)]
+        if len(non_none_args) == 1 and isinstance(non_none_args[0], type):
+            return non_none_args[0]
+
     origin = get_origin(annotation)
     if origin is Union:
         args = get_args(annotation)
@@ -88,7 +97,8 @@ def _extract_simple_type(annotation: Any) -> Optional[Type]:
         if len(non_none_args) == 1 and isinstance(non_none_args[0], type):
             return non_none_args[0]
     elif origin is not None and isinstance(origin, type):
-        return origin
+        # Cast origin to type to satisfy the type checker
+        return cast(type, origin)
 
     return None
 
@@ -97,21 +107,21 @@ def _extract_simple_type(annotation: Any) -> Optional[Type]:
 
 
 def test_inspect_function_params():
-    def func0(path: Optional[str] = None) -> List:
+    def func0(path: str | None = None) -> list:
         return [path]
 
     def func1(
-        arg1: str, arg2: str, arg3: int, option_one: bool = False, option_two: Optional[str] = None
-    ) -> List:
+        arg1: str, arg2: str, arg3: int, option_one: bool = False, option_two: str | None = None
+    ) -> list:
         return [arg1, arg2, arg3, option_one, option_two]
 
-    def func2(*paths: str, summary: Optional[bool] = False, iso_time: bool = False) -> List:
+    def func2(*paths: str, summary: bool | None = False, iso_time: bool = False) -> list:
         return [paths, summary, iso_time]
 
-    def func3(arg1: str, **keywords) -> List:
+    def func3(arg1: str, **keywords) -> list:
         return [arg1, keywords]
 
-    def func4() -> List:
+    def func4() -> list:
         return []
 
     def func5(x: int, y: int = 3, *, z: int = 4, **kwargs):
