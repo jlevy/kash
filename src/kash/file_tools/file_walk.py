@@ -1,14 +1,13 @@
 import os
+from collections.abc import Generator
 from dataclasses import dataclass
 from os.path import abspath, relpath
 from pathlib import Path
-from typing import Generator, List, Optional
 
 from kash.config.logger import get_logger
 from kash.errors import FileNotFound
 from kash.file_tools.ignore_files import IgnoreFilter
 from kash.util.format_utils import fmt_loc
-
 
 log = get_logger(__name__)
 
@@ -21,8 +20,8 @@ class FileList:
     """
 
     parent_dir: str
-    filenames: List[str]
-    dirnames: Optional[List[str]]
+    filenames: list[str]
+    dirnames: list[str] | None
     files_ignored: int
     dirs_ignored: int
     files_skipped: int
@@ -33,7 +32,7 @@ class FileList:
 def walk_by_dir(
     start_path: Path,
     relative_to: Path,
-    ignore: Optional[IgnoreFilter] = None,
+    ignore: IgnoreFilter | None = None,
     max_depth: int = -1,
     max_files_per_subdir: int = -1,
     max_files_total: int = -1,

@@ -1,6 +1,6 @@
 import inspect
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List, Optional, Type
 
 from thefuzz import fuzz
 
@@ -18,18 +18,16 @@ from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.llm_tools.llm_messages import Message
 from kash.model.actions_model import Action
 from kash.model.language_models import LLM
-from kash.model.params_model import COMMON_SHELL_PARAMS, Param, RUNTIME_ACTION_PARAMS
+from kash.model.params_model import COMMON_SHELL_PARAMS, RUNTIME_ACTION_PARAMS, Param
 from kash.model.preconditions_model import Precondition
-
 from kash.shell_output.shell_output import (
+    PrintHooks,
     cprint,
     format_name_and_description,
     format_name_and_value,
     print_help,
     print_markdown,
-    PrintHooks,
 )
-
 
 GENERAL_HELP = (
     "For more information, ask the assistant a question (press space or `?`) or check `help`."
@@ -38,12 +36,12 @@ GENERAL_HELP = (
 
 def _print_command_help(
     name: str,
-    description: Optional[str] = None,
-    param_info: Optional[List[Param]] = None,
-    precondition: Optional[Precondition] = None,
+    description: str | None = None,
+    param_info: list[Param] | None = None,
+    precondition: Precondition | None = None,
     verbose: bool = True,
     is_action: bool = False,
-    extra_note: Optional[str] = None,
+    extra_note: str | None = None,
 ):
     command_str = f"the `{name}` command" if name else "this command"
 
@@ -116,7 +114,7 @@ def print_action_help(action: Action, verbose: bool = True):
     )
 
 
-def source_code_path(command_or_action: CommandFunction | Action | Type[Action]) -> Path:
+def source_code_path(command_or_action: CommandFunction | Action | type[Action]) -> Path:
     """
     Get the path to the source code for a command or action.
     """
@@ -165,7 +163,7 @@ def look_up_faq(text: str) -> Faq:
     raise NoMatch()
 
 
-def print_explain_command(text: str, assistant_model: Optional[LLM] = None):
+def print_explain_command(text: str, assistant_model: LLM | None = None):
     """
     Explain a command or action or give a brief explanation of something.
     Checks tldr and help docs first. If `assistant_model` is provided and docs

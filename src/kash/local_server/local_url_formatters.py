@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
 
 from rich.style import Style
 from rich.text import Text
@@ -25,9 +24,7 @@ class LinkFormatter(ABC):
     """
 
     @abstractmethod
-    def tooltip_link(
-        self, text: str, tooltip: Optional[str] = None, style: str | Style = ""
-    ) -> Text:
+    def tooltip_link(self, text: str, tooltip: str | None = None, style: str | Style = "") -> Text:
         """Text with a tooltip."""
         pass
 
@@ -48,9 +45,7 @@ class PlaintextFormatter(LinkFormatter):
     """
 
     @override
-    def tooltip_link(
-        self, text: str, tooltip: Optional[str] = None, style: str | Style = ""
-    ) -> Text:
+    def tooltip_link(self, text: str, tooltip: str | None = None, style: str | Style = "") -> Text:
         return Text(text, style=style)
 
     @override
@@ -75,9 +70,7 @@ class DefaultLinkFormatter(PlaintextFormatter):
     """
 
     @override
-    def tooltip_link(
-        self, text: str, tooltip: Optional[str] = None, style: str | Style = ""
-    ) -> Text:
+    def tooltip_link(self, text: str, tooltip: str | None = None, style: str | Style = "") -> Text:
         if tooltip:
             link = KriLink.with_attrs(text, hover=TextTooltip(text=tooltip))
             return link.as_rich(style=style)
@@ -154,7 +147,7 @@ def enable_local_urls(enabled: bool):
 
 
 @contextmanager
-def local_url_formatter(ws_name: Optional[str] = None):
+def local_url_formatter(ws_name: str | None = None):
     """
     Context manager to make it easy to format store paths with links to the local
     server for more info. If ws_name is None, use the default formatter.

@@ -1,6 +1,4 @@
-from typing import List
-
-from chopdiff.html import html_extract_attribute_value, html_find_tag, TagMatch
+from chopdiff.html import TagMatch, html_extract_attribute_value, html_find_tag
 
 from kash.exec.precondition_registry import register_precondition
 from kash.model.items_model import Item
@@ -16,7 +14,7 @@ def extract_speaker_id(html_string: str):
     return html_extract_attribute_value(DATA_SPEAKER_ID)(html_string)
 
 
-def find_speaker_labels(html_string: str) -> List[TagMatch]:
+def find_speaker_labels(html_string: str) -> list[TagMatch]:
     """
     Find all speaker labels with their offsets in the HTML string.
     This function looks for elements with a `data-speaker-id` attribute.

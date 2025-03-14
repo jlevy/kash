@@ -1,5 +1,3 @@
-from typing import List
-
 from kash.llm_tools.llm_completion import llm_template_completion
 from kash.llm_tools.llm_messages import Message, MessageTemplate
 from kash.model import LLM
@@ -38,7 +36,7 @@ def clean_heading(heading: str) -> str:
     ).content
 
 
-def summary_heading(values: List[str]) -> str:
+def summary_heading(values: list[str]) -> str:
     return llm_template_completion(
         LLM.default_fast,
         system_message=Message(

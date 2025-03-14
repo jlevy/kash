@@ -1,13 +1,12 @@
 import os
-from typing import Optional
 
 from prettyfmt import fmt_lines
 
 from kash.commands.base_commands.basic_file_commands import trash
 from kash.config.logger import get_log_settings, get_logger, reload_rich_logging_setup
 from kash.config.settings import (
-    global_settings,
     LogLevel,
+    global_settings,
     server_log_file_path,
     update_global_settings,
 )
@@ -48,7 +47,7 @@ def clear_logs() -> None:
 
 
 @kash_command
-def log_level(level: Optional[str] = None, console: bool = False, file: bool = False) -> None:
+def log_level(level: str | None = None, console: bool = False, file: bool = False) -> None:
     """
     Set or show the log level. Applies to both console and file log levels unless specified.
 

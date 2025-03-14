@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from rich.box import SQUARE
 from rich.panel import Panel
@@ -10,7 +10,7 @@ from kash.config.text_styles import COLOR_HINT, COLOR_SELECTION
 from kash.errors import is_fatal
 from kash.exec.command_exec import run_command_or_action
 from kash.exec_model.shell_model import ShellResult
-from kash.shell_output.shell_output import console_pager, cprint, print_result, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, console_pager, cprint, print_result
 from kash.util.format_utils import fmt_count_items, fmt_loc
 from kash.workspaces import SelectionHistory
 
@@ -20,7 +20,7 @@ MAX_LINES_WITHOUT_PAGING = 128
 
 
 def shell_print_selection_history(
-    sh: SelectionHistory, last: Optional[int] = None, after_cur: Optional[int] = None
+    sh: SelectionHistory, last: int | None = None, after_cur: int | None = None
 ) -> None:
     """
     Print the current selection history. Shows back last items, and forward until
@@ -82,7 +82,7 @@ def shell_print_selection_history(
     #     cprint("(history is in $selections)", style=COLOR_HINT)
 
 
-def shell_print_result(value: Optional[Any]) -> None:
+def shell_print_result(value: Any | None) -> None:
     if value:
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
             str_lines = "\n".join(value)

@@ -1,33 +1,32 @@
 import time
 from dataclasses import replace
-from typing import List, Optional, Tuple, Type
 
 from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_SKIP, EMOJI_SUCCESS, EMOJI_TIMING
-from kash.errors import ContentError, InvalidOutput, NONFATAL_EXCEPTIONS
+from kash.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
 from kash.exec.fetch_url_metadata import fetch_url_item_metadata
 from kash.exec.precondition_defs import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
 from kash.lang_tools.inflection import plural
 from kash.model.actions_model import (
+    NO_ARGS,
     Action,
     ActionInput,
     ActionResult,
     ExecContext,
-    NO_ARGS,
     PathOpType,
 )
 from kash.model.items_model import Item, State
 from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
-from kash.shell_output.shell_output import print_h3, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, print_h3
 from kash.util.task_stack import task_stack
 from kash.util.type_utils import not_none
-from kash.workspaces import current_workspace, Selection, Workspace
+from kash.workspaces import Selection, Workspace, current_workspace
 from kash.workspaces.workspace_importing import import_and_load
 
 log = get_logger(__name__)
@@ -94,7 +93,7 @@ def check_for_existing_result(
     action_input: ActionInput,
     operation: Operation,
     rerun: bool = False,
-) -> Optional[ActionResult]:
+) -> ActionResult | None:
     """
     Check if we already have the results for this operation (same action and inputs)
     If so return it, unless rerun is requested, in which case we just log that the results
@@ -208,8 +207,8 @@ def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult
         return result.items[0]
 
     with task_stack().context(action.name, len(items), "item") as ts:
-        result_items: List[Item] = []
-        errors: List[Exception] = []
+        result_items: list[Item] = []
+        errors: list[Exception] = []
         multiple_inputs = len(items) > 1
 
         for i, item in enumerate(items):
@@ -259,7 +258,7 @@ def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult
 
 def save_action_result(
     ws: Workspace, result: ActionResult, action_input: ActionInput
-) -> Tuple[List[StorePath], List[StorePath]]:
+) -> tuple[list[StorePath], list[StorePath]]:
     """
     Save the result of an action to the workspace. Handles skipping duplicates and
     archiving old inputs, if appropriate, based on hints in the ActionResult.
@@ -308,7 +307,7 @@ def run_action_with_caching(
     context: ExecContext,
     action_input: ActionInput,
     rerun: bool = False,
-) -> Tuple[ActionResult, List[StorePath], List[StorePath]]:
+) -> tuple[ActionResult, list[StorePath], list[StorePath]]:
     """
     Run an action, including validation, only rerunning if `rerun` requested or
     result is not already present. Returns the result, the store paths of the
@@ -362,11 +361,11 @@ def run_action_with_caching(
 
 
 def run_action_with_shell_context(
-    action_spec: str | Type[Action],
+    action_spec: str | type[Action],
     explicit_param_values: RawParamValues,
     *provided_args: str,
     rerun=False,
-    override_state: Optional[State] = None,
+    override_state: State | None = None,
     internal_call=False,
 ) -> ActionResult:
     """

@@ -1,7 +1,6 @@
 import threading
 from functools import cache
 from pathlib import Path
-from typing import Dict, Optional
 
 from pydantic.dataclasses import dataclass
 
@@ -27,12 +26,10 @@ class WorkspaceInfo:
 
 class WorkspaceRegistry:
     def __init__(self):
-        self._workspaces: Dict[str, WorkspaceInfo] = {}
+        self._workspaces: dict[str, WorkspaceInfo] = {}
         self._lock = threading.RLock()
 
-    def load(
-        self, name: str, base_dir: Optional[Path] = None, is_sandbox: bool = False
-    ) -> FileStore:
+    def load(self, name: str, base_dir: Path | None = None, is_sandbox: bool = False) -> FileStore:
         """
         Load or create a workspace and register it. If path is given and the workspace
         does not exist, create it.
@@ -51,11 +48,11 @@ class WorkspaceRegistry:
 
             return load_or_init_file_store(info.base_dir, info.is_sandbox)
 
-    def get_by_name(self, name: str) -> Optional[WorkspaceInfo]:
+    def get_by_name(self, name: str) -> WorkspaceInfo | None:
         with self._lock:
             return self._workspaces.get(name)
 
-    def get_by_path(self, base_dir: Path) -> Optional[WorkspaceInfo]:
+    def get_by_path(self, base_dir: Path) -> WorkspaceInfo | None:
         base_dir = base_dir.resolve()
         with self._lock:
             for info in self._workspaces.values():

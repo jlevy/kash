@@ -1,12 +1,10 @@
-from typing import List
-
 from kash.config.logger import get_logger
 from kash.help.help_types import CommandInfo, CommandType
 
 log = get_logger(__name__)
 
 
-def load_custom_command_info() -> List[CommandInfo]:
+def load_custom_command_info() -> list[CommandInfo]:
     from kash.config.logger import record_console
     from kash.exec.command_registry import CommandFunction, get_all_commands
     from kash.help.command_help import print_command_function_help

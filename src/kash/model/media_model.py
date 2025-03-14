@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 from prettyfmt import abbrev_obj
 from pydantic.dataclasses import dataclass
@@ -51,19 +50,19 @@ class MediaMetadata:
     # Fields that match Item fields.
     title: str
     url: Url
-    description: Optional[str] = None
-    thumbnail_url: Optional[Url] = None
+    description: str | None = None
+    thumbnail_url: Url | None = None
 
     # The combination of media_id and media_service should be unique.
-    media_id: Optional[str] = None
-    media_service: Optional[str] = None
+    media_id: str | None = None
+    media_service: str | None = None
 
     # Extra media fields.
-    upload_date: Optional[date] = None
-    channel_url: Optional[Url] = None
-    view_count: Optional[int] = None
-    duration: Optional[int] = None
-    heatmap: Optional[List[HeatmapValue]] = None
+    upload_date: date | None = None
+    channel_url: Url | None = None
+    view_count: int | None = None
+    duration: int | None = None
+    heatmap: list[HeatmapValue] | None = None
 
     def __repr__(self) -> str:
         return abbrev_obj(self)
@@ -79,17 +78,17 @@ class MediaService(ABC):
     An audio or video service like YouTube, Vimeo, Spotify, etc.
     """
 
-    def canonicalize(self, url: Url) -> Optional[Url]:
+    def canonicalize(self, url: Url) -> Url | None:
         """Convert a URL into a canonical form for this service."""
         return self.canonicalize_and_type(url)[0]
 
     @abstractmethod
-    def canonicalize_and_type(self, url: Url) -> Tuple[Optional[Url], Optional[MediaUrlType]]:
+    def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
         """Convert a URL into a canonical form for this service, including a unique id and URL type."""
         pass
 
     @abstractmethod
-    def get_media_id(self, url: Url) -> Optional[str]:
+    def get_media_id(self, url: Url) -> str | None:
         """Extract the media ID from a URL. Only for episodes and videos. None for channels etc."""
         pass
 
@@ -99,7 +98,7 @@ class MediaService(ABC):
         pass
 
     @abstractmethod
-    def thumbnail_url(self, url: Url) -> Optional[Url]:
+    def thumbnail_url(self, url: Url) -> Url | None:
         """Return a URL that links to the thumbnail of the media."""
         pass
 
@@ -110,8 +109,8 @@ class MediaService(ABC):
 
     @abstractmethod
     def download_media(
-        self, url: Url, target_dir: Path, media_types: Optional[List[MediaType]] = None
-    ) -> Dict[MediaType, Path]:
+        self, url: Url, target_dir: Path, media_types: list[MediaType] | None = None
+    ) -> dict[MediaType, Path]:
         """
         Download media from URL and extract to audio or video formats.
         Download all available media types (video, audio, etc.) if media_types
@@ -120,6 +119,6 @@ class MediaService(ABC):
         pass
 
     @abstractmethod
-    def list_channel_items(self, url: Url) -> List[MediaMetadata]:
+    def list_channel_items(self, url: Url) -> list[MediaMetadata]:
         """List all items in a channel."""
         pass

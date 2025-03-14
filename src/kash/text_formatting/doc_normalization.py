@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from flowmark import fill_markdown, fill_text, line_wrap_by_sentence
 from flowmark.text_filling import DEFAULT_WRAP_WIDTH
@@ -7,13 +6,13 @@ from flowmark.text_wrapping import simple_word_splitter, wrap_paragraph
 from frontmatter_format import fmf_read, fmf_write
 
 from kash.errors import InvalidInput
-from kash.file_tools.file_formats_model import detect_file_format, Format
+from kash.file_tools.file_formats_model import Format, detect_file_format
 from kash.rich_custom.ansi_cell_len import ansi_cell_len
 from kash.util.format_utils import fmt_loc
 from kash.util.type_utils import not_none
 
 
-def normalize_formatting_ansi(text: str, format: Optional[Format], width=DEFAULT_WRAP_WIDTH) -> str:
+def normalize_formatting_ansi(text: str, format: Format | None, width=DEFAULT_WRAP_WIDTH) -> str:
     """
     Normalize text formatting by wrapping lines and normalizing Markdown.
     Enables ANSI support so ANSI codes and OSC-8 links are correctly handled.
@@ -34,7 +33,7 @@ def normalize_formatting_ansi(text: str, format: Optional[Format], width=DEFAULT
 def normalize_text_file(
     path: str | Path,
     target_path: Path,
-    format: Optional[Format] = None,
+    format: Format | None = None,
 ) -> None:
     """
     Normalize formatting on a text file, handling Markdown, HTML, or text, as well as

@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import cast, List, Optional, Set
+from typing import cast
 
 from funlog import log_calls
 from prompt_toolkit import search
@@ -53,7 +53,7 @@ class MultiTabState:
     last_context: CommandContext | None = None
     first_results_shown: bool = False
     more_results_requested: bool = False
-    more_completions: Optional[Set[ScoredCompletion]] = None
+    more_completions: set[ScoredCompletion] | None = None
 
 
 # Maintain state for help completions for single and double tab.
@@ -118,7 +118,7 @@ def is_recognized_command(context: CompletionContext) -> bool:
     )
 
 
-def set_replace_prefixes(completions: Set[ScoredCompletion], context: CompletionContext) -> None:
+def set_replace_prefixes(completions: set[ScoredCompletion], context: CompletionContext) -> None:
     """
     If the completions are marked as replace_input, set the prefix_len to the
     length of the text before the cursor.
@@ -131,7 +131,7 @@ def set_replace_prefixes(completions: Set[ScoredCompletion], context: Completion
 
 
 def post_process(
-    completions: Set[ScoredCompletion] | None, context: CompletionContext
+    completions: set[ScoredCompletion] | None, context: CompletionContext
 ) -> CompleterResult:
     if completions:
         set_replace_prefixes(completions, context)
@@ -306,7 +306,7 @@ def help_completer(context: CompletionContext) -> CompleterResult:
     return None
 
 
-def _params_for_command(command_name: str) -> Optional[List[Param]]:
+def _params_for_command(command_name: str) -> list[Param] | None:
     command = get_all_commands().get(command_name)
     action = get_all_actions_defaults().get(command_name)
 
@@ -318,7 +318,7 @@ def _params_for_command(command_name: str) -> Optional[List[Param]]:
         return None
 
 
-def _param_completions(params: List[Param], prefix: str) -> List[ScoredCompletion]:
+def _param_completions(params: list[Param], prefix: str) -> list[ScoredCompletion]:
     completions = [
         ScoredCompletion(
             param.shell_prefix,
@@ -343,7 +343,7 @@ def _param_completions(params: List[Param], prefix: str) -> List[ScoredCompletio
     return completions
 
 
-def _enum_value_completions(param: Param, prefix: str) -> List[ScoredCompletion]:
+def _enum_value_completions(param: Param, prefix: str) -> list[ScoredCompletion]:
     """
     Get completions for parameter values that start with the given prefix.
     Handles both enum and `str` parameters with valid or suggested values.

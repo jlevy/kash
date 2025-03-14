@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, NewType, Optional, TypeAlias
+from typing import Any, NewType, TypeAlias
 
 from prettyfmt import abbrev_obj
 from strif import abbrev_str
@@ -44,8 +45,8 @@ class CompletionValue:
 
     group: CompletionGroup
     value: str
-    display: Optional[str]
-    help_doc: Optional[HelpDoc] = None
+    display: str | None
+    help_doc: HelpDoc | None = None
     description: str = ""
     style: str = ""
     append_space: bool = False
@@ -61,11 +62,11 @@ class ScoredCompletion(RichCompletion):
         self,
         value: str,
         group: CompletionGroup = CompletionGroup.unknown,
-        help_doc: Optional[HelpDoc] = None,
-        score: Optional[Score] = None,
+        help_doc: HelpDoc | None = None,
+        score: Score | None = None,
         replace_input: bool = False,
-        prefix_len: Optional[int] = None,
-        display: Optional[str] = None,
+        prefix_len: int | None = None,
+        display: str | None = None,
         description: str = "",
         style: str = "",
         append_closing_quote: bool = True,
@@ -107,8 +108,8 @@ class ScoredCompletion(RichCompletion):
     def from_help_doc(cls, help_doc: HelpDoc):
         return cls.from_value(help_doc.completion_value())
 
-    def replace(self, **kwargs: Dict[str, Any]) -> ScoredCompletion:
-        default_kwargs: Dict[str, Any] = dict(
+    def replace(self, **kwargs: dict[str, Any]) -> ScoredCompletion:
+        default_kwargs: dict[str, Any] = dict(
             value=self.value,
             **self.__dict__,
         )
@@ -139,7 +140,7 @@ class SortKey:
     """
 
     group: CompletionGroup
-    neg_score: Optional[Score]
+    neg_score: Score | None
     value: str
 
     def __post_init__(self):

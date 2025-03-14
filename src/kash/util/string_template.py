@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,7 @@ class StringTemplate:
 
     template: str
 
-    allowed_fields: Sequence[Union[str, Tuple[str, Optional[Type]]]]
+    allowed_fields: Sequence[str | tuple[str, type | None]]
     """List of allowed field names. If `d` or `f` formats are used, give tuple with the type."""
     # Sequence is covariant so compatible with List[str]
 
@@ -44,7 +45,7 @@ class StringTemplate:
                 f"Invalid template (forgot to provide a type when using non-str format strings?): {e}"
             )
 
-    def _field_types(self) -> Dict[str, Optional[Type]]:
+    def _field_types(self) -> dict[str, type | None]:
         return {
             field[0] if isinstance(field, tuple) else field: (
                 field[1] if isinstance(field, tuple) else None
@@ -85,14 +86,14 @@ def test_string_template():
 
     try:
         StringTemplate("{name} {age}", ["name"])
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError as e:
         assert "Template contains unsupported variable: 'age'" in str(e)
 
     t = StringTemplate("{count:d}", [("count", int)])
     try:
         t.format(count="not an int")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError as e:
         assert "Invalid type for 'count': expected int but got 'not an int' (str)" in str(e)
 

@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 import humanfriendly
 import pandas as pd
@@ -12,7 +11,6 @@ from kash.config.logger import get_logger
 from kash.errors import FileNotFound, InvalidInput
 from kash.file_tools.file_walk import IgnoreFilter, walk_by_dir
 from kash.util.format_utils import fmt_loc
-
 
 log = get_logger(__name__)
 
@@ -64,9 +62,9 @@ def get_file_info(file_path: Path, base_path: Path, follow_symlinks: bool = Fals
         suffix=file_path.suffix,
         parent=str(file_path.parent.relative_to(base_path)),
         size=stat.st_size,
-        accessed=datetime.fromtimestamp(stat.st_atime, tz=timezone.utc),
-        created=datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc),
-        modified=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+        accessed=datetime.fromtimestamp(stat.st_atime, tz=UTC),
+        created=datetime.fromtimestamp(stat.st_ctime, tz=UTC),
+        modified=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
         type=FileType.dir if file_path.is_dir() else FileType.file,
     )
 
@@ -88,8 +86,8 @@ class FileListing:
     Results of walking a directory and collecting file information.
     """
 
-    files: List[FileInfo]
-    start_paths: List[Path]
+    files: list[FileInfo]
+    start_paths: list[Path]
     files_total: int
     files_matching: int
     files_ignored: int  # Due to ignore rules.
@@ -115,24 +113,22 @@ class FileListing:
 
 @log_calls(level="debug")
 def collect_files(
-    start_paths: List[Path],
+    start_paths: list[Path],
     max_depth: int = -1,
     max_files_per_subdir: int = -1,
     max_files_total: int = -1,
-    ignore: Optional[IgnoreFilter] = None,
+    ignore: IgnoreFilter | None = None,
     since_seconds: float = 0.0,
-    base_path: Optional[Path] = None,
+    base_path: Path | None = None,
     include_dirs: bool = False,
 ) -> FileListing:
-    files_info: List[FileInfo] = []
+    files_info: list[FileInfo] = []
 
     for path in start_paths:
         if not path.exists():
             raise FileNotFound(f"Path not found: {fmt_loc(path)}")
 
-    since_timestamp = (
-        datetime.now(timezone.utc).timestamp() - since_seconds if since_seconds else 0.0
-    )
+    since_timestamp = datetime.now(UTC).timestamp() - since_seconds if since_seconds else 0.0
     if since_timestamp:
         log.info(
             "Collecting files modified in last %s seconds (since %s).",
@@ -153,7 +149,6 @@ def collect_files(
         base_path = Path(".")
 
     for path in start_paths:
-
         log.debug("Walking folder: %s", fmt_loc(path))
 
         try:

@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any, Dict, Iterable, List, Optional, TYPE_CHECKING
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, field_validator
 from strif import single_line
 
 from kash.util.parse_shell_args import (
+    StrBoolOptions,
     format_command_str,
     format_options,
     parse_command_str,
     parse_option,
-    StrBoolOptions,
 )
-
 
 if TYPE_CHECKING:
     from kash.model.actions_model import Action
@@ -41,12 +40,12 @@ class Command(BaseModel):
 
     name: str
 
-    args: List[str]
+    args: list[str]
     """
     The list of arguments, as they appear in string form on the command line.
     """
 
-    options: List[str]
+    options: list[str]
     """
     `options` is a list of options in string format, i.e. `--name=value` for string
     options or `--name` for boolean options.
@@ -70,9 +69,9 @@ class Command(BaseModel):
     @classmethod
     def assemble(
         cls,
-        callable: "Action | Callable | str",
-        args: Optional[Iterable[Any]] = None,
-        options: Optional[Dict[str, Any]] = None,
+        callable: Action | Callable | str,
+        args: Iterable[Any] | None = None,
+        options: dict[str, Any] | None = None,
     ):
         """
         Assemble a serializable Command from any Action, Callable, or string and
@@ -96,7 +95,7 @@ class Command(BaseModel):
             raise ValueError("None is not a valid argument value.")
 
         # Ensure values are stringified.
-        str_args: List[str] = []
+        str_args: list[str] = []
         if args:
             str_args = [str(arg) for arg in args]
 
@@ -130,7 +129,7 @@ class CommentedCommand(BaseModel):
     A command with an optional comment explaining what it does.
     """
 
-    comment: Optional[str]
+    comment: str | None
     """
     Any additional notes about what this command does and why it may be useful.
     Does not include the # characters.
@@ -139,11 +138,11 @@ class CommentedCommand(BaseModel):
     command_line: str
     """The full command line string."""
 
-    uses: List[str]
+    uses: list[str]
     """Commands used by this command."""
 
     @field_validator("comment")
-    def clean_comment(cls, v: str) -> Optional[str]:
+    def clean_comment(cls, v: str) -> str | None:
         return single_line(v) if v else None
 
     @property

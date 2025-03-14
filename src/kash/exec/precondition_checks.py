@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from funlog import format_duration
 
@@ -18,7 +18,7 @@ log = get_logger(__name__)
 def actions_matching_paths(
     actions: Iterable[Action],
     ws: Workspace,
-    paths: List[StorePath],
+    paths: list[StorePath],
     include_no_precondition: bool = False,
 ) -> Iterable[Action]:
     """

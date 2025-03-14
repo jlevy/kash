@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic.dataclasses import dataclass
 
 from kash.model.paths_model import StorePath
-
 from kash.util.format_utils import fmt_loc
 from kash.util.parse_key_vals import format_key_value
 from kash.util.parse_shell_args import shell_quote
@@ -30,7 +29,7 @@ class Input:
 
     # TODO: May want to support Locators or other inputs besides StorePaths.
     path: StorePath
-    hash: Optional[str] = None
+    hash: str | None = None
 
     @classmethod
     def parse(cls, input_str: str) -> Input:
@@ -74,17 +73,17 @@ class Operation:
     """
 
     action_name: str
-    arguments: List[Input]
-    options: Dict[str, str]
+    arguments: list[Input]
+    options: dict[str, str]
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> Operation:
+    def from_dict(cls, d: dict[str, Any]) -> Operation:
         action_name = d["action_name"]
         arguments = [Input.parse(input_str) for input_str in d.get("arguments", [])]
         return cls(action_name=action_name, arguments=arguments, options=d.get("options", {}))
 
     def as_dict(self):
-        d: Dict[str, Any] = {
+        d: dict[str, Any] = {
             "action_name": self.action_name,
         }
 
@@ -156,7 +155,7 @@ class Source:
     """
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> Source:
+    def from_dict(cls, d: dict[str, Any]) -> Source:
         return cls(
             operation=Operation.from_dict(d["operation"]),
             output_num=d["output_num"],

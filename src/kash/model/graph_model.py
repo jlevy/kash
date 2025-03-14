@@ -1,5 +1,5 @@
+from collections.abc import Iterable
 from dataclasses import asdict, field
-from typing import Dict, Iterable, Optional, Set
 
 from pydantic.dataclasses import dataclass
 from strif import abbrev_list
@@ -14,10 +14,10 @@ class Node:
     id: str
     type: str
     title: str
-    description: Optional[str] = None
-    body: Optional[str] = None
-    url: Optional[str] = None
-    thumbnail_url: Optional[str] = None
+    description: str | None = None
+    body: str | None = None
+    url: str | None = None
+    thumbnail_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class Link:
     source: str
     target: str
     relationship: str
-    distance: Optional[float] = None
+    distance: float | None = None
 
 
 @dataclass
@@ -35,9 +35,9 @@ class GraphData:
     relationships between items like resources, documents, or concepts.
     """
 
-    nodes: Dict[str, Node] = field(default_factory=dict)
+    nodes: dict[str, Node] = field(default_factory=dict)
     # We allow duplicate links as long as they are of different relationships.
-    links: Set[Link] = field(default_factory=set)
+    links: set[Link] = field(default_factory=set)
 
     def merge(self, nodes: Iterable[Node], links: Iterable[Link]):
         """

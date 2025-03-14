@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Optional
 
 from frontmatter_format import to_yaml_string
 from prettyfmt import fmt_lines
@@ -33,28 +32,27 @@ from kash.media_base import media_tools
 from kash.media_base.media_services import is_media_url
 from kash.model.items_model import Item, ItemType
 from kash.model.params_model import GLOBAL_PARAMS
-from kash.model.paths_model import fmt_store_path, StorePath
+from kash.model.paths_model import StorePath, fmt_store_path
 from kash.shell_output.shell_output import (
+    PrintHooks,
+    Wrap,
     console_pager,
     cprint,
     format_name_and_description,
     format_name_and_value,
     print_h2,
     print_status,
-    PrintHooks,
-    Wrap,
 )
 from kash.shell_tools.native_tools import tail_file
 from kash.util.format_utils import fmt_loc
 from kash.util.obj_replace import remove_values
 from kash.util.parse_key_vals import format_key_value, parse_key_value
 from kash.util.type_utils import not_none
-from kash.util.url import is_url, Url
+from kash.util.url import Url, is_url
 from kash.web_content.file_cache_tools import cache_file
 from kash.workspaces import current_workspace, get_sandbox_workspace, resolve_workspace, sandbox_dir
 from kash.workspaces.workspace_names import check_strict_workspace_name
 from kash.workspaces.workspaces import get_workspace
-
 
 log = get_logger(__name__)
 
@@ -243,7 +241,7 @@ def clear_history() -> None:
 
 
 @kash_command
-def init_workspace(path: Optional[str] = None) -> None:
+def init_workspace(path: str | None = None) -> None:
     """
     Initialize a new workspace at the given path, or in the current directory if no path
     given. If a path is provided, also chdir to the new path.
@@ -255,7 +253,7 @@ def init_workspace(path: Optional[str] = None) -> None:
 
 
 @kash_command
-def workspace(workspace_name: Optional[str] = None) -> None:
+def workspace(workspace_name: str | None = None) -> None:
     """
     Show info on the current workspace (if no arg given), or switch to a new workspace,
     creating it if it doesn't exist. Adds a `.kb` on the end to indicate the directory
@@ -371,7 +369,7 @@ def workspace_param(*args: str, no_pager: bool = False) -> None:
 
 @kash_command
 def import_item(
-    *files_or_urls: str, type: Optional[ItemType] = None, inplace: bool = False
+    *files_or_urls: str, type: ItemType | None = None, inplace: bool = False
 ) -> ShellResult:
     """
     Add a file or URL resource to the workspace as an item, with associated metadata.
@@ -525,7 +523,7 @@ def applicable_actions(*paths: str, brief: bool = False, all: bool = False) -> N
             PrintHooks.hrule()
             for action in applicable_actions:
                 precondition_str = (
-                    f"(matches precondition {action.precondition })"
+                    f"(matches precondition {action.precondition})"
                     if action.precondition
                     else "(no precondition)"
                 )
@@ -611,7 +609,7 @@ def reset_ignore_file(append: bool = False) -> None:
 
 
 @kash_command
-def ignore_file(pattern: Optional[str] = None) -> None:
+def ignore_file(pattern: str | None = None) -> None:
     """
     Add a pattern to the kash ignore file, or show the current patterns
     if none is specified.

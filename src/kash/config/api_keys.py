@@ -1,6 +1,5 @@
 import os
 from enum import Enum
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
 from rich.text import Text
@@ -38,7 +37,7 @@ def api_setup() -> str | None:
 _log_api_setup_done = AtomicVar(False)
 
 
-def warn_if_missing_api_keys(keys: List[Api] = RECOMMENDED_APIS) -> List[Api]:
+def warn_if_missing_api_keys(keys: list[Api] = RECOMMENDED_APIS) -> list[Api]:
     from kash.config.logger import get_logger
 
     log = get_logger(__name__)

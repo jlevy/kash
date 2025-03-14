@@ -9,7 +9,6 @@ import urllib.parse
 import webbrowser
 from enum import Enum
 from pathlib import Path
-from typing import Tuple
 
 from flowmark import Wrap
 from funlog import log_calls
@@ -25,13 +24,12 @@ from kash.shell_tools.tool_deps import PLATFORM, Platform, Tool, tool_check
 from kash.util.format_utils import fmt_loc
 from kash.util.url import as_file_url, is_file_url, is_url
 
-
 log = get_logger(__name__)
 
 
 def file_size_check(
     filename: str | Path, max_lines: int = 100, max_bytes: int = 50 * 1024
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """
     Get the size and scan to get initial line count (up to max_lines) of a file.
     """

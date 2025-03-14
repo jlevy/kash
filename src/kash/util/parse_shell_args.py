@@ -6,8 +6,9 @@ as bash!).
 
 import ast
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Tuple, TypeAlias
+from typing import TypeAlias
 
 # Same unsafe chars as shlex.quote(), but also allowing `~`.
 _shell_unsafe_re = re.compile(r"[^\w@%+=:,./~-]", re.ASCII)
@@ -59,7 +60,7 @@ def shell_unquote(arg: str) -> str:
     return arg
 
 
-def shell_split(command_str: str) -> List[str]:
+def shell_split(command_str: str) -> list[str]:
     """
     Split a command string into tokens, respecting quotes and backslash escapes.
     """
@@ -99,7 +100,7 @@ def shell_split(command_str: str) -> List[str]:
     return tokens
 
 
-StrBoolOptions: TypeAlias = Dict[str, str | bool]
+StrBoolOptions: TypeAlias = dict[str, str | bool]
 """
 A sorted dict of options, where keys are option names and values are either strings or
 boolean flags.
@@ -129,14 +130,14 @@ def format_option(key: str, value: str | bool) -> str | None:
         raise ValueError(f"Unexpected option value type: {repr(value)}")
 
 
-def format_options(options: StrBoolOptions) -> List[str]:
+def format_options(options: StrBoolOptions) -> list[str]:
     """
     Format a list of command options.
     """
     return list(filter(None, (format_option(k, v) for k, v in options.items())))
 
 
-def parse_option(key_value_str: str) -> Tuple[str, str | bool]:
+def parse_option(key_value_str: str) -> tuple[str, str | bool]:
     """
     Parse a key-value string like `--foo=123` or `--bar="some value"` into a `(key, value)`
     tuple.
@@ -151,7 +152,7 @@ def parse_option(key_value_str: str) -> Tuple[str, str | bool]:
     return key, value
 
 
-def parse_command_str(command_str: str) -> Tuple[str, List[str], StrBoolOptions]:
+def parse_command_str(command_str: str) -> tuple[str, list[str], StrBoolOptions]:
     """
     Parse a command string into a command name, arguments, and options, using simplified
     shell conventions (compatible with Python and xonsh).
@@ -190,7 +191,7 @@ class ShellArgs:
     Immutable record of parsed command line arguments and options.
     """
 
-    args: List[str]
+    args: list[str]
     options: StrBoolOptions
 
     @property
@@ -198,7 +199,7 @@ class ShellArgs:
         return self.options.get("help", False) == True
 
 
-def parse_shell_args(args_and_opts: List[str]) -> ShellArgs:
+def parse_shell_args(args_and_opts: list[str]) -> ShellArgs:
     """
     Parse pre-split raw shell input arguments into plain args and options
     (shell arguments starting with `--`).
@@ -213,7 +214,7 @@ def parse_shell_args(args_and_opts: List[str]) -> ShellArgs:
     ["foo", "--help"]
       -> ShellArgs(args=["foo"], options={"help": True})
     """
-    args: List[str] = []
+    args: list[str] = []
     options: StrBoolOptions = {}
 
     i = 0

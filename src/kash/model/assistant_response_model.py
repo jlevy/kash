@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -65,7 +64,7 @@ class AssistantResponse(BaseModel):
     If the assistant is unsure of how to respond, confidence should be `unsure`.
     """
 
-    suggested_commands: List[CommentedCommand]
+    suggested_commands: list[CommentedCommand]
     """
     Commands that the assistant suggests to solve the user's request.
     These should be in the order the user could execute them.
@@ -73,13 +72,13 @@ class AssistantResponse(BaseModel):
     If the answer is Python, use `python_code` instead.
     """
 
-    python_code: Optional[str]
+    python_code: str | None
     """
     If the assistant is suggesting a Python code snippet, put it here.
     Only use this for Python code!
     """
 
-    see_also: List[str]
+    see_also: list[str]
     """
     Other commands that may be relevant but were not suggested as a solution.
     This should not include commands that were already suggested.

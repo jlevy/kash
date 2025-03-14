@@ -1,7 +1,6 @@
 import difflib
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
 
 from funlog import abbreviate_arg
 from patch_ng import PatchSet
@@ -55,8 +54,8 @@ def patch_set_to_str(patch_set: PatchSet) -> str:
 
 
 def unified_diff(
-    from_content: Optional[str],
-    to_content: Optional[str],
+    from_content: str | None,
+    to_content: str | None,
     from_name: str = "before",
     to_name: str = "after",
 ) -> UnifiedDiff:
@@ -98,7 +97,7 @@ def unified_diff_files(from_file: str | Path, to_file: str | Path) -> UnifiedDif
         from_name = str(from_file)
         to_name = str(to_file)
 
-    with open(from_file, "r") as f1, open(to_file, "r") as f2:
+    with open(from_file) as f1, open(to_file) as f2:
         content1 = f1.read()
         content2 = f2.read()
 

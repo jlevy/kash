@@ -4,14 +4,14 @@ Output to the shell UI. These are for user interaction, not logging.
 
 import textwrap
 import threading
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
-from enum import auto, Enum
-from typing import Callable, List, Optional
+from enum import Enum, auto
 
 import rich
 import rich.style
-from flowmark import fill_text, Wrap
+from flowmark import Wrap, fill_text
 from flowmark.text_filling import DEFAULT_INDENT
 from rich.console import Group, OverflowMethod, RenderableType
 from rich.rule import Rule
@@ -27,10 +27,10 @@ from kash.config.text_styles import (
     COLOR_STATUS,
     COLOR_SUCCESS,
     CONSOLE_WRAP_WIDTH,
-    emoji_bool,
     HRULE_CHAR,
     STYLE_ASSISTANCE,
     STYLE_HELP,
+    emoji_bool,
 )
 from kash.rich_custom.rich_indent import Indent
 from kash.rich_custom.rich_markdown_fork import Markdown
@@ -69,7 +69,7 @@ def format_name_and_value(
 def format_name_and_description(
     name: str | Text,
     doc: str | Text,
-    extra_note: Optional[str] = None,
+    extra_note: str | None = None,
     text_wrap: Wrap = Wrap.WRAP_INDENT,
 ) -> Group:
     """
@@ -92,7 +92,7 @@ def format_name_and_description(
 
 
 def format_paragraphs(*paragraphs: str | Text | Group) -> Group:
-    text: List[str | Text | Group] = []
+    text: list[str | Text | Group] = []
     for paragraph in paragraphs:
         if text:
             text.append("\n\n")
@@ -175,11 +175,11 @@ null_style = rich.style.Style.null()
 
 def rich_print(
     *args: RenderableType,
-    width: Optional[int] = None,
-    soft_wrap: Optional[bool] = None,
+    width: int | None = None,
+    soft_wrap: bool | None = None,
     indent: str = "",
     raw: bool = False,
-    overflow: Optional[OverflowMethod] = "fold",
+    overflow: OverflowMethod | None = "fold",
     **kwargs,
 ):
     """
@@ -215,11 +215,11 @@ def cprint(
     message: RenderableType = "",
     *args,
     text_wrap: Wrap = Wrap.WRAP,
-    style: Optional[str | Style] = None,
+    style: str | Style | None = None,
     transform: Callable[[str], str] = lambda x: x,
     extra_indent: str = "",
     end="\n",
-    width: Optional[int] = None,
+    width: int | None = None,
     raw: bool = False,
 ):
     """

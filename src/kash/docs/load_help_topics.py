@@ -4,7 +4,6 @@ from pathlib import Path
 
 from kash.config.logger import get_logger
 
-
 log = get_logger(__name__)
 
 

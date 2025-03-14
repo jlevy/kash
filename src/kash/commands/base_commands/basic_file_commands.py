@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from frontmatter_format import fmf_read_raw, fmf_strip_frontmatter
 from prettyfmt import fmt_lines
@@ -11,14 +10,15 @@ from kash.errors import InvalidInput
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
 from kash.file_tools.file_formats_model import detect_file_format
 from kash.shell_output.shell_output import (
-    cprint,
     PadStyle,
-    print_status,
-    print_style,
     PrintHooks,
     Wrap,
+    cprint,
+    print_status,
+    print_style,
 )
-from kash.shell_tools.native_tools import edit_files, native_trash, tail_file as native_tail_file
+from kash.shell_tools.native_tools import edit_files, native_trash
+from kash.shell_tools.native_tools import tail_file as native_tail_file
 from kash.util.format_utils import fmt_loc
 from kash.workspaces.workspace_output import print_file_info
 
@@ -26,7 +26,7 @@ log = get_logger(__name__)
 
 
 @kash_command
-def cbcopy(path: Optional[str] = None, raw: bool = False) -> None:
+def cbcopy(path: str | None = None, raw: bool = False) -> None:
     """
     Copy the contents of a file (or the first file in the selection) to the OS-native
     clipboard.
@@ -44,7 +44,7 @@ def cbcopy(path: Optional[str] = None, raw: bool = False) -> None:
         raise InvalidInput(f"Cannot copy non-text files to clipboard: {fmt_loc(input_path)}")
 
     if raw:
-        with open(input_path, "r") as f:
+        with open(input_path) as f:
             content = f.read()
 
         pyperclip.copy(content)
@@ -68,7 +68,7 @@ def cbcopy(path: Optional[str] = None, raw: bool = False) -> None:
 
 
 @kash_command
-def edit(path: Optional[str] = None, all: bool = False) -> None:
+def edit(path: str | None = None, all: bool = False) -> None:
     """
     Edit the contents of a file using the user's default editor (or defaulting to nano).
 

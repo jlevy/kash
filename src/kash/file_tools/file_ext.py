@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
 
 from kash.config.logger import get_logger
-
 
 log = get_logger(__name__)
 
@@ -60,7 +58,7 @@ class FileExt(Enum):
         return self in [self.jpg, self.png]
 
     @classmethod
-    def parse(cls, ext_str: str) -> Optional[FileExt]:
+    def parse(cls, ext_str: str) -> FileExt | None:
         """
         Convert a string to a FileExt enum, if possible.
         """

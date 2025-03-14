@@ -4,13 +4,10 @@ Settings that define the visual appearance of text outputs.
 
 import re
 import shutil
-from typing import Optional
 
-from rich.highlighter import _combine_regex, RegexHighlighter
+from rich.highlighter import RegexHighlighter, _combine_regex
 from rich.style import Style
-
 from rich.text import Text
-
 
 ## Settings
 
@@ -190,7 +187,7 @@ class KashHighlighter(RegexHighlighter):
         _combine_regex(
             # Task stack in logs:
             f"(?P<task_stack_header>{re.escape(TASK_STACK_HEADER)})",
-            f"(?P<task_stack>{ re.escape(EMOJI_BREADCRUMB_SEP) }.*)",
+            f"(?P<task_stack>{re.escape(EMOJI_BREADCRUMB_SEP)}.*)",
             f"(?P<task_stack_prefix>{re.escape(EMOJI_MSG_INDENT)})",
             # Emoji colors:
             f"(?P<task>{re.escape(EMOJI_ACTION)})",
@@ -332,8 +329,7 @@ RICH_STYLES = {
 AGO_SUFFIX = " ago"
 
 
-def color_for_qty(size_str: str) -> Optional[Style]:
-
+def color_for_qty(size_str: str) -> Style | None:
     # Size patterns
     if re.search(r"[0-9.,]+ ?(B|Bytes|bytes)", size_str):
         return STYLE_SIZE1

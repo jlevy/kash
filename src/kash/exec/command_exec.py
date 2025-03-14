@@ -1,5 +1,3 @@
-from typing import Optional, Type
-
 from kash.errors import InvalidInput
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
@@ -9,7 +7,7 @@ from kash.exec_model.shell_model import ShellResult
 from kash.model.actions_model import Action
 
 
-def look_up_command_or_action(name: str) -> CommandFunction | Type[Action]:
+def look_up_command_or_action(name: str) -> CommandFunction | type[Action]:
     """
     Look up a command or action by name.
     """
@@ -19,7 +17,7 @@ def look_up_command_or_action(name: str) -> CommandFunction | Type[Action]:
         return look_up_action_class(name)
 
 
-def run_command_or_action(command: Command) -> Optional[ShellResult]:
+def run_command_or_action(command: Command) -> ShellResult | None:
     """
     Run a generic command, which could be invoking the assistant, an action,
     or a built-in command function.

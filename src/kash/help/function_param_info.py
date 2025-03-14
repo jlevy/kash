@@ -1,13 +1,13 @@
+from collections.abc import Callable
 from dataclasses import replace
-from typing import Any, Callable, List
+from typing import Any
 
 from kash.help.docstring_utils import parse_docstring
 from kash.model.params_model import ALL_COMMON_PARAMS, Param
 from kash.util.function_inspect import FuncParam, inspect_function_params
 
 
-def _look_up_param_docs(func: Callable[..., Any], kw_params: List[FuncParam]) -> List[Param]:
-
+def _look_up_param_docs(func: Callable[..., Any], kw_params: list[FuncParam]) -> list[Param]:
     def look_up(func: Callable[..., Any], func_param: FuncParam) -> Param:
         name = func_param.name
         param = ALL_COMMON_PARAMS.get(name)
@@ -26,7 +26,7 @@ def _look_up_param_docs(func: Callable[..., Any], kw_params: List[FuncParam]) ->
     return [look_up(func, func_param) for func_param in kw_params]
 
 
-def annotate_param_info(func: Callable[..., Any]) -> List[Param]:
+def annotate_param_info(func: Callable[..., Any]) -> list[Param]:
     """
     Inspect the types on the positional and keyword parameters for a function,
     as well as docs for them.

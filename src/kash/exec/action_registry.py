@@ -1,6 +1,5 @@
 from pathlib import Path
 from threading import Lock
-from typing import Dict, List, Optional, Type
 
 from cachetools import Cache, cached
 from prettyfmt import fmt_lines, fmt_path
@@ -8,13 +7,12 @@ from prettyfmt import fmt_lines, fmt_path
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.model.actions_model import Action
-from kash.util.import_utils import import_subdirs, Tallies
-
+from kash.util.import_utils import Tallies, import_subdirs
 
 log = get_logger(__name__)
 
 # Global registry of action classes.
-_action_classes: Dict[str, Type[Action]] = {}
+_action_classes: dict[str, type[Action]] = {}
 _lock = Lock()
 
 
@@ -29,7 +27,7 @@ def clear_action_cache():
     _action_instances_cache.clear()
 
 
-def register_action_class(cls: Type[Action]):
+def register_action_class(cls: type[Action]):
     """
     Register an action class.
     """
@@ -46,10 +44,10 @@ def register_action_class(cls: Type[Action]):
 
 
 def import_action_subdirs(
-    subdirs: List[str],
-    package_name: Optional[str],
+    subdirs: list[str],
+    package_name: str | None,
     parent_dir: Path,
-    tallies: Optional[Tallies] = None,
+    tallies: Tallies | None = None,
 ):
     """
     Hook to call from `__init__.py` in a directory containing actions,
@@ -80,7 +78,7 @@ def import_action_subdirs(
 
 
 @cached(_action_classes_cache)
-def get_all_action_classes() -> Dict[str, Type[Action]]:
+def get_all_action_classes() -> dict[str, type[Action]]:
     if len(_action_classes) == 0:
         log.error("No actions found! Was there an import error?")
 
@@ -88,25 +86,25 @@ def get_all_action_classes() -> Dict[str, Type[Action]]:
     return dict(_action_classes)
 
 
-def look_up_action_class(action_name: str) -> Type[Action]:
+def look_up_action_class(action_name: str) -> type[Action]:
     actions = get_all_action_classes()
     if action_name not in actions:
         raise InvalidInput(f"Action not found: `{action_name}`")
     return actions[action_name]
 
 
-def reload_all_action_classes() -> Dict[str, Type[Action]]:
+def reload_all_action_classes() -> dict[str, type[Action]]:
     clear_action_cache()
     return get_all_action_classes()
 
 
 @cached(_action_instances_cache)
-def get_all_actions_defaults() -> Dict[str, Action]:
+def get_all_actions_defaults() -> dict[str, Action]:
     """
     This is an instance of all actions with *default* settings, for use in
     docs, info etc.
     """
-    actions_map: Dict[str, Action] = {}
+    actions_map: dict[str, Action] = {}
     for cls in get_all_action_classes().values():
         try:
             action: Action = cls.create(None)
@@ -116,7 +114,7 @@ def get_all_actions_defaults() -> Dict[str, Action]:
             continue
 
         # Record the source path.
-        setattr(action, "__source_path__", getattr(cls, "__source_path__", None))
+        action.__source_path__ = getattr(cls, "__source_path__", None)
 
         actions_map[action.name] = action
 

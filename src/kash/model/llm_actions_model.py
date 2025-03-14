@@ -12,7 +12,6 @@ from kash.model.items_model import Item
 from kash.model.preconditions_model import Precondition
 from kash.util.task_stack import task_stack
 
-
 log = get_logger(__name__)
 
 

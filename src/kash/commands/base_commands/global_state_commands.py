@@ -1,7 +1,7 @@
 from kash.commands.base_commands.basic_file_commands import trash
 from kash.config.logger import get_logger
 from kash.exec import kash_command
-from kash.shell_output.shell_output import cprint, format_name_and_value, print_h2, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint, format_name_and_value, print_h2
 
 log = get_logger(__name__)
 

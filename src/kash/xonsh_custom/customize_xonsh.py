@@ -21,14 +21,13 @@ from kash.config.logger import get_logger
 from kash.config.settings import check_kerm_code_support
 from kash.local_server.local_server import start_local_server
 from kash.local_server.local_url_formatters import enable_local_urls
-from kash.shell_output.shell_output import cprint, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint
 from kash.shell_tools.native_tools import tool_check
 from kash.version import get_version_name
 from kash.workspaces import current_workspace
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
 from kash.xonsh_custom.xonsh_completers import load_completers
 from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
-
 
 log = get_logger(__name__)
 

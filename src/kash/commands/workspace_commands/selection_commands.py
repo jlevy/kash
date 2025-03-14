@@ -1,6 +1,5 @@
 from os.path import basename
 from pathlib import Path
-from typing import Optional
 
 from frontmatter_format import fmf_strip_frontmatter
 from strif import copyfile_atomic
@@ -13,7 +12,7 @@ from kash.lang_tools.inflection import plural
 from kash.model.paths_model import StorePath
 from kash.shell_ui.shell_results import shell_print_selection_history
 from kash.util.format_utils import fmt_loc
-from kash.workspaces import current_workspace, Selection
+from kash.workspaces import Selection, current_workspace
 
 log = get_logger(__name__)
 
@@ -166,9 +165,7 @@ def next_selection() -> ShellResult:
 
 
 @kash_command
-def save(
-    parent: Optional[str] = None, to: Optional[str] = None, no_frontmatter: bool = False
-) -> None:
+def save(parent: str | None = None, to: str | None = None, no_frontmatter: bool = False) -> None:
     """
     Save the current selection to the given directory, or to the current directory if no
     target given.

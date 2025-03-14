@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 from rich.console import Group
@@ -130,7 +130,7 @@ class CommandInfo(HelpDoc):
     description: str
     """Short description or docstring for the command."""
 
-    help_page: Optional[str]
+    help_page: str | None
     """Full help page, including description and any other docs."""
 
     def emoji(self) -> str:
@@ -225,6 +225,6 @@ class RecipeScript:
     name: str
     script: Script
 
-    def all_snippets(self) -> List[CommentedCommand]:
+    def all_snippets(self) -> list[CommentedCommand]:
         """Return all commands that have a comment explaining what they do."""
         return [c for c in self.script.commands if isinstance(c, CommentedCommand) and c.comment]

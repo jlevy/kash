@@ -23,7 +23,7 @@ build tools and workflows by composing the myriad of AI tools, APIs, and librari
 
 - **Command-line usage:** In addition to using the function in other libraries and
   tools, an action is also **a command-line tool** (with auto-complete, help, etc.)
-  in the Kash shell. So you can simply run `transcribe` to downlaod and transcribe a
+  in the Kash shell. So you can simply run `transcribe` to download and transcribe a
   video.
 
 - **MCP support:** Finally, an action is also an **MCP tool** you can use it in any MCP

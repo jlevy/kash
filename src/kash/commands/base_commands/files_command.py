@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast, List, Optional
+from typing import cast
 
 from prettyfmt import fmt_size_human, fmt_time
 from rich.text import Text
@@ -8,26 +8,26 @@ from rich.text import Text
 from kash.commands.workspace_commands.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_EMPH, COLOR_EXTRA, COLOR_HINT, colorize_qty, EMOJI_WARN
+from kash.config.text_styles import COLOR_EMPH, COLOR_EXTRA, COLOR_HINT, EMOJI_WARN, colorize_qty
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.file_icons.color_for_format import color_for_format
 from kash.file_tools.file_formats_model import Format, guess_format_by_name
 from kash.file_tools.file_sort_filter import (
-    collect_files,
     FileInfo,
     FileListing,
     FileType,
     GroupByOption,
-    parse_since,
     SortOption,
+    collect_files,
+    parse_since,
     type_suffix,
 )
 from kash.file_tools.ignore_files import ignore_none
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.model.items_model import Item, ItemType
-from kash.model.paths_model import parse_path_spec, StorePath
-from kash.shell_output.shell_output import console_pager, cprint, PrintHooks, Wrap
+from kash.model.paths_model import StorePath, parse_path_spec
+from kash.shell_output.shell_output import PrintHooks, Wrap, console_pager, cprint
 from kash.util.format_utils import fmt_loc
 from kash.workspaces import current_ignore, current_workspace
 
@@ -85,17 +85,17 @@ def files(
     pager: bool = False,
     omit_dirs: bool = False,
     max_per_group: int = -1,
-    depth: Optional[int] = None,
+    depth: int | None = None,
     max_per_subdir: int = 1000,
     max_files: int = 1000,
     no_max: bool = False,
     no_ignore: bool = False,
     all: bool = False,
     save: bool = False,
-    sort: Optional[SortOption] = None,
+    sort: SortOption | None = None,
     reverse: bool = False,
-    since: Optional[str] = None,
-    groupby: Optional[GroupByOption] = GroupByOption.parent,
+    since: str | None = None,
+    groupby: GroupByOption | None = GroupByOption.parent,
     iso_time: bool = False,
 ) -> ShellResult:
     """
@@ -280,7 +280,7 @@ def files(
 
     total_displayed = 0
     total_displayed_size = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Define spacing constants.
     TIME_WIDTH = 12
@@ -324,7 +324,7 @@ def files(
                         display_path_str = f"{display_path}{type_suffix(row)}"
 
                     # Assemble output line.
-                    line: List[str | Text] = []
+                    line: list[str | Text] = []
                     line.append(
                         colorize_qty(
                             fmt.tooltip_link(

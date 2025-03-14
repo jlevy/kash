@@ -1,10 +1,10 @@
 import json
+from collections.abc import Callable
 from enum import Enum
 from functools import cache
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
 
-from flowmark import fill_markdown, Wrap
+from flowmark import Wrap, fill_markdown
 from funlog import log_calls
 from pydantic import ValidationError
 
@@ -19,22 +19,21 @@ from kash.help.assistant_instructions import assistant_instructions
 from kash.help.assistant_output import print_assistant_response
 from kash.lang_tools.capitalization import capitalize_cms
 from kash.llm_tools.chat_format import (
-    append_chat_message,
     ChatHistory,
     ChatMessage,
     ChatRole,
+    append_chat_message,
     tail_chat_history,
 )
-from kash.llm_tools.llm_completion import llm_completion, LLMCompletionResult
+from kash.llm_tools.llm_completion import LLMCompletionResult, llm_completion
 from kash.llm_tools.llm_messages import Message
 from kash.model.assistant_response_model import AssistantResponse
 from kash.model.items_model import Item, ItemType
 from kash.model.language_models import LLMDefault, LLMName
-from kash.shell_output.shell_output import cprint, print_assistance, print_markdown, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint, print_assistance, print_markdown
 from kash.util.format_utils import fmt_loc
 from kash.util.parse_shell_args import shell_unquote
 from kash.workspaces import current_workspace
-
 
 log = get_logger(__name__)
 
@@ -194,7 +193,7 @@ def assistant_chat_history(
     return assistant_history
 
 
-def assistance_unstructured(messages: List[Dict[str, str]], model: LLMName) -> LLMCompletionResult:
+def assistance_unstructured(messages: list[dict[str, str]], model: LLMName) -> LLMCompletionResult:
     """
     Get general assistance, with unstructured output.
     Must provide all context within the messages.
@@ -208,7 +207,7 @@ def assistance_unstructured(messages: List[Dict[str, str]], model: LLMName) -> L
     )
 
 
-def assistance_structured(messages: List[Dict[str, str]], model: LLMName) -> AssistantResponse:
+def assistance_structured(messages: list[dict[str, str]], model: LLMName) -> AssistantResponse:
     """
     Get general assistance, with unstructured or structured output.
     Must provide all context within the messages.
@@ -235,7 +234,7 @@ def assistance_structured(messages: List[Dict[str, str]], model: LLMName) -> Ass
 def shell_context_assistance(
     input: str,
     silent: bool = False,
-    model: Optional[LLMName] = None,
+    model: LLMName | None = None,
     assistance_type: AssistanceType = AssistanceType.basic,
 ) -> None:
     """

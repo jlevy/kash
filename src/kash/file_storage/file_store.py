@@ -2,10 +2,11 @@ import functools
 import os
 import threading
 import time
+from collections.abc import Callable, Generator
 from os import path
 from os.path import join, relpath
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, TypeVar
+from typing import Any, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines
@@ -23,10 +24,10 @@ from kash.file_tools.git_tools import add_to_git_ignore
 from kash.file_tools.ignore_files import IgnoreChecker
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
-from kash.shell_output.shell_output import cprint, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint
 from kash.util.format_utils import fmt_loc
 from kash.util.uniquifier import Uniquifier
-from kash.util.url import is_url, Locator, Url
+from kash.util.url import Locator, Url, is_url
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
 from kash.workspaces.workspace_names import workspace_name
@@ -77,11 +78,11 @@ class FileStore:
         """
         self.start_time = time.time()
         self.info_logged = False
-        self.warnings: List[str] = []
+        self.warnings: list[str] = []
 
         # TODO: Move this to its own IdentifierIndex class, and make it exactly mirror disk state.
         self.uniquifier = Uniquifier()
-        self.id_map: Dict[ItemId, StorePath] = {}
+        self.id_map: dict[ItemId, StorePath] = {}
 
         self.dirs = MetadataDirs(self.base_dir)
         if not auto_init and not self.dirs.is_initialized():
@@ -132,7 +133,7 @@ class FileStore:
             )
 
     @synchronized
-    def _id_index_item(self, store_path: StorePath) -> Optional[StorePath]:
+    def _id_index_item(self, store_path: StorePath) -> StorePath | None:
         """
         Update metadata index with a new item.
         """
@@ -179,7 +180,7 @@ class FileStore:
             pass
 
     @synchronized
-    def _new_filename_for(self, item: Item) -> Tuple[str, Optional[str]]:
+    def _new_filename_for(self, item: Item) -> tuple[str, str | None]:
         """
         Get a suitable filename for this item that is close to the slugified title yet also unique.
         Also return the old filename if it's different.
@@ -205,7 +206,7 @@ class FileStore:
     def exists(self, store_path: StorePath) -> bool:
         return (self.base_dir / store_path).exists()
 
-    def resolve_path(self, path: Path | StorePath) -> Optional[StorePath]:
+    def resolve_path(self, path: Path | StorePath) -> StorePath | None:
         """
         Return a StorePath if the given path is within the store, otherwise None.
         If it is already a StorePath, return it unchanged.
@@ -219,7 +220,7 @@ class FileStore:
             return None
 
     @synchronized
-    def find_by_id(self, item: Item) -> Optional[StorePath]:
+    def find_by_id(self, item: Item) -> StorePath | None:
         """
         Best effort to see if an item with the same identity is already in the store.
         """
@@ -253,7 +254,7 @@ class FileStore:
     @synchronized
     def store_path_for(
         self, item: Item, as_tmp: bool = False
-    ) -> Tuple[StorePath, bool, Optional[StorePath]]:
+    ) -> tuple[StorePath, bool, StorePath | None]:
         """
         Return the store path for an item. If the item already has a `store_path`, we use that.
         Otherwise we need to find the store path or generate a new one that seems suitable.
@@ -347,7 +348,7 @@ class FileStore:
                     copyfile_atomic(item.external_path, full_path)
                 else:
                     write_item(item, full_path)
-            except IOError as e:
+            except OSError as e:
                 log.error("Error saving item: %s", e)
                 try:
                     self.unarchive(store_path)
@@ -396,7 +397,7 @@ class FileStore:
     def import_item(
         self,
         locator: Locator,
-        as_type: Optional[ItemType] = None,
+        as_type: ItemType | None = None,
         reimport: bool = False,
     ) -> StorePath:
         """
@@ -491,9 +492,9 @@ class FileStore:
     def import_items(
         self,
         *locators: Locator,
-        as_type: Optional[ItemType] = None,
+        as_type: ItemType | None = None,
         reimport: bool = False,
-    ) -> List[StorePath]:
+    ) -> list[StorePath]:
         return [self.import_item(locator, as_type, reimport) for locator in locators]
 
     def _filter_selection_paths(self):
@@ -514,7 +515,7 @@ class FileStore:
         self.selections.remove_values(non_existent)
 
     @synchronized
-    def _remove_references(self, store_paths: List[StorePath]):
+    def _remove_references(self, store_paths: list[StorePath]):
         """
         Remove references to store_paths from selections and id index.
         """
@@ -524,7 +525,7 @@ class FileStore:
         # TODO: Update metadata of all relations that point to this path too.
 
     @synchronized
-    def _rename_items(self, replacements: List[Tuple[StorePath, StorePath]]):
+    def _rename_items(self, replacements: list[tuple[StorePath, StorePath]]):
         """
         Update references when items are renamed.
         """
@@ -602,7 +603,7 @@ class FileStore:
 
     def walk_items(
         self,
-        store_path: Optional[StorePath] = None,
+        store_path: StorePath | None = None,
         use_ignore: bool = True,
     ) -> Generator[StorePath, None, None]:
         """

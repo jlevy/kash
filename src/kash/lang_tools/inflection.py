@@ -1,5 +1,4 @@
 from functools import cache
-from typing import Optional
 
 from chopdiff.docs import is_word
 from inflect import engine
@@ -10,7 +9,7 @@ def inflect():
     return engine()
 
 
-def plural(word: str, count: Optional[int] = None) -> str:
+def plural(word: str, count: int | None = None) -> str:
     """
     Pluralize a word.
     """

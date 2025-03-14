@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import field, replace
 from enum import Enum
-from typing import Any, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeAlias, TypeVar
+from typing import Any, Generic, TypeAlias, TypeVar
 
 from chopdiff.docs import TextUnit
 from prettyfmt import fmt_lines
@@ -15,7 +16,6 @@ from kash.model.constants import LANGUAGE_LIST
 from kash.model.language_models import LLM, LLMName
 from kash.util.parse_key_vals import format_key_value
 from kash.util.type_utils import instantiate_as_type
-
 
 log = get_logger(__name__)
 
@@ -33,11 +33,11 @@ class Param(Generic[T]):
 
     name: str
 
-    description: Optional[str]
+    description: str | None
 
-    type: Type[T]
+    type: type[T]
 
-    default_value: Optional[T] = None
+    default_value: T | None = None
     """
     The default value for the parameter.
     """
@@ -49,7 +49,7 @@ class Param(Generic[T]):
     (like a query string).
     """
 
-    valid_str_values: Optional[List[str]] = None
+    valid_str_values: list[str] | None = None
     """
     If the parameter is a string but has only certain allowed or suggested values,
     list them here. Not necessary for enums, which are handled automatically.
@@ -70,7 +70,7 @@ class Param(Generic[T]):
             )
 
     @property
-    def default_value_str(self) -> Optional[str]:
+    def default_value_str(self) -> str | None:
         if self.default_value is None:
             return None
         elif issubclass(self.type, Enum):
@@ -79,7 +79,7 @@ class Param(Generic[T]):
             return str(self.default_value)
 
     @property
-    def valid_values(self) -> List[str]:
+    def valid_values(self) -> list[str]:
         if self.valid_str_values:
             return self.valid_str_values
         elif issubclass(self.type, Enum):
@@ -189,7 +189,7 @@ like an enum. This type is compatible with command-line option values.
 """
 
 
-ParamDeclarations: TypeAlias = Tuple[Param, ...]
+ParamDeclarations: TypeAlias = tuple[Param, ...]
 """
 A list of parameter declarations, possibly with default values.
 """
@@ -204,7 +204,7 @@ DEFAULT_FAST_LLM = LLM.claude_3_5_haiku
 
 
 # Parameters set globally such as in the workspace.
-GLOBAL_PARAMS: Dict[str, Param] = {
+GLOBAL_PARAMS: dict[str, Param] = {
     "careful_llm": Param(
         "careful_llm",
         "Default LLM used for complex, unstructured requests (including for the kash assistant).",
@@ -240,7 +240,7 @@ GLOBAL_PARAMS: Dict[str, Param] = {
 }
 
 # Parameters that are common to all actions.
-COMMON_ACTION_PARAMS: Dict[str, Param] = {
+COMMON_ACTION_PARAMS: dict[str, Param] = {
     "model": Param(
         "model",
         "The name of the LLM.",
@@ -279,7 +279,7 @@ COMMON_ACTION_PARAMS: Dict[str, Param] = {
 
 # Extra parameters that are available when an action is invoked from the shell.
 # Applies globally to all actions.
-RUNTIME_ACTION_PARAMS: Dict[str, Param] = {
+RUNTIME_ACTION_PARAMS: dict[str, Param] = {
     "rerun": Param(
         "rerun",
         "Rerun an action that would otherwise be skipped because "
@@ -289,9 +289,9 @@ RUNTIME_ACTION_PARAMS: Dict[str, Param] = {
 }
 
 
-USER_SETTABLE_PARAMS: Dict[str, Param] = {**GLOBAL_PARAMS, **COMMON_ACTION_PARAMS}
+USER_SETTABLE_PARAMS: dict[str, Param] = {**GLOBAL_PARAMS, **COMMON_ACTION_PARAMS}
 
-ALL_COMMON_PARAMS: Dict[str, Param] = {
+ALL_COMMON_PARAMS: dict[str, Param] = {
     **GLOBAL_PARAMS,
     **COMMON_ACTION_PARAMS,
     **RUNTIME_ACTION_PARAMS,
@@ -311,7 +311,7 @@ SHOW_SOURCE_PARAM = Param(
 
 # Parameters present on all shell commands but not formally options to the
 # commands or actions.
-COMMON_SHELL_PARAMS: Dict[str, Param] = {
+COMMON_SHELL_PARAMS: dict[str, Param] = {
     "help": HELP_PARAM,
     "show_source": SHOW_SOURCE_PARAM,
 }
@@ -327,7 +327,7 @@ def common_param(name: str) -> Param:
     return param
 
 
-def common_params(*names: str) -> Tuple[Param, ...]:
+def common_params(*names: str) -> tuple[Param, ...]:
     """
     Get a set of commonly used parameters by name.
     """
@@ -341,14 +341,14 @@ class RawParamValues:
     as they are read from the shell.
     """
 
-    values: Dict[str, RawParamValue] = field(default_factory=dict)
+    values: dict[str, RawParamValue] = field(default_factory=dict)
 
     def items(self):
         return self.values.items()
 
     def get_parsed_value(
-        self, param_name: str, type: Type[T], param_info: Dict[str, Param]
-    ) -> Optional[T]:
+        self, param_name: str, type: type[T], param_info: dict[str, Param]
+    ) -> T | None:
         raw_value = self.values.get(param_name)
         if raw_value is None:
             param = param_info.get(param_name)
@@ -359,7 +359,7 @@ class RawParamValues:
         else:
             return instantiate_as_type(raw_value, type)
 
-    def parse_all(self, param_info: Dict[str, Param]) -> TypedParamValues:
+    def parse_all(self, param_info: dict[str, Param]) -> TypedParamValues:
         """
         Convert and validate all raw values to typed values, using the provided parameter info.
         Any extra params in the provided `param_info` are ignored.
@@ -411,7 +411,7 @@ class TypedParamValues:
             )
 
     @staticmethod
-    def create(values: Dict[str, Any], param_info: Iterable[Param]) -> TypedParamValues:
+    def create(values: dict[str, Any], param_info: Iterable[Param]) -> TypedParamValues:
         """
         Create a `TypedParamValues`, checking that all values have corresponding
         param info.
@@ -423,5 +423,5 @@ class TypedParamValues:
             )
         return TypedParamValues(values=values, params=params)
 
-    values: Dict[str, Any] = field(default_factory=dict)
-    params: Dict[str, Param] = field(default_factory=dict)
+    values: dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Param] = field(default_factory=dict)

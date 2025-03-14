@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import re
 from textwrap import dedent
-from typing import List, Optional
 
 from pydantic import BaseModel
 
 from kash.exec_model.args_model import Signature
-from kash.exec_model.commands_model import as_comment, CommentedCommand
+from kash.exec_model.commands_model import CommentedCommand, as_comment
 from kash.util.parse_shell_args import shell_split
 
 
@@ -29,17 +28,17 @@ class Script(BaseModel):
     commented commands, such as for kash example docs.
     """
 
-    signature: Optional[Signature]
+    signature: Signature | None
     """
     The signature of the script, which is the signature of the first command.
     """
 
-    commands: List[BareComment | CommentedCommand]
+    commands: list[BareComment | CommentedCommand]
     """
     Comments or commands to be executed.
     """
 
-    def formatted_signature(self) -> Optional[str]:
+    def formatted_signature(self) -> str | None:
         if not self.signature:
             return None
         else:

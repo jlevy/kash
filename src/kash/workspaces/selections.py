@@ -1,11 +1,11 @@
+from collections.abc import Callable, Sequence
 from functools import wraps
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
+from typing import TypeVar
 
 from frontmatter_format import new_yaml, yaml_util
-
 from prettyfmt import fmt_lines
-from pydantic import BaseModel, Field, field_serializer, field_validator, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, field_serializer, field_validator
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput, InvalidOperation
@@ -42,19 +42,19 @@ class Selection(BaseModel):
     A selection is a list of store paths for items in the workspace.
     """
 
-    paths: List[StorePath] = Field(default_factory=list)
+    paths: list[StorePath] = Field(default_factory=list)
 
     model_config = {
         "arbitrary_types_allowed": True,
     }
 
     @field_serializer("paths")
-    def serialize_paths(self, paths) -> List[str]:
+    def serialize_paths(self, paths) -> list[str]:
         return [p.display_str() for p in paths]
 
     @field_validator("paths", mode="before")
     @classmethod
-    def deserialize_paths(cls, paths: List[str]) -> List[StorePath]:
+    def deserialize_paths(cls, paths: list[str]) -> list[StorePath]:
         return [StorePath(p) for p in paths]
 
     def clear(self) -> None:
@@ -69,7 +69,7 @@ class Selection(BaseModel):
         """
         self.paths[:] = [p for p in self.paths if p not in targets]
 
-    def replace_values(self, replacements: Sequence[Tuple[StorePath, StorePath]]) -> None:
+    def replace_values(self, replacements: Sequence[tuple[StorePath, StorePath]]) -> None:
         """
         Replace paths in the current selection according to the replacement pairs.
         """
@@ -102,7 +102,7 @@ class SelectionHistory(BaseModel):
     A history stack of selections that can result from outputs of a sequence of commands.
     """
 
-    history: List[Selection] = Field(default_factory=list)
+    history: list[Selection] = Field(default_factory=list)
     current_index: int = 0
 
     _save_path: Path = PrivateAttr()
@@ -189,7 +189,7 @@ class SelectionHistory(BaseModel):
             return self.history[self.current_index]
 
     @persist_after(_save)
-    def set_current(self, store_paths: List[StorePath]) -> None:
+    def set_current(self, store_paths: list[StorePath]) -> None:
         """
         Set the current selection. If history is empty, adds a new selection.
         """
@@ -299,14 +299,14 @@ class SelectionHistory(BaseModel):
                 i += 1
 
     @persist_after(_save)
-    def replace_values(self, replacements: Sequence[Tuple[StorePath, StorePath]]) -> None:
+    def replace_values(self, replacements: Sequence[tuple[StorePath, StorePath]]) -> None:
         """
         Replace paths in all selections according to the replacement pairs.
         """
         for selection in self.history:
             selection.replace_values(replacements)
 
-    def previous_n(self, n: int, expected_size: Optional[int] = None) -> List[Selection]:
+    def previous_n(self, n: int, expected_size: int | None = None) -> list[Selection]:
         """
         Get the `n` previous selections (backwards and including the current position),
         with validation. If `expected_size` is provided, validates that each selection

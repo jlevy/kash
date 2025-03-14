@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Protocol, Set
+from typing import Protocol
 
 from strif import atomic_output_file
 
@@ -84,7 +84,7 @@ class IgnoreFilter(Protocol):
 
 
 class IgnoreChecker(IgnoreFilter):
-    def __init__(self, lines: List[str]):
+    def __init__(self, lines: list[str]):
         from pathspec.gitignore import GitIgnoreSpec
 
         self.lines = lines
@@ -154,7 +154,7 @@ def add_to_ignore(path: Path, line: str) -> None:
     """
     Add a pattern to the ignore file. Doesn't duplicate.
     """
-    lines: Set[str] = set()
+    lines: set[str] = set()
     if path.is_file():
         with open(path) as f:
             lines = {line.strip() for line in f.readlines()}

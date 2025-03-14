@@ -3,8 +3,9 @@ Tiny parsing library for key-value pairs. Useful for command-line handling of
 options like `foo=123` or `bar="some value"`.
 """
 
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, cast, Optional, Tuple, Type, TypeVar
+from typing import Any, TypeVar, cast
 
 from kash.util.parse_shell_args import shell_quote, shell_unquote
 from kash.util.type_utils import instantiate_as_type
@@ -22,20 +23,20 @@ T = TypeVar("T")
 def parse_key_value(
     key_value_str: str,
     value_parser: Callable[[str], Any] = shell_unquote,
-    target_type: Optional[Type[T]] = None,
-) -> Tuple[str, Optional[T]]:
+    target_type: type[T] | None = None,
+) -> tuple[str, T | None]:
     """
     Parse a key-value string like `foo=123` or `bar="some value"` into a `(key, value)` tuple.
     A string like `foo=` (with only whitespace after the `=`) will yield `("foo", None)`.
     """
     if target_type is None:
-        target_type = cast(Type[T], str)
+        target_type = cast(type[T], str)
 
     key, _, value_str = key_value_str.partition("=")
     key = key.strip()
     value_str = value_str.strip()
 
-    value: Optional[Any]
+    value: Any | None
     if not value_str:
         value = None
     else:

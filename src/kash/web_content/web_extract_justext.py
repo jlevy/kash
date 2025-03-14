@@ -29,20 +29,20 @@ def extract_text_justext(url: Url, raw_html: bytes) -> WebPageData:
 
 
 from justext.core import (
-    classify_paragraphs,
     DEFAULT_ENC_ERRORS,
     DEFAULT_ENCODING,
-    html_to_dom,
     LENGTH_HIGH_DEFAULT,
     LENGTH_LOW_DEFAULT,
     MAX_HEADING_DISTANCE_DEFAULT,
     MAX_LINK_DENSITY_DEFAULT,
     NO_HEADINGS_DEFAULT,
-    ParagraphMaker,
-    preprocessor,
-    revise_paragraph_classification,
     STOPWORDS_HIGH_DEFAULT,
     STOPWORDS_LOW_DEFAULT,
+    ParagraphMaker,
+    classify_paragraphs,
+    html_to_dom,
+    preprocessor,
+    revise_paragraph_classification,
 )
 
 

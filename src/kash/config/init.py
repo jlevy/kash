@@ -1,10 +1,11 @@
-from typing import Callable, Dict, Tuple, Type, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from kash.model.actions_model import Action
 
 
-def kash_reload_all() -> Tuple[Dict[str, Callable], Dict[str, Type["Action"]]]:
+def kash_reload_all() -> tuple[dict[str, Callable], dict[str, type["Action"]]]:
     """
     Import all kash modules that define actions and commands.
     """

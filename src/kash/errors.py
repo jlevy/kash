@@ -3,8 +3,6 @@ Unified hierarchy of error types. These inherit from standard errors like
 ValueError and FileExistsError but are more fine-grained.
 """
 
-from typing import Tuple, Type
-
 
 class KashRuntimeError(ValueError):
     """Base class for kash runtime errors."""
@@ -141,8 +139,7 @@ class FileFormatError(ContentError):
     pass
 
 
-def _nonfatal_exceptions() -> Tuple[Type[Exception], ...]:
-
+def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
     exceptions = [SelfExplanatoryError, FileNotFoundError, IOError]
     try:
         from xonsh.tools import XonshError

@@ -32,7 +32,8 @@
 # https://github.com/xonsh/lazyasd/blob/main/lazyasd-py3.py
 # Updated by github.com/jlevy for kash.
 
-from typing import Any, Callable, cast, Dict, Generic, Iterator, Mapping, TypeVar
+from collections.abc import Callable, Iterator, Mapping
+from typing import Any, Generic, TypeVar, cast
 
 T = TypeVar("T")
 
@@ -56,7 +57,7 @@ class LazyObject(Generic[T]):
             Name in the context to give the loaded object. This *should*
             be the name on the LHS of the assignment.
         """
-        self._lasdo: Dict[str, Any] = {
+        self._lasdo: dict[str, Any] = {
             "loaded": False,
             "load": load,
             "ctx": ctx,

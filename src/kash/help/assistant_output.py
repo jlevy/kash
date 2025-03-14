@@ -5,12 +5,12 @@ from kash.help.help_pages import print_see_also
 from kash.model.assistant_response_model import AssistantResponse
 from kash.model.language_models import LLMName
 from kash.shell_output.shell_output import (
-    cprint,
     PadStyle,
+    PrintHooks,
+    cprint,
     print_code_block,
     print_markdown,
     print_style,
-    PrintHooks,
 )
 
 

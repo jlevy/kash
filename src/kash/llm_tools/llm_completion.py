@@ -1,9 +1,10 @@
-from typing import cast, Dict, List, Optional, Type, Union
+from typing import cast
 
 import litellm
-from flowmark import fill_text, Wrap
+from flowmark import Wrap, fill_text
 from funlog import log_calls
-from litellm.types.utils import Choices, Message as LiteLLMMessage, ModelResponse
+from litellm.types.utils import Choices, ModelResponse
+from litellm.types.utils import Message as LiteLLMMessage
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 from slugify import slugify
@@ -14,15 +15,14 @@ from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.llm_tools.fuzzy_parsing import is_no_results
 from kash.llm_tools.llm_messages import Message, MessageTemplate
 from kash.model.language_models import LLMName
-from kash.util.url import is_url, Url
-
+from kash.util.url import Url, is_url
 
 log = get_logger(__name__)
 
 
 @dataclass(frozen=True)
 class CitationList:
-    citations: List[str]
+    citations: list[str]
 
     def as_markdown_footnotes(self) -> str:
         footnotes = []
@@ -33,11 +33,11 @@ class CitationList:
         return "\n\n".join(footnotes)
 
     @property
-    def url_citations(self) -> List[Url]:
+    def url_citations(self) -> list[Url]:
         return [Url(citation) for citation in self.citations if is_url(citation)]
 
     @property
-    def non_url_citations(self) -> List[str]:
+    def non_url_citations(self) -> list[str]:
         return [citation for citation in self.citations if not is_url(citation)]
 
 
@@ -45,7 +45,7 @@ class CitationList:
 class LLMCompletionResult:
     message: LiteLLMMessage
     content: str
-    citations: Optional[CitationList]
+    citations: CitationList | None
 
     @property
     def content_with_citations(self) -> str:
@@ -58,9 +58,9 @@ class LLMCompletionResult:
 @log_calls(level="info")
 def llm_completion(
     model: LLMName,
-    messages: List[Dict[str, str]],
+    messages: list[dict[str, str]],
     save_objects: bool = True,
-    response_format: Optional[Union[dict, Type[BaseModel]]] = None,
+    response_format: dict | type[BaseModel] | None = None,
     **kwargs,
 ) -> LLMCompletionResult:
     """
@@ -130,11 +130,11 @@ def llm_template_completion(
     model: LLMName,
     system_message: Message,
     input: str,
-    body_template: Optional[MessageTemplate] = None,
-    previous_messages: Optional[List[Dict[str, str]]] = None,
+    body_template: MessageTemplate | None = None,
+    previous_messages: list[dict[str, str]] | None = None,
     save_objects: bool = True,
     check_no_results: bool = True,
-    response_format: Optional[Union[dict, Type[BaseModel]]] = None,
+    response_format: dict | type[BaseModel] | None = None,
     **kwargs,
 ) -> LLMCompletionResult:
     """

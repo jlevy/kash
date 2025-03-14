@@ -1,12 +1,11 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, List, Optional, TypeVar
+from typing import TypeVar
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_ERROR
-
 from kash.errors import NONFATAL_EXCEPTIONS
 from kash.shell_output.shell_output import PrintHooks
-
 
 log = get_logger(__name__)
 
@@ -19,9 +18,11 @@ def summarize_traceback(exception: Exception) -> str:
         [
             line
             for line in lines
-            if line.strip() and not line.lstrip().startswith("Traceback")
+            if line.strip()
+            and not line.lstrip().startswith("Traceback")
             # and not line.lstrip().startswith("File ")
-            and not line.lstrip().startswith("The above exception") and not line.startswith("    ")
+            and not line.lstrip().startswith("The above exception")
+            and not line.startswith("    ")
         ]
         + ["\nRun `logs` for details."]
     )
@@ -30,9 +31,9 @@ def summarize_traceback(exception: Exception) -> str:
 R = TypeVar("R")
 
 
-def wrap_with_exception_printing(func: Callable[..., R]) -> Callable[[List[str]], Optional[R]]:
+def wrap_with_exception_printing(func: Callable[..., R]) -> Callable[[list[str]], R | None]:
     @wraps(func)
-    def command(*args) -> Optional[R]:
+    def command(*args) -> R | None:
         try:
             log.info(
                 "Command function call: %s(%s)",

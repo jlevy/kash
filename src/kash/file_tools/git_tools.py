@@ -1,8 +1,7 @@
 from pathlib import Path
-from typing import List
 
 
-def add_to_git_ignore(dir: Path, pat_list: List[str]) -> None:
+def add_to_git_ignore(dir: Path, pat_list: list[str]) -> None:
     """
     Add patterns to the .gitignore file for the given directory.
     Idempotent.

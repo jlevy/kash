@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import math
 import re
-
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, TypeVar
+from typing import TypeVar
 
 from strif import abbrev_str
-
 from thefuzz import fuzz
 
 from kash.completions.completion_types import Score, ScoredCompletion
@@ -46,7 +45,6 @@ def score_completions(
     and subphrase matches.
     """
     for completion in completions:
-
         # Only score completions that aren't already scored.
         if completion.score:
             continue
@@ -87,7 +85,7 @@ def score_completions(
 
 
 def truncate_completions(
-    completions: List[ScoredCompletion], min_cutoff: Score = MIN_CUTOFF
+    completions: list[ScoredCompletion], min_cutoff: Score = MIN_CUTOFF
 ) -> None:
     """
     Truncate completions in place, dropping any already scored below the min score.
@@ -105,7 +103,7 @@ def get_scored_snippet_completions(
     query: str,
     max_results: int = 10,
     min_cutoff: Score = MIN_CUTOFF,
-) -> List[ScoredCompletion]:
+) -> list[ScoredCompletion]:
     """
     Suggest snippets for a given query, sorted by relevance.
     """
@@ -186,7 +184,7 @@ def score_subphrase(prefix: str, text: str) -> Score:
     )
 
 
-def score_path(prefix: str, path: Path, timestamp: Optional[datetime] = None) -> Score:
+def score_path(prefix: str, path: Path, timestamp: datetime | None = None) -> Score:
     """
     Score a path completion, blending prefix matches, phrase matches, and recency.
     """
@@ -197,11 +195,11 @@ def score_path(prefix: str, path: Path, timestamp: Optional[datetime] = None) ->
     recency = 0.0
     if not timestamp:
         try:
-            timestamp = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            timestamp = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
         except FileNotFoundError:
             timestamp = None
     if timestamp:
-        age = (datetime.now(timezone.utc) - timestamp).total_seconds()
+        age = (datetime.now(UTC) - timestamp).total_seconds()
         recency = decaying_recency(age)
 
     # Exact prefixes are often what we want to score separately.
@@ -240,7 +238,7 @@ def decaying_recency(
     return Score(100.0 * math.exp(-decay_constant * age_after_min))
 
 
-def score_paths(prefix: str, paths: Iterable[Path], min_cutoff: Score) -> List[Tuple[Score, Path]]:
+def score_paths(prefix: str, paths: Iterable[Path], min_cutoff: Score) -> list[tuple[Score, Path]]:
     scored_paths = [(score_path(prefix, p), p) for p in paths]
     scored_paths = [(score, p) for score, p in scored_paths if score >= min_cutoff]
     scored_paths.sort(key=lambda x: x[0], reverse=True)
@@ -249,7 +247,7 @@ def score_paths(prefix: str, paths: Iterable[Path], min_cutoff: Score) -> List[T
 
 def score_items(
     prefix: str, items: Iterable[Item], min_cutoff: Score, boost_to: Score = Score(0.0)
-) -> List[Tuple[Score, Item]]:
+) -> list[tuple[Score, Item]]:
     def score_item(prefix: str, item: Item) -> Score:
         timestamp = item.modified_at or item.created_at or None
         return linear_boost(

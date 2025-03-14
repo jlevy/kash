@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import List
 
 from funlog import log_calls
 
@@ -14,7 +13,6 @@ from kash.help.tldr_help import tldr_descriptions
 from kash.util.lazyobject import lazyobject
 from kash.xonsh_custom.shell_which import is_valid_command
 
-
 log = get_logger(__name__)
 
 
@@ -25,14 +23,14 @@ class DocsBase:
     to add more custom docs.
     """
 
-    faqs: List[Faq] = field(default_factory=load_faqs)
-    custom_command_infos: List[CommandInfo] = field(default_factory=load_custom_command_info)
-    std_command_infos: List[CommandInfo] = field(default_factory=tldr_descriptions)
-    recipe_snippets: List[RecipeSnippet] = field(default_factory=load_recipe_snippets)
+    faqs: list[Faq] = field(default_factory=load_faqs)
+    custom_command_infos: list[CommandInfo] = field(default_factory=load_custom_command_info)
+    std_command_infos: list[CommandInfo] = field(default_factory=tldr_descriptions)
+    recipe_snippets: list[RecipeSnippet] = field(default_factory=load_recipe_snippets)
 
     # TODO: Consider a TTLCache for this in case we add/remove commands.
     @cached_property
-    def usable_snippets(self) -> List[RecipeSnippet]:
+    def usable_snippets(self) -> list[RecipeSnippet]:
         snippets = self.recipe_snippets
 
         def commands_in_path(snippet: RecipeSnippet) -> bool:

@@ -6,7 +6,6 @@ from kash.docs.all_docs import all_docs
 from kash.docs.load_help_topics import load_help_src
 from kash.util.string_template import StringTemplate
 
-
 log = get_logger(__name__)
 
 structured_response_template = StringTemplate(
@@ -42,7 +41,6 @@ structured_response_template = StringTemplate(
 
 @cache
 def assistant_instructions(is_structured: bool) -> str:
-
     template = StringTemplate(
         load_help_src("markdown/assistant_instructions_template"),
         ["structured_response_instructions"],

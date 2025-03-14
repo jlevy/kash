@@ -2,10 +2,9 @@ import builtins
 import os
 import sys
 from pathlib import Path
-from typing import cast, List, Optional
+from typing import cast
 
-from cachetools import cached, TTLCache
-
+from cachetools import TTLCache, cached
 from xonsh.built_ins import XSH
 
 
@@ -23,13 +22,13 @@ def current_full_path() -> list[str]:
 
 
 @cached(TTLCache(maxsize=1000, ttl=60))
-def is_valid_command(command_name: str, path: Optional[List[str]] = None) -> bool:
+def is_valid_command(command_name: str, path: list[str] | None = None) -> bool:
     """
     Is this a valid command xonsh will understand, given current path
     and all loaded commands?
     """
 
-    from xonsh.xoreutils._which import which, WhichError
+    from xonsh.xoreutils._which import WhichError, which
 
     if not path:
         path = current_full_path()

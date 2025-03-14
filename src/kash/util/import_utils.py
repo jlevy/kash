@@ -3,20 +3,20 @@ import logging
 import pkgutil
 import sys
 import types
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, TypeAlias
-
+from typing import TypeAlias
 
 log = logging.getLogger(__name__)
 
-Tallies: TypeAlias = Dict[str, int]
+Tallies: TypeAlias = dict[str, int]
 
 
 def import_subdirs(
     parent_package_name: str,
     parent_dir: Path,
-    subdir_names: List[str],
-    tallies: Optional[Tallies] = None,
+    subdir_names: list[str],
+    tallies: Tallies | None = None,
 ):
     """
     Import all files in the given subdirectories of a single parent directory.
@@ -37,7 +37,7 @@ def import_subdirs(
     return tallies
 
 
-def import_namespace_modules(namespace: str) -> Dict[str, types.ModuleType]:
+def import_namespace_modules(namespace: str) -> dict[str, types.ModuleType]:
     """
     Find and import all modules or packages within a namespace package.
     Returns a dictionary mapping module names to their imported module objects.
@@ -63,8 +63,8 @@ def import_namespace_modules(namespace: str) -> Dict[str, types.ModuleType]:
 
 
 def recursive_reload(
-    package: types.ModuleType, filter_func: Optional[Callable[[str], bool]] = None
-) -> List[str]:
+    package: types.ModuleType, filter_func: Callable[[str], bool] | None = None
+) -> list[str]:
     """
     Recursively reload all modules in the given package that match the filter function.
     Returns a list of module names that were reloaded.

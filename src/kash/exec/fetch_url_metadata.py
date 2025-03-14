@@ -5,7 +5,7 @@ from kash.media_base.media_services import get_media_metadata
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.util.format_utils import fmt_loc
-from kash.util.url import is_url, Url
+from kash.util.url import Url, is_url
 from kash.web_content.canon_url import canonicalize_url
 from kash.web_content.web_extract import fetch_extract
 from kash.workspaces import current_workspace
@@ -56,7 +56,6 @@ def fetch_url_item_metadata(item: Item, use_cache: bool = True, refetch: bool = 
         fetched_item = Item.from_media_metadata(media_metadata)
         fetched_item = item.merged_copy(fetched_item)
     else:
-
         page_data = fetch_extract(url, use_cache=use_cache)
         fetched_item = item.new_copy_with(
             title=page_data.title or item.title,

@@ -1,9 +1,9 @@
-from typing import List, Tuple, TypeAlias
+from typing import TypeAlias
 
-Insertion = Tuple[int, str]
+Insertion = tuple[int, str]
 
 
-def insert_multiple(text: str, insertions: List[Insertion]) -> str:
+def insert_multiple(text: str, insertions: list[Insertion]) -> str:
     """
     Insert multiple strings into `text` at the given offsets, at once.
     """
@@ -17,10 +17,10 @@ def insert_multiple(text: str, insertions: List[Insertion]) -> str:
     return "".join(chunks)
 
 
-Replacement: TypeAlias = Tuple[int, int, str]
+Replacement: TypeAlias = tuple[int, int, str]
 
 
-def replace_multiple(text: str, replacements: List[Replacement]) -> str:
+def replace_multiple(text: str, replacements: list[Replacement]) -> str:
     """
     Replace multiple substrings in `text` with new strings, simultaneously.
     The replacements are a list of tuples (start_offset, end_offset, new_string).
@@ -78,7 +78,7 @@ def test_replace_multiple():
     replacements = [(0, 6, "start"), (5, 10, "end")]
     try:
         replace_multiple(text, replacements)
-        assert False, "Overlapping replacements did not raise ValueError"
+        raise AssertionError("Overlapping replacements did not raise ValueError")
     except ValueError:
         pass  # Expected exception
 

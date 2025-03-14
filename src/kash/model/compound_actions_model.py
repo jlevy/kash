@@ -1,5 +1,5 @@
+from collections.abc import Iterable
 from textwrap import dedent
-from typing import Iterable, List, Optional, Tuple, Type
 
 from pydantic.dataclasses import dataclass
 
@@ -16,7 +16,7 @@ from kash.util.type_utils import not_none
 log = get_logger(__name__)
 
 
-def look_up_actions(action_names: Iterable[str]) -> List[Type[Action]]:
+def look_up_actions(action_names: Iterable[str]) -> list[type[Action]]:
     from kash.exec.action_registry import look_up_action_class
 
     return [look_up_action_class(action_name) for action_name in action_names]
@@ -28,7 +28,7 @@ class SequenceAction(Action):
     A sequential action that chains the outputs of each action to the inputs of the next.
     """
 
-    action_names: Tuple[str, ...] = ()
+    action_names: tuple[str, ...] = ()
 
     def __post_init__(self):
         super().__post_init__()
@@ -59,10 +59,9 @@ class SequenceAction(Action):
             log.message("Begin action sequence `%s`", self.name)
 
             original_input_paths = [StorePath(not_none(item.store_path)) for item in items]
-            transient_outputs: List[Item] = []
+            transient_outputs: list[Item] = []
 
             for i, action_name in enumerate(self.action_names):
-
                 for item in items:
                     if not item.store_path:
                         raise InvalidInput("Item must have a store path: %s", item)
@@ -121,9 +120,9 @@ class ComboAction(Action):
     An action that combines the results of other actions.
     """
 
-    action_names: Tuple[str, ...] = ()
+    action_names: tuple[str, ...] = ()
 
-    combiner: Optional[Combiner] = None
+    combiner: Combiner | None = None
 
     def __post_init__(self):
         super().__post_init__()
@@ -148,7 +147,6 @@ class ComboAction(Action):
         with task_stack().context(
             self.name, total_parts=len(self.action_names), unit="combo part"
         ) as ts:
-
             look_up_actions(self.action_names)  # Validate action names.
 
             for item in input.items:
@@ -157,10 +155,9 @@ class ComboAction(Action):
 
             item_paths = [not_none(item.store_path) for item in input.items]
 
-            results: List[ActionResult] = []
+            results: list[ActionResult] = []
 
             for i, action_name in enumerate(self.action_names):
-
                 log.message(
                     "Action combo `%s` part %s/%s: %s",
                     self.name,

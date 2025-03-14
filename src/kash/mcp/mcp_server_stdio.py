@@ -3,7 +3,6 @@ import logging
 import sys
 
 from anyio import ClosedResourceError
-
 from mcp.server.stdio import stdio_server
 
 from kash.config.settings import server_log_file_path

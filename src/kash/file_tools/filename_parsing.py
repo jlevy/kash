@@ -1,17 +1,16 @@
 import os
 from pathlib import Path
-from typing import cast, List, Optional, Tuple
+from typing import cast
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidFilename
-from kash.file_tools.file_ext import canonicalize_file_ext, FileExt
+from kash.file_tools.file_ext import FileExt, canonicalize_file_ext
 from kash.util.url import Url
-
 
 log = get_logger(__name__)
 
 
-def split_filename(path: str | Path, require_type_ext: bool = False) -> Tuple[str, str, str, str]:
+def split_filename(path: str | Path, require_type_ext: bool = False) -> tuple[str, str, str, str]:
     """
     Parse a filename into its path, name, (optional) type, and extension parts:
 
@@ -39,16 +38,16 @@ def split_filename(path: str | Path, require_type_ext: bool = False) -> Tuple[st
     return dirname, name, item_type, ext
 
 
-def join_filename(dirname: str | Path, name: str, item_type: Optional[str], ext: str) -> Path:
+def join_filename(dirname: str | Path, name: str, item_type: str | None, ext: str) -> Path:
     """
     Join a filename into a single path, with optional type and extension.
     """
 
-    parts = cast(List[str], filter(bool, [name, item_type, ext]))
+    parts = cast(list[str], filter(bool, [name, item_type, ext]))
     return Path(dirname) / ".".join(parts)
 
 
-def parse_file_ext(url_or_path: str | Url | Path) -> Optional[FileExt]:
+def parse_file_ext(url_or_path: str | Url | Path) -> FileExt | None:
     """
     Parse a known, canonical file extension from a path, a URL, or even just a
     raw file extension (like "csv" or ".csv").

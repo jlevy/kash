@@ -1,5 +1,3 @@
-from typing import Optional
-
 from kash.file_tools.file_formats_model import Format
 
 # TODO: Consider adding more categories, either aligning with eza or seti-ui/VSCode:
@@ -38,7 +36,7 @@ from kash.file_tools.file_formats_model import Format
 #     """Everything else"""
 
 
-def color_for_format(format: Optional[Format]) -> str:
+def color_for_format(format: Format | None) -> str:
     """
     Color for a file format.
     Returns a terminal color code based on the format type.

@@ -39,7 +39,7 @@ build tools and workflows by composing the myriad of AI tools, APIs, and librari
 
 - **Command-line usage:** In addition to using the function in other libraries and
   tools, an action is also **a command-line tool** (with auto-complete, help, etc.)
-  in the Kash shell. So you can simply run `transcribe` to downlaod and transcribe a
+  in the Kash shell. So you can simply run `transcribe` to download and transcribe a
   video.
 
 - **MCP support:** Finally, an action is also an **MCP tool** you can use it in any MCP
@@ -121,7 +121,7 @@ ideas, feedback, or use cases for Kash!
   - **Python decorators** that let you register and add new commands and actions, which
     can be packaged into libraries, including libraries with new dependencies
 
-- A **hybrid command-line/natual langauge/Python shell**, based on
+- A **hybrid command-line/natual language/Python shell**, based on
   [xonsh](https://github.com/xonsh/xonsh)
 
   - About 100 simple **built-in commands** for listing, showing, and paging through

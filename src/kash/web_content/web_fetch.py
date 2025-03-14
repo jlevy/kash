@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
@@ -16,15 +16,15 @@ USER_AGENT = "Mozilla/5.0 (Compatible)"
 DEFAULT_TIMEOUT = 30
 
 
-def default_headers() -> Dict[str, str]:
+def default_headers() -> dict[str, str]:
     return {"User-Agent": USER_AGENT}
 
 
 def fetch_url(
     url: Url,
     timeout: int = DEFAULT_TIMEOUT,
-    auth: Optional[Any] = None,
-    headers: Optional[Dict[str, str]] = None,
+    auth: Any | None = None,
+    headers: dict[str, str] | None = None,
 ) -> httpx.Response:
     """
     Fetch a URL using httpx with logging and reasonable defaults.
@@ -45,11 +45,11 @@ def fetch_url(
 def download_url(
     url: Url,
     target_filename: str | Path,
-    session: Optional[httpx.Client] = None,
+    session: httpx.Client | None = None,
     show_progress: bool = False,
     timeout: int = DEFAULT_TIMEOUT,
-    auth: Optional[Any] = None,
-    headers: Optional[Dict[str, str]] = None,
+    auth: Any | None = None,
+    headers: dict[str, str] | None = None,
 ) -> None:
     """
     Download given file, optionally with progress bar.
@@ -89,7 +89,6 @@ def download_url(
                             for chunk in response.iter_bytes():
                                 f.write(chunk)
                         else:
-
                             with tqdm(total=total_size, unit="B", unit_scale=True) as progress:
                                 for chunk in response.iter_bytes():
                                     f.write(chunk)

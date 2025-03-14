@@ -4,7 +4,6 @@ Tools for capitalizing words and phrases.
 
 import re
 
-
 language_rules = {
     "en": {
         "small_words": [

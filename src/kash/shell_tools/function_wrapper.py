@@ -1,6 +1,8 @@
+import types
+from collections.abc import Callable, Mapping
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, cast, Dict, List, Mapping, Optional, Tuple, TypeVar
+from typing import Any, TypeVar, cast, get_args
 
 from kash.commands.help_commands import help_commands
 from kash.config.logger import get_logger
@@ -14,8 +16,8 @@ log = get_logger(__name__)
 
 
 def _map_positional(
-    pos_args: List[str], pos_params: List[FuncParam], kw_params: List[FuncParam]
-) -> Tuple[List[Any], int]:
+    pos_args: list[str], pos_params: list[FuncParam], kw_params: list[FuncParam]
+) -> tuple[list[Any], int]:
     """
     Map parsed positional arguments to function parameters, ensuring the number of
     arguments matches and converting types.
@@ -51,7 +53,7 @@ def _map_positional(
     return pos_values, keywords_consumed
 
 
-def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: List[FuncParam]) -> Dict[str, Any]:
+def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: list[FuncParam]) -> dict[str, Any]:
     """
     Map parsed keyword arguments to function parameters, converting types and handling var
     keyword arguments.
@@ -69,6 +71,13 @@ def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: List[FuncParam]) 
         matching_param = next((param for param in kw_params if param.name == key), None)
         if matching_param:
             matching_param_type = matching_param.type or str
+
+            # Handle UnionType (str | None) specially
+            if hasattr(types, "UnionType") and isinstance(matching_param_type, types.UnionType):
+                args = get_args(matching_param_type)
+                non_none_args = [arg for arg in args if arg is not type(None)]
+                if len(non_none_args) == 1 and isinstance(non_none_args[0], type):
+                    matching_param_type = non_none_args[0]
 
             if isinstance(value, bool) and not issubclass(matching_param_type, bool):
                 raise InvalidCommand(f"Option `--{key}` expects a value")
@@ -98,7 +107,7 @@ def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: List[FuncParam]) 
 R = TypeVar("R")
 
 
-def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[List[str]], Optional[R]]:
+def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[list[str]], R | None]:
     """
     Wrap a function to accept a list of string shell-style arguments, parse them, and
     call the original function.
@@ -108,7 +117,7 @@ def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[List[str]], Optiona
     kw_params = [p for p in params if p not in pos_params]
 
     @wraps(func)
-    def wrapped(args: List[str]) -> Optional[R]:
+    def wrapped(args: list[str]) -> R | None:
         shell_args = parse_shell_args(args)
 
         if shell_args.show_help:
@@ -146,19 +155,17 @@ def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[List[str]], Optiona
 
 def test_wrap_function():
     def func1(
-        arg1: str, arg2: str, arg3: int, option_one: bool = False, option_two: Optional[str] = None
-    ) -> List:
+        arg1: str, arg2: str, arg3: int, option_one: bool = False, option_two: str | None = None
+    ) -> list:
         return [arg1, arg2, arg3, option_one, option_two]
 
-    def func2(
-        *paths: str, summary: Optional[bool] = False, iso_time: Optional[bool] = False
-    ) -> List:
+    def func2(*paths: str, summary: bool | None = False, iso_time: bool | None = False) -> list:
         return [paths, summary, iso_time]
 
-    def func3(arg1: str, **keywords) -> List:
+    def func3(arg1: str, **keywords) -> list:
         return [arg1, keywords]
 
-    def func4() -> List:
+    def func4() -> list:
         return []
 
     wrapped_func1 = wrap_for_shell_args(func1)

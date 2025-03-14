@@ -1,17 +1,16 @@
+from collections.abc import Callable
 from math import ceil
-from typing import Callable, List, Optional
 
-from chopdiff.docs import diff_docs, DiffFilter, join_wordtoks, Paragraph, TextDoc, TextUnit
-
+from chopdiff.docs import DiffFilter, Paragraph, TextDoc, TextUnit, diff_docs, join_wordtoks
 from chopdiff.transforms import (
+    WindowSettings,
     accept_all,
     remove_window_br,
     sliding_para_window,
     sliding_window_transform,
     sliding_word_window,
-    WindowSettings,
 )
-from chopdiff.transforms.sliding_transforms import find_best_alignment, TextDocTransform
+from chopdiff.transforms.sliding_transforms import TextDocTransform, find_best_alignment
 from flowmark import fill_markdown
 from prettyfmt import fmt_lines
 
@@ -31,7 +30,7 @@ log = get_logger(__name__)
 def filtered_transform(
     doc: TextDoc,
     transform_func: TextDocTransform,
-    windowing: Optional[WindowSettings],
+    windowing: WindowSettings | None,
     diff_filter: DiffFilter = accept_all,
 ) -> TextDoc:
     """
@@ -235,7 +234,7 @@ def sliding_para_window_transform(
             doc.size_summary(),
         )
 
-        transformed_paras: List[Paragraph] = []
+        transformed_paras: list[Paragraph] = []
         for i, window in enumerate(windows):
             log.info(
                 "Sliding paragraph transform: Window %s/%s input is %s",

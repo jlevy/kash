@@ -6,7 +6,6 @@ from funlog import format_duration
 from kash.config.logger import get_logger
 from kash.file_storage.file_store import FileStore
 
-
 log = get_logger(__name__)
 
 

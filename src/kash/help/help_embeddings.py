@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Tuple
 
 from kash.concepts.embeddings import Embeddings
 from kash.concepts.text_similarity import rank_by_relatedness
@@ -39,13 +38,13 @@ class DocHit:
 
 @dataclass
 class HelpIndex:
-    docs: List[HelpDoc]
+    docs: list[HelpDoc]
     embeddings: Embeddings = field(init=False)
 
     def __post_init__(self) -> None:
         self.embeddings = self._embed_and_cache_docs()
 
-    def _docs_by_key(self) -> List[Tuple[DocKey, HelpDoc]]:
+    def _docs_by_key(self) -> list[tuple[DocKey, HelpDoc]]:
         return [(DocKey(doc.doc_type, idx), doc) for idx, doc in enumerate(self.docs)]
 
     def _lookup_doc(self, key: DocKey) -> HelpDoc:
@@ -69,7 +68,7 @@ class HelpIndex:
         log.info("Loaded help doc embeddings from: %s", path)
         return Embeddings.read_from_npz(path)
 
-    def rank_docs(self, query: str, max: int = 10, min_cutoff: float = 0.5) -> List[DocHit]:
+    def rank_docs(self, query: str, max: int = 10, min_cutoff: float = 0.5) -> list[DocHit]:
         ranked_docs = rank_by_relatedness(query, self.embeddings)
         hits = []
         for key_str, _text, relatedness in ranked_docs[:max]:

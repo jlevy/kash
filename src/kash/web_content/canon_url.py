@@ -1,9 +1,7 @@
-from typing import Optional
-
 from funlog import log_if_modifies
 
 from kash.media_base.media_services import canonicalize_media_url, thumbnail_media_url
-from kash.util.url import normalize_url, Url
+from kash.util.url import Url, normalize_url
 
 _normalize_url = log_if_modifies(level="info")(normalize_url)
 
@@ -15,7 +13,7 @@ def canonicalize_url(url: Url) -> Url:
     return canonicalize_media_url(url) or _normalize_url(url)
 
 
-def thumbnail_url(url: Url) -> Optional[Url]:
+def thumbnail_url(url: Url) -> Url | None:
     """
     Return a URL for a thumbnail of the given URL, if available.
     """

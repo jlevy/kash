@@ -5,10 +5,8 @@ from enum import Enum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
-from typing import Optional
 
 from pydantic.dataclasses import dataclass
-
 
 APP_NAME = "kash"
 
@@ -78,7 +76,7 @@ def resolve_and_create_dirs(path: Path | str, is_dir: bool = False) -> Path:
     return full_path
 
 
-def find_in_cwd_or_parents(filename: Path | str) -> Optional[Path]:
+def find_in_cwd_or_parents(filename: Path | str) -> Path | None:
     """
     Find the first existing Path (or None) for a given filename in the current directory or its parents.
     """

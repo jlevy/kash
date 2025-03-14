@@ -44,7 +44,7 @@ ideas, feedback, or use cases for Kash!
   - **Python decorators** that let you register and add new commands and actions, which
     can be packaged into libraries, including libraries with new dependencies
 
-- A **hybrid command-line/natual langauge/Python shell**, based on
+- A **hybrid command-line/natual language/Python shell**, based on
   [xonsh](https://github.com/xonsh/xonsh)
 
   - About 100 simple **built-in commands** for listing, showing, and paging through

@@ -4,9 +4,8 @@ A simple `Url` type and basic URL handling with no dependencies.
 
 import re
 from pathlib import Path
-from typing import NewType, Optional
+from typing import NewType
 from urllib.parse import urlparse, urlsplit, urlunsplit
-
 
 Url = NewType("Url", str)
 """
@@ -50,7 +49,7 @@ def is_file_url(url: str | Url) -> bool:
     return url.startswith("file://")
 
 
-def parse_file_url(url: str | Url) -> Optional[Path]:
+def parse_file_url(url: str | Url) -> Path | None:
     """
     Parse a file URL and return the path, or None if not a file URL.
     """
@@ -151,6 +150,6 @@ def test_normalize_url():
     )
     try:
         normalize_url(Url("ftp://example.com"))
-        assert False
+        raise AssertionError()
     except ValueError as e:
         assert str(e) == "Expected http:// or https:// or file:// URL but found: ftp://example.com"

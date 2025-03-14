@@ -9,7 +9,7 @@ of fnm and uses it within xonsh.
 
 import subprocess
 from pathlib import Path
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from xonsh.built_ins import XonshSession
 from xonsh.events import events
@@ -86,7 +86,7 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict:
         env_vars = parse_fnm_env()
         apply_fnm_env(xsh, env_vars)
 
-        def fnm_use_if_file_found(newdir: str, olddir: Optional[str] = None) -> None:
+        def fnm_use_if_file_found(newdir: str, olddir: str | None = None) -> None:
             """
             Check for Node version files and switch if necessary using xsh session.
             """

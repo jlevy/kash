@@ -1,4 +1,4 @@
-from typing import Callable, List
+from collections.abc import Callable
 
 import rich
 from flowmark import Wrap
@@ -13,7 +13,7 @@ from kash.help.function_param_info import annotate_param_info
 from kash.help.recommended_commands import RECOMMENDED_TLDR_COMMANDS
 from kash.model.params_model import Param
 from kash.shell_output.kerm_codes import IframePopover, TextTooltip
-from kash.shell_output.shell_output import console_pager, cprint, format_name_and_value, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, console_pager, cprint, format_name_and_value
 
 log = get_logger(__name__)
 
@@ -142,7 +142,7 @@ def debug_command(command_or_action: str) -> None:
     from kash.exec.action_registry import get_all_actions_defaults
     from kash.exec.command_registry import get_all_commands
 
-    def dump_params(param_info: List[Param]) -> None:
+    def dump_params(param_info: list[Param]) -> None:
         for param in param_info:
             cprint(format_name_and_value(param.display, str(param)))
             cprint()

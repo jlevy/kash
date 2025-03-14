@@ -99,11 +99,10 @@ from enum import Enum
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 from frontmatter_format import from_yaml_string, new_yaml, to_yaml_string
 from prettyfmt import abbrev_obj, custom_key_sort, fmt_size_human
-
 from pydantic.dataclasses import dataclass
 
 
@@ -125,17 +124,17 @@ class ChatRole(str, Enum):
 
 _custom_key_sort = custom_key_sort(["role", "content"])
 
-ChatContent = Union[str, Dict[str, Any]]
+ChatContent = Union[str, dict[str, Any]]
 
 
 @dataclass
 class ChatMessage:
     role: ChatRole
     content: ChatContent
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, message_dict: Dict[str, Any]) -> ChatMessage:
+    def from_dict(cls, message_dict: dict[str, Any]) -> ChatMessage:
         try:
             message_copy = message_dict.copy()
             role_str = message_copy.pop("role")
@@ -149,7 +148,7 @@ class ChatMessage:
         except LookupError as e:
             raise ValueError("Could not parse chat message") from e
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         data = {
             "role": (self.role.value if isinstance(self.role, Enum) else self.role),
             "content": self.content,
@@ -157,7 +156,7 @@ class ChatMessage:
         data.update(self.metadata)
         return data
 
-    def as_chat_completion(self) -> Dict[str, str]:
+    def as_chat_completion(self) -> dict[str, str]:
         """
         Convert to a format that can be used as a standard chat completion, with
         the content field holding JSON-serialized data if it is structured.
@@ -189,21 +188,21 @@ class ChatMessage:
 
 @dataclass
 class ChatHistory:
-    messages: List[ChatMessage] = field(default_factory=list)
+    messages: list[ChatMessage] = field(default_factory=list)
 
     def append(self, message: ChatMessage) -> None:
         self.messages.append(message)
 
-    def extend(self, messages: List[ChatMessage]) -> None:
+    def extend(self, messages: list[ChatMessage]) -> None:
         self.messages.extend(messages)
 
     @classmethod
-    def from_dicts(cls, message_dicts: List[Dict[str, Any]]) -> "ChatHistory":
+    def from_dicts(cls, message_dicts: list[dict[str, Any]]) -> ChatHistory:
         messages = [ChatMessage.from_dict(message_dict) for message_dict in message_dicts]
         return cls(messages=messages)
 
     @classmethod
-    def from_yaml(cls, yaml_string: str) -> "ChatHistory":
+    def from_yaml(cls, yaml_string: str) -> ChatHistory:
         yaml = new_yaml()
         message_dicts = yaml.load_all(yaml_string)
         messages = [
@@ -211,7 +210,7 @@ class ChatHistory:
         ]
         return cls(messages=messages)
 
-    def as_chat_completion(self) -> List[Dict[str, str]]:
+    def as_chat_completion(self) -> list[dict[str, str]]:
         return [message.as_chat_completion() for message in self.messages]
 
     def to_yaml(self) -> str:

@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from functools import lru_cache
-from typing import Callable
 
 from rich.cells import _is_single_cell_widths, get_character_cell_size
 

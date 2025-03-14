@@ -2,7 +2,6 @@ import os
 import shlex
 import subprocess  # Add this import
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from strif import copyfile_atomic
@@ -20,7 +19,7 @@ from kash.util.url import Url
 log = get_logger(__name__)
 
 
-def _run_ffmpeg(cmdline: List[str]) -> None:
+def _run_ffmpeg(cmdline: list[str]) -> None:
     tool_check().require(Tool.ffmpeg)
     log.message("Running: %s", " ".join([shlex.quote(arg) for arg in cmdline]))
     subprocess.run(
@@ -36,7 +35,7 @@ class LocalFileMedia(MediaService):
     Handle local media files as file:// URLs.
     """
 
-    def _parse_file_url(self, url: Url) -> Optional[Path]:
+    def _parse_file_url(self, url: Url) -> Path | None:
         parsed_url = urlparse(url)
         if parsed_url.scheme == "file":
             path = Path(parsed_url.path)
@@ -46,14 +45,14 @@ class LocalFileMedia(MediaService):
         else:
             return None
 
-    def get_media_id(self, url: Url) -> Optional[str]:
+    def get_media_id(self, url: Url) -> str | None:
         path = self._parse_file_url(url)
         if path:
             return path.name
         else:
             return None
 
-    def canonicalize_and_type(self, url: Url) -> Tuple[Optional[Url], Optional[MediaUrlType]]:
+    def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
         path = self._parse_file_url(url)
         if path:
             name, _item_type, format, file_ext = parse_item_filename(path)
@@ -66,7 +65,7 @@ class LocalFileMedia(MediaService):
         else:
             return None, None
 
-    def thumbnail_url(self, url: Url) -> Optional[Url]:
+    def thumbnail_url(self, url: Url) -> Url | None:
         return None
 
     def timestamp_url(self, url: Url, timestamp: float) -> Url:
@@ -74,8 +73,8 @@ class LocalFileMedia(MediaService):
 
     @override
     def download_media(
-        self, url: Url, target_dir: Path, media_types: Optional[List[MediaType]] = None
-    ) -> Dict[MediaType, Path]:
+        self, url: Url, target_dir: Path, media_types: list[MediaType] | None = None
+    ) -> dict[MediaType, Path]:
         path = self._parse_file_url(url)
         if not path:
             raise InvalidInput(f"Not a local file URL: {url}")
@@ -162,5 +161,5 @@ class LocalFileMedia(MediaService):
             media_service=None,
         )
 
-    def list_channel_items(self, url: Url) -> List[MediaMetadata]:
+    def list_channel_items(self, url: Url) -> list[MediaMetadata]:
         raise NotImplementedError()

@@ -1,6 +1,5 @@
 from kash.config.logger import get_logger
 
-
 log = get_logger(__name__)
 
 STANDARD_SHELL_COMMANDS = {
@@ -61,12 +60,10 @@ STANDARD_SHELL_COMMANDS = {
     "scp",
     "sftp",
     # Development tools
-    "git",
     "vim",
     "nano",
     "jq",
     # Documentation and help
-    "man",
     "tldr",
     "which",
     # Compression
@@ -77,7 +74,6 @@ STANDARD_SHELL_COMMANDS = {
     "bzip2",
     "xz",
     # Python
-    "poetry",
     "pip",
     "pyenv",
     "virtualenv",
@@ -113,7 +109,6 @@ STANDARD_SHELL_COMMANDS = {
     # "screen",
     "glances",
     "nmap",
-    "dig",
     "netstat",
     # "rsync",
     # "mtr",

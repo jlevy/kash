@@ -1,7 +1,7 @@
-from typing import Callable, List, Optional, Set, TypeAlias
+from collections.abc import Callable
+from typing import TypeAlias
 
-from chopdiff.divs import div, div_insert_wrapped, GROUP, ORIGINAL, parse_divs_single
-
+from chopdiff.divs import GROUP, ORIGINAL, div, div_insert_wrapped, parse_divs_single
 from chopdiff.html import div_wrapper
 from chopdiff.html.html_in_md import Wrapper
 
@@ -15,13 +15,13 @@ from kash.util.type_utils import not_none
 
 log = get_logger(__name__)
 
-Combiner: TypeAlias = Callable[[List[Item], List[ActionResult]], Item]
+Combiner: TypeAlias = Callable[[list[Item], list[ActionResult]], Item]
 
 
 def combine_items(
-    inputs: List[Item],
-    results: List[ActionResult],
-    body_combiner: Callable[[List[str]], str],
+    inputs: list[Item],
+    results: list[ActionResult],
+    body_combiner: Callable[[list[str]], str],
 ) -> Item:
     """
     Combine the results from multiple actions on the same inputs into a single item,
@@ -32,7 +32,7 @@ def combine_items(
         raise InvalidInput("Expected at least one input to combine: %s", inputs)
 
     # Assemble the parts.
-    parts: List[Item] = []
+    parts: list[Item] = []
     for result in results:
         for part in result.items:
             if not part.body:
@@ -61,7 +61,7 @@ def combine_items(
     # History when combining results is a little complicated, so let's just concatenate
     # all the history lists but avoid duplicates.
     result_items = [item for result in results for item in result.items]
-    unique_ops: Set[OperationSummary] = set()
+    unique_ops: set[OperationSummary] = set()
     combo_result.history = []
 
     for item in result_items:
@@ -74,8 +74,8 @@ def combine_items(
 
 
 def combine_with_wrappers(
-    bodies: List[str],
-    wrappers: Optional[List[Wrapper]] = None,
+    bodies: list[str],
+    wrappers: list[Wrapper] | None = None,
     separator: str = "\n\n",
 ) -> str:
     if wrappers:
@@ -83,7 +83,7 @@ def combine_with_wrappers(
     return separator.join(bodies)
 
 
-def combine_as_paragraphs(inputs: List[Item], results: List[ActionResult]) -> Item:
+def combine_as_paragraphs(inputs: list[Item], results: list[ActionResult]) -> Item:
     """
     Combine the outputs of multiple actions into a single item, separating each part with
     paragraph breaks.
@@ -97,7 +97,7 @@ def combine_with_divs(*class_names: str) -> Combiner:
     the corresponding name.
     """
 
-    def combiner(inputs: List[Item], results: List[ActionResult]) -> Item:
+    def combiner(inputs: list[Item], results: list[ActionResult]) -> Item:
         wrappers = [div_wrapper(class_name, padding="\n\n") for class_name in class_names]
         return combine_items(
             inputs, results, lambda bodies: combine_with_wrappers(bodies, wrappers)
@@ -112,8 +112,8 @@ def combine_as_div_group(child_class: str) -> Combiner:
     as sibling elements, with the first as the original.
     """
 
-    def combiner(inputs: List[Item], results: List[ActionResult]) -> Item:
-        def body_combiner(bodies: List[str]) -> str:
+    def combiner(inputs: list[Item], results: list[ActionResult]) -> Item:
+        def body_combiner(bodies: list[str]) -> str:
             element = parse_divs_single(bodies[0])
             new_children = [div(child_class, content) for content in bodies[1:]]
 

@@ -1,5 +1,3 @@
-from typing import List, Type
-
 from funlog import log_tallies
 
 from kash.config.logger import get_console, get_logger
@@ -25,12 +23,12 @@ class ShellCallableAction:
     parsing shell args, and adding console logging.
     """
 
-    def __init__(self, action_cls: Type[Action]):
+    def __init__(self, action_cls: type[Action]):
         self.action_cls = action_cls
         self.__name__ = action_cls.name
         self.__doc__ = action_cls.description
 
-    def __call__(self, args: List[str]) -> ShellResult | None:
+    def __call__(self, args: list[str]) -> ShellResult | None:
         from kash.commands.help_commands import help_commands
 
         action_cls = self.action_cls

@@ -1,5 +1,5 @@
 from textwrap import dedent
-from typing import Any, List
+from typing import Any
 
 import marko
 import regex
@@ -11,7 +11,7 @@ from kash.config.logger import get_logger
 log = get_logger(__name__)
 
 
-def as_bullet_points(values: List[str]) -> str:
+def as_bullet_points(values: list[str]) -> str:
     """
     Convert a list of strings to a Markdown bullet-point list.
     """
@@ -69,12 +69,12 @@ def _tree_links(element, include_internal=False):
     return links
 
 
-def extract_links(file_path: str, include_internal=False) -> List[str]:
+def extract_links(file_path: str, include_internal=False) -> list[str]:
     """
     Extract all links from a Markdown file. Future: Include textual and section context.
     """
 
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         content = file.read()
         document = marko.parse(content)
         return _tree_links(document, include_internal)
@@ -89,8 +89,8 @@ def _extract_text(element: Any) -> str:
         return ""
 
 
-def _tree_bullet_points(element: marko.block.Document) -> List[str]:
-    bullet_points: List[str] = []
+def _tree_bullet_points(element: marko.block.Document) -> list[str]:
+    bullet_points: list[str] = []
 
     def _find_bullet_points(element):
         if isinstance(element, ListItem):
@@ -103,7 +103,7 @@ def _tree_bullet_points(element: marko.block.Document) -> List[str]:
     return bullet_points
 
 
-def extract_bullet_points(content: str) -> List[str]:
+def extract_bullet_points(content: str) -> list[str]:
     """
     Extract list item values from a Markdown file.
     """

@@ -1,9 +1,8 @@
 import socket
 import time
-from typing import Iterable
+from collections.abc import Iterable
 
 from kash.config.logger import get_logger
-
 
 log = get_logger(__name__)
 

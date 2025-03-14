@@ -1,7 +1,4 @@
-from typing import Optional, Set
-
 from funlog import log_calls
-
 from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
@@ -22,7 +19,7 @@ def find_upstream_item(
     item: Item,
     precondition: Precondition,
     include_self: bool = True,
-    visited: Optional[Set[StorePath]] = None,
+    visited: set[StorePath] | None = None,
 ) -> Item:
     """
     Breadth-first search up the `derived_from` provenance tree to find the first item that

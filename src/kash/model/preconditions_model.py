@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Callable, ClassVar, Optional
+from collections.abc import Callable
+from typing import ClassVar
 
 from prettyfmt import fmt_words
-
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 
@@ -20,7 +20,7 @@ class Precondition:
     Preconditions can be combined with `&`, `|`, and `~` operators.
     """
 
-    def __init__(self, func: Callable[[Item], bool], name: Optional[str] = None):
+    def __init__(self, func: Callable[[Item], bool], name: str | None = None):
         self.func = func
         self.name: str = name or func.__name__
 
@@ -28,7 +28,7 @@ class Precondition:
     def __get_pydantic_core_schema__(cls, source_type, handler: GetCoreSchemaHandler):
         return core_schema.is_instance_schema(cls)
 
-    def check(self, item: Item, info: Optional[str] = None) -> None:
+    def check(self, item: Item, info: str | None = None) -> None:
         if not self(item):
             raise PreconditionFailure(
                 fmt_words(

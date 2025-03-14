@@ -69,16 +69,15 @@ https://www.ethanheilman.com/x/28/index.html
 
 from enum import Enum
 from html import escape
-from typing import Annotated, Dict, List, Literal, Optional, Self, TypeAlias, Union
+from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import parse_qs, quote, urlencode, urlparse
 
 from prompt_toolkit.formatted_text import FormattedText
-from pydantic import BaseModel, Field, model_validator, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, model_validator
 from rich.style import Style
 from rich.text import Text
 
-from kash.shell_tools.osc_tools import osc8_link, osc8_link_codes, osc8_link_rich, osc_code, OscStr
-
+from kash.shell_tools.osc_tools import OscStr, osc8_link, osc8_link_codes, osc8_link_rich, osc_code
 
 KC_VERSION = 0
 """Version of the Kerm codes format. Update when we make breaking changes."""
@@ -113,7 +112,7 @@ class UIAction(BaseModel):
     """
 
     action_type: UIActionType = Field(..., description="Action type.")
-    value: Optional[str] = Field(default=None, description="Action value.")
+    value: str | None = Field(default=None, description="Action value.")
 
     def as_json(self) -> str:
         """
@@ -155,8 +154,8 @@ class DisplayHints(BaseModel):
     Hints for UI elements.
     """
 
-    position: Optional[Position] = Field(default=None, description="Position.")
-    dimensions: Optional[Dimensions] = Field(default=None, description="Dimensions.")
+    position: Position | None = Field(default=None, description="Position.")
+    dimensions: Dimensions | None = Field(default=None, description="Dimensions.")
 
 
 class UIRole(str, Enum):
@@ -188,7 +187,7 @@ class UIElement(BaseModel):
     role: UIRole
     element_type: UIElementType
     kc_version: int = Field(default=KC_VERSION, description="Kerm code version.")
-    hints: Optional[DisplayHints] = Field(default=None, description="Display hints.")
+    hints: DisplayHints | None = Field(default=None, description="Display hints.")
 
     @model_validator(mode="after")
     def validate_version(self) -> Self:
@@ -324,15 +323,11 @@ class MultipleChoice(InputElement):
     """
 
     element_type: Literal[UIElementType.multiple_choice] = UIElementType.multiple_choice
-    options: List[str] = Field(..., description="Choice options.")
+    options: list[str] = Field(..., description="Choice options.")
 
 
 TooltipUnion: TypeAlias = Annotated[
-    Union[
-        TextTooltip,
-        LinkTooltip,
-        IframeTooltip,
-    ],
+    TextTooltip | LinkTooltip | IframeTooltip,
     Field(discriminator="element_type"),
 ]
 
@@ -340,16 +335,14 @@ tooltip_adapter: TypeAdapter[TooltipUnion] = TypeAdapter(TooltipUnion)
 
 
 UIElementUnion: TypeAlias = Annotated[
-    Union[
-        TextTooltip,
-        LinkTooltip,
-        IframeTooltip,
-        IframePopover,
-        ChatOutput,
-        ChatInput,
-        Button,
-        MultipleChoice,
-    ],
+    TextTooltip
+    | LinkTooltip
+    | IframeTooltip
+    | IframePopover
+    | ChatOutput
+    | ChatInput
+    | Button
+    | MultipleChoice,
     Field(discriminator="element_type"),
 ]
 
@@ -361,13 +354,13 @@ class TextAttrs(BaseModel):
     Attributes, including link, hover, click, and display element, for text.
     """
 
-    href: Optional[str] = Field(
+    href: str | None = Field(
         default=None,
         description="Target URL, if this text is a link.",
     )
-    hover: Optional[TooltipUnion] = Field(default=None, description="Hover element.")
-    click: Optional[UIAction] = Field(default=None, description="Click action.")
-    double_click: Optional[UIAction] = Field(default=None, description="Double click action.")
+    hover: TooltipUnion | None = Field(default=None, description="Hover element.")
+    click: UIAction | None = Field(default=None, description="Click action.")
+    double_click: UIAction | None = Field(default=None, description="Double click action.")
     display_style: DisplayStyle = Field(
         default=DisplayStyle.plain, description="Display style for this text."
     )
@@ -381,7 +374,7 @@ class TextAttrs(BaseModel):
         return self
 
     @classmethod
-    def from_json_dict(cls, json_dict: Dict[str, str]) -> Self:
+    def from_json_dict(cls, json_dict: dict[str, str]) -> Self:
         """
         Deserialize from a set of JSON values.
         """
@@ -396,7 +389,7 @@ class TextAttrs(BaseModel):
             double_click=(UIAction.model_validate_json(double_click) if double_click else None),
         )
 
-    def as_json_dict(self) -> Dict[str, str]:
+    def as_json_dict(self) -> dict[str, str]:
         """
         Convert to a dictionary of JSON values, omitting None values.
         Sort keys to ensure deterministic ordering.
@@ -490,10 +483,10 @@ class KriLink(BaseModel):
     def with_attrs(
         cls,
         link_text: str,
-        href: Optional[str] = None,
-        hover: Optional[TooltipUnion] = None,
-        click: Optional[UIAction] = None,
-        double_click: Optional[UIAction] = None,
+        href: str | None = None,
+        hover: TooltipUnion | None = None,
+        click: UIAction | None = None,
+        double_click: UIAction | None = None,
         display_style: DisplayStyle = DisplayStyle.plain,
     ) -> Self:
         return cls(
@@ -535,7 +528,6 @@ class KriLink(BaseModel):
 
 
 def test_examples():
-
     text_tooltip = TextTooltip(text="Hello")
     link_tooltip = LinkTooltip(url="https://example.com")
     button = Button(
@@ -563,7 +555,6 @@ def test_examples():
 
 
 def test_kri():
-
     kri1 = Kri.for_url("https://example.com")
     kri2 = Kri(attrs=TextAttrs(hover=TextTooltip(text="Tooltip text")))
     kri3 = Kri(

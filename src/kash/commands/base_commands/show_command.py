@@ -1,12 +1,10 @@
-from typing import Optional
-
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_HINT
 from kash.errors import InvalidInput, InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import cprint
-from kash.shell_tools.native_tools import terminal_show_image, view_file_native, ViewMode
+from kash.shell_tools.native_tools import ViewMode, terminal_show_image, view_file_native
 from kash.web_content.file_cache_tools import cache_file
 from kash.workspaces import current_workspace
 
@@ -15,7 +13,7 @@ log = get_logger(__name__)
 
 @kash_command
 def show(
-    path: Optional[str] = None,
+    path: str | None = None,
     console: bool = False,
     native: bool = False,
     thumbnail: bool = False,
@@ -37,7 +35,11 @@ def show(
     view_mode = (
         ViewMode.console
         if console
-        else ViewMode.browser if browser else ViewMode.native if native else ViewMode.auto
+        else ViewMode.browser
+        if browser
+        else ViewMode.native
+        if native
+        else ViewMode.auto
     )
     try:
         input_paths = assemble_path_args(path)

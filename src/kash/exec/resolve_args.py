@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from pathlib import Path
-from typing import cast, List, Optional, Sequence, Tuple
+from typing import cast
 
 from funlog import log_calls
 
@@ -7,8 +8,8 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidInput, MissingInput
 from kash.exec_model.args_model import CommandArg
 from kash.model.items_model import ItemType
-from kash.model.paths_model import InvalidStorePath, parse_path_spec, StorePath, UnresolvedPath
-from kash.util.url import is_url, Locator, UnresolvedLocator, Url
+from kash.model.paths_model import InvalidStorePath, StorePath, UnresolvedPath, parse_path_spec
+from kash.util.url import Locator, UnresolvedLocator, Url, is_url
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)
@@ -50,7 +51,7 @@ def resolve_path_arg(path_str: UnresolvedPath) -> Path | StorePath:
             return path
 
 
-def assemble_path_args(*paths_or_strs: Optional[UnresolvedPath]) -> List[StorePath | Path]:
+def assemble_path_args(*paths_or_strs: UnresolvedPath | None) -> list[StorePath | Path]:
     """
     Assemble paths or store paths from the current workspace, or the current
     selection if no paths are given. Fall back to treating values as plain
@@ -62,11 +63,11 @@ def assemble_path_args(*paths_or_strs: Optional[UnresolvedPath]) -> List[StorePa
         resolved = ws.selections.current.paths
         if not resolved:
             raise MissingInput("No selection")
-    return cast(List[StorePath | Path], resolved)
+    return cast(list[StorePath | Path], resolved)
 
 
 # TODO: Get more commands to work on files outside the workspace by importing them first.
-def _check_store_paths(paths: Sequence[StorePath | Path]) -> List[StorePath]:
+def _check_store_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
     """
     Check that all paths are store paths.
     """
@@ -77,7 +78,7 @@ def _check_store_paths(paths: Sequence[StorePath | Path]) -> List[StorePath]:
     return [StorePath(str(path)) for path in paths]
 
 
-def assemble_store_path_args(*paths_or_strs: Optional[UnresolvedPath]) -> List[StorePath]:
+def assemble_store_path_args(*paths_or_strs: UnresolvedPath | None) -> list[StorePath]:
     """
     Assemble store paths from the current workspace, from args or the current
     selection if no args are given.
@@ -86,8 +87,8 @@ def assemble_store_path_args(*paths_or_strs: Optional[UnresolvedPath]) -> List[S
 
 
 def assemble_action_args(
-    *paths_or_strs: Optional[UnresolvedPath], use_selection: bool = True
-) -> Tuple[List[CommandArg], bool]:
+    *paths_or_strs: UnresolvedPath | None, use_selection: bool = True
+) -> tuple[list[CommandArg], bool]:
     """
     Assemble args for an action, as URLs, paths, or store paths.
     If indicated, use the current selection as fallback to find input paths.
@@ -96,14 +97,14 @@ def assemble_action_args(
     if not resolved and use_selection:
         try:
             selection_args = current_workspace().selections.current.paths
-            return cast(List[CommandArg], selection_args), True
+            return cast(list[CommandArg], selection_args), True
         except MissingInput:
             return [], False
     else:
-        return cast(List[CommandArg], resolved), False
+        return cast(list[CommandArg], resolved), False
 
 
-def resolvable_paths(paths: Sequence[StorePath | Path]) -> List[StorePath]:
+def resolvable_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
     ws = current_workspace()
     resolvable = list(filter(None, (ws.resolve_path(p) for p in paths)))
     return resolvable
@@ -113,7 +114,7 @@ def import_locator_args(
     *locators_or_strs: UnresolvedLocator,
     as_type: ItemType = ItemType.resource,
     reimport: bool = False,
-) -> List[StorePath]:
+) -> list[StorePath]:
     """
     Import locators into the current workspace.
     """

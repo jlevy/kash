@@ -1,5 +1,3 @@
-from typing import Optional
-
 from rich import get_console
 
 from kash.commands.base_commands.basic_file_commands import trash
@@ -11,8 +9,8 @@ from kash.exec_model.shell_model import ShellResult
 from kash.file_tools.file_formats_model import Format
 from kash.form_input.prompt_input import prompt_simple_string
 from kash.help.assistant import (
-    assist_system_message_with_state,
     AssistanceType,
+    assist_system_message_with_state,
     shell_context_assistance,
 )
 from kash.model.items_model import Item, ItemType
@@ -25,8 +23,8 @@ log = get_logger(__name__)
 
 @kash_command
 def assist(
-    input: Optional[str] = None,
-    model: Optional[LLM] = None,
+    input: str | None = None,
+    model: LLM | None = None,
     type: AssistanceType = AssistanceType.basic,
 ) -> None:
     """

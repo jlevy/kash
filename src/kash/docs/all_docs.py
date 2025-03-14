@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List
 
 from funlog import log_calls
 
@@ -7,11 +6,10 @@ from kash.config.logger import get_logger
 from kash.docs.load_actions_info import load_action_info
 from kash.docs.load_api_docs import load_api_docs
 from kash.docs.load_help_topics import HelpTopics, load_help_topics
-from kash.docs.load_source_code import load_source_code, SourceCode
+from kash.docs.load_source_code import SourceCode, load_source_code
 from kash.docs_base.docs_base import DocsBase
 from kash.help.help_types import CommandInfo
 from kash.util.lazyobject import lazyobject
-
 
 log = get_logger(__name__)
 
@@ -21,7 +19,7 @@ class AllDocs(DocsBase):
     help_topics: HelpTopics = field(default_factory=load_help_topics)
     api_docs: str = field(default_factory=load_api_docs)
     source_code: SourceCode = field(default_factory=load_source_code)
-    action_infos: List[CommandInfo] = field(default_factory=load_action_info)
+    action_infos: list[CommandInfo] = field(default_factory=load_action_info)
 
     def self_check(self) -> bool:
         return (

@@ -1,6 +1,6 @@
 from os.path import getsize
 from pathlib import Path
-from typing import List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 from deepgram import ClientOptionsFromEnv, DeepgramClient, FileSource, PrerecordedOptions
 from httpx import Timeout
@@ -46,14 +46,14 @@ def openai_whisper_transcribe_audio_small(audio_file_path: str) -> str:
 
 
 class SpeakerSegment(NamedTuple):
-    words: List[Tuple[float, str]]
+    words: list[tuple[float, str]]
     start: float
     end: float
     speaker: int
     average_confidence: float
 
 
-def deepgram_transcribe_audio(audio_file_path: Path, language: Optional[str] = None) -> str:
+def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None) -> str:
     """Transcribe an audio file using Deepgram."""
 
     size = getsize(audio_file_path)
@@ -89,13 +89,13 @@ def deepgram_transcribe_audio(audio_file_path: Path, language: Optional[str] = N
     return formatted_segments
 
 
-def _deepgram_diarized_segments(data, confidence_threshold=0.3) -> List[SpeakerSegment]:
+def _deepgram_diarized_segments(data, confidence_threshold=0.3) -> list[SpeakerSegment]:
     """Process Deepgram diarized results into text segments per speaker."""
 
-    speaker_segments: List[SpeakerSegment] = []
+    speaker_segments: list[SpeakerSegment] = []
     current_speaker = 0
-    current_text: List[Tuple[float, str]] = []
-    current_confidences: List[float] = []
+    current_text: list[tuple[float, str]] = []
+    current_confidences: list[float] = []
     segment_start = 0.0
     segment_end = 0.0
 
@@ -163,7 +163,7 @@ def _deepgram_diarized_segments(data, confidence_threshold=0.3) -> List[SpeakerS
     return speaker_segments
 
 
-def _is_new_sentence(word: str, next_word: Optional[str]) -> bool:
+def _is_new_sentence(word: str, next_word: str | None) -> bool:
     return (
         (word.endswith(".") or word.endswith("?") or word.endswith("!"))
         and next_word is not None
@@ -171,7 +171,7 @@ def _is_new_sentence(word: str, next_word: Optional[str]) -> bool:
     )
 
 
-def _format_words(words: List[Tuple[float, str]], include_sentence_timestamps=True) -> str:
+def _format_words(words: list[tuple[float, str]], include_sentence_timestamps=True) -> str:
     """Format words with timestamps added in spans."""
 
     if not words:
@@ -200,7 +200,7 @@ def _format_words(words: List[Tuple[float, str]], include_sentence_timestamps=Tr
     return "\n".join(formatted_text)
 
 
-def format_speaker_segments(speaker_segments: List[SpeakerSegment]) -> str:
+def format_speaker_segments(speaker_segments: list[SpeakerSegment]) -> str:
     """
     Format speaker segments in a simple HTML format with <span> tags including speaker
     ids and timestamps.

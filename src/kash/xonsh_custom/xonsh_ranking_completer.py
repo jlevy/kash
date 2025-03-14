@@ -1,5 +1,6 @@
 import time
-from typing import Any, Iterator, List, Tuple
+from collections.abc import Iterator
+from typing import Any
 
 from funlog import format_duration
 from typing_extensions import override
@@ -32,8 +33,7 @@ class RankingCompleter(Completer):
     @override
     def complete_from_context(
         self, completion_context: CompletionContext, old_completer_args=None
-    ) -> Tuple[List[ScoredCompletion], int]:
-
+    ) -> tuple[list[ScoredCompletion], int]:
         start_time = time.time()
         self._trace("complete_from_context: Getting completions with context", completion_context)
 
@@ -83,7 +83,7 @@ class RankingCompleter(Completer):
                 completion = ScoredCompletion.from_unscored(completion)
             yield completion
 
-    def _deduplicate_completions(self, completions: List[ScoredCompletion]) -> None:
+    def _deduplicate_completions(self, completions: list[ScoredCompletion]) -> None:
         """
         Deduplicate completions while preserving order.
         """
@@ -108,7 +108,7 @@ class RankingCompleter(Completer):
 
         completions[:] = deduped_completions
 
-    def _enrich_completions(self, completions: List[ScoredCompletion]):
+    def _enrich_completions(self, completions: list[ScoredCompletion]):
         """
         Adjust the completions (could be kash completions or standard xonsh completions)
         with additional information.
@@ -130,7 +130,7 @@ class RankingCompleter(Completer):
         # TODO: Could also enrich with emojis for display.
 
     def _score_unscored_completions(
-        self, completions: List[ScoredCompletion], context: CompletionContext
+        self, completions: list[ScoredCompletion], context: CompletionContext
     ):
         if context and context.command:
             prefix = normalize(context.command.prefix)
@@ -139,7 +139,7 @@ class RankingCompleter(Completer):
 
     def _rank_completions(
         self,
-        completions: List[ScoredCompletion],
+        completions: list[ScoredCompletion],
         context: CompletionContext,
     ) -> None:
         sortkey = sort_scored_and_grouped()

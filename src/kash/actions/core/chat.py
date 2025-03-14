@@ -5,23 +5,23 @@ from kash.form_input.prompt_input import prompt_simple_string
 from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.llm_tools.llm_completion import llm_completion
 from kash.model import (
+    LLM,
+    ONE_OR_NO_ARGS,
     ActionInput,
     ActionResult,
-    common_params,
     Format,
     Item,
     ItemType,
-    LLM,
-    ONE_OR_NO_ARGS,
     ShellResult,
+    common_params,
 )
 from kash.model.language_models import LLMName
 from kash.shell_output.shell_output import (
     PadStyle,
+    Wrap,
     print_markdown,
     print_response,
     print_style,
-    Wrap,
 )
 
 log = get_logger(__name__)

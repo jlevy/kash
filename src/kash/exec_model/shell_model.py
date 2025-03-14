@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
@@ -13,9 +13,9 @@ class ShellResult:
     in the shell.
     """
 
-    result: Optional[Any] = None
+    result: Any | None = None
     show_result: bool = False
     show_selection: bool = False
     suggest_actions: bool = False
-    display_command: Optional[Command] = None
-    exception: Optional[Exception] = None
+    display_command: Command | None = None
+    exception: Exception | None = None

@@ -1,11 +1,9 @@
-from typing import List
-
 from rich.text import Text
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_HINT
 from kash.docs.all_docs import all_docs
-from kash.shell_output.shell_output import cprint, print_h2, print_hrule, print_markdown, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint, print_h2, print_hrule, print_markdown
 
 log = get_logger(__name__)
 
@@ -44,7 +42,7 @@ def quote_item(item: str) -> str:
         return item
 
 
-def print_see_also(commands_or_questions: List[str]) -> None:
+def print_see_also(commands_or_questions: list[str]) -> None:
     from kash.local_server.local_url_formatters import local_url_formatter
 
     with local_url_formatter() as fmt:

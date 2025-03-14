@@ -1,8 +1,6 @@
 from types import SimpleNamespace
-from typing import Dict
 
 from colour import Color
-
 from rich.terminal_theme import TerminalTheme
 
 
@@ -34,7 +32,7 @@ def hsl_to_hex(hsl_string: str) -> str:
 
     if alpha < 1:
         rgb = color.rgb
-        return f"rgba({int(rgb[0]*255)}, {int(rgb[1]*255)}, {int(rgb[2]*255)}, {alpha})"
+        return f"rgba({int(rgb[0] * 255)}, {int(rgb[1] * 255)}, {int(rgb[2] * 255)}, {alpha})"
     return color.hex_l
 
 
@@ -234,11 +232,13 @@ logical = SimpleNamespace(
 )
 
 
-def consolidate_color_vars(overrides: Dict[str, str] = {}) -> Dict[str, str]:
+def consolidate_color_vars(overrides: dict[str, str] | None = None) -> dict[str, str]:
     """
     Consolidate all color variables into a single dictionary with appropriate prefixes.
     Terminal variables have no prefix, while web and logical variables have "color-" prefix.
     """
+    if overrides is None:
+        overrides = {}
     return {
         # Terminal variables (no prefix)
         **terminal.__dict__,
@@ -250,7 +250,7 @@ def consolidate_color_vars(overrides: Dict[str, str] = {}) -> Dict[str, str]:
     }
 
 
-def normalize_var_names(variables: Dict[str, str]) -> Dict[str, str]:
+def normalize_var_names(variables: dict[str, str]) -> dict[str, str]:
     """
     Normalize variable names from Python style to CSS style.
     Example: color_bg -> color-bg
@@ -258,10 +258,12 @@ def normalize_var_names(variables: Dict[str, str]) -> Dict[str, str]:
     return {k.replace("_", "-"): v for k, v in variables.items()}
 
 
-def generate_css_vars(overrides: Dict[str, str] = {}) -> str:
+def generate_css_vars(overrides: dict[str, str] | None = None) -> str:
     """
     Generate CSS variables for the terminal and web colors.
     """
+    if overrides is None:
+        overrides = {}
     normalized_vars = normalize_var_names(consolidate_color_vars(overrides))
 
     # Generate the CSS.

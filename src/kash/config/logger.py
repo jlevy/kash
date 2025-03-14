@@ -6,9 +6,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cache
-from logging import Formatter, INFO
+from logging import INFO, Formatter
 from pathlib import Path
-from typing import Any, cast, IO, Optional, Tuple
+from typing import IO, Any, cast
 
 import rich
 from rich import reconfigure
@@ -21,15 +21,14 @@ from strif import atomic_output_file, new_timestamped_uid
 from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
-
 from kash.config.logger_basic import basic_file_handler
-from kash.config.settings import GLOBAL_KASH_DIR, global_settings, LogLevel
+from kash.config.settings import GLOBAL_KASH_DIR, LogLevel, global_settings
 from kash.config.text_styles import (
     EMOJI_ERROR,
     EMOJI_SAVED,
     EMOJI_WARN,
-    KashHighlighter,
     RICH_STYLES,
+    KashHighlighter,
 )
 from kash.util.stack_traces import current_stack_traces
 from kash.util.task_stack import task_stack_prefix_str
@@ -87,7 +86,7 @@ def get_log_settings() -> LogSettings:
     return _log_settings
 
 
-def reset_log_root(log_root: Optional[Path] = None, log_name: Optional[str] = None):
+def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
     """
     Reset the logging root or log name, if it has changed. None means no change
     and global default values.
@@ -101,7 +100,7 @@ def reset_log_root(log_root: Optional[Path] = None, log_name: Optional[str] = No
 
 @dataclass
 class TlContext(threading.local):
-    console: Optional[Console] = None
+    console: Console | None = None
 
 
 _tl_context = TlContext()
@@ -131,7 +130,7 @@ def get_console() -> Console:
     return _tl_context.console or rich.get_console()
 
 
-def new_console(file: Optional[IO[str]], record: bool) -> Console:
+def new_console(file: IO[str] | None, record: bool) -> Console:
     """
     Create a new console with the our theme and highlighter.
     Use `get_console()` for the global console.
@@ -253,7 +252,7 @@ def prefix(line: str, emoji: str = "", warn_emoji: str = "") -> str:
     return " ".join(filter(None, [prefix, emojis, line]))
 
 
-def prefix_args(args: Tuple[Any], emoji: str = "", warn_emoji: str = "") -> Tuple[Any]:
+def prefix_args(args: tuple[Any], emoji: str = "", warn_emoji: str = "") -> tuple[Any]:
     if len(args) > 0:
         args = (prefix(str(args[0]), emoji, warn_emoji),) + args[1:]
     return args
@@ -294,7 +293,7 @@ class CustomLogger(logging.Logger):
     def save_object(
         self,
         description: str,
-        prefix_slug: Optional[str],
+        prefix_slug: str | None,
         obj: Any,
         level: LogLevel = LogLevel.info,
         file_ext: str = "txt",

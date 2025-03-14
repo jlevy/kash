@@ -1,6 +1,5 @@
 import os
 from dataclasses import asdict, dataclass
-from typing import List, Optional
 
 from frontmatter_format import read_yaml_file, to_yaml_string, write_yaml_file
 
@@ -17,33 +16,32 @@ from kash.web_gen.template_render import render_web_template
 from kash.workspaces import current_workspace
 from kash.workspaces.source_items import find_upstream_item
 
-
 log = get_logger(__name__)
 
 
 @dataclass
 class TabInfo:
     label: str
-    id: Optional[str] = None
-    content_html: Optional[str] = None
-    store_path: Optional[str] = None
-    thumbnail_url: Optional[str] = None
+    id: str | None = None
+    content_html: str | None = None
+    store_path: str | None = None
+    thumbnail_url: str | None = None
 
 
 @dataclass
 class TabbedWebpage:
     title: str
-    tabs: List[TabInfo]
+    tabs: list[TabInfo]
     show_tabs: bool = True
 
 
-def _fill_in_ids(tabs: List[TabInfo]):
+def _fill_in_ids(tabs: list[TabInfo]):
     for i, tab in enumerate(tabs):
         if not tab.id:
             tab.id = f"tab_{i}"
 
 
-def webpage_config(items: List[Item]) -> Item:
+def webpage_config(items: list[Item]) -> Item:
     """
     Get an item with the config for a tabbed web page.
     """
@@ -145,6 +143,6 @@ def test_render():
         f.write(html)
     print("Rendered tabbed webpage to tmp/webpage.html")
 
-    lines = open("tmp/webpage.html", "r").readlines()
+    lines = open("tmp/webpage.html").readlines()
     assert any("Home &lt;escaped HTML chars&gt;" in line for line in lines)
     assert any("<b>this is HTML</b>" in line for line in lines)

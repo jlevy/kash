@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple, TypeAlias
+from typing import TypeAlias
 
 import pandas as pd
 from litellm import embedding
@@ -19,7 +20,7 @@ BATCH_SIZE = 1024
 
 Key: TypeAlias = str
 
-KeyVal: TypeAlias = Tuple[Key, str]
+KeyVal: TypeAlias = tuple[Key, str]
 """
 A key-value pair where the key is a unique identifier (such as the path)
 and the value is the text to embed.
@@ -33,14 +34,16 @@ class Embeddings:
     small texts, the text itself).
     """
 
-    data: Dict[Key, Tuple[str, List[float]]]
+    data: dict[Key, tuple[str, list[float]]]
     """Mapping of key to text and embedding."""
 
-    def as_iterable(self) -> Iterable[Tuple[Key, str, List[float]]]:
+    def as_iterable(self) -> Iterable[tuple[Key, str, list[float]]]:
         return ((key, text, emb) for key, (text, emb) in self.data.items())
 
     def as_df(self) -> pd.DataFrame:
-        keys, texts, embeddings = zip(*[(key, text, emb) for key, (text, emb) in self.data.items()])
+        keys, texts, embeddings = zip(
+            *[(key, text, emb) for key, (text, emb) in self.data.items()], strict=False
+        )
         return pd.DataFrame(
             {
                 "key": keys,
@@ -49,14 +52,14 @@ class Embeddings:
             }
         )
 
-    def __getitem__(self, key: Key) -> Tuple[str, List[float]]:
+    def __getitem__(self, key: Key) -> tuple[str, list[float]]:
         if key in self.data:
             return self.data[key]
         else:
             raise KeyError(f"Key '{key}' not found in embeddings")
 
     @classmethod
-    def embed(cls, keyvals: List[KeyVal], model=DEFAULT_EMBEDDING_MODEL) -> Embeddings:
+    def embed(cls, keyvals: list[KeyVal], model=DEFAULT_EMBEDDING_MODEL) -> Embeddings:
         data = {}
         log.message(
             "Embedding %d texts (model %s, batch size %s)…",
@@ -75,7 +78,12 @@ class Embeddings:
                 raise ValueError("No embedding response data")
 
             batch_embeddings = [e["embedding"] for e in response.data]
-            data.update({key: (text, emb) for key, text, emb in zip(keys, texts, batch_embeddings)})
+            data.update(
+                {
+                    key: (text, emb)
+                    for key, text, emb in zip(keys, texts, batch_embeddings, strict=False)
+                }
+            )
 
             log.info(
                 "Embedded batch %d-%d: %s",
@@ -100,8 +108,8 @@ class Embeddings:
         """Save embeddings in numpy's compressed format."""
         import numpy as np
 
-        keys: List[Key] = list(self.data.keys())
-        texts: List[str] = [self.data[k][0] for k in keys]
+        keys: list[Key] = list(self.data.keys())
+        texts: list[str] = [self.data[k][0] for k in keys]
         embeddings = np.array([self.data[k][1] for k in keys])
         np.savez_compressed(path, keys=keys, texts=texts, embeddings=embeddings)
 
@@ -113,7 +121,7 @@ class Embeddings:
         with np.load(path) as data:
             loaded_data = {
                 k: (t, e.tolist())
-                for k, t, e in zip(data["keys"], data["texts"], data["embeddings"])
+                for k, t, e in zip(data["keys"], data["texts"], data["embeddings"], strict=False)
             }
         return cls(data=loaded_data)
 

@@ -1,12 +1,11 @@
 import re
 from pathlib import Path
-from typing import Dict, List
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.precondition_defs import is_markdown
-from kash.model import ActionInput, ActionResult, ItemType, ONE_OR_MORE_ARGS, Param
+from kash.model import ONE_OR_MORE_ARGS, ActionInput, ActionResult, ItemType, Param
 from kash.util.type_utils import not_none
 
 log = get_logger(__name__)
@@ -40,11 +39,11 @@ def format_markdown_template(
     template_path = md_template
     items = input.items
 
-    with open(template_path, "r") as f:
+    with open(template_path) as f:
         template = f.read()
 
     # Identify variables in the template.
-    variables: List[str] = re.findall(r"\{(\w+)\}", template)
+    variables: list[str] = re.findall(r"\{(\w+)\}", template)
 
     if len(variables) != len(items):
         raise InvalidInput(
@@ -53,7 +52,7 @@ def format_markdown_template(
         )
 
     # Create a dictionary to map variable names to item bodies.
-    item_map: Dict[str, str] = {}
+    item_map: dict[str, str] = {}
     unmatched_items = set(range(len(items)))
 
     for var in variables:

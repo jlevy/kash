@@ -1,10 +1,8 @@
-import kash.config.suppress_warnings  # noqa: F401  # usort:skip
-from kash.config.lazy_imports import import_start_time  # usort:skip
-
 import os
 import time
+from collections.abc import Callable
 from os.path import expanduser
-from typing import Callable, cast, List, Optional
+from typing import cast
 
 from prompt_toolkit.formatted_text import FormattedText
 from pygments.token import Token
@@ -18,8 +16,11 @@ from xonsh.shell import Shell
 from xonsh.shells.ptk_shell.formatter import PTKPromptFormatter
 from xonsh.xontribs import xontribs_load
 
+import kash.config.suppress_warnings  # noqa: F401  # usort:skip
+
 # Keeping initial imports/deps minimal.
 from kash.config import colors
+from kash.config.lazy_imports import import_start_time  # usort:skip
 from kash.config.logger import get_console, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
 from kash.config.text_styles import SPINNER
@@ -27,7 +28,6 @@ from kash.help.assistant import AssistanceType
 from kash.shell_output.shell_output import cprint
 from kash.shell_ui.shell_syntax import is_assist_request_str
 from kash.xonsh_custom.xonsh_ranking_completer import RankingCompleter
-
 
 log = get_logger(__name__)
 
@@ -50,7 +50,7 @@ xonshrc_path = expanduser("~/.xonshrc")
 
 def is_xontrib_installed(file_path):
     try:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             for line in file:
                 if xontrib_command == line.strip():
                     return True
@@ -191,7 +191,7 @@ class CustomShell(Shell):
 
 
 @events.on_command_not_found
-def not_found(cmd: List[str]):
+def not_found(cmd: list[str]):
     from kash.help.assistant import shell_context_assistance
 
     # Don't call assistant on one-word typos. It's annoying.
@@ -294,7 +294,7 @@ def load_rcfiles(execer: Execer, ctx: dict):
         xonshrc_context(rcfiles=rcfiles, execer=execer, ctx=ctx, env=XSH.env, login=True)
 
 
-def start_shell(single_command: Optional[str] = None):
+def start_shell(single_command: str | None = None):
     """
     Main entry point to start a customized xonsh shell, with custom shell settings.
 

@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from threading import Lock
-from typing import Callable, Dict, overload, Union
+from typing import Union, overload
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
@@ -16,7 +17,7 @@ shell output) or return nothing (if it throws exceptions on errors).
 """
 
 # Global registry of commands.
-_commands: Dict[str, CommandFunction] = {}
+_commands: dict[str, CommandFunction] = {}
 _lock = Lock()
 
 
@@ -50,7 +51,7 @@ def register_all_commands() -> None:
         register_all_commands._has_logged = True
 
 
-def get_all_commands() -> Dict[str, CommandFunction]:
+def get_all_commands() -> dict[str, CommandFunction]:
     """
     All commands, sorted by name.
     """

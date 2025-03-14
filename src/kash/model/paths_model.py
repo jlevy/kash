@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from os import PathLike
 from pathlib import Path, PosixPath, WindowsPath
-from typing import Any, Optional, Tuple, Union
+from typing import Any
 
 import regex
 from frontmatter_format import add_default_yaml_representer
@@ -70,13 +70,13 @@ class StorePath(BasePath):  # type: ignore
     - `~store_name/` and `~store_name` are not valid StorePaths.
     """
 
-    store_name: Optional[str] = None
+    store_name: str | None = None
 
     def __new__(
         cls,
-        value: Union[str, Path],
-        *more_parts: Union[str, Path],
-        store_name: Optional[str] = None,
+        value: str | Path,
+        *more_parts: str | Path,
+        store_name: str | None = None,
     ) -> StorePath:
         """
         Create a new `StorePath` instance from a string representation as a relative path or in
@@ -113,14 +113,14 @@ class StorePath(BasePath):  # type: ignore
 
     def __init__(
         self,
-        value: Union[str, Path],
-        *rest: Union[str, Path],
-        store_name: Optional[str] = None,
+        value: str | Path,
+        *rest: str | Path,
+        store_name: str | None = None,
     ):
         pass
 
     @staticmethod
-    def parse(value: str | Path) -> Tuple[Path, Optional[str]]:
+    def parse(value: str | Path) -> tuple[Path, str | None]:
         """
         Parse a string representation of the store path into a Path and store name
         (if any). The input should be a relative Path or a string representation
@@ -195,7 +195,7 @@ class StorePath(BasePath):  # type: ignore
         )
 
     @classmethod
-    def validate(cls, value: Union[str, Path, StorePath]) -> StorePath:
+    def validate(cls, value: str | Path | StorePath) -> StorePath:
         if isinstance(value, StorePath):
             return value
         return cls(value)
@@ -292,7 +292,6 @@ add_default_yaml_representer(StorePath, _represent_store_path)
 
 
 def test_store_path():
-
     # Test creation with relative path
     sp1 = StorePath("some/relative/path")
     sp2 = StorePath("@some/relative/path")
@@ -331,23 +330,23 @@ def test_store_path():
     # Test some invalid store paths
     try:
         StorePath("/absolute/path")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Absolute store paths are not allowed: '/absolute/path'"
     try:
         StorePath(".")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '.'"
     try:
         StorePath("")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: ''"
 
     try:
         StorePath("https://example.com")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Expected a store path but got a URL: 'https://example.com'"
 
@@ -373,34 +372,34 @@ def test_store_path():
     # Test parsing '@~/folder/file.txt' (invalid, missing store name)
     try:
         StorePath("@~/folder/file.txt")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '@~/folder/file.txt'"
 
     # Test invalid store name
     try:
         StorePath("@~store-name/folder/file.txt")  # 'store-name' with hyphen is invalid
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '@~store-name/folder/file.txt'"
 
     # Test that '~store_name/' and '~store_name' are invalid
     try:
         StorePath("~store_name/")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '~store_name/'"
 
     try:
         StorePath("~store_name")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '~store_name'"
 
     # Test that '@~store_name' is invalid
     try:
         StorePath("@~store_name")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Invalid store path: '@~store_name'"
 
@@ -422,12 +421,12 @@ def test_store_path():
     # Test unclosed single quote
     try:
         StorePath("@'folder/filename.ext")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == 'Unclosed single quote in store path: "@\'folder/filename.ext"'
     try:
         StorePath("@'folder/filename.ext' extra")
-        assert False
+        raise AssertionError()
     except InvalidStorePath as e:
         assert str(e) == "Unclosed single quote in store path: \"@'folder/filename.ext' extra\""
 
@@ -445,7 +444,7 @@ def test_store_path():
     # StorePath / absolute Path
     try:
         combined = sp1 / Path("/absolute/path")
-        assert False
+        raise AssertionError()
     except StorePathError as e:
         assert str(e) == "Cannot join a StorePath with an absolute Path: '/absolute/path'"
 

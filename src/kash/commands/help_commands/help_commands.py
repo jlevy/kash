@@ -1,5 +1,3 @@
-from typing import Optional
-
 from flowmark import Wrap
 
 from kash.commands.help_commands.doc_commands import manual
@@ -11,14 +9,14 @@ from kash.exec.command_exec import look_up_command_or_action
 from kash.help.command_help import print_explain_command, source_code_path
 from kash.help.help_pages import print_see_also
 from kash.model.language_models import LLM
-from kash.shell_output.shell_output import console_pager, cprint, PrintHooks
-from kash.shell_tools.native_tools import view_file_native, ViewMode
+from kash.shell_output.shell_output import PrintHooks, console_pager, cprint
+from kash.shell_tools.native_tools import ViewMode, view_file_native
 
 log = get_logger(__name__)
 
 
 @kash_command
-def help(query: Optional[str] = None, search: bool = False) -> None:
+def help(query: str | None = None, search: bool = False) -> None:
     """
     Top-level help command for kash. Get help on any kash command or action
     or a shell command (uses TLDR docs).

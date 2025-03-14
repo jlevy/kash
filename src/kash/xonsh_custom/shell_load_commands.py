@@ -2,7 +2,8 @@ from kash.config.setup import setup
 
 setup(rich_logging=True)  # Set up logging first.
 
-from typing import Callable, Dict, List, Type, TYPE_CHECKING, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypeVar
 
 from kash.commands.help_commands import help_commands
 from kash.config.init import kash_reload_all
@@ -12,7 +13,7 @@ from kash.exec.command_registry import get_all_commands
 from kash.exec.history import wrap_with_history
 from kash.exec.shell_callable_action import ShellCallableAction
 from kash.exec_model.shell_model import ShellResult
-from kash.shell_output.shell_output import cprint, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint
 from kash.shell_tools.exception_printing import wrap_with_exception_printing
 from kash.shell_tools.function_wrapper import wrap_for_shell_args
 from kash.shell_ui.shell_results import show_shell_result
@@ -30,10 +31,8 @@ log = get_logger(__name__)
 R = TypeVar("R")
 
 
-def _wrap_handle_results(func: Callable[..., R]) -> Callable[[List[str]], None]:
-
-    def command(args: List[str]) -> None:
-
+def _wrap_handle_results(func: Callable[..., R]) -> Callable[[list[str]], None]:
+    def command(args: list[str]) -> None:
         PrintHooks.before_command_run()
 
         # Run the function.
@@ -69,7 +68,7 @@ def _wrap_handle_results(func: Callable[..., R]) -> Callable[[List[str]], None]:
     return command
 
 
-def _register_commands_in_shell(commands: Dict[str, Callable]):
+def _register_commands_in_shell(commands: dict[str, Callable]):
     """
     Register all kash commands as xonsh commands.
     """
@@ -101,7 +100,7 @@ def _register_commands_in_shell(commands: Dict[str, Callable]):
     update_aliases(kash_commands)
 
 
-def _register_actions_in_shell(actions: Dict[str, Type["Action"]]):
+def _register_actions_in_shell(actions: dict[str, type["Action"]]):
     """
     Register all kash actions as xonsh commands.
     """

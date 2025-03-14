@@ -1,10 +1,8 @@
 from pathlib import Path
-from typing import Optional, Tuple
 
 from kash.config.logger import get_logger
 from kash.file_tools.file_formats_model import FileExt, Format
 from kash.file_tools.filename_parsing import split_filename
-
 from kash.lang_tools.inflection import plural
 from kash.model.items_model import ItemType
 
@@ -33,7 +31,7 @@ def join_suffix(base_slug: str, full_suffix: str) -> str:
 
 def parse_item_filename(
     path: str | Path,
-) -> Tuple[str, Optional[ItemType], Optional[Format], Optional[FileExt]]:
+) -> tuple[str, ItemType | None, Format | None, FileExt | None]:
     """
     Parse a store file path into its name, format, and extension. Returns None for
     format or item type if not recognized. Raises `InvalidFilename` if the file extension

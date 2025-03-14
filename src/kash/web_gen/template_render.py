@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -11,11 +10,13 @@ def render_web_template(
     template_filename: str,
     data: dict,
     autoescape: bool = True,
-    css_overrides: Dict[str, str] = {},
+    css_overrides: dict[str, str] | None = None,
 ) -> str:
     """
     Render a Jinja2 template file with the given data, returning an HTML string.
     """
+    if css_overrides is None:
+        css_overrides = {}
 
     env = Environment(loader=FileSystemLoader(templates_dir), autoescape=autoescape)
 

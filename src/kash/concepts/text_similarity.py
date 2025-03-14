@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import litellm
 import pandas as pd
 from funlog import log_calls, tally_calls
@@ -15,7 +13,7 @@ from kash.model.language_models import DEFAULT_EMBEDDING_MODEL, EmbeddingModel
 log = get_logger(__name__)
 
 
-def sort_by_length(values: List[str]) -> List[str]:
+def sort_by_length(values: list[str]) -> list[str]:
     return sorted(values, key=lambda x: (len(x), x))
 
 
@@ -43,7 +41,7 @@ def rank_by_relatedness(
     relatedness_fn=cosine_relatedness,
     model=DEFAULT_EMBEDDING_MODEL,
     top_n: int = -1,
-) -> List[Tuple[str, str, float]]:
+) -> list[tuple[str, str, float]]:
     """
     Returns a list of strings and relatednesses, sorted from most related to least.
     """
@@ -85,14 +83,14 @@ def relate_texts_by_embedding(
 
 def find_related_pairs(
     relatedness_matrix: pd.DataFrame, threshold: float = 0.9
-) -> List[Tuple[str, str, float]]:
+) -> list[tuple[str, str, float]]:
     log.message(
         "Finding near duplicates among %s items (threshold %s)",
         relatedness_matrix.shape[0],
         threshold,
     )
 
-    pairs: List[Tuple[str, str, float]] = []
+    pairs: list[tuple[str, str, float]] = []
     keys = relatedness_matrix.index.tolist()
 
     for i, key1 in enumerate(keys):

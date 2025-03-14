@@ -1,10 +1,9 @@
 import re
-from typing import Optional
 
 from kash.util.parse_shell_args import shell_quote
 
 
-def is_assist_request_str(line: str) -> Optional[str]:
+def is_assist_request_str(line: str) -> str | None:
     """
     Is this a query to the assistant?
     Checks for phrases ending in a ? or starting with a ?.

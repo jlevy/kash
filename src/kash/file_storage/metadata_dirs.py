@@ -13,7 +13,6 @@ from kash.file_tools.ignore_files import write_ignore
 from kash.model.paths_model import StorePath
 from kash.util.format_utils import fmt_loc
 
-
 log = get_logger(__name__)
 
 

@@ -3,14 +3,12 @@ Platform-specific tools and utilities.
 """
 
 import os
-
 import platform
 import shutil
-
+from collections.abc import Callable
 from enum import Enum, StrEnum
-from typing import Callable, Optional
 
-from cachetools import cached, TTLCache
+from cachetools import TTLCache, cached
 from pydantic.dataclasses import dataclass
 from rich.console import Group
 from rich.text import Text
@@ -21,7 +19,6 @@ from kash.errors import SetupError
 from kash.shell_output.shell_output import cprint, format_name_and_value, format_success_or_failure
 from kash.shell_tools.osc_tools import osc8_link_rich, terminal_supports_osc8
 from kash.shell_tools.terminal_images import terminal_supports_sixel
-
 
 log = get_logger(__name__)
 
@@ -42,14 +39,14 @@ class ToolDep:
     """
 
     command_names: tuple[str, ...]
-    check_function: Optional[Callable[[], bool]] = None
-    comment: Optional[str] = None
+    check_function: Callable[[], bool] | None = None
+    comment: str | None = None
     warn_if_missing: bool = False
 
-    brew_pkg: Optional[str] = None
-    apt_pkg: Optional[str] = None
-    pip_pkg: Optional[str] = None
-    winget_pkg: Optional[str] = None
+    brew_pkg: str | None = None
+    apt_pkg: str | None = None
+    pip_pkg: str | None = None
+    winget_pkg: str | None = None
 
 
 def check_libmagic():
@@ -208,7 +205,7 @@ def print_missing_tool_help(tool: Tool):
     cprint(warn_str)
 
 
-def get_install_suggestion(*missing_tools: Tool) -> Optional[str]:
+def get_install_suggestion(*missing_tools: Tool) -> str | None:
     brew_pkgs = [tool.value.brew_pkg for tool in missing_tools if tool.value.brew_pkg]
     apt_pkgs = [tool.value.apt_pkg for tool in missing_tools if tool.value.apt_pkg]
     winget_pkgs = [tool.value.winget_pkg for tool in missing_tools if tool.value.winget_pkg]

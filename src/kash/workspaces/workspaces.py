@@ -1,16 +1,16 @@
 from functools import cache
 from pathlib import Path
-from typing import Optional, Tuple, Type, TypeAlias, TypeVar
+from typing import TypeAlias, TypeVar
 
 from prettyfmt import fmt_path
 
 from kash.config.api_keys import print_api_key_setup
 from kash.config.logger import get_logger, reset_log_root
 from kash.config.settings import (
-    global_settings,
-    resolve_and_create_dirs,
     SANDBOX_KB_PATH,
     SANDBOX_NAME,
+    global_settings,
+    resolve_and_create_dirs,
 )
 from kash.errors import FileNotFound, InvalidInput, InvalidState
 from kash.file_storage.file_store import FileStore
@@ -19,7 +19,7 @@ from kash.file_tools.ignore_files import IgnoreFilter, is_ignored_default
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
 from kash.util.format_utils import fmt_loc
 from kash.workspaces.workspace_names import check_strict_workspace_name
-from kash.workspaces.workspace_registry import get_workspace_registry, WorkspaceInfo
+from kash.workspaces.workspace_registry import WorkspaceInfo, get_workspace_registry
 
 log = get_logger(__name__)
 
@@ -50,7 +50,7 @@ def is_workspace_dir(path: Path) -> bool:
     return (path.is_dir() and str(path).endswith(KB_SUFFIX)) or dirs.is_initialized()
 
 
-def enclosing_workspace_dir(path: Path = Path(".")) -> Optional[Path]:
+def enclosing_workspace_dir(path: Path = Path(".")) -> Path | None:
     """
     Get the workspace directory enclosing the given path (itself or a parent or None).
     """
@@ -131,7 +131,7 @@ def get_sandbox_workspace() -> Workspace:
     return get_workspace_registry().load(SANDBOX_NAME, sandbox_dir(), True)
 
 
-def _infer_workspace_info() -> Tuple[Optional[Path], bool]:
+def _infer_workspace_info() -> tuple[Path | None, bool]:
     from kash.config.settings import global_settings
 
     dir = enclosing_workspace_dir()
@@ -206,7 +206,7 @@ def current_ignore() -> IgnoreFilter:
 T = TypeVar("T")
 
 
-def workspace_param_value(param_name: str, type: Type[T] = str) -> Optional[T]:
+def workspace_param_value(param_name: str, type: type[T] = str) -> T | None:
     """
     Get a global parameter value, checking if it is set in the current workspace first.
     """

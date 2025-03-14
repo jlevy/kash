@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from textwrap import dedent
-from typing import Callable, TypeAlias
+from typing import TypeAlias
 
 from markdown_it.token import Token
 from rich.console import Console, ConsoleOptions, RenderResult
@@ -7,9 +8,8 @@ from rich.padding import Padding
 from rich.text import Text
 
 from kash.config.text_styles import COLOR_HINT
-from kash.rich_custom.rich_markdown_fork import CodeBlock, FEATURES, Markdown
+from kash.rich_custom.rich_markdown_fork import FEATURES, CodeBlock, Markdown
 from kash.shell_output.kerm_code_utils import clickable_script_block
-
 
 Transform: TypeAlias = Callable[[str], Text]
 

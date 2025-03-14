@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from funlog import log_calls
 
@@ -17,10 +16,10 @@ log = get_logger(__name__)
 # Start with just local file media.
 local_file_media = LocalFileMedia()
 
-_media_services: AtomicVar[List[MediaService]] = AtomicVar([local_file_media])
+_media_services: AtomicVar[list[MediaService]] = AtomicVar([local_file_media])
 
 
-def get_media_services() -> List[MediaService]:
+def get_media_services() -> list[MediaService]:
     return _media_services.copy()
 
 
@@ -33,7 +32,7 @@ def register_media_service(*services: MediaService) -> None:
     _media_services.update(lambda services: services + new_services)
 
 
-def canonicalize_media_url(url: Url) -> Optional[Url]:
+def canonicalize_media_url(url: Url) -> Url | None:
     """
     Return the canonical form of a media URL from a supported service (like YouTube).
     """
@@ -48,7 +47,7 @@ def is_media_url(url: Url) -> bool:
     return canonicalize_media_url(url) is not None
 
 
-def thumbnail_media_url(url: Url) -> Optional[Url]:
+def thumbnail_media_url(url: Url) -> Url | None:
     """
     Return a URL that links to the thumbnail of the media.
     """
@@ -70,7 +69,7 @@ def timestamp_media_url(url: Url, timestamp: float) -> Url:
     raise InvalidInput(f"Unrecognized media URL: {url}")
 
 
-def get_media_id(url: Url | None) -> Optional[str]:
+def get_media_id(url: Url | None) -> str | None:
     if not url:
         return None
     for service in _media_services.copy():
@@ -81,7 +80,7 @@ def get_media_id(url: Url | None) -> Optional[str]:
 
 
 @log_calls(level="info")
-def get_media_metadata(url: Url) -> Optional[MediaMetadata]:
+def get_media_metadata(url: Url) -> MediaMetadata | None:
     """
     Return metadata for the media at the given URL.
     """
@@ -92,7 +91,7 @@ def get_media_metadata(url: Url) -> Optional[MediaMetadata]:
     return None
 
 
-def list_channel_items(url: Url) -> List[MediaMetadata]:
+def list_channel_items(url: Url) -> list[MediaMetadata]:
     """
     List all items in a channel.
     """
@@ -104,8 +103,8 @@ def list_channel_items(url: Url) -> List[MediaMetadata]:
 
 
 def download_media_by_service(
-    url: Url, target_dir: Path, media_types: Optional[List[MediaType]] = None
-) -> Dict[MediaType, Path]:
+    url: Url, target_dir: Path, media_types: list[MediaType] | None = None
+) -> dict[MediaType, Path]:
     for service in _media_services.copy():
         canonical_url = service.canonicalize(url)
         if canonical_url:

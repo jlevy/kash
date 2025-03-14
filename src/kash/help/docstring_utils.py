@@ -1,6 +1,5 @@
 from dataclasses import field
 from textwrap import dedent
-from typing import Dict, List
 
 from pydantic.dataclasses import dataclass
 
@@ -8,8 +7,8 @@ from pydantic.dataclasses import dataclass
 @dataclass
 class Docstring:
     body: str = ""
-    param: Dict[str, str] = field(default_factory=dict)
-    type: Dict[str, str] = field(default_factory=dict)
+    param: dict[str, str] = field(default_factory=dict)
+    type: dict[str, str] = field(default_factory=dict)
     returns: str = ""
     rtype: str = ""
 
@@ -37,7 +36,7 @@ def parse_docstring(docstring: str) -> Docstring:
     return result
 
 
-def parse_fields(lines: List[str], result: Docstring):
+def parse_fields(lines: list[str], result: Docstring):
     current_field = None
     current_content = []
 

@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Any, List, Set
+from typing import Any
 
 from prettyfmt import fmt_lines
 from strif import abbrev_str, single_line
@@ -50,7 +50,6 @@ def trace_completions_enabled() -> bool:
 
 
 def trace_completions(msg: str, value: Any = None, always: bool = False):
-
     def format_value(c: Any) -> str:
         return c.formatted() if isinstance(c, ScoredCompletion) else repr(c)
 
@@ -93,7 +92,7 @@ def _dir_description(directory: Path) -> str:
     return f"{count} files"
 
 
-def all_help_command_completions() -> List[CompletionValue]:
+def all_help_command_completions() -> list[CompletionValue]:
     return [
         CompletionValue(
             group=CompletionGroup.help,
@@ -118,7 +117,7 @@ BARE_COMPLETIONS = {
 }
 
 
-def get_help_completions_lexical(query: str, include_bare_qm: bool) -> Set[ScoredCompletion]:
+def get_help_completions_lexical(query: str, include_bare_qm: bool) -> set[ScoredCompletion]:
     query = normalize(query)
 
     generic_help_completions = []
@@ -162,7 +161,6 @@ def get_help_completions_lexical(query: str, include_bare_qm: bool) -> Set[Score
         trace_completions("Lexical help completions (bare query)", all_completions)
         return set(all_completions)
     else:
-
         all_completions = (
             generic_help_completions
             + snippet_completions
@@ -177,7 +175,7 @@ def get_help_completions_lexical(query: str, include_bare_qm: bool) -> Set[Score
         return set(all_completions)
 
 
-def get_help_completions_semantic(query: str) -> Set[ScoredCompletion]:
+def get_help_completions_semantic(query: str) -> set[ScoredCompletion]:
     """
     Semantic lookup of completions from help docs. Requires embededing APIs so
     throws ApiResultError if user is offline or API has issues.
@@ -192,7 +190,7 @@ def get_help_completions_semantic(query: str) -> Set[ScoredCompletion]:
     return completions
 
 
-def get_command_and_action_completions(prefix: str) -> Set[ScoredCompletion]:
+def get_command_and_action_completions(prefix: str) -> set[ScoredCompletion]:
     prefix = normalize(prefix)
     completions = [
         ScoredCompletion.from_help_doc(c)
@@ -203,7 +201,7 @@ def get_command_and_action_completions(prefix: str) -> Set[ScoredCompletion]:
     return set(completions)
 
 
-def get_std_command_completions(prefix: str) -> Set[ScoredCompletion]:
+def get_std_command_completions(prefix: str) -> set[ScoredCompletion]:
     prefix = normalize(prefix)
     completions = [ScoredCompletion.from_help_doc(c) for c in all_docs.std_command_infos]
     score_completions(prefix, completions)
@@ -213,7 +211,7 @@ def get_std_command_completions(prefix: str) -> Set[ScoredCompletion]:
 
 def get_dir_completions(
     prefix: str, base_dir: Path, min_cutoff: Score = MIN_CUTOFF
-) -> Set[ScoredCompletion]:
+) -> set[ScoredCompletion]:
     prefix = normalize(prefix)
 
     is_ignored = current_ignore()
@@ -236,7 +234,7 @@ def get_item_completions(
     prefix: str,
     precondition: Precondition = Precondition.always,
     complete_from_sandbox: bool = True,
-) -> Set[ScoredCompletion] | None:
+) -> set[ScoredCompletion] | None:
     prefix = normalize(prefix.lstrip("@"))
 
     ws = current_workspace()

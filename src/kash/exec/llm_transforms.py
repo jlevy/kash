@@ -1,9 +1,7 @@
 from dataclasses import replace
-from typing import Optional
 
 from chopdiff.docs import DiffFilter, TextDoc
-
-from chopdiff.transforms import accept_all, filtered_transform, WindowSettings
+from chopdiff.transforms import WindowSettings, accept_all, filtered_transform
 from flowmark import fill_markdown
 
 from kash.config.api_keys import api_setup
@@ -25,7 +23,7 @@ def windowed_llm_transform(
     system_message: Message,
     template: MessageTemplate,
     input: str,
-    windowing: Optional[WindowSettings],
+    windowing: WindowSettings | None,
     diff_filter: DiffFilter,
     check_no_results: bool = True,
 ) -> TextDoc:
@@ -49,7 +47,6 @@ def windowed_llm_transform(
 
 
 def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: bool = True) -> str:
-
     api_setup()
 
     if options.windowing and options.windowing.size:
@@ -90,7 +87,7 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
 
 def llm_transform_item(
     item: Item,
-    model: Optional[LLMName] = None,
+    model: LLMName | None = None,
     normalize: bool = True,
     strip_fence: bool = True,
     check_no_results: bool = True,

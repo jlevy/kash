@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict
 
 from prettyfmt import fmt_lines, fmt_path
 
@@ -50,7 +49,7 @@ def cache_file(source: Url | Path | Loadable, global_cache: bool = False) -> tup
     return path, was_cached
 
 
-def cache_resource(item: Item) -> Dict[MediaType, Path]:
+def cache_resource(item: Item) -> dict[MediaType, Path]:
     """
     Cache a resource item for an external local path or a URL, fetching or
     copying as needed. For media this may yield more than one format.
@@ -58,7 +57,7 @@ def cache_resource(item: Item) -> Dict[MediaType, Path]:
     if not is_resource(item):
         raise ValueError(f"Item is not a resource: {item}")
 
-    result: Dict[MediaType, Path] = {}
+    result: dict[MediaType, Path] = {}
     if item.url:
         if is_media_url(item.url):
             result = cache_media(item.url)
@@ -104,7 +103,7 @@ def get_url_html(item: Item) -> tuple[Url, str]:
 
     if is_url_item(item):
         path, _was_cached = cache_file(url)
-        with open(path, "r") as file:
+        with open(path) as file:
             html_content = file.read()
     else:
         if not item.body or not has_html_body(item):

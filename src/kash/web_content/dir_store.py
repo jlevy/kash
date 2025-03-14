@@ -1,13 +1,13 @@
 import os
+from collections.abc import Callable
 from os import path
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, TypeAlias
+from typing import TypeAlias
 
 from strif import clean_alphanum_hash, file_mtime_hash
 
 from kash.config.logger import get_logger
 from kash.util.url import Url
-
 
 log = get_logger(__name__)
 
@@ -22,7 +22,7 @@ def aws_cli(*cmd):
 
     # Deal with problems
     if exit_code > 0:
-        raise RuntimeError("AWS CLI exited with code {}".format(exit_code))
+        raise RuntimeError(f"AWS CLI exited with code {exit_code}")
 
 
 def string_hash(key: str) -> str:
@@ -57,13 +57,13 @@ class DirStore:
     # TODO: Would be useful to support optional additional root directories, with write always
     # being to the main root but cache lookups checking in sequence, allowing a hierarchy of caches.
 
-    def __init__(self, root: Path, hash_func: Optional[HashFunc] = None) -> None:
+    def __init__(self, root: Path, hash_func: HashFunc | None = None) -> None:
         self.root: Path = root
         self.hash_func: HashFunc = hash_func or default_hash_func
         os.makedirs(self.root, exist_ok=True)
 
     def path_for(
-        self, key: str | Path, folder: Optional[str] = None, suffix: Optional[str] = None
+        self, key: str | Path, folder: str | None = None, suffix: str | None = None
     ) -> Path:
         """
         A unique file path with the given key. It's up to the client how to use it.
@@ -78,14 +78,14 @@ class DirStore:
         return full_path
 
     def find(
-        self, key: str | Path, folder: Optional[str] = None, suffix: Optional[str] = None
-    ) -> Optional[Path]:
+        self, key: str | Path, folder: str | None = None, suffix: str | None = None
+    ) -> Path | None:
         cache_path = self.path_for(key, folder, suffix)
         return cache_path if path.exists(cache_path) else None
 
     def find_all(
-        self, keys: List[str | Path], folder: Optional[str] = None, suffix: Optional[str] = None
-    ) -> Dict[str | Path, Optional[Path]]:
+        self, keys: list[str | Path], folder: str | None = None, suffix: str | None = None
+    ) -> dict[str | Path, Path | None]:
         """
         Look up all existing cached results for the set of keys. This should work fine but could
         be optimized for large batches.

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import field, Field as DataclassField, replace
+from dataclasses import Field as DataclassField
+from dataclasses import field, replace
 from enum import Enum
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, cast, Dict, List, Optional, Type, TypeVar
+from typing import Any, TypeVar, cast
 
 from chopdiff.docs import DiffFilter
 from chopdiff.docs.token_diffs import DIFF_FILTER_NONE
@@ -18,10 +19,10 @@ from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition, InvalidInput
-from kash.exec_model.args_model import ArgCount, ArgType, NO_ARGS, ONE_ARG, Signature
+from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Signature
 from kash.exec_model.shell_model import ShellResult
 from kash.llm_tools.llm_messages import Message, MessageTemplate
-from kash.model.items_model import Item, ItemType, State, UNTITLED
+from kash.model.items_model import UNTITLED, Item, ItemType, State
 from kash.model.language_models import LLM, LLMName
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, ParamDeclarations, TypedParamValues
@@ -30,7 +31,7 @@ from kash.model.preconditions_model import Precondition
 from kash.util.parse_key_vals import format_key_value
 from kash.util.string_template import StringTemplate
 from kash.util.type_utils import not_none
-from kash.workspaces.workspaces import get_workspace, Workspace
+from kash.workspaces.workspaces import Workspace, get_workspace
 
 log = get_logger(__name__)
 
@@ -48,7 +49,7 @@ class ActionInput:
     Input to an action.
     """
 
-    items: List[Item]
+    items: list[Item]
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ class ExecContext:
     rerun: bool = False
     """If True, always run actions, even cacheable ones that have results."""
 
-    override_state: Optional[State] = None
+    override_state: State | None = None
     """If specified, override the state of result items. Useful to mark items as transient."""
 
     @property
@@ -99,7 +100,7 @@ class ActionResult:
     about how to handle the result items.
     """
 
-    items: List[Item]
+    items: list[Item]
     """Results from this action. Most often, just a single item."""
 
     replaces_input: bool = False
@@ -108,10 +109,10 @@ class ActionResult:
     skip_duplicates: bool = False
     """If True, do not save duplicate items (based on identity)."""
 
-    path_ops: Optional[List[PathOp]] = None
+    path_ops: list[PathOp] | None = None
     """If specified, operations to perform on specific paths, such as selecting items."""
 
-    shell_result: Optional[ShellResult] = None
+    shell_result: ShellResult | None = None
     """Customize control of how the action's result is displayed in the shell."""
 
     def has_hints(self) -> bool:
@@ -159,14 +160,14 @@ class LLMOptions:
     Options for an LLM request or transformation.
     """
 
-    op_name: Optional[str] = None
+    op_name: str | None = None
     model: LLMName = LLM.default_basic
     system_message: Message = Message("")
     body_template: MessageTemplate = MessageTemplate("{body}")
     windowing: WindowSettings = WINDOW_NONE
     diff_filter: DiffFilter = DIFF_FILTER_NONE
 
-    def updated_with(self, param_name: str, value: Any) -> "LLMOptions":
+    def updated_with(self, param_name: str, value: Any) -> LLMOptions:
         """Update option from an action parameter."""
         if param_name in LLM_OPTION_PARAMS:
             assert hasattr(self, param_name)
@@ -255,7 +256,7 @@ class Action(ABC):
     common parameter (like `model` or `query`) that is shared by several actions.
     """
 
-    param_source: Dict[str, ParamSource] = field(default_factory=dict)
+    param_source: dict[str, ParamSource] = field(default_factory=dict)
     """
     For each parameter, the source of its value. The actual value is a field.
     Useful for logs/debugging.
@@ -295,9 +296,9 @@ class Action(ABC):
 
     @classmethod
     def create(
-        cls: Type[Action],
-        explicit_param_values: Optional[TypedParamValues],
-        ctx_param_values: Optional[TypedParamValues] = None,
+        cls: type[Action],
+        explicit_param_values: TypedParamValues | None,
+        ctx_param_values: TypedParamValues | None = None,
     ):
         """
         Instantiate the action for use, optionally with overridden parameters.
@@ -398,7 +399,7 @@ class Action(ABC):
         # Update corresponding LLM option if appropriate.
         self.llm_options = self.llm_options.updated_with(param_name, value)
 
-    def param_value_summary(self) -> Dict[str, str]:
+    def param_value_summary(self) -> dict[str, str]:
         """
         Readable, serializable summary of the action's non-default parameters, to include in
         logs or metadata.
@@ -409,7 +410,7 @@ class Action(ABC):
                 return value.name
             return str(value)
 
-        changed_params: Dict[str, Any] = {}
+        changed_params: dict[str, Any] = {}
         for param in self.params:
             if self.has_param(param.name):
                 value = self.get_param(param.name)
@@ -422,7 +423,7 @@ class Action(ABC):
             [format_key_value(name, value) for name, value in self.param_value_summary().items()]
         )
 
-    def _field_info(self, param_name: str) -> Optional[DataclassField]:
+    def _field_info(self, param_name: str) -> DataclassField | None:
         return next((f for f in self.__dataclass_fields__.values() if f.name == param_name), None)
 
     def _update_param_values(
@@ -442,7 +443,7 @@ class Action(ABC):
         """
         action_param_names = [param.name for param in self.params]
 
-        overrides: List[str] = []
+        overrides: list[str] = []
         for param_name, value in new_values.values.items():
             # Sanity checks.
             if param_name not in ALL_COMMON_PARAMS and param_name not in action_param_names:
@@ -519,7 +520,7 @@ class Action(ABC):
 
         return item
 
-    def preassemble(self, operation: Operation, input: ActionInput) -> Optional[ActionResult]:
+    def preassemble(self, operation: Operation, input: ActionInput) -> ActionResult | None:
         """
         Actions can have a separate preliminary step to pre-assemble outputs. This allows
         us to determine the title and types for the output items and check if they were

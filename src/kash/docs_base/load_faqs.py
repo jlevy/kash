@@ -1,16 +1,14 @@
 import re
 from functools import cache
-from typing import List
 
 from kash.config.logger import get_logger
 from kash.docs.load_help_topics import load_help_topics
 from kash.help.help_types import Faq
 
-
 log = get_logger(__name__)
 
 
-def extract_heading_body_pairs(markdown_text: str, heading_chars: str = "###") -> List[Faq]:
+def extract_heading_body_pairs(markdown_text: str, heading_chars: str = "###") -> list[Faq]:
     """
     Extract headings and body text pairs from markdown text.
     Each heading starts with the specified heading characters and the body text is all text
@@ -42,7 +40,7 @@ def extract_heading_body_pairs(markdown_text: str, heading_chars: str = "###") -
 
 
 @cache
-def load_faqs() -> List[Faq]:
+def load_faqs() -> list[Faq]:
     """
     Load all FAQs from the help topics.
     """

@@ -1,14 +1,13 @@
 from pathlib import Path
-from typing import Optional
 
-from frontmatter_format import fmf_has_frontmatter, fmf_read, fmf_write, FmStyle
+from frontmatter_format import FmStyle, fmf_has_frontmatter, fmf_read, fmf_write
 from funlog import tally_calls
 from prettyfmt import custom_key_sort, fmt_size_human
 
 from kash.config.logger import get_logger
 from kash.file_storage.mtime_cache import MtimeCache
 from kash.file_tools.file_formats_model import Format
-from kash.model.items_model import Item, ITEM_FIELDS
+from kash.model.items_model import ITEM_FIELDS, Item
 from kash.model.operations_model import OPERATION_FIELDS
 from kash.text_formatting.doc_normalization import normalize_formatting_ansi
 from kash.util.format_utils import fmt_loc
@@ -71,7 +70,7 @@ def write_item(item: Item, path: Path):
     _item_cache.update(path, item)
 
 
-def read_item(path: Path, base_dir: Optional[Path]) -> Item:
+def read_item(path: Path, base_dir: Path | None) -> Item:
     """
     Read an item from a file. Uses `base_dir` to resolve paths, so the item's
     `store_path` will be set and be relative to `base_dir`.
@@ -92,7 +91,7 @@ def read_item(path: Path, base_dir: Optional[Path]) -> Item:
 
 
 @tally_calls()
-def _read_item_uncached(path: Path, base_dir: Optional[Path]) -> Item:
+def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
     has_frontmatter = fmf_has_frontmatter(path)
     body = metadata = None
     if has_frontmatter:
@@ -140,7 +139,7 @@ def _read_item_uncached(path: Path, base_dir: Optional[Path]) -> Item:
                     fmt_size_human(stat.st_size),
                     fmt_loc(path),
                 )
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 item.body = f.read()
             item.external_path = None
 

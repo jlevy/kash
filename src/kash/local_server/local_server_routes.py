@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Tuple
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, HTTPException, Request
@@ -40,7 +39,7 @@ def server_get_workspace(ws_name: str) -> FileStore:
     return file_store
 
 
-def format_local_url(route_path: str, **params: Optional[str]) -> str:
+def format_local_url(route_path: str, **params: str | None) -> str:
     """
     URL to content on the local server.
     """
@@ -155,7 +154,7 @@ def explain(text: str):
     )
 
 
-def _read_lines(path: Path, max_lines: int = DEFAULT_MAX_LINES) -> Tuple[str, Optional[int]]:
+def _read_lines(path: Path, max_lines: int = DEFAULT_MAX_LINES) -> tuple[str, int | None]:
     """
     Read the first `max_lines` lines of a file. Only reads that amount into memory.
     If file was truncated, also return how many bytes were read.
@@ -164,7 +163,7 @@ def _read_lines(path: Path, max_lines: int = DEFAULT_MAX_LINES) -> Tuple[str, Op
     # TODO: Could make this frontmatter aware but seems okay as is for now.
     # frontmatter_str, offset = fmf_read_frontmatter_raw(path)
     bytes_read = 0
-    with open(path, "r") as f:
+    with open(path) as f:
         for _ in range(max_lines):
             line = f.readline()
             if not line:  # EOF reached
@@ -177,7 +176,7 @@ def _read_lines(path: Path, max_lines: int = DEFAULT_MAX_LINES) -> Tuple[str, Op
     return "\n".join(lines), bytes_read if has_more else None
 
 
-def _file_body_and_footer(path: Path, max_lines: int) -> Tuple[str, Optional[str]]:
+def _file_body_and_footer(path: Path, max_lines: int) -> tuple[str, str | None]:
     body_text, truncated_at = _read_lines(path, max_lines)
     if truncated_at:
         body_text += "\n…"
@@ -187,7 +186,7 @@ def _file_body_and_footer(path: Path, max_lines: int) -> Tuple[str, Optional[str
     return body_text, footer_note
 
 
-def _text_body_and_footer(body_text: str, max_lines: int) -> Tuple[str, Optional[str]]:
+def _text_body_and_footer(body_text: str, max_lines: int) -> tuple[str, str | None]:
     if not body_text:
         return "", None
 
@@ -204,8 +203,8 @@ def _serve_item(
     request: Request,
     item_or_path: Item | Path,
     page_url: str,
-    body_text: Optional[str] = None,
-    footer_note: Optional[str] = None,
+    body_text: str | None = None,
+    footer_note: str | None = None,
     brief_header: bool = False,
 ) -> StreamingResponse | HTMLResponse:
     """
@@ -226,7 +225,6 @@ def _serve_item(
     # Handle binary items, serving with a streaming response.
     # TODO: Could also expose thumbnails for images, PDF, etc.
     if item and item.is_binary:
-
         mime_type = item.format and item.format.mime_type
         if not mime_type:
             mime_type = "application/octet-stream"

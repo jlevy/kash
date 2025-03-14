@@ -1,7 +1,6 @@
-from typing import Optional, Protocol
+from typing import Protocol
 
 from prettyfmt import abbrev_obj
-
 from pydantic.dataclasses import dataclass
 
 from kash.util.url import Url
@@ -14,12 +13,12 @@ class WebPageData:
     """
 
     url: Url
-    title: Optional[str] = None
-    byline: Optional[str] = None
-    description: Optional[str] = None
-    text: Optional[str] = None
-    clean_html: Optional[str] = None
-    thumbnail_url: Optional[Url] = None
+    title: str | None = None
+    byline: str | None = None
+    description: str | None = None
+    text: str | None = None
+    clean_html: str | None = None
+    thumbnail_url: Url | None = None
 
     def __repr__(self):
         return abbrev_obj(self)

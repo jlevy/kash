@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 from pydantic.dataclasses import dataclass
 
 from kash.file_tools.file_ext import FileExt
-from kash.file_tools.file_formats import detect_mime_type, mime_type_is_text, MimeType
+from kash.file_tools.file_formats import MimeType, detect_mime_type, mime_type_is_text
 from kash.file_tools.filename_parsing import parse_file_ext
-from kash.util.url import is_file_url, parse_file_url, Url
+from kash.util.url import Url, is_file_url, parse_file_url
 
 
 class MediaType(Enum):
@@ -172,7 +171,7 @@ class Format(Enum):
         return format_to_media_type.get(self, MediaType.binary)
 
     @classmethod
-    def guess_by_file_ext(cls, file_ext: "FileExt") -> Optional["Format"]:
+    def guess_by_file_ext(cls, file_ext: FileExt) -> Format | None:
         """
         Guess the format for a given file extension, if it determines the format,
         None if format is ambiguous.
@@ -200,7 +199,7 @@ class Format(Enum):
         return ext_to_format.get(file_ext.value, None)
 
     @property
-    def file_ext(self) -> Optional[FileExt]:
+    def file_ext(self) -> FileExt | None:
         """
         File extension to use for a given format.
         """
@@ -256,7 +255,7 @@ class Format(Enum):
         }
 
     @property
-    def mime_type(self) -> Optional[MimeType]:
+    def mime_type(self) -> MimeType | None:
         """
         MIME type for the format, or None if not recognized.
         """
@@ -266,7 +265,7 @@ class Format(Enum):
         return None
 
     @classmethod
-    def from_mime_type(cls, mime_type: Optional[MimeType]) -> Optional[Format]:
+    def from_mime_type(cls, mime_type: MimeType | None) -> Format | None:
         """
         Format from mime type.
         """
@@ -281,13 +280,13 @@ Format._init_mime_type_map()
 
 @dataclass(frozen=True)
 class FileFormatInfo:
-    file_ext: Optional[FileExt]
+    file_ext: FileExt | None
     """File extension, if recognized."""
 
-    format: Optional[Format]
+    format: Format | None
     """Format, if recognized."""
 
-    mime_type: Optional[MimeType]
+    mime_type: MimeType | None
     """Raw mime type, which may include more formats than the ones above."""
 
     @property
@@ -336,7 +335,7 @@ class FileFormatInfo:
         return self.as_str()
 
 
-def _guess_format(file_ext: Optional[FileExt], mime_type: Optional[MimeType]) -> Optional[Format]:
+def _guess_format(file_ext: FileExt | None, mime_type: MimeType | None) -> Format | None:
     format = None
     if file_ext:
         format = Format.guess_by_file_ext(file_ext)
@@ -345,7 +344,7 @@ def _guess_format(file_ext: Optional[FileExt], mime_type: Optional[MimeType]) ->
     return format
 
 
-def guess_format_by_name(path: str | Path) -> Optional[Format]:
+def guess_format_by_name(path: str | Path) -> Format | None:
     """
     Fast guess of file format by the file name only.
     """
@@ -365,7 +364,7 @@ def file_format_info(path: str | Path) -> FileFormatInfo:
     return FileFormatInfo(file_ext, format, final_mime_type)
 
 
-def detect_file_format(path: str | Path) -> Optional[Format]:
+def detect_file_format(path: str | Path) -> Format | None:
     """
     Detect best guess at file format based on file extension and file content.
     """
@@ -381,13 +380,13 @@ def detect_media_type(filename: str | Path) -> MediaType:
     return media_type
 
 
-def choose_file_ext(url_or_path: Url | Path | str) -> Optional[FileExt]:
+def choose_file_ext(url_or_path: Url | Path | str) -> FileExt | None:
     """
     Pick a suffix to reflect the type of the content. Recognizes known file
     extensions, then tries libmagic, then gives up.
     """
 
-    def file_ext_for(path: Path) -> Optional[FileExt]:
+    def file_ext_for(path: Path) -> FileExt | None:
         fmt = detect_file_format(path)
         return fmt.file_ext if fmt else None
 

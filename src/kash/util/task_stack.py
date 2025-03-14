@@ -1,7 +1,6 @@
 import threading
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import List, Set
 
 from kash.config.text_styles import (
     EMOJI_ACTION,
@@ -62,8 +61,8 @@ class TaskStack:
     """
 
     def __init__(self):
-        self.stack: List[TaskState] = []
-        self.exceptions: Set[Exception] = set()
+        self.stack: list[TaskState] = []
+        self.exceptions: set[Exception] = set()
 
     def push(self, name: str, total_parts: int = 1, unit: str = ""):
         self.stack.append(TaskState(name, 0, total_parts, unit))

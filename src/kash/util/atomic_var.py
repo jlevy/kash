@@ -1,6 +1,7 @@
 import copy as copy_module
 import threading
-from typing import Callable, Generic, TypeVar
+from collections.abc import Callable
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 

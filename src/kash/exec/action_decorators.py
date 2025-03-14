@@ -1,33 +1,28 @@
 import inspect
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
 from textwrap import dedent
 from typing import (
     Any,
-    Callable,
-    cast,
     Concatenate,
-    Dict,
-    List,
-    Optional,
     ParamSpec,
-    Set,
-    Tuple,
-    Type,
     TypeAlias,
     TypeVar,
+    cast,
 )
 
 from funlog import format_func_call
 from prettyfmt import fmt_lines
-from pydantic.dataclasses import dataclass as pydantic_dataclass, is_pydantic_dataclass
+from pydantic.dataclasses import dataclass as pydantic_dataclass
+from pydantic.dataclasses import is_pydantic_dataclass
 from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition
 from kash.exec.action_exec import run_action_with_caching
 from kash.exec.action_registry import register_action_class
-from kash.exec_model.args_model import ArgCount, ArgType, ONE_ARG
+from kash.exec_model.args_model import ONE_ARG, ArgCount, ArgType
 from kash.model.actions_model import (
     Action,
     ActionInput,
@@ -64,7 +59,7 @@ AnyActionFunction: TypeAlias = ActionFunction | SimpleActionFunction
 AF = TypeVar("AF", bound=AnyActionFunction)
 
 
-def _source_path(obj: Any) -> Optional[Path]:
+def _source_path(obj: Any) -> Path | None:
     if hasattr(obj, "__source_path__"):
         return obj.__source_path__
 
@@ -81,7 +76,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 
-def kash_action_class(cls: Type[A]) -> Type[A]:
+def kash_action_class(cls: type[A]) -> type[A]:
     """
     Class decorator to register an action. This also ensures that the action is
     a Pydantic dataclass and records the source path in `__source_path__`.
@@ -95,11 +90,11 @@ def kash_action_class(cls: Type[A]) -> Type[A]:
 
     # Apply Pydantic's @dataclass decorator if not already a Pydantic dataclass.
     if not is_pydantic_dataclass(cls):
-        pyd_cls = cast(Type[A], pydantic_dataclass(cls))
+        pyd_cls = cast(type[A], pydantic_dataclass(cls))
     else:
-        pyd_cls = cast(Type[A], cls)
+        pyd_cls = cast(type[A], cls)
 
-    setattr(pyd_cls, "__source_path__", _source_path(cls))
+    pyd_cls.__source_path__ = _source_path(cls)
 
     register_action_class(pyd_cls)
 
@@ -107,8 +102,8 @@ def kash_action_class(cls: Type[A]) -> Type[A]:
 
 
 def _register_dynamic_action(
-    action_cls: Type[A], action_name: str, action_description: str, source_path: Optional[Path]
-) -> Type[A]:
+    action_cls: type[A], action_name: str, action_description: str, source_path: Path | None
+) -> type[A]:
     # Set class fields for name and description for convenience.
     action_cls.name = action_name
     action_cls.description = action_description
@@ -121,16 +116,16 @@ def _register_dynamic_action(
     # Register the new action class.
     pyd_cls = kash_action_class(action_cls)
 
-    setattr(pyd_cls, "__source_path__", source_path)
+    pyd_cls.__source_path__ = source_path
     return pyd_cls
 
 
 def _merge_param_declarations(
     action_name: str,
     params: ParamDeclarations,
-    func_params: List[FuncParam],
+    func_params: list[FuncParam],
     param_start_pos: int = 1,
-) -> Tuple[ParamDeclarations, Set[str]]:
+) -> tuple[ParamDeclarations, set[str]]:
     """
     Merge param declarations from the `@kash_action` decorator with the formal parameters
     of the decorated function.
@@ -184,7 +179,7 @@ def _merge_param_declarations(
     return tuple(merged_params.values()), func_params_with_defaults
 
 
-def _set_param_values(params: ParamDeclarations, fp_overrides: Set[str], action: Action):
+def _set_param_values(params: ParamDeclarations, fp_overrides: set[str], action: Action):
     # Set all parameters, noting which ones were overridden by a function default.
     for param in params:
         source = (
@@ -196,8 +191,8 @@ def _set_param_values(params: ParamDeclarations, fp_overrides: Set[str], action:
 
 
 def kash_action(
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
     cacheable: bool = True,
     precondition: Precondition = Precondition.always,
     arg_type: ArgType = ArgType.Locator,
@@ -205,13 +200,13 @@ def kash_action(
     output_type: ItemType = ItemType.doc,
     expected_outputs: ArgCount = ONE_ARG,
     params: ParamDeclarations = (),
-    run_per_item: Optional[bool] = None,
+    run_per_item: bool | None = None,
     uses_selection: bool = True,
     interactive_input: bool = False,
     mcp_tool: bool = False,
     title_template: TitleTemplate = TitleTemplate("{title}"),
     llm_options: LLMOptions = LLMOptions(),
-    override_state: Optional[State] = None,
+    override_state: State | None = None,
     rerun: bool = False,
 ) -> Callable[[AF], AF]:
     """
@@ -324,8 +319,8 @@ def kash_action(
             @override
             def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
                 # Map the final, current actions param values back to the function parameters.
-                pos_args: List[Any] = []
-                kw_args: Dict[str, Any] = {}
+                pos_args: list[Any] = []
+                kw_args: dict[str, Any] = {}
                 if context_param:
                     kw_args["context"] = context
                 for fp in func_params[1:]:
@@ -356,7 +351,7 @@ def kash_action(
             # We'll map the Python kwargs to kash param values then pass that to the action,
             # which will map them back to the original function. Kind of convoluted but this
             # way the logic is identical for plain Python invocation and general action execution.
-            param_values: Dict[str, Any] = {}
+            param_values: dict[str, Any] = {}
             if len(args) > 0:
                 raise ValueError(
                     f"Unexpected positional arguments: {args} on function `{orig_func.__name__}`"
@@ -375,7 +370,7 @@ def kash_action(
             # Set up the execution context.
             # Get the context if it is provided (unlikely when used directly) or otherwise
             # use the current workspace.
-            provided_context = cast(Optional[ExecContext], kwargs.pop("context", None))
+            provided_context = cast(ExecContext | None, kwargs.pop("context", None))
             if provided_context:
                 context = provided_context
             else:
@@ -405,8 +400,8 @@ def kash_action(
             final_func = cast(AF, wrapped_func)
 
         # Usual __name__ etc already set by @wraps but we also set our own meta fields.
-        setattr(final_func, "__action_class__", FuncAction)
-        setattr(final_func, "__source_path__", _source_path(orig_func))
+        final_func.__action_class__ = FuncAction
+        final_func.__source_path__ = _source_path(orig_func)
 
         return final_func
 

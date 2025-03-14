@@ -1,4 +1,4 @@
-from typing import List, NamedTuple, Set, Tuple
+from typing import NamedTuple
 
 
 class Key(NamedTuple):
@@ -11,21 +11,23 @@ class Uniquifier:
     Maintain a set of unique names, adding suffixes to ensure uniqueness when needed.
     """
 
-    def __init__(self, init_values: Set[Key] = set(), template: str = "{name}_{suffix}"):
+    def __init__(self, init_values: set[Key] | None = None, template: str = "{name}_{suffix}"):
+        if init_values is None:
+            init_values = set()
         if "{name}" not in template or "{suffix}" not in template:
             raise ValueError(f"Template must contain placeholders for name and suffix: {template}")
 
-        self.keys: Set[Key] = set()
+        self.keys: set[Key] = set()
         self.template = template
 
         if init_values:
             self.keys.update(init_values)
 
-    def uniquify_historic(self, name: str, group: str = "") -> Tuple[str, List[str]]:
+    def uniquify_historic(self, name: str, group: str = "") -> tuple[str, list[str]]:
         """
         Same as uniquify, but also return the list of previous names that were used.
         """
-        old_names: List[str] = []
+        old_names: list[str] = []
 
         if Key(name, group) not in self.keys:
             self.keys.add(Key(name, group))

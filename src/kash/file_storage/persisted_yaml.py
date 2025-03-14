@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Any
 
 from frontmatter_format import read_yaml_file, write_yaml_file
 
@@ -26,12 +26,12 @@ class PersistedYaml:
         if not Path(self.filename).exists():
             self.save(value)
 
-    def remove_values(self, targets: List[Any]):
+    def remove_values(self, targets: list[Any]):
         value = self.read()
         new_value = remove_values(value, targets)
         self.save(new_value)
 
-    def replace_values(self, replacements: List[Tuple[Any, Any]]):
+    def replace_values(self, replacements: list[tuple[Any, Any]]):
         value = self.read()
         new_value = replace_values(value, replacements)
         self.save(new_value)

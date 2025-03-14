@@ -5,7 +5,7 @@ from kash.errors import InvalidInput
 from kash.file_tools.file_formats_model import Format
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
-from kash.util.url import is_url, Locator, Url
+from kash.util.url import Locator, Url, is_url
 from kash.web_content.canon_url import canonicalize_url
 from kash.workspaces import Workspace
 

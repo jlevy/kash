@@ -1,7 +1,7 @@
 from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.precondition_defs import is_config
-from kash.model import ActionInput, ActionResult, FileExt, Format, Item, ItemType, ONE_ARG
+from kash.model import ONE_ARG, ActionInput, ActionResult, FileExt, Format, Item, ItemType
 from kash.web_gen import tabbed_webpage
 
 log = get_logger(__name__)

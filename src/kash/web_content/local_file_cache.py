@@ -1,9 +1,9 @@
 import os
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Optional, Tuple
 
 from funlog import log_if_modifies
 from prettyfmt import fmt_path
@@ -12,10 +12,9 @@ from strif import atomic_output_file, copyfile_atomic
 from kash.config.logger import get_logger
 from kash.errors import FileNotFound, InvalidInput
 from kash.file_tools.file_formats_model import choose_file_ext
-from kash.util.url import is_file_url, is_url, normalize_url, parse_file_url, Url
+from kash.util.url import Url, is_file_url, is_url, normalize_url, parse_file_url
 from kash.web_content.dir_store import DirStore
 from kash.web_content.web_fetch import download_url
-
 
 log = get_logger(__name__)
 
@@ -72,7 +71,7 @@ Cacheable = Url | Path | Loadable
 """An item that can be cached as a file."""
 
 
-def _suffix_for(cacheable: Cacheable) -> Optional[str]:
+def _suffix_for(cacheable: Cacheable) -> str | None:
     key = cacheable.key if isinstance(cacheable, Loadable) else cacheable
     file_ext = choose_file_ext(key)
     return file_ext.dot_ext if file_ext else None
@@ -119,7 +118,7 @@ class LocalFileCache(DirStore):
         root: Path,
         default_expiration_sec: float = NEVER,
         mode: WebCacheMode = WebCacheMode.LIVE,
-        backup_url: Optional[Url] = None,
+        backup_url: Url | None = None,
     ) -> None:
         """
         Expiration is in seconds, and can be NEVER or ALWAYS.
@@ -184,7 +183,7 @@ class LocalFileCache(DirStore):
         now = time.time()
         return now - read_mtime(cache_path)
 
-    def _is_expired(self, cache_path: Path, expiration_sec: Optional[float] = None) -> bool:
+    def _is_expired(self, cache_path: Path, expiration_sec: float | None = None) -> bool:
         if self.mode in (WebCacheMode.TEST, WebCacheMode.UPDATE):
             return False
 
@@ -198,7 +197,7 @@ class LocalFileCache(DirStore):
 
         return self._age_in_sec(cache_path) > expiration_sec
 
-    def is_cached(self, source: Cacheable, expiration_sec: Optional[float] = None) -> bool:
+    def is_cached(self, source: Cacheable, expiration_sec: float | None = None) -> bool:
         if expiration_sec is None:
             expiration_sec = self.default_expiration_sec
 
@@ -208,7 +207,7 @@ class LocalFileCache(DirStore):
 
         return cache_path is not None and not self._is_expired(cache_path, expiration_sec)
 
-    def cache(self, source: Cacheable, expiration_sec: Optional[float] = None) -> Tuple[Path, bool]:
+    def cache(self, source: Cacheable, expiration_sec: float | None = None) -> tuple[Path, bool]:
         """
         Returns cached download path of given URL and whether it was previously cached.
         For file:// URLs does a copy.

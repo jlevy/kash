@@ -16,9 +16,9 @@ from kash.file_tools.file_formats_model import file_format_info
 from kash.llm_tools.chat_format import ChatHistory
 from kash.model.items_model import ItemType
 from kash.shell_output.kerm_code_utils import click_to_paste
-from kash.shell_output.shell_output import cprint, format_name_and_value, PrintHooks
+from kash.shell_output.shell_output import PrintHooks, cprint, format_name_and_value
 from kash.util.format_utils import fmt_count_items, fmt_loc
-from kash.workspaces import current_workspace, Selection
+from kash.workspaces import Selection, current_workspace
 
 log = get_logger(__name__)
 

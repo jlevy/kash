@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
 
 from kash.util.url import Locator
-
 
 CommandArg = Locator | str
 """
@@ -32,8 +30,8 @@ class ArgCount:
     The number of arguments required for a command or action.
     """
 
-    min_args: Optional[int]
-    max_args: Optional[int]
+    min_args: int | None
+    max_args: int | None
 
     def as_str(self) -> str:
         if self == ArgCount(0, 0):
@@ -64,7 +62,7 @@ class Signature:
     The signature (list of argument types) of a command or action.
     """
 
-    arg_type: ArgType | List[ArgType]
+    arg_type: ArgType | list[ArgType]
     arg_count: ArgCount
 
     @classmethod
@@ -72,7 +70,7 @@ class Signature:
         return cls(arg_type, arg_count)
 
     @classmethod
-    def multi_type(cls, arg_types: List[ArgType]) -> Signature:
+    def multi_type(cls, arg_types: list[ArgType]) -> Signature:
         nargs = len(arg_types)
         return cls(arg_types, ArgCount(nargs, nargs)).validate()
 

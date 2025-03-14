@@ -10,7 +10,6 @@ from kash.config.text_styles import PROMPT_MAIN
 from kash.shell_output.kerm_code_utils import text_with_tooltip
 from kash.workspaces import current_workspace
 
-
 # Xonsh default prompt for reference:
 # dp = (
 #     "{YELLOW}{env_name}{RESET}"
@@ -139,7 +138,7 @@ class PromptStyle(Enum):
                 prompt_char_color=colors.terminal.white_dark,
             )
         else:
-            assert False, "Invalid prompt style"
+            raise AssertionError("Invalid prompt style")
 
 
 def get_prompt_style() -> PromptStyle:

@@ -1,23 +1,23 @@
 import re
+from collections.abc import Iterable
 from datetime import datetime, timedelta
 from functools import cache
 from io import BytesIO
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, TextIO
+from typing import TextIO
 from urllib.request import Request, urlopen
 from zipfile import ZipFile
 
 from strif import atomic_output_file
-
 from tldr import (
     DOWNLOAD_CACHE_LOCATION,
+    REQUEST_HEADERS,
+    URLOPEN_CONTEXT,
     get_cache_dir,
     get_cache_file_path,
     get_language_list,
     get_platform_list,
-    REQUEST_HEADERS,
     store_page_to_cache,
-    URLOPEN_CONTEXT,
 )
 
 from kash.config.logger import get_logger
@@ -31,7 +31,7 @@ from kash.xonsh_custom.shell_which import is_valid_command
 log = get_logger(__name__)
 
 
-def excluded_tldr_commands() -> Set[str]:
+def excluded_tldr_commands() -> set[str]:
     from kash.exec.action_registry import get_all_actions_defaults
     from kash.exec.command_registry import get_all_commands
 
@@ -105,7 +105,7 @@ def _update_cache() -> None:
         _timestamp_file.touch()
 
 
-def tldr_page_from_cache(command: str) -> Optional[str]:
+def tldr_page_from_cache(command: str) -> str | None:
     command = command.strip()
     if command.lower() in DROPPED_TLDR_COMMANDS:
         return None
@@ -158,7 +158,7 @@ def tldr_refresh_cache() -> bool:
     return False
 
 
-def tldr_help(command: str, drop_header: bool = False) -> Optional[str]:
+def tldr_help(command: str, drop_header: bool = False) -> str | None:
     """
     Get TLDR help for a command, if available. Pre-caches all pages with occasional refresh.
     This way it's fast and fails instantly for unknown commands.
@@ -179,7 +179,7 @@ def tldr_help(command: str, drop_header: bool = False) -> Optional[str]:
 
 
 @cache
-def tldr_description(command: str) -> Optional[str]:
+def tldr_description(command: str) -> str | None:
     """
     Get just the description from tldr.
     Returns the short command description paragraph, which is always on a markdown block with
@@ -208,7 +208,7 @@ def tldr_description(command: str) -> Optional[str]:
     return _clean_tldr_comment(" ".join(lines)) if lines else None
 
 
-def tldr_descriptions(commands: List[str] = RECOMMENDED_TLDR_COMMANDS) -> List[CommandInfo]:
+def tldr_descriptions(commands: list[str] = RECOMMENDED_TLDR_COMMANDS) -> list[CommandInfo]:
     command_infos = [
         CommandInfo(
             command_type=CommandType.shell_recommended,
@@ -224,7 +224,7 @@ def tldr_descriptions(commands: List[str] = RECOMMENDED_TLDR_COMMANDS) -> List[C
     return command_infos
 
 
-def tldr_snippets(command: str) -> List[CommentedCommand]:
+def tldr_snippets(command: str) -> list[CommentedCommand]:
     """
     Parse TLDR help into a list of CommentedCommand objects, which can function as
     suggested command snippets.
@@ -276,7 +276,7 @@ def _write_tldr_snippets(commands: Iterable[str], file: TextIO) -> None:
             print(snippet.script_str, file=file)
 
 
-def dump_all_tldr_snippets(commands: List[str] = RECOMMENDED_TLDR_COMMANDS) -> None:
+def dump_all_tldr_snippets(commands: list[str] = RECOMMENDED_TLDR_COMMANDS) -> None:
     """
     Dump TLDR snippets for all commands in the input.
     """

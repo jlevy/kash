@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidState
@@ -56,7 +55,7 @@ def search(
             )
             cprint(f"{command}")
         rg_output = rg.run().as_string
-        results: List[str] = [
+        results: list[str] = [
             line.lstrip(strip_prefix) if strip_prefix and line.startswith(strip_prefix) else line
             for line in rg_output.splitlines()
         ]

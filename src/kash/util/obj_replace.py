@@ -1,5 +1,6 @@
 import operator
-from typing import Any, Callable, List, Tuple, TypeAlias
+from collections.abc import Callable
+from typing import Any, TypeAlias
 
 
 class DeleteSentinel:
@@ -10,7 +11,7 @@ DELETE_VALUE = DeleteSentinel()
 """Sentinel value to indicate a list or dict value should be deleted."""
 
 
-ValueReplacements: TypeAlias = List[Tuple[Any, Any]]
+ValueReplacements: TypeAlias = list[tuple[Any, Any]]
 
 
 def replace_values(
@@ -50,7 +51,7 @@ def replace_values(
 
 
 def remove_values(
-    data: Any, targets: List[Any], eq: Callable[[Any, Any], bool] = operator.eq
+    data: Any, targets: list[Any], eq: Callable[[Any, Any], bool] = operator.eq
 ) -> Any:
     return replace_values(data, [(target, DELETE_VALUE) for target in targets], eq)
 

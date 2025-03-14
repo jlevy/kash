@@ -3,12 +3,11 @@ from __future__ import annotations
 import asyncio
 import threading
 from functools import cached_property
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from mcp.server.sse import SseServerTransport
 from starlette.applications import Starlette
 from starlette.routing import Mount, Route
-
 
 if TYPE_CHECKING:
     import uvicorn
@@ -48,7 +47,7 @@ def create_mcp_app() -> Starlette:
 class MCPServerSSE:
     def __init__(self):
         self.server_lock = threading.RLock()
-        self.server_instance: Optional["uvicorn.Server"] = None
+        self.server_instance: uvicorn.Server | None = None
         self.did_exit = threading.Event()
 
     @cached_property

@@ -2,7 +2,7 @@ import copy
 import threading
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generic, Optional, Tuple, TypeVar
+from typing import Generic, TypeVar
 
 from cachetools import LRUCache
 from strif import file_mtime_hash
@@ -29,7 +29,7 @@ class MtimeCache(Generic[T]):
     """
 
     def __init__(self, max_size, name: str, log_freq: int = 500):
-        self.cache: LRUCache[str, Tuple[str, T]] = LRUCache(maxsize=max_size)
+        self.cache: LRUCache[str, tuple[str, T]] = LRUCache(maxsize=max_size)
         self.lock = threading.RLock()
         self.stats = CacheStats()
         self.prev_stats = CacheStats()  # Initialize prev_stats with CacheStats
@@ -39,7 +39,7 @@ class MtimeCache(Generic[T]):
     def _cache_key(self, path: Path) -> str:
         return str(path.resolve())
 
-    def read(self, path: Path) -> Optional[T]:
+    def read(self, path: Path) -> T | None:
         """
         Returns the cached item (actually a deep copy to be safe) if the item is present
         and the file hasn't changed; otherwise, returns None.

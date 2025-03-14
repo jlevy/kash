@@ -1,12 +1,12 @@
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Dict, get_args, get_origin, List, Optional, Type, TypeVar, Union
+from typing import Any, TypeVar, Union, get_args, get_origin
 
 T = TypeVar("T")
 
 
-def not_none(value: Optional[T], message: Optional[str] = None) -> T:
+def not_none(value: T | None, message: str | None = None) -> T:
     """
     Fluent assertion that the given value is not None.
     """
@@ -44,7 +44,7 @@ def is_truthy(value: Any, strict: bool = True) -> bool:
     return bool(value)
 
 
-def as_dataclass(dict_data: Dict[str, Any], dataclass_type: Type[T]) -> T:
+def as_dataclass(dict_data: dict[str, Any], dataclass_type: type[T]) -> T:
     """
     Convert a dict recursively to dataclass object, raising an error if the data does
     not fit the dataclass. Can be used to validate a deserialized dict is compatible
@@ -59,7 +59,7 @@ def as_dataclass(dict_data: Dict[str, Any], dataclass_type: Type[T]) -> T:
         origin_type = get_origin(field_type)
 
         if origin_type is list and isinstance(v, list):
-            item_type: Type = get_args(field_type)[0]
+            item_type: type = get_args(field_type)[0]
             if is_dataclass(item_type):
                 dataclass_fields[k] = [as_dataclass(item, item_type) for item in v]
             else:
@@ -73,8 +73,8 @@ def as_dataclass(dict_data: Dict[str, Any], dataclass_type: Type[T]) -> T:
 
 
 def instantiate_as_type(
-    value: Any, target_type: Type[T], accept_enum_names: bool = True
-) -> Optional[T]:
+    value: Any, target_type: type[T], accept_enum_names: bool = True
+) -> T | None:
     """
     Simple instantiation of the given value to the specified target type, with a few
     extra features to handle Optional and Union types by trying each possible type.
@@ -83,7 +83,7 @@ def instantiate_as_type(
     if value is None:
         return None
 
-    def raise_value_error(failed_types: List[Type]):
+    def raise_value_error(failed_types: list[type]):
         extra_info = ""
         allowed_values = []
         for t in failed_types:

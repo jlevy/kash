@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import asdict, field, is_dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Type, TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from frontmatter_format import from_yaml_string, new_yaml
 from prettyfmt import abbrev_obj, abbrev_on_words, abbrev_phrase_in_middle, sanitize_title
@@ -20,7 +21,7 @@ from kash.file_tools.file_formats_model import FileExt, Format
 from kash.llm_tools.chat_format import ChatHistory
 from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
-from kash.model.paths_model import fmt_store_path, StorePath
+from kash.model.paths_model import StorePath, fmt_store_path
 from kash.text_formatting.markdown_util import markdown_to_html
 from kash.util.format_utils import fmt_loc, html_to_plaintext, plaintext_to_html
 from kash.util.url import Locator, Url
@@ -141,7 +142,7 @@ class ItemId:
         return self.id_str()
 
     @classmethod
-    def for_item(cls, item: Item) -> Optional[ItemId]:
+    def for_item(cls, item: Item) -> ItemId | None:
         from kash.web_content.canon_url import canonicalize_url
 
         item_id = None
@@ -166,9 +167,9 @@ class ItemRelations:
     Relations of a given item to other items.
     """
 
-    derived_from: Optional[List[Locator]] = None
-    diff_of: Optional[List[Locator]] = None
-    cites: Optional[List[Locator]] = None
+    derived_from: list[Locator] | None = None
+    diff_of: list[Locator] | None = None
+    cites: list[Locator] | None = None
 
     # TODO: Other relations.
     # named_entities: Optional[List[Locator]] = None
@@ -189,46 +190,46 @@ class Item:
 
     type: ItemType
     state: State = State.draft
-    title: Optional[str] = None
-    url: Optional[Url] = None
-    description: Optional[str] = None
-    format: Optional[Format] = None
-    file_ext: Optional[FileExt] = None
+    title: str | None = None
+    url: Url | None = None
+    description: str | None = None
+    format: Format | None = None
+    file_ext: FileExt | None = None
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    modified_at: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    modified_at: datetime | None = None
 
     # TODO: Consider adding aliases and tags. See also Obsidian frontmatter format:
     # https://help.obsidian.md/Editing+and+formatting/Properties#Default%20properties
 
     # Content of the item.
     # Text items are in body. Large or binary items may be stored externally.
-    body: Optional[str] = None
-    external_path: Optional[str] = None
-    original_filename: Optional[str] = None
+    body: str | None = None
+    external_path: str | None = None
+    original_filename: str | None = None
 
     # Path to the item in the store, if it has been saved.
     # TODO: Migrate this to StorePath.
-    store_path: Optional[str] = None
+    store_path: str | None = None
 
     # Optionally, relations to other items, including any time this item is derived from.
     relations: ItemRelations = field(default_factory=ItemRelations)
 
     # The operation that created this item.
-    source: Optional[Source] = None
+    source: Source | None = None
 
     # Optionally, a history of operations.
-    history: Optional[List[OperationSummary]] = None
+    history: list[OperationSummary] | None = None
 
     # Optionally, a URL to a thumbnail image for this item.
-    thumbnail_url: Optional[Url] = None
+    thumbnail_url: Url | None = None
 
     # Optional additional metadata.
-    extra: Optional[dict] = None
+    extra: dict | None = None
 
     # Optional execution context. Useful for letting functions that take only an Item
     # arg get access to context.
-    context: Optional["ExecContext"] = field(default=None, metadata={"exclude": True})
+    context: ExecContext | None = field(default=None, metadata={"exclude": True})
 
     # These fields we don't want in YAML frontmatter.
     # We don't include store_path as it's redundant with the filename.
@@ -243,7 +244,7 @@ class Item:
             self.relations = ItemRelations(**self.relations)
 
     @classmethod
-    def from_dict(cls, item_dict: Dict[str, Any], **kwargs) -> Item:
+    def from_dict(cls, item_dict: dict[str, Any], **kwargs) -> Item:
         """
         Deserialize fields from a dict that may include string and dict values.
         """
@@ -254,7 +255,7 @@ class Item:
         )
 
         # Metadata formats might change over time so it's important to gracefully handle issues.
-        def set_field(key: str, default: Any, cls_: Type[T]) -> T:
+        def set_field(key: str, default: Any, cls_: type[T]) -> T:
             try:
                 if key in item_dict:
                     return cls_(item_dict[key])  # type: ignore
@@ -321,7 +322,7 @@ class Item:
 
     @classmethod
     def from_external_path(
-        cls, path: Path | str, item_type: Optional[ItemType] = None, title: Optional[str] = None
+        cls, path: Path | str, item_type: ItemType | None = None, title: str | None = None
     ) -> Item:
         """
         Create a resource Item for a file with a format inferred from the file extension
@@ -398,10 +399,10 @@ class Item:
         return bool(self.format and self.format.is_binary)
 
     def set_created(self, timestamp: float):
-        self.created_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        self.created_at = datetime.fromtimestamp(timestamp, tz=UTC)
 
     def set_modified(self, timestamp: float):
-        self.modified_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        self.modified_at = datetime.fromtimestamp(timestamp, tz=UTC)
 
     def external_id(self) -> str:
         """
@@ -412,7 +413,7 @@ class Item:
             raise ValueError("Cannot get doc id for an item that has not been saved")
         return str(self.store_path)
 
-    def metadata(self, datetime_as_str: bool = False) -> Dict[str, Any]:
+    def metadata(self, datetime_as_str: bool = False) -> dict[str, Any]:
         """
         Metadata is all relevant non-None fields in easy-to-serialize form.
         Optional fields are omitted unless they are set.
@@ -612,9 +613,9 @@ class Item:
         raise ValueError(f"Cannot convert item of type {self.format} to HTML: {self}")
 
     def _copy_and_update(
-        self, other: Optional[Item] = None, update_timestamp: bool = False, **other_updates
-    ) -> Dict[str, Any]:
-        overrides: Dict[str, Any] = {"store_path": None, "modified_at": None}
+        self, other: Item | None = None, update_timestamp: bool = False, **other_updates
+    ) -> dict[str, Any]:
+        overrides: dict[str, Any] = {"store_path": None, "modified_at": None}
         if update_timestamp:
             overrides["created_at"] = datetime.now()
 
@@ -660,7 +661,7 @@ class Item:
                     self.relations.derived_from,
                     self,
                 )
-                derived_from: Optional[List[Locator]] = self.relations.derived_from
+                derived_from: list[Locator] | None = self.relations.derived_from
             else:
                 log.warning(
                     "Deriving from an item that has not been saved so cannot "
@@ -712,7 +713,7 @@ class Item:
         self.source = source
         self.add_to_history(source.operation.summary())
 
-    def item_id(self) -> Optional[ItemId]:
+    def item_id(self) -> ItemId | None:
         """
         Return identity of the item, or None if it should be treated as unique.
         """

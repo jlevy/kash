@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from functools import cached_property
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import uvicorn
@@ -88,11 +88,11 @@ def _pick_port() -> int:
 class LocalServer:
     def __init__(self):
         self.server_lock = threading.RLock()
-        self.server_instance: Optional["uvicorn.Server"] = None
+        self.server_instance: uvicorn.Server | None = None
         self.did_exit = threading.Event()
 
     @cached_property
-    def app(self) -> "FastAPI":
+    def app(self) -> FastAPI:
         return _app_setup()
 
     def _run_server(self):

@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 # Make type checker happy with xonsh globals:
 
@@ -19,7 +20,7 @@ def set_alias(name: str, value: str | Callable) -> None:
     aliases[name] = value  # type: ignore  # noqa: F821
 
 
-def update_aliases(new_aliases: Dict[str, Callable]) -> None:
+def update_aliases(new_aliases: dict[str, Callable]) -> None:
     aliases.update(new_aliases)  # type: ignore  # noqa: F821
 
 

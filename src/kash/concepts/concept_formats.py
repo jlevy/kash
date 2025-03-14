@@ -1,5 +1,3 @@
-from typing import List
-
 from kash.lang_tools.capitalization import capitalize_cms
 from kash.text_formatting.markdown_util import extract_bullet_points
 
@@ -12,11 +10,11 @@ def canonicalize_concept(concept: str) -> str:
     return capitalize_cms(concept.strip("-* "))
 
 
-def normalize_concepts(concepts: List[str]) -> List[str]:
+def normalize_concepts(concepts: list[str]) -> list[str]:
     return sorted(set(canonicalize_concept(concept) for concept in concepts))
 
 
-def concepts_from_bullet_points(markdown_text: str) -> List[str]:
+def concepts_from_bullet_points(markdown_text: str) -> list[str]:
     """
     Parse, normalize, capitalize, sort, and then remove exact duplicates from a Markdown
     list of concepts as bullet points.

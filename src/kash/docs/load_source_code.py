@@ -1,13 +1,11 @@
 import os
 from functools import cache
 from pathlib import Path
-from typing import List
 
 from prettyfmt import fmt_path
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-
 
 log = get_logger(__name__)
 
@@ -20,7 +18,7 @@ _SOURCE_SEPARATOR = "\n---\n"
 
 
 def _format_source_file(path: Path) -> str:
-    with open(path, "r") as file:
+    with open(path) as file:
         file_content = file.read()
 
     # Don't include any pytests that happen to be in the files.
@@ -34,7 +32,7 @@ def _format_source_file(path: Path) -> str:
 
 def _format_source_module(module_path: Path) -> str:
     source_files = [f for f in os.listdir(module_path) if f.endswith(".py")]
-    output: List[str] = []
+    output: list[str] = []
 
     for filename in source_files:
         if source_code := _format_source_file(module_path / filename):

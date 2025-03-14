@@ -3,15 +3,13 @@ from __future__ import annotations
 import asyncio
 import pprint
 from dataclasses import dataclass
-from typing import List, Optional
 
 from funlog import log_calls
 from mcp.server.lowlevel import Server
 from mcp.types import TextContent, Tool
 from prettyfmt import fmt_path
 
-from kash.config.capture_output import captured_output, CapturedOutput
-
+from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger
 from kash.exec.action_exec import assemble_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
@@ -25,10 +23,10 @@ log = get_logger(__name__)
 
 
 # Global list of action names that should be exposed as MCP tools.
-_mcp_published_actions: AtomicVar[List[str]] = AtomicVar([])
+_mcp_published_actions: AtomicVar[list[str]] = AtomicVar([])
 
 
-def publish_mcp_tools(action_names: Optional[List[str]] = None) -> None:
+def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     """
     Add actions to the list of published MCP tools.
     By default, all actions are published.
@@ -54,7 +52,7 @@ def tool_for_action(action: Action) -> Tool:
 
 
 @log_calls(level="info")
-def get_published_tools() -> List[Tool]:
+def get_published_tools() -> list[Tool]:
     """
     Get all tools that are published as MCP tools.
     """
@@ -88,8 +86,8 @@ class ToolResult:
     action: Action
     captured_output: CapturedOutput
     action_result: ActionResult
-    result_store_paths: List[StorePath]
-    error: Optional[Exception] = None
+    result_store_paths: list[StorePath]
+    error: Exception | None = None
 
     @property
     def output_summary(self) -> str:
@@ -138,7 +136,7 @@ class ToolResult:
         # TODO: Add more info on how to find the logs.
         return "Check kash logs for details."
 
-    def formatted_for_client(self) -> List[TextContent]:
+    def formatted_for_client(self) -> list[TextContent]:
         """
         Convert the tool result to content for the client LLM.
         """
@@ -175,7 +173,7 @@ class ToolResult:
 
 
 @log_calls(level="info")
-def run_mcp_tool(action_name: str, arguments: dict) -> List[TextContent]:
+def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
     """
     Run the action as a tool.
     """
@@ -238,7 +236,7 @@ def create_base_server() -> Server:
         return await asyncio.to_thread(get_published_tools)
 
     @app.call_tool()
-    async def handle_tool(name: str, arguments: dict) -> List[TextContent]:
+    async def handle_tool(name: str, arguments: dict) -> list[TextContent]:
         try:
             if name not in _mcp_published_actions.copy():
                 log.error(f"Unknown tool requested: {name}")

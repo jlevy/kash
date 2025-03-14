@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from threading import Lock
-from typing import Callable, Dict
 
 from kash.config.logger import get_logger
 from kash.model.items_model import Item
@@ -8,7 +8,7 @@ from kash.model.preconditions_model import Precondition
 log = get_logger(__name__)
 
 # Global registry of preconditions.
-_preconditions: Dict[str, Precondition] = {}
+_preconditions: dict[str, Precondition] = {}
 _lock = Lock()
 
 
@@ -35,7 +35,7 @@ def register_precondition(func: Callable[[Item], bool]) -> Precondition:
     return precondition
 
 
-def get_all_preconditions() -> Dict[str, Precondition]:
+def get_all_preconditions() -> dict[str, Precondition]:
     """
     Returns a copy of all registered preconditions.
     """

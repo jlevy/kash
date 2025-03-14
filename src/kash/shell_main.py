@@ -1,5 +1,4 @@
 import sys
-from typing import Optional
 
 import xonsh.main
 
@@ -25,7 +24,7 @@ APP_VERSION = f"{APP_NAME} {__version__}"
 CUSTOMIZE_XONSH = True
 
 
-def run_shell(single_command: Optional[str] = None):
+def run_shell(single_command: str | None = None):
     if CUSTOMIZE_XONSH:
         start_shell(single_command)
     else:
@@ -36,7 +35,7 @@ def run_shell(single_command: Optional[str] = None):
         xonsh.main.main()
 
 
-def parse_args() -> Optional[str]:
+def parse_args() -> str | None:
     # Do our own arg parsing since everything except these two options
     # should be handled as a kash command.
     if sys.argv[1:] == ["--version"]:

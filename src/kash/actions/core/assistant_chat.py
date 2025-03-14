@@ -3,9 +3,9 @@ from kash.exec.precondition_defs import is_chat
 from kash.form_input.prompt_input import prompt_simple_string
 from kash.help.assistant import assistant_chat_history, shell_context_assistance
 from kash.help.assistant_output import print_assistant_heading
-from kash.model import ActionInput, ActionResult, common_params, NO_ARGS
+from kash.model import NO_ARGS, ActionInput, ActionResult, common_params
 from kash.model.language_models import LLM, LLMName
-from kash.shell_output.shell_output import print_response, PrintHooks, Wrap
+from kash.shell_output.shell_output import PrintHooks, Wrap, print_response
 
 
 @kash_action(
@@ -26,7 +26,7 @@ def assistant_chat(input: ActionInput, model: LLMName = LLM.default_careful) -> 
     PrintHooks.spacer()
     print_assistant_heading(model)
     print_response(
-        f"History of {chat_history.size_summary()}.\n" "Press enter (or type `exit`) to end chat.",
+        f"History of {chat_history.size_summary()}.\nPress enter (or type `exit`) to end chat.",
         text_wrap=Wrap.NONE,
     )
 

@@ -1,12 +1,11 @@
 import re
 from pathlib import Path
-from typing import NewType, Optional
+from typing import NewType
 
 import regex
 
 from kash.config.logger import get_logger
 from kash.shell_tools.tool_deps import Tool, tool_check
-
 
 log = get_logger(__name__)
 
@@ -68,7 +67,7 @@ def is_markdown(content: str) -> bool:
 
 def read_partial_text(
     path: Path, max_bytes: int = 200 * 1024, encoding: str = "utf-8", errors: str = "strict"
-) -> Optional[str]:
+) -> str | None:
     try:
         with path.open("r", encoding=encoding, errors=errors) as file:
             return file.read(max_bytes)
@@ -79,7 +78,7 @@ def read_partial_text(
 MimeType = NewType("MimeType", str)
 
 
-def detect_mime_type(filename: str | Path) -> Optional[MimeType]:
+def detect_mime_type(filename: str | Path) -> MimeType | None:
     """
     Get the mime type of a file using libmagic heuristics plus more careful
     detection of HTML, Markdown, and multipart YAML.

@@ -1,9 +1,7 @@
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from prettyfmt import fmt_lines
-
 from strif import atomic_output_file
 
 from kash.config.logger import get_logger
@@ -17,7 +15,7 @@ from kash.media_base.media_services import (
 )
 from kash.media_base.speech_transcription import deepgram_transcribe_audio
 from kash.util.format_utils import fmt_loc
-from kash.util.url import as_file_url, is_url, Url
+from kash.util.url import Url, as_file_url, is_url
 from kash.web_content.dir_store import DirStore
 
 log = get_logger(__name__)
@@ -52,11 +50,11 @@ class MediaCache(DirStore):
                 f.write(content)
         log.message("Transcript saved to cache: %s", fmt_loc(transcript_path))
 
-    def _read_transcript(self, url: Url) -> Optional[str]:
+    def _read_transcript(self, url: Url) -> str | None:
         transcript_file = self.find(url, suffix=SUFFIX_TRANSCRIPT)
         if transcript_file:
             log.message("Video transcript already in cache: %s: %s", url, fmt_loc(transcript_file))
-            with open(transcript_file, "r") as f:
+            with open(transcript_file) as f:
                 return f.read()
         return None
 
@@ -75,7 +73,7 @@ class MediaCache(DirStore):
             downsample_to_16khz(full_audio_file, downsampled_audio_file)
         return downsampled_audio_file
 
-    def _do_transcription(self, url: Url, language: Optional[str] = None) -> str:
+    def _do_transcription(self, url: Url, language: str | None = None) -> str:
         """
         Transcribe the audio file (from cache if available) for the given media URL.
         """
@@ -90,14 +88,14 @@ class MediaCache(DirStore):
         return transcript
 
     def cache(
-        self, url: Url, no_cache=False, media_types: Optional[List[MediaType]] = None
-    ) -> Dict[MediaType, Path]:
+        self, url: Url, no_cache=False, media_types: list[MediaType] | None = None
+    ) -> dict[MediaType, Path]:
         """
         Cache the media files for the given media URL. Returns paths to cached copies
         for each media type (video or audio). Returns cached copies if available,
         unless `no_cache` is True.
         """
-        cached_paths: Dict[MediaType, Path] = {}
+        cached_paths: dict[MediaType, Path] = {}
 
         if not media_types:
             media_types = [MediaType.audio, MediaType.video]
@@ -143,7 +141,7 @@ class MediaCache(DirStore):
         return cached_paths
 
     def transcribe(
-        self, url_or_path: Url | Path, no_cache=False, language: Optional[str] = None
+        self, url_or_path: Url | Path, no_cache=False, language: str | None = None
     ) -> str:
         """
         Transcribe the audio file, caching audio, downsampled audio, and the transcription.

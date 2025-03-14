@@ -27,8 +27,10 @@ class Indent(JupyterMixin):
         self,
         renderable: "RenderableType",
         indent: str = "    ",
-        style: Style = Style.null(),
+        style: Style | None = None,
     ):
+        if style is None:
+            style = Style.null()
         self.renderable = renderable
         self.indent = indent
         self.style = style
