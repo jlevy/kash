@@ -3,11 +3,11 @@
 
 .DEFAULT_GOAL := default
 
-.PHONY: default install_deps lint test build clean
+.PHONY: default install lint test build clean
 
-default: install_deps lint test
+default: install lint test
 
-install_deps:
+install:
 	uv sync --all-extras --dev
 
 lint:
@@ -15,6 +15,9 @@ lint:
 
 test:
 	uv run pytest
+
+upgrade:
+	uv sync --upgrade
 
 build:
 	uv build

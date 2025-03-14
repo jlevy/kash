@@ -83,10 +83,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=24.10.0",
-    "pytest>=8.3.4",
-    "ruff>=0.4.10",
-    "usort>=1.0.8.post1",
+    "pytest>=8.3.5",
+    "ruff>=0.11.0",
     "mypy>=1.15.0",
     "codespell>=2.4.1",
     "rich>=13.9.4",
@@ -108,6 +106,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.version]
 source = "uv-dynamic-versioning"
+# Note JSON schemas don't seem to be right for tool.hatch.version.source so
+# this may cause false warnings in IDEs.
+# https://github.com/ninoseki/uv-dynamic-versioning/issues/21
 
 [tool.uv-dynamic-versioning]
 vcs = "git"
@@ -123,14 +124,24 @@ packages = ["src/kash"]
 
 # ---- Settings ----
 
-[tool.black]
-line-length = 100
-
 [tool.ruff]
 line-length = 100
 
 [tool.ruff.lint]
-ignore = ["E402", "E731", "E712"]
+select = [
+    "E", # pycodestyle
+    "F", # Pyflakes
+    "UP", # pyupgrade   
+    "B", # flake8-bugbear
+    "I", # isort
+    # "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # https://docs.astral.sh/ruff/rules/line-too-long/
+    "E402", # https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file/
+    "E731", # https://docs.astral.sh/ruff/rules/lambda-assignment/
+]
+
 
 [tool.mypy]
 disable_error_code = [
