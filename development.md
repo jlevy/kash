@@ -46,6 +46,29 @@ uv add package_name
 uv add --dev package_name
 ```
 
+## Kash Dev Workflows
+
+```shell
+# Update key packages:
+source devtools/update_common_deps.xsh
+
+# Update this README:
+source devtools/generate_readme.xsh
+```
+
+A few debugging tips when finding issues:
+
+```shell
+# To see tracebacks if xonsh does not show them:
+$XONSH_SHOW_TRACEBACK=1
+
+# To set verbose logging:
+$KASH_LOG_LEVEL=info
+
+# To dump Python stack traces of all threads (from another terminal):
+pkill -USR1 kash
+```
+
 ## Release Process
 
 This project is set up to publish to [PyPI](https://pypi.org/) from GitHub Actions.

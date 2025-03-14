@@ -2,36 +2,64 @@
 
 ### Running the Kash Shell
 
-The best way to use kash is as its own shell, which is a shell environment based on
-[xonsh](https://xon.sh/). If you've used a bash or Python shell before, xonsh is very
-intuitive.
-If you don't want to use xonsh, you can still use it from other shells or as a
-Python library.
+Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with an LLM
+assistant and a few other inhancements.
+If you've used a bash or Python shell before, xonsh is very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
-You also get intelligent auto-complete and a built-in assistant to help you perform
-tasks.
+You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
+and enhanced tab completion.
 
-### Python and Tool Dependencies
+The shell is an easy way to use Kash actions, simply calling them like other shell
+commands from the command line.
 
-These are needed to run:
+But remember that's just one way to use actions; you can also use them directly in
+Python or from an MCP client.
 
-- Python 3.11+
+## Installing uv and Python
 
-- Poetry
+This project is set up to use [**uv**](https://docs.astral.sh/uv/), the new package
+manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
+etc. This is a quick cheat sheet on that:
 
-- `ffmpeg` (for video conversions), `ripgrep` (for search), `bat` (for prettier file
-  display), `imagemagick` (for image display in modern terminals), `libmagic` (for file
-  type detection)
+For macOS, if you have [brew](https://brew.sh/) installed, it's easy to install uv:
 
-Cheat sheets to get these set up, if you're not already:
+```shell
+brew update
+brew install uv
+```
 
-For macOS, I recommend using brew:
+For Ubuntu:
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+platforms and installation methods.
+
+Now you can use uv to install a current Python environment:
+
+```shell
+uv python install 3.13 # Or pick another version.
+```
+
+### Installing Additional Dependencies
+
+In addition to Python, it's highly recommended to install a few other dependencies to
+make more tools and commands work:
+
+- `ripgrep` (for search), `bat` (for prettier file display), `eza` (a much improved
+  version of `ls`), `hexyl` (a much improved hex viewer), `imagemagick` (for image
+  display in modern terminals), `libmagic` (for file type detection), `ffmpeg` (for
+  audio and video conversions)
+
+For macOS, you can again use brew:
 
 ```shell
 # Install pyenv, pipx, and other tools:
 brew update
-brew install pyenv pipx ffmpeg ripgrep bat eza hexyl imagemagick libmagic
+brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
 ```
 
 For Ubuntu:
@@ -39,19 +67,12 @@ For Ubuntu:
 ```shell
 # Install pyenv and other tools:
 curl https://pyenv.run | bash
-apt install pipx ffmpeg ripgrep bat eza imagemagick libmagic
+apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
 ```
 
-Now install a recent Python and Poetry:
+For Windows or other platforms, see the uv instructions.
 
-```shell
-pyenv install 3.12.9  # Or any version 3.11+ should work.
-pipx install poetry
-```
-
-For Windows or other platforms, see the pyenv and poetry instructions.
-
-### Building
+### Building Kash
 
 1. [Fork](https://github.com/jlevy/kash/fork) this repo (having your own fork will make
    it easier to contribute actions, add models, etc.).
@@ -76,7 +97,8 @@ These keys should go in the `.env` file in your current directory.
 ```shell
 # Set up API secrets:
 cp .env.template .env 
-# Now edit the .env file to add all desired API keys
+# Now edit the .env file to add all desired API keys.
+# You can also put .env in ~/.env if you want it to be usable in any directory.
 ```
 
 ### Running
@@ -84,33 +106,15 @@ cp .env.template .env
 To run:
 
 ```shell
-poetry run kash
+uv run kash
 ```
 
 Use the `self_check` command to confirm tools like `bat` and `ffmpeg` are found and
 confirm API keys are set up.
 
 Optionally, to install kash globally in the current user's Python virtual environment so
-you can conveniently use `kash` anywhere, make sure you have a usable Python 3.12+
-environment active (such as using `pyenv`), then:
+you can conveniently use `kash` anywhere,
 
 ```shell
-./install_global.sh
-```
-
-If you encounter installation issues, you can also try `./install_global.sh
---force-reinstall`.
-
-This does a pip install of the wheel so you can run it as `kash`.
-
-### Other Ways to Run Kash
-
-If desired, you can also run kash directly from your regular shell, by giving a kash
-shell command.
-
-```
-# Transcribe a video and summarize it:
-mkdir myworkspace.kb
-cd myworkspace.kb
-kash transcribe 'https://www.youtube.com/watch?v=XRQnWomofIY'
+uv tool install .
 ```

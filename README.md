@@ -19,83 +19,137 @@
 > “*Civilization advances by extending the number of important operations which we can
 > perform without thinking about them.*” —Alfred North Whitehead
 
-Kash (“Knowledge Agent SHell”) is an interactive command-line power tool for practical
-knowledge tasks. It’s an early prototype for the exploration of what’s possible with the
-myriad of AI tools we now have.
+Kash (“Knowledge Agent SHell”) is a Python framework and an interactive, command-line
+power tool for practical knowledge tasks.
 
-Currently I'm using it with **OpenAI GPT-4o and o1**, **Anthropic Claude 3.5/3.7**,
-**Groq Llama, Qwen, and Deepseek models** (and any others via **LiteLLM**),
-**Deepgram**, **Firecrawl**, **Exa**, **LlamaIndex**, **ChromaDB**, and other Python
-tools.
+It’s an exploration of a better way to remix, combine, and interactively explore how to
+build tools and workflows by composing the myriad of AI tools, APIs, and libraries.
 
-Use commands to do deep research, transcribe videos, summarize and organize transcripts
-and notes, write blog posts, extract or visualize concepts, check citations, convert
-notes to PDFs or beautifully formatted HTML, or perform numerous other content-related
-tasks possible by orchestrating AI tools in the right ways.
+- **Actions:** The core of Kash are **Kash actions**. By decorating a Python function,
+  you can turn it into an action, which makes it more flexible and powerful, able to
+  work with file inputs stored and outputs in a given directory, also called a
+  **workspace**.
 
-Without really meaning to, I've found that I also built a replacement for my usual
-shell, which I find is more powerful for local usage than than bash/zsh/fish.
-For example, it has better help and tab completion than a regular shell.
-But the hope is for it to be usable by anyone reasonably technical, and not esoteric
-like typical Unix shells.
+- **Compositionality:** An action is composable with other actions simply as a Python
+  function, so complex (like transcribing and annotating a video) actions can be built
+  from simpler actions (like downloading and caching a YouTube video, identifying the
+  speakers in a transcript, etc.). The goal is to reduce the "interstitial complexity"
+  of combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
+  powerful ways.
+
+- **Command-line usage:** In addition to using the function in other libraries and
+  tools, an action is also **a command-line tool** (with auto-complete, help, etc.)
+  in the Kash shell. So you can simply run `transcribe` to downlaod and transcribe a
+  video.
+
+- **MCP support:** Finally, an action is also an **MCP tool** you can use it in any MCP
+  client (like Anthropic Desktop).
+
+- **Full extensibility:** Kash is tool agnostic and runs locally, on file inputs in
+  simple formats, so you own and manage your data and workspaces however you like.
+  You can use it with **OpenAI GPT-4o and o1**, **Anthropic Claude 3.5/3.7**, **Groq
+  Llama, Qwen, and Deepseek models** (and any others via **LiteLLM**), **Deepgram**,
+  **Perplexity**, **Firecrawl**, **Exa**, **LlamaIndex**, **ChromaDB**, and any Python
+  libraries.
+
+Use Kash actions to do deep research, transcribe videos, summarize and organize
+transcripts and notes, write blog posts, extract or visualize concepts, check citations,
+convert notes to PDFs or beautifully formatted HTML, or perform numerous other
+content-related tasks possible by orchestrating AI tools in the right ways.
+
+As I've been building Kash over the past couple months, I found I've found it's not only
+faster to do complex things, but that it has also become replacement for my usual shell.
+It's the power-tool I want to use alongside Cursor and ChatGPT/Claude.
+I find it is much more powerful for local usage than than bash/zsh/fish.
+If you're a command-line nerd, you might like it a lot.
+
+But my hope is that with these enhancements, the shell is also far more friendly and
+usable by anyone reasonably technical, and does not feel so esoteric as a typical Unix
+shell.
+
+Finally, one more thing: Kash is also my way of experimenting with something else new: a
+**rich, web-enhanced terminal UI** that lets you seamlessly add graphics to the
+terminal. I've separately built a new desktop terminal app, Kerm, which adds support for
+a simple "Kerm codes" protocol for UX components like clickable text, buttons, tooltips,
+and popovers in the terminal, encoded as OSC codes.
+Because Kash supports these codes, as this develops you will get the visuals of a web
+app layered on the flexibility of a text-based terminal.
 
 ## Is Kash Mature?
 
-No. Not at all.
-:) It's the result of a few weeks of coding and experimentation, and it's
-very much in progress.
-Please help me make it better by sharing your ideas and feedback!
+No. :) It's the result of a couple months of coding and experimentation, and it's very
+much in progress. Please help me make it better by sharing your ideas and feedback!
 It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
 My contact info is at [github.com/jlevy](https://github.com/jlevy).
 
 [**Please follow or DM me**](https://x.com/ojoshe) for future updates or if you have
-ideas, feedback, or use cases for kash!
-
-Some of this may be a little crazy or ambitious.
-See more motivation in the philosophy section below.
+ideas, feedback, or use cases for Kash!
 
 ## What is Included?
 
-- A bash-like, Python-compatible shell based on **xonsh**, with pretty syntax coloring
-  of commands and outputs
+- An **action framework** that includes:
 
-- Tab auto-completion and help on almost everything
+  - A [**data model**](https://github.com/jlevy/kash/tree/main/kash/model) based on
+    `Item`s, which are documents, resources like URLs, concepts, etc., stored simply as
+    files in known any of several formats (Markdown, Markdown+HTML, HTML, YAML resource
+    descriptions, etc.)
 
-- A [generalized frontmatter format](https://github.com/jlevy/frontmatter-format), that
-  allows YAML metadata on Markdown, HTML, Python, and other text files
+  - An **execution model** for `Action`s that take input `Item` inputs and produce
+    outputs, as well as `Parameters` for acions and `Preconditions` that specify what
+    kinds of `Items` the `Action`s operate on (like whether a document is Markdown,
+    HTML, or a transcript with timestamps, and so on), so you and the shell know what
+    actions might apply to any selection
 
-- A [data model](https://github.com/jlevy/kash/tree/main/kash/model) that includes items
-  such as documents, resources, concepts, etc., all stored as files within a workspace
-  of files, and with consistent metadata in YAML on text files
+  - A **workspace** which is just a directory of files you are working on, such as a
+    GitHub project or a directory of Markdown files, or anything else, with a `.kash`
+    directory within it to hold cached content and media files, configuration settings
 
-- Dozens of built-in commands for listing, showing, and paging through files, etc.
-  (see `help` for full docs)
+  - A **selection system** in the workspace for maintaining context between commands so
+    you can pass outputs of one action into the inputs of another command (this is a bit
+    like pipes but more flexible for sequences of tasks, possibly with many intermediate
+    inputs and outputs)
 
-- An extensible set of actions for all kinds of tasks like editing or summarizing text
-  or transcribing videos (see `help`)
+  - A simple [**file format for metadata**](https://github.com/jlevy/frontmatter-format)
+    in YAML at the top of text files, so metadata about items can be added to Markdown,
+    HTML, Python, and YAML, as well as deteciton of file types and conventions for
+    readable filenames based on file type
 
-- A way of tracking the provenance of each file (what actions created each item) so you
-  can tell when to skip running a command (like a Makefile)
+  - **Dependency tracking** among action operations (sort of like a Makefile) so that
+    Kash can recognize if the output of an action already exists and, if it is
+    cacheable, skip running the action
 
-- A selection system for maintaining context between commands so you can pass outputs of
-  one action into the inputs of another command (this is a bit like pipes but more
-  flexible for sequences of tasks, possibly with many intermediate inputs and outputs)
+  - **Python decorators** that let you register and add new commands and actions, which
+    can be packaged into libraries, including libraries with new dependencies
 
-- A set of preconditions, like whether a document is Markdown or HTML, if it's a
-  transcript with timestamps, and so on, so you and kash know what actions might apply
-  to any selection
+- A **hybrid command-line/natual langauge/Python shell**, based on
+  [xonsh](https://github.com/xonsh/xonsh)
 
-- A media cache, which is a mechanism for downloading and caching, downsampling, and
-  transcribing video, audio, using Whisper or Deepgram and a content cache, for
-  downloading and caching web pages or other files
+  - About 100 simple **built-in commands** for listing, showing, and paging through
+    files, etc. (use `commands` for the full list, with docs) plus all usual shell tools
 
-- An LLM-based assistant that wraps the docs and the kash source code into a tool that
-  assists you in using or extending kash (this part is quite fun!)
+  - Enhanced **tab completion** that includes all actions and commands and parameters,
+    as well as some extras like help summaries populated from
+    [tldr](https://github.com/tldr-pages/tldr)
 
-- Auto-formatting of Markdown so text documents are saved in a normalized form that can
-  be diffed consistently (using [flowmark](https://github.com/jlevy/flowmark)).
+  - An **LLM-based assistant** that wraps the docs and the kash source code into a tool
+    that assists you in using or extending kash (this part is quite fun!)
 
-- If your terminal supports it, some major enhancements to the terminal experience:
+- A supporting **library of tools** to make these work more easily:
+
+  - A **content and media cache**, which for downloading saving cached versions of video
+    or audio and **audio transcriptions** (using Whisper or Deepgram)
+
+  - A set of tools [**chopdiff**](https://github.com/jlevy/chopdiff) to tokenize and
+    parse documents simply into paragraphs, sentences, and words, and do windowed
+    transformations and filtered diffs (such as editing a large document but only
+    inserting section headers or paragraph breaks)
+
+  - A new Markdown auto-formatter, [**Flowmark**](https://github.com/jlevy/flowmark), so
+    that text documents (like LLM outputs) are saved in a normalized form that can be
+    diffed consistently
+
+- An optional **enhanced terminal UI** some major enhancements to the terminal
+  experience:
 
   - Sixel graphics support (see images right in the terminal)
 
@@ -106,19 +160,6 @@ See more motivation in the philosophy section below.
     archaic and don't support these features well (more on this below) but I have a new
     terminal, Kerm, that shows these as tooltips and makes every command clickable
     (please contact me if you'd like an early developer preview, as I'd love feedback)
-
-- A bunch of other small utilities for making all this easier, including:
-
-  - Parsing and representing text docs as sentences, paragraphs, or chunks of text
-
-  - Diffing words and tokens and filtering diffs to control what changes LLMs make to
-    text
-
-  - Tools for detecting file types and automatic, readable file naming conventions
-
-  - Media handling of videos and audio, including downloading and transcribing videos
-
-### Credits
 
 All of this is only possible by relying on a wide variety of powerful libraries,
 especially [LiteLLM](https://github.com/BerriAI/litellm),
@@ -135,36 +176,64 @@ especially [LiteLLM](https://github.com/BerriAI/litellm),
 
 ### Running the Kash Shell
 
-The best way to use kash is as its own shell, which is a shell environment based on
-[xonsh](https://xon.sh/). If you've used a bash or Python shell before, xonsh is very
-intuitive.
-If you don't want to use xonsh, you can still use it from other shells or as a
-Python library.
+Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with an LLM
+assistant and a few other inhancements.
+If you've used a bash or Python shell before, xonsh is very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
-You also get intelligent auto-complete and a built-in assistant to help you perform
-tasks.
+You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
+and enhanced tab completion.
 
-### Python and Tool Dependencies
+The shell is an easy way to use Kash actions, simply calling them like other shell
+commands from the command line.
 
-These are needed to run:
+But remember that's just one way to use actions; you can also use them directly in
+Python or from an MCP client.
 
-- Python 3.11+
+## Installing uv and Python
 
-- Poetry
+This project is set up to use [**uv**](https://docs.astral.sh/uv/), the new package
+manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
+etc. This is a quick cheat sheet on that:
 
-- `ffmpeg` (for video conversions), `ripgrep` (for search), `bat` (for prettier file
-  display), `imagemagick` (for image display in modern terminals), `libmagic` (for file
-  type detection)
+For macOS, if you have [brew](https://brew.sh/) installed, it's easy to install uv:
 
-Cheat sheets to get these set up, if you're not already:
+```shell
+brew update
+brew install uv
+```
 
-For macOS, I recommend using brew:
+For Ubuntu:
+
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+platforms and installation methods.
+
+Now you can use uv to install a current Python environment:
+
+```shell
+uv python install 3.13 # Or pick another version.
+```
+
+### Installing Additional Dependencies
+
+In addition to Python, it's highly recommended to install a few other dependencies to
+make more tools and commands work:
+
+- `ripgrep` (for search), `bat` (for prettier file display), `eza` (a much improved
+  version of `ls`), `hexyl` (a much improved hex viewer), `imagemagick` (for image
+  display in modern terminals), `libmagic` (for file type detection), `ffmpeg` (for
+  audio and video conversions)
+
+For macOS, you can again use brew:
 
 ```shell
 # Install pyenv, pipx, and other tools:
 brew update
-brew install pyenv pipx ffmpeg ripgrep bat eza hexyl imagemagick libmagic
+brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
 ```
 
 For Ubuntu:
@@ -172,19 +241,12 @@ For Ubuntu:
 ```shell
 # Install pyenv and other tools:
 curl https://pyenv.run | bash
-apt install pipx ffmpeg ripgrep bat eza imagemagick libmagic
+apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
 ```
 
-Now install a recent Python and Poetry:
+For Windows or other platforms, see the uv instructions.
 
-```shell
-pyenv install 3.12.9  # Or any version 3.11+ should work.
-pipx install poetry
-```
-
-For Windows or other platforms, see the pyenv and poetry instructions.
-
-### Building
+### Building Kash
 
 1. [Fork](https://github.com/jlevy/kash/fork) this repo (having your own fork will make
    it easier to contribute actions, add models, etc.).
@@ -209,7 +271,8 @@ These keys should go in the `.env` file in your current directory.
 ```shell
 # Set up API secrets:
 cp .env.template .env 
-# Now edit the .env file to add all desired API keys
+# Now edit the .env file to add all desired API keys.
+# You can also put .env in ~/.env if you want it to be usable in any directory.
 ```
 
 ### Running
@@ -217,35 +280,17 @@ cp .env.template .env
 To run:
 
 ```shell
-poetry run kash
+uv run kash
 ```
 
 Use the `self_check` command to confirm tools like `bat` and `ffmpeg` are found and
 confirm API keys are set up.
 
 Optionally, to install kash globally in the current user's Python virtual environment so
-you can conveniently use `kash` anywhere, make sure you have a usable Python 3.12+
-environment active (such as using `pyenv`), then:
+you can conveniently use `kash` anywhere,
 
 ```shell
-./install_global.sh
-```
-
-If you encounter installation issues, you can also try `./install_global.sh
---force-reinstall`.
-
-This does a pip install of the wheel so you can run it as `kash`.
-
-### Other Ways to Run Kash
-
-If desired, you can also run kash directly from your regular shell, by giving a kash
-shell command.
-
-```
-# Transcribe a video and summarize it:
-mkdir myworkspace.kb
-cd myworkspace.kb
-kash transcribe 'https://www.youtube.com/watch?v=XRQnWomofIY'
+uv tool install .
 ```
 
 ## Getting Started
@@ -630,82 +675,6 @@ Kash uses Markdown files with YAML frontmatter, which is fully compatible with
     still see original filenames if needed.
 
   - Now titles are easy to read for all kash notes.
-
-## Development
-
-Developer workflows:
-
-```shell
-# Run poetry install, lint, and test:
-make
-
-# Build wheel:
-make build
-
-# Linting and testing individually:
-make lint
-make test
-
-# Delete all the build artifacts:
-make clean
-
-# To run a shell within the Python environment:
-poetry shell
-# Thereafter you can run tests.
-
-# To run tests:
-pytest   # all tests
-pytest -s src/module/some_file.py  # one test, showing outputs
-
-# Poetry dependency management commands:
-# Upgrade all dependencies:
-poetry up
-# Update poetry itself: 
-poetry self update
-```
-
-Developer setup:
-
-```shell
-# If needed (note we use newer Poetry 2.0):
-poetry self update
-
-# Or within the poetry shell:
-pytest   # all tests
-pytest -s src/kash/file_tools/filename_parsing.py  # one test, with outputs
-
-# Build wheel:
-poetry build
-
-# Before committing, be sure to check formatting/linting issues:
-poetry run lint
-
-# Poetry dep management commands.
-# Update poetry:
-poetry self update
-# The poetry-dynamic-versioning plugin is now automatically installed. Docs:
-# https://github.com/mtkennerly/poetry-dynamic-versioning
-# Poetry up plugin is useful upgrade deps.
-# https://github.com/MousaZeidBaker/poetry-plugin-up
-poetry self add poetry-plugin-up
-poetry up --latest
-
-# Update key packages:
-source devtools/update_common_deps.xsh
-
-# Update this README:
-source devtools/generate_readme.xsh
-```
-
-A few debugging tips when finding issues:
-
-```shell
-# To see tracebacks if xonsh does not show them:
-$XONSH_SHOW_TRACEBACK=1
-
-# To dump Python stack traces of all threads (from another terminal):
-pkill -USR1 kash
-```
 
 <br/>
 

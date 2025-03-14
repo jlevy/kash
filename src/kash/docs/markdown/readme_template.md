@@ -24,8 +24,6 @@
 
 {a5_tips_for_use_with_other_tools}
 
-{a6_development}
-
 <br/>
 
 <div align="center">

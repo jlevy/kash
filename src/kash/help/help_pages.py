@@ -68,8 +68,6 @@ def print_manual() -> None:
 
     print_markdown(help_topics.tips_for_use_with_other_tools)
 
-    print_markdown(help_topics.development)
-
     print_markdown(help_topics.philosophy_of_kash)
 
     print_markdown(help_topics.kash_overview)

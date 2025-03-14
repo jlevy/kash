@@ -33,7 +33,6 @@ class HelpTopics:
     tips_for_use_with_other_tools: str = page_field(
         "markdown/topics/a5_tips_for_use_with_other_tools"
     )
-    development: str = page_field("markdown/topics/a6_development")
     philosophy_of_kash: str = page_field("markdown/topics/b0_philosophy_of_kash")
     kash_overview: str = page_field("markdown/topics/b1_kash_overview")
     workspace_and_file_formats: str = page_field("markdown/topics/b2_workspace_and_file_formats")
