@@ -22,21 +22,20 @@ This project is set up to use [**uv**](https://docs.astral.sh/uv/), the new pack
 manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
 etc. This is a quick cheat sheet on that:
 
-For macOS, if you have [brew](https://brew.sh/) installed, it's easy to install uv:
-
-```shell
-brew update
-brew install uv
-```
-
-For Ubuntu:
+If you don't have `uv` installed, a quick way to install it is:
 
 ```shell
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
-platforms and installation methods.
+For macOS, you prefer [brew](https://brew.sh/) you can install or upgrade uv with:
+
+```shell
+brew update
+brew install uv
+```
+See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for
+installation methods and platforms.
 
 Now you can use uv to install a current Python environment:
 
