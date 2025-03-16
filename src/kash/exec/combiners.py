@@ -1,7 +1,8 @@
 from collections.abc import Callable
 from typing import TypeAlias
 
-from chopdiff.divs import GROUP, ORIGINAL, div, div_insert_wrapped, parse_divs_single
+from chopdiff.divs import GROUP, ORIGINAL, div, div_insert_wrapped
+from chopdiff.divs.parse_divs import parse_divs_single
 from chopdiff.html import div_wrapper
 from chopdiff.html.html_in_md import Wrapper
 
