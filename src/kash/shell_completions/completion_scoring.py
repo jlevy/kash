@@ -10,11 +10,11 @@ from typing import TypeVar
 from strif import abbrev_str
 from thefuzz import fuzz
 
-from kash.completions.completion_types import Score, ScoredCompletion
 from kash.config.logger import get_logger
 from kash.exec_model.commands_model import CommentedCommand
 from kash.help.help_types import HelpDocType, RecipeSnippet
 from kash.model.items_model import Item
+from kash.shell_completions.completion_types import Score, ScoredCompletion
 from kash.utils.common.type_utils import not_none
 
 log = get_logger(__name__)

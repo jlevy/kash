@@ -7,7 +7,13 @@ from strif import abbrev_str, single_line
 from typing_extensions import TypeVar
 
 from kash.commands.help_commands.help_commands import HELP_COMMANDS
-from kash.completions.completion_scoring import (
+from kash.config.logger import get_logger
+from kash.config.text_styles import EMOJI_COMMAND, STYLE_KASH_COMMAND
+from kash.docs.all_docs import all_docs
+from kash.exec.precondition_checks import items_matching_precondition
+from kash.model.paths_model import fmt_store_path
+from kash.model.preconditions_model import Precondition
+from kash.shell_completions.completion_scoring import (
     MIN_CUTOFF,
     normalize,
     score_completions,
@@ -15,7 +21,7 @@ from kash.completions.completion_scoring import (
     score_paths,
     truncate_completions,
 )
-from kash.completions.completion_types import (
+from kash.shell_completions.completion_types import (
     COMPLETION_DISPLAY_MAX_LEN,
     CompletionGroup,
     CompletionValue,
@@ -24,12 +30,6 @@ from kash.completions.completion_types import (
     SortKey,
     SortKeyFn,
 )
-from kash.config.logger import get_logger
-from kash.config.text_styles import EMOJI_COMMAND, STYLE_KASH_COMMAND
-from kash.docs.all_docs import all_docs
-from kash.exec.precondition_checks import items_matching_precondition
-from kash.model.paths_model import fmt_store_path
-from kash.model.preconditions_model import Precondition
 from kash.utils.common.type_utils import not_none
 from kash.workspaces import current_ignore, current_workspace
 

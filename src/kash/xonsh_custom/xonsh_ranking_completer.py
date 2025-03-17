@@ -7,15 +7,15 @@ from typing_extensions import override
 from xonsh.completer import Completer
 from xonsh.parsers.completion_context import CompletionContext
 
-from kash.completions.completion_scoring import normalize, score_completions
-from kash.completions.completion_types import ScoredCompletion
-from kash.completions.completions import (
+from kash.config.logger import get_logger
+from kash.help.tldr_help import tldr_description
+from kash.shell_completions.completion_scoring import normalize, score_completions
+from kash.shell_completions.completion_types import ScoredCompletion
+from kash.shell_completions.shell_completions import (
     sort_scored_and_grouped,
     trace_completions,
     trace_completions_enabled,
 )
-from kash.config.logger import get_logger
-from kash.help.tldr_help import tldr_description
 
 log = get_logger(__name__)
 

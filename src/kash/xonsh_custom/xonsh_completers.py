@@ -20,8 +20,14 @@ from xonsh.completers.tools import (
 from xonsh.parsers.completion_context import CommandContext
 
 from kash.actions.core.assistant_chat import assistant_chat
-from kash.completions.completion_types import CompletionGroup, ScoredCompletion
-from kash.completions.completions import (
+from kash.config.logger import get_logger
+from kash.errors import ApiResultError, InvalidState
+from kash.exec.action_registry import get_all_actions_defaults
+from kash.exec.command_registry import get_all_commands
+from kash.help.function_param_info import annotate_param_info
+from kash.model.params_model import COMMON_SHELL_PARAMS, Param
+from kash.shell_completions.completion_types import CompletionGroup, ScoredCompletion
+from kash.shell_completions.shell_completions import (
     get_command_and_action_completions,
     get_help_completions_lexical,
     get_help_completions_semantic,
@@ -29,12 +35,6 @@ from kash.completions.completions import (
     get_std_command_completions,
     trace_completions,
 )
-from kash.config.logger import get_logger
-from kash.errors import ApiResultError, InvalidState
-from kash.exec.action_registry import get_all_actions_defaults
-from kash.exec.command_registry import get_all_commands
-from kash.help.function_param_info import annotate_param_info
-from kash.model.params_model import COMMON_SHELL_PARAMS, Param
 from kash.shell_ui.shell_syntax import assist_request_str
 from kash.utils.common.atomic_var import AtomicVar
 from kash.xonsh_custom.shell_which import is_valid_command
