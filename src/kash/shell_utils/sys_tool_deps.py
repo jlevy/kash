@@ -6,10 +6,10 @@ import os
 import platform
 import shutil
 from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum, StrEnum
 
 from cachetools import TTLCache, cached
-from pydantic.dataclasses import dataclass
 from rich.console import Group
 from rich.text import Text
 

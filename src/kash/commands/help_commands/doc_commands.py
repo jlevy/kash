@@ -7,8 +7,8 @@ from kash.config.text_styles import COLOR_HINT, CONSOLE_WRAP_WIDTH, LOGO, STYLE_
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
-from kash.rich_custom.rich_markdown_fork import Markdown
 from kash.shell_output.shell_output import PrintHooks, console_pager, cprint, print_markdown
+from kash.utils.rich_custom.rich_markdown_fork import Markdown
 from kash.version import get_version_name
 
 log = get_logger(__name__)

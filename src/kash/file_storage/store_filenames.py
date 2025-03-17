@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.lang_utils.inflection import plural
 from kash.model.items_model import ItemType
 from kash.utils.file_utils.file_formats_model import FileExt, Format
 from kash.utils.file_utils.filename_parsing import split_filename
+from kash.utils.lang_utils.inflection import plural
 
 log = get_logger(__name__)
 

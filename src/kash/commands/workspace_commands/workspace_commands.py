@@ -24,7 +24,6 @@ from kash.exec.precondition_checks import actions_matching_paths
 from kash.exec.precondition_registry import get_all_preconditions
 from kash.exec.preconditions import is_url_item
 from kash.exec_model.shell_model import ShellResult
-from kash.lang_utils.inflection import plural
 from kash.llm_utils.chat_format import tail_chat_history
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.media_base import media_tools
@@ -49,7 +48,8 @@ from kash.utils.common.parse_key_vals import format_key_value, parse_key_value
 from kash.utils.common.type_utils import not_none
 from kash.utils.common.url import Url, is_url
 from kash.utils.file_utils.dir_size import is_nonempty_dir
-from kash.web_content.file_cache_tools import cache_file
+from kash.utils.lang_utils.inflection import plural
+from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import current_workspace, get_sandbox_workspace, resolve_workspace, sandbox_dir
 from kash.workspaces.workspace_names import check_strict_workspace_name
 from kash.workspaces.workspaces import get_workspace

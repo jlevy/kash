@@ -2,7 +2,7 @@ from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.preconditions import has_html_body, is_url_item
 from kash.model import Format, Item, ItemType
-from kash.web_content.file_cache_tools import get_url_html
+from kash.web_content.file_cache_utils import get_url_html
 from kash.web_content.web_extract_readabilipy import extract_text_readabilipy
 
 log = get_logger(__name__)

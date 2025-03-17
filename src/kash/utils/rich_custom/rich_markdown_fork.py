@@ -27,7 +27,7 @@ from rich.table import Table
 from rich.text import Text, TextType
 
 from kash.config.text_styles import COLOR_HINT, STYLE_CODE
-from kash.rich_custom.rich_char_transform import text_upper
+from kash.utils.rich_custom.rich_char_transform import text_upper
 
 # Some departures from rich's markdown formatting:
 # - Extra newline between items in lists

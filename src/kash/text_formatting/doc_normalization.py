@@ -6,10 +6,10 @@ from flowmark.text_wrapping import simple_word_splitter, wrap_paragraph
 from frontmatter_format import fmf_read, fmf_write
 
 from kash.errors import InvalidInput
-from kash.rich_custom.ansi_cell_len import ansi_cell_len
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.type_utils import not_none
 from kash.utils.file_utils.file_formats_model import Format, detect_file_format
+from kash.utils.rich_custom.ansi_cell_len import ansi_cell_len
 
 
 def normalize_formatting_ansi(text: str, format: Format | None, width=DEFAULT_WRAP_WIDTH) -> str:

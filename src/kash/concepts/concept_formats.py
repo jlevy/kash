@@ -1,5 +1,5 @@
-from kash.lang_utils.capitalization import capitalize_cms
 from kash.text_formatting.markdown_util import extract_bullet_points
+from kash.utils.lang_utils.capitalization import capitalize_cms
 
 
 def canonicalize_concept(concept: str) -> str:

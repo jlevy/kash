@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-
-from pydantic.dataclasses import dataclass
 
 from kash.utils.common.url import Url, is_file_url, parse_file_url
 from kash.utils.file_utils.file_ext import FileExt

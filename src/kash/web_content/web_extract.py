@@ -3,7 +3,7 @@ from funlog import log_calls
 from kash.config.logger import get_logger
 from kash.utils.common.url import Url
 from kash.web_content.canon_url import thumbnail_url
-from kash.web_content.file_cache_tools import cache_file
+from kash.web_content.file_cache_utils import cache_file
 from kash.web_content.web_extract_justext import extract_text_justext
 from kash.web_content.web_fetch import fetch_url
 from kash.web_content.web_page_model import PageExtractor, WebPageData

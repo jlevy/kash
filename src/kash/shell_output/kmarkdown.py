@@ -8,8 +8,8 @@ from rich.padding import Padding
 from rich.text import Text
 
 from kash.config.text_styles import COLOR_HINT
-from kash.rich_custom.rich_markdown_fork import FEATURES, CodeBlock, Markdown
 from kash.shell_output.kerm_code_utils import clickable_script_block
+from kash.utils.rich_custom.rich_markdown_fork import FEATURES, CodeBlock, Markdown
 
 Transform: TypeAlias = Callable[[str], Text]
 

@@ -7,7 +7,7 @@ from kash.concepts.embeddings import Embeddings
 from kash.concepts.text_similarity import rank_by_relatedness
 from kash.config.logger import get_logger
 from kash.help.help_types import HelpDoc, HelpDocType
-from kash.web_content.file_cache_tools import cache_file
+from kash.web_content.file_cache_utils import cache_file
 from kash.web_content.local_file_cache import Loadable
 
 log = get_logger(__name__)

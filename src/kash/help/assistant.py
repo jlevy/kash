@@ -16,7 +16,6 @@ from kash.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.exec_model.script_model import Script
 from kash.help.assistant_instructions import assistant_instructions
 from kash.help.assistant_output import print_assistant_response
-from kash.lang_utils.capitalization import capitalize_cms
 from kash.llm_utils.chat_format import (
     ChatHistory,
     ChatMessage,
@@ -24,15 +23,16 @@ from kash.llm_utils.chat_format import (
     append_chat_message,
     tail_chat_history,
 )
+from kash.llm_utils.language_models import LLMDefault, LLMName
 from kash.llm_utils.llm_completion import LLMCompletionResult, llm_completion
 from kash.llm_utils.llm_messages import Message
 from kash.model.assistant_response_model import AssistantResponse
 from kash.model.items_model import Item, ItemType
-from kash.model.language_models import LLMDefault, LLMName
 from kash.shell_output.shell_output import PrintHooks, cprint, print_assistance, print_markdown
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.parse_shell_args import shell_unquote
 from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.lang_utils.capitalization import capitalize_cms
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

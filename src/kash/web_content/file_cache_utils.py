@@ -5,7 +5,6 @@ from prettyfmt import fmt_lines, fmt_path
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings, update_global_settings
 from kash.errors import FileNotFound, InvalidInput
-from kash.exec.preconditions import has_html_body, is_resource, is_url_item
 from kash.media_base.media_services import is_media_url
 from kash.media_base.media_tools import cache_media
 from kash.model.items_model import Item
@@ -54,6 +53,8 @@ def cache_resource(item: Item) -> dict[MediaType, Path]:
     Cache a resource item for an external local path or a URL, fetching or
     copying as needed. For media this may yield more than one format.
     """
+    from kash.exec.preconditions import is_resource
+
     if not is_resource(item):
         raise ValueError(f"Item is not a resource: {item}")
 
@@ -97,6 +98,8 @@ def get_url_html(item: Item) -> tuple[Url, str]:
     Returns the HTML content of an URL item, using the content cache,
     or the body of the item if it has a URL and HTML body.
     """
+    from kash.exec.preconditions import has_html_body, is_url_item
+
     if not item.url:
         raise InvalidInput("Item must have a URL or an HTML body")
     url = Url(canonicalize_url(item.url))

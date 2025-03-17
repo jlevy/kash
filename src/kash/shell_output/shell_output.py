@@ -32,9 +32,9 @@ from kash.config.text_styles import (
     STYLE_HELP,
     emoji_bool,
 )
-from kash.rich_custom.rich_indent import Indent
-from kash.rich_custom.rich_markdown_fork import Markdown
 from kash.shell_output.kmarkdown import KMarkdown
+from kash.utils.rich_custom.rich_indent import Indent
+from kash.utils.rich_custom.rich_markdown_fork import Markdown
 
 console = get_console()
 

@@ -9,6 +9,7 @@ from kash.exec.preconditions import is_instructions
 from kash.help.assistant import assist_preamble, assistance_structured
 from kash.help.assistant_output import print_assistant_response
 from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.language_models import LLMName
 from kash.model import (
     LLM,
     ONE_OR_NO_ARGS,
@@ -20,7 +21,6 @@ from kash.model import (
     TitleTemplate,
     common_params,
 )
-from kash.model.language_models import LLMName
 from kash.model.params_model import RawParamValues
 from kash.utils.common.lazyobject import lazyobject
 from kash.utils.common.type_utils import not_none

@@ -8,7 +8,7 @@ from kash.exec import kash_command
 from kash.exec.command_exec import look_up_command_or_action
 from kash.help.command_help import print_explain_command, source_code_path
 from kash.help.help_pages import print_see_also
-from kash.model.language_models import LLM
+from kash.llm_utils.language_models import LLM
 from kash.shell_output.shell_output import PrintHooks, console_pager, cprint
 from kash.shell_utils.native_utils import ViewMode, view_file_native
 

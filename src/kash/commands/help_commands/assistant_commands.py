@@ -12,8 +12,8 @@ from kash.help.assistant import (
     assist_system_message_with_state,
     shell_context_assistance,
 )
+from kash.llm_utils.language_models import LLM
 from kash.model.items_model import Item, ItemType
-from kash.model.language_models import LLM
 from kash.shell_utils.native_utils import tail_file
 from kash.utils.file_utils.file_formats_model import Format
 from kash.workspaces import current_workspace

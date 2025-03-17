@@ -11,7 +11,7 @@ from pydantic.dataclasses import dataclass
 from strif import abbrev_list
 
 from kash.config.logger import get_logger
-from kash.model.language_models import DEFAULT_EMBEDDING_MODEL
+from kash.llm_utils.language_models import DEFAULT_EMBEDDING_MODEL
 
 log = get_logger(__name__)
 

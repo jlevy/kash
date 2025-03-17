@@ -15,9 +15,9 @@ from kash.help.function_param_info import annotate_param_info
 from kash.help.help_types import Faq
 from kash.help.tldr_help import tldr_help
 from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.language_models import LLM
 from kash.llm_utils.llm_messages import Message
 from kash.model.actions_model import Action
-from kash.model.language_models import LLM
 from kash.model.params_model import COMMON_SHELL_PARAMS, RUNTIME_ACTION_PARAMS, Param
 from kash.model.preconditions_model import Precondition
 from kash.shell_output.shell_output import (

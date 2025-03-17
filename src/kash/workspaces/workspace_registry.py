@@ -1,18 +1,25 @@
+from __future__ import annotations
+
 import threading
 from functools import cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-from kash.file_storage.file_store import FileStore
+
+if TYPE_CHECKING:
+    from kash.file_storage.file_store import FileStore
 
 log = get_logger(__name__)
 
 
 # Cache the file store per directory, since it takes a little while to load.
 @cache
-def load_or_init_file_store(base_dir: Path, is_sandbox: bool) -> FileStore:
+def _load_or_init_file_store(base_dir: Path, is_sandbox: bool) -> FileStore:
+    from kash.file_storage.file_store import FileStore
+
     file_store = FileStore(base_dir, is_sandbox, auto_init=True)
     return file_store
 
@@ -46,7 +53,7 @@ class WorkspaceRegistry:
                 else:
                     raise ValueError(f"Workspace not found: {name}")
 
-            return load_or_init_file_store(info.base_dir, info.is_sandbox)
+            return _load_or_init_file_store(info.base_dir, info.is_sandbox)
 
     def get_by_name(self, name: str) -> WorkspaceInfo | None:
         with self._lock:

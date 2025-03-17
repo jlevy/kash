@@ -6,11 +6,9 @@ from prettyfmt import fmt_lines
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_SKIP, EMOJI_SUCCESS, EMOJI_TIMING
 from kash.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
-from kash.exec.fetch_url_metadata import fetch_url_item_metadata
 from kash.exec.preconditions import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
-from kash.lang_utils.inflection import plural
 from kash.model.actions_model import (
     NO_ARGS,
     Action,
@@ -26,6 +24,7 @@ from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import PrintHooks, print_h3
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
+from kash.utils.lang_utils.inflection import plural
 from kash.workspaces import Selection, Workspace, current_workspace
 from kash.workspaces.workspace_importing import import_and_load
 
@@ -38,6 +37,8 @@ def assemble_action_input(ws: Workspace, *input_args: CommandArg) -> ActionInput
     URL or file resources, either finding them in the workspace or importing them.
     Also fetches metadata for URLs if they don't already have title and description.
     """
+    from kash.exec.fetch_url_metadata import fetch_url_item_metadata
+
     # Ensure input items are already saved in the workspace and load the corresponding items.
     # This also imports any URLs.
     input_items = [import_and_load(ws, arg) for arg in input_args]

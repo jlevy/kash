@@ -101,10 +101,12 @@ def load_source_code() -> SourceCode:
         ),
         text_tool_src=read_source_code(
             kash_base_path / "text_formatting",
-            kash_base_path / "lang_utils",
+            kash_base_path / "utils" / "lang_utils",
             # TODO: Include additional dep libs like chopdiff TextDoc too?
         ),
-        file_formats_src=read_source_code(kash_base_path / "file_utils" / "file_formats_model.py"),
+        file_formats_src=read_source_code(
+            kash_base_path / "utils" / "file_utils" / "file_formats_model.py"
+        ),
         core_action_defs_src=read_source_code(kash_base_path / "actions" / "core"),
         example_action_src=read_source_code(
             kash_base_path / "actions" / "core" / "strip_html.py",

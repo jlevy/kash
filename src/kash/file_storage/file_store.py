@@ -84,7 +84,7 @@ class FileStore:
         self.uniquifier = Uniquifier()
         self.id_map: dict[ItemId, StorePath] = {}
 
-        self.dirs = MetadataDirs(self.base_dir)
+        self.dirs = MetadataDirs(base_dir=self.base_dir)
         if not auto_init and not self.dirs.is_initialized():
             raise FileNotFound(f"Directory is not a file store workspace: {self.base_dir}")
 

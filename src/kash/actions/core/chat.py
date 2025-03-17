@@ -3,6 +3,7 @@ from kash.exec import kash_action
 from kash.exec.preconditions import is_chat
 from kash.form_input.prompt_input import prompt_simple_string
 from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.language_models import LLMName
 from kash.llm_utils.llm_completion import llm_completion
 from kash.model import (
     LLM,
@@ -15,7 +16,6 @@ from kash.model import (
     ShellResult,
     common_params,
 )
-from kash.model.language_models import LLMName
 from kash.shell_output.shell_output import (
     PadStyle,
     Wrap,

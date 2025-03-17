@@ -2,8 +2,8 @@ from rich.text import Text
 
 from kash.config.text_styles import COLOR_HINT, EMOJI_ASSISTANT
 from kash.help.help_pages import print_see_also
+from kash.llm_utils.language_models import LLMName
 from kash.model.assistant_response_model import AssistantResponse
-from kash.model.language_models import LLMName
 from kash.shell_output.shell_output import (
     PadStyle,
     PrintHooks,

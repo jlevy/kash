@@ -1,6 +1,6 @@
 from functools import cache
 from pathlib import Path
-from typing import TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 from prettyfmt import fmt_path
 
@@ -13,13 +13,15 @@ from kash.config.settings import (
     resolve_and_create_dirs,
 )
 from kash.errors import FileNotFound, InvalidInput, InvalidState
-from kash.file_storage.file_store import FileStore
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
 from kash.workspaces.workspace_names import check_strict_workspace_name
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_workspace_registry
+
+if TYPE_CHECKING:
+    from kash.file_storage.file_store import FileStore
 
 log = get_logger(__name__)
 
@@ -29,7 +31,7 @@ KB_SUFFIX = ".kb"
 
 # Currently the same thing as a FileStore, but may want to change
 # this in the future.
-Workspace: TypeAlias = FileStore
+Workspace: TypeAlias = "FileStore"
 
 
 def workspace_name(path_or_name: str | Path) -> str:
@@ -151,7 +153,7 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
     use the sandbox for logs (since it's )
     """
     from kash.media_base.media_tools import reset_media_cache_dir
-    from kash.web_content.file_cache_tools import reset_content_cache_dir
+    from kash.web_content.file_cache_utils import reset_content_cache_dir
 
     info = resolve_workspace(base_dir)
     ws_dirs = MetadataDirs(info.base_dir)
