@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 from pydantic import BaseModel, field_validator
 from strif import single_line
 
-from kash.util.parse_shell_args import (
+from kash.utils.common.parse_shell_args import (
     StrBoolOptions,
     format_command_str,
     format_options,

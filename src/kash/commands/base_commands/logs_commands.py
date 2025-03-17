@@ -12,8 +12,8 @@ from kash.config.settings import (
 )
 from kash.exec import kash_command
 from kash.shell_output.shell_output import cprint, format_name_and_value, print_status
-from kash.shell_tools.native_tools import tail_file
-from kash.util.format_utils import fmt_loc
+from kash.shell_utils.native_utils import tail_file
+from kash.utils.common.format_utils import fmt_loc
 
 log = get_logger(__name__)
 

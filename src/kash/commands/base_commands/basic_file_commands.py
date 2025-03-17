@@ -8,7 +8,6 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_EMPH
 from kash.errors import InvalidInput
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
-from kash.file_utils.file_formats_model import detect_file_format
 from kash.shell_output.shell_output import (
     PadStyle,
     PrintHooks,
@@ -17,9 +16,10 @@ from kash.shell_output.shell_output import (
     print_status,
     print_style,
 )
-from kash.shell_tools.native_tools import edit_files, native_trash
-from kash.shell_tools.native_tools import tail_file as native_tail_file
-from kash.util.format_utils import fmt_loc
+from kash.shell_utils.native_utils import edit_files, native_trash
+from kash.shell_utils.native_utils import tail_file as native_tail_file
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.file_utils.file_formats_model import detect_file_format
 from kash.workspaces.workspace_output import print_file_info
 
 log = get_logger(__name__)

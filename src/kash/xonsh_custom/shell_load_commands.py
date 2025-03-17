@@ -14,9 +14,9 @@ from kash.exec.history import wrap_with_history
 from kash.exec.shell_callable_action import ShellCallableAction
 from kash.exec_model.shell_model import ShellResult
 from kash.shell_output.shell_output import PrintHooks, cprint
-from kash.shell_tools.exception_printing import wrap_with_exception_printing
-from kash.shell_tools.function_wrapper import wrap_for_shell_args
 from kash.shell_ui.shell_results import show_shell_result
+from kash.shell_utils.exception_printing import wrap_with_exception_printing
+from kash.shell_utils.shell_function_wrapper import wrap_for_shell_args
 from kash.workspaces import current_workspace
 from kash.workspaces.workspace_output import post_shell_result
 from kash.xonsh_custom.xonsh_env import is_interactive, set_alias, set_env, update_aliases

@@ -3,7 +3,7 @@ from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import has_html_body, has_text_body
 from kash.model import Format, Item, ItemType
-from kash.util.format_utils import html_to_plaintext
+from kash.utils.common.format_utils import html_to_plaintext
 
 log = get_logger(__name__)
 

@@ -16,13 +16,13 @@ from funlog import log_calls
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
 from kash.errors import FileNotFound, SetupError
-from kash.file_utils.file_formats import is_full_html_page, read_partial_text
-from kash.file_utils.file_formats_model import file_format_info
 from kash.shell_output.shell_output import cprint
-from kash.shell_tools.terminal_images import terminal_show_image
-from kash.shell_tools.tool_deps import PLATFORM, Platform, Tool, tool_check
-from kash.util.format_utils import fmt_loc
-from kash.util.url import as_file_url, is_file_url, is_url
+from kash.shell_utils.sys_tool_deps import PLATFORM, Platform, SysTool, sys_tool_check
+from kash.shell_utils.terminal_images import terminal_show_image
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.url import as_file_url, is_file_url, is_url
+from kash.utils.file_utils.file_formats import is_full_html_page, read_partial_text
+from kash.utils.file_utils.file_formats_model import file_format_info
 
 log = get_logger(__name__)
 
@@ -161,11 +161,11 @@ def tail_file(
     if follow:
         max_lines = follow_max_lines
 
-    tool_check().require(Tool.less)
-    tool_check().warn_if_missing(Tool.bat, Tool.tail)
+    sys_tool_check().require(SysTool.less)
+    sys_tool_check().warn_if_missing(SysTool.bat, SysTool.tail)
 
     if follow:
-        if tool_check().has(Tool.bat, Tool.tail, Tool.less):
+        if sys_tool_check().has(SysTool.bat, SysTool.tail, SysTool.less):
             # Follow the file in real-time.
             command = (
                 f"tail -{max_lines} -f {quoted_filename} | "
@@ -176,7 +176,7 @@ def tail_file(
             command = f"tail -f {quoted_filename} | less -R +F"
         cprint("Following file: `%s`", command, text_wrap=Wrap.NONE)
     else:
-        if tool_check().has(Tool.bat, Tool.tail, Tool.less):
+        if sys_tool_check().has(SysTool.bat, SysTool.tail, SysTool.less):
             command = (
                 f"tail -{max_lines} {quoted_filename} | "
                 f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log | "
@@ -200,17 +200,17 @@ def view_file_console(filename: str | Path, use_pager: bool = True):
 
     is_text = file_format_info(filename).is_text
     if is_text:
-        tool_check().require(Tool.less)
-        if tool_check().has(Tool.bat):
+        sys_tool_check().require(SysTool.less)
+        if sys_tool_check().has(SysTool.bat):
             pager_str = "--pager=always --pager=less " if use_pager else ""
             command = f"bat {pager_str}--color=always --style={BAT_STYLE} --theme={BAT_THEME} {quoted_filename}"
         else:
-            tool_check().require(Tool.pygmentize)
+            sys_tool_check().require(SysTool.pygmentize)
             command = f"pygmentize -g {quoted_filename}"
             if use_pager:
                 command = f"{command} | less -R"
     else:
-        tool_check().require(Tool.hexyl)
+        sys_tool_check().require(SysTool.hexyl)
         command = f"hexyl {quoted_filename}"
         if use_pager:
             command = f"{command} | less -R"

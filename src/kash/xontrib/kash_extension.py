@@ -12,7 +12,7 @@ Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 import kash.actions
 import kash.exec.command_registry
 import kash.shell_output.shell_output
-import kash.util.format_utils
+import kash.utils.common.format_utils
 import kash.xonsh_custom.customize_xonsh
 import kash.xonsh_custom.shell_load_commands
 import kash.xonsh_custom.xonsh_env
@@ -44,7 +44,7 @@ def load(*paths: str) -> None:
 
     kash.shell_output.shell_output.cprint(
         "Imported extensions and reloaded actions: %s",
-        ", ".join(kash.util.format_utils.fmt_path(p) for p in paths),
+        ", ".join(kash.utils.common.format_utils.fmt_path(p) for p in paths),
     )
     # TODO: Track and expose to the user which extensions are loaded.
 

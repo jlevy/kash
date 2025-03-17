@@ -1,7 +1,7 @@
 import justext
 
 from kash.config.logger import get_logger
-from kash.util.url import Url
+from kash.utils.common.url import Url
 from kash.web_content.web_page_model import WebPageData
 
 log = get_logger(__name__)

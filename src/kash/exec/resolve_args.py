@@ -9,7 +9,7 @@ from kash.errors import InvalidInput, MissingInput
 from kash.exec_model.args_model import CommandArg
 from kash.model.items_model import ItemType
 from kash.model.paths_model import InvalidStorePath, StorePath, UnresolvedPath, parse_path_spec
-from kash.util.url import Locator, UnresolvedLocator, Url, is_url
+from kash.utils.common.url import Locator, UnresolvedLocator, Url, is_url
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

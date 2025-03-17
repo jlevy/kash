@@ -8,9 +8,9 @@ from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
 from kash.errors import ContentError
-from kash.file_utils.file_formats_model import Format
 from kash.model.items_model import Item, ItemRelations, ItemType
 from kash.model.paths_model import StorePath
+from kash.utils.file_utils.file_formats_model import Format
 
 log = get_logger(__name__)
 

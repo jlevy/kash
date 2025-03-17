@@ -5,8 +5,8 @@ from pathlib import Path
 from inflect import engine
 from prettyfmt import fmt_path
 
-from kash.util.lazyobject import lazyobject
-from kash.util.url import Locator, is_url
+from kash.utils.common.lazyobject import lazyobject
+from kash.utils.common.url import Locator, is_url
 
 
 def plaintext_to_html(text: str):

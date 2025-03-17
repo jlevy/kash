@@ -6,12 +6,12 @@ from kash.config.logger import get_logger
 from kash.config.settings import global_settings, update_global_settings
 from kash.errors import FileNotFound, InvalidInput
 from kash.exec.preconditions import has_html_body, is_resource, is_url_item
-from kash.file_utils.file_formats_model import detect_media_type
 from kash.media_base.media_services import is_media_url
 from kash.media_base.media_tools import cache_media
 from kash.model.items_model import Item
 from kash.model.media_model import MediaType
-from kash.util.url import Url
+from kash.utils.common.url import Url
+from kash.utils.file_utils.file_formats_model import detect_media_type
 from kash.web_content.canon_url import canonicalize_url
 from kash.web_content.local_file_cache import Loadable, LocalFileCache
 

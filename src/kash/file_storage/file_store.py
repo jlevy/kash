@@ -18,16 +18,16 @@ from kash.errors import FileExists, FileNotFound, InvalidFilename, SkippableErro
 from kash.file_storage.item_file_format import read_item, write_item
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.file_storage.store_filenames import folder_for_type, join_suffix, parse_item_filename
-from kash.file_utils.file_formats_model import Format
-from kash.file_utils.file_walk import walk_by_dir
-from kash.file_utils.git_tools import add_to_git_ignore
-from kash.file_utils.ignore_files import IgnoreChecker
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import PrintHooks, cprint
-from kash.util.format_utils import fmt_loc
-from kash.util.uniquifier import Uniquifier
-from kash.util.url import Locator, Url, is_url
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.uniquifier import Uniquifier
+from kash.utils.common.url import Locator, Url, is_url
+from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.file_utils.file_walk import walk_by_dir
+from kash.utils.file_utils.git_tools import add_to_git_ignore
+from kash.utils.file_utils.ignore_files import IgnoreChecker
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
 from kash.workspaces.workspace_names import workspace_name

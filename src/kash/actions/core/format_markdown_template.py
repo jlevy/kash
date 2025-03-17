@@ -6,7 +6,7 @@ from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import is_markdown
 from kash.model import ONE_OR_MORE_ARGS, ActionInput, ActionResult, ItemType, Param
-from kash.util.type_utils import not_none
+from kash.utils.common.type_utils import not_none
 
 log = get_logger(__name__)
 

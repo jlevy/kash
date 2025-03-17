@@ -36,7 +36,7 @@ from kash.exec.command_registry import get_all_commands
 from kash.help.function_param_info import annotate_param_info
 from kash.model.params_model import COMMON_SHELL_PARAMS, Param
 from kash.shell_ui.shell_syntax import assist_request_str
-from kash.util.atomic_var import AtomicVar
+from kash.utils.common.atomic_var import AtomicVar
 from kash.xonsh_custom.shell_which import is_valid_command
 
 log = get_logger(__name__)

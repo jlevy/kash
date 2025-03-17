@@ -6,8 +6,8 @@ from pathlib import Path
 from prettyfmt import abbrev_obj
 from pydantic.dataclasses import dataclass
 
-from kash.file_utils.file_formats_model import MediaType
-from kash.util.url import Url
+from kash.utils.common.url import Url
+from kash.utils.file_utils.file_formats_model import MediaType
 
 
 class MediaUrlType(Enum):

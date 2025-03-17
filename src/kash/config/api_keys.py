@@ -5,7 +5,7 @@ from dotenv import find_dotenv, load_dotenv
 from rich.text import Text
 
 from kash.shell_output.shell_output import cprint, format_success_or_failure
-from kash.util.atomic_var import AtomicVar
+from kash.utils.common.atomic_var import AtomicVar
 
 
 class Api(str, Enum):

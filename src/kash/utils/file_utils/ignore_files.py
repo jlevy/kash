@@ -1,12 +1,12 @@
+import logging
 from pathlib import Path
 from typing import Protocol
 
 from strif import atomic_output_file
 
-from kash.config.logger import get_logger
-from kash.util.format_utils import fmt_loc
+from kash.utils.common.format_utils import fmt_loc
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 MINIMAL_IGNORE_PATTERNS = """

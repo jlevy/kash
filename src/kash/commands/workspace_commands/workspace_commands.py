@@ -24,9 +24,8 @@ from kash.exec.precondition_checks import actions_matching_paths
 from kash.exec.precondition_registry import get_all_preconditions
 from kash.exec.preconditions import is_url_item
 from kash.exec_model.shell_model import ShellResult
-from kash.file_utils.dir_size import is_nonempty_dir
 from kash.lang_utils.inflection import plural
-from kash.llm_tools.chat_format import tail_chat_history
+from kash.llm_utils.chat_format import tail_chat_history
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.media_base import media_tools
 from kash.media_base.media_services import is_media_url
@@ -43,12 +42,13 @@ from kash.shell_output.shell_output import (
     print_h2,
     print_status,
 )
-from kash.shell_tools.native_tools import tail_file
-from kash.util.format_utils import fmt_loc
-from kash.util.obj_replace import remove_values
-from kash.util.parse_key_vals import format_key_value, parse_key_value
-from kash.util.type_utils import not_none
-from kash.util.url import Url, is_url
+from kash.shell_utils.native_utils import tail_file
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.obj_replace import remove_values
+from kash.utils.common.parse_key_vals import format_key_value, parse_key_value
+from kash.utils.common.type_utils import not_none
+from kash.utils.common.url import Url, is_url
+from kash.utils.file_utils.dir_size import is_nonempty_dir
 from kash.web_content.file_cache_tools import cache_file
 from kash.workspaces import current_workspace, get_sandbox_workspace, resolve_workspace, sandbox_dir
 from kash.workspaces.workspace_names import check_strict_workspace_name
@@ -599,7 +599,7 @@ def reset_ignore_file(append: bool = False) -> None:
     """
     Reset the kash ignore file to the default.
     """
-    from kash.file_utils.ignore_files import write_ignore
+    from kash.utils.file_utils.ignore_files import write_ignore
 
     ws = current_workspace()
     ignore_path = ws.base_dir / ws.dirs.ignore_file
@@ -615,7 +615,7 @@ def ignore_file(pattern: str | None = None) -> None:
     if none is specified.
     """
     from kash.commands.base_commands.show_command import show
-    from kash.file_utils.ignore_files import add_to_ignore
+    from kash.utils.file_utils.ignore_files import add_to_ignore
 
     ws = current_workspace()
     ignore_path = ws.base_dir / ws.dirs.ignore_file

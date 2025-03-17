@@ -1,7 +1,7 @@
 from kash.config.logger import get_logger
 from kash.docs.load_help_topics import load_help_src
 from kash.docs.load_source_code import load_source_code
-from kash.util.string_template import StringTemplate
+from kash.utils.common.string_template import StringTemplate
 
 log = get_logger(__name__)
 

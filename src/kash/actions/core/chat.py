@@ -2,8 +2,8 @@ from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.preconditions import is_chat
 from kash.form_input.prompt_input import prompt_simple_string
-from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
-from kash.llm_tools.llm_completion import llm_completion
+from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.llm_completion import llm_completion
 from kash.model import (
     LLM,
     ONE_OR_NO_ARGS,

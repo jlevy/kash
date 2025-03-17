@@ -30,7 +30,7 @@ from kash.docs.all_docs import all_docs
 from kash.exec.precondition_checks import items_matching_precondition
 from kash.model.paths_model import fmt_store_path
 from kash.model.preconditions_model import Precondition
-from kash.util.type_utils import not_none
+from kash.utils.common.type_utils import not_none
 from kash.workspaces import current_ignore, current_workspace
 
 log = get_logger(__name__)

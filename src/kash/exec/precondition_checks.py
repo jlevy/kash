@@ -9,7 +9,7 @@ from kash.model.actions_model import Action
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
-from kash.util.format_utils import fmt_loc
+from kash.utils.common.format_utils import fmt_loc
 from kash.workspaces import Workspace
 
 log = get_logger(__name__)

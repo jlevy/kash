@@ -1,5 +1,5 @@
-from kash.llm_tools.llm_completion import llm_template_completion
-from kash.llm_tools.llm_messages import Message, MessageTemplate
+from kash.llm_utils.llm_completion import llm_template_completion
+from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model import LLM
 from kash.text_formatting.markdown_util import as_bullet_points
 

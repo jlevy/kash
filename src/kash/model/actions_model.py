@@ -21,16 +21,16 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition, InvalidInput
 from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Signature
 from kash.exec_model.shell_model import ShellResult
-from kash.llm_tools.llm_messages import Message, MessageTemplate
+from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.items_model import UNTITLED, Item, ItemType, State
 from kash.model.language_models import LLM, LLMName
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, ParamDeclarations, TypedParamValues
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
-from kash.util.parse_key_vals import format_key_value
-from kash.util.string_template import StringTemplate
-from kash.util.type_utils import not_none
+from kash.utils.common.parse_key_vals import format_key_value
+from kash.utils.common.string_template import StringTemplate
+from kash.utils.common.type_utils import not_none
 from kash.workspaces.workspaces import Workspace, get_workspace
 
 log = get_logger(__name__)

@@ -24,8 +24,8 @@ from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import PrintHooks, print_h3
-from kash.util.task_stack import task_stack
-from kash.util.type_utils import not_none
+from kash.utils.common.task_stack import task_stack
+from kash.utils.common.type_utils import not_none
 from kash.workspaces import Selection, Workspace, current_workspace
 from kash.workspaces.workspace_importing import import_and_load
 

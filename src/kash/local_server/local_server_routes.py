@@ -17,7 +17,7 @@ from kash.model.items_model import Item
 from kash.model.language_models import LLM
 from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import Wrap
-from kash.util.type_utils import not_none
+from kash.utils.common.type_utils import not_none
 from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template
 from kash.workspaces.workspace_output import print_file_info
@@ -161,7 +161,7 @@ def _read_lines(path: Path, max_lines: int = DEFAULT_MAX_LINES) -> tuple[str, in
     """
     lines = []
     # TODO: Could make this frontmatter aware but seems okay as is for now.
-    # frontmatter_str, offset = fmf_read_frontmatter_raw(path)
+    # frontmatter_str, offset, _ = fmf_read_frontmatter_raw(path)
     bytes_read = 0
     with open(path) as f:
         for _ in range(max_lines):

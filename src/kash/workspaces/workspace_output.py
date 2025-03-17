@@ -11,13 +11,13 @@ from rich.text import Text
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import COLOR_SELECTION
 from kash.exec_model.shell_model import ShellResult
-from kash.file_utils.dir_size import get_dir_size
-from kash.file_utils.file_formats_model import file_format_info
-from kash.llm_tools.chat_format import ChatHistory
+from kash.llm_utils.chat_format import ChatHistory
 from kash.model.items_model import ItemType
 from kash.shell_output.kerm_code_utils import click_to_paste
 from kash.shell_output.shell_output import PrintHooks, cprint, format_name_and_value
-from kash.util.format_utils import fmt_count_items, fmt_loc
+from kash.utils.common.format_utils import fmt_count_items, fmt_loc
+from kash.utils.file_utils.dir_size import get_dir_size
+from kash.utils.file_utils.file_formats_model import file_format_info
 from kash.workspaces import Selection, current_workspace
 
 log = get_logger(__name__)
@@ -98,7 +98,7 @@ def print_file_info(
 
     # Raw frontmatter info.
     try:
-        _frontmatter_str, offset = fmf_read_frontmatter_raw(input_path)
+        _frontmatter_str, offset, _ = fmf_read_frontmatter_raw(input_path)
     except UnicodeDecodeError:
         offset = None
 

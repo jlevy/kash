@@ -7,8 +7,8 @@ from collections.abc import Callable
 from enum import Enum
 from typing import Any, TypeVar, cast
 
-from kash.util.parse_shell_args import shell_quote, shell_unquote
-from kash.util.type_utils import instantiate_as_type
+from kash.utils.common.parse_shell_args import shell_quote, shell_unquote
+from kash.utils.common.type_utils import instantiate_as_type
 
 
 def format_python_str_or_enum(s: Any) -> str:

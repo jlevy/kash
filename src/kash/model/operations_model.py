@@ -5,9 +5,9 @@ from typing import Any
 from pydantic.dataclasses import dataclass
 
 from kash.model.paths_model import StorePath
-from kash.util.format_utils import fmt_loc
-from kash.util.parse_key_vals import format_key_value
-from kash.util.parse_shell_args import shell_quote
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.parse_key_vals import format_key_value
+from kash.utils.common.parse_shell_args import shell_quote
 
 
 @dataclass(frozen=True)

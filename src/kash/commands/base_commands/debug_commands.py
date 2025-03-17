@@ -179,7 +179,7 @@ def reload_system() -> None:
     """
     import kash
     from kash.local_server.local_server import restart_local_server
-    from kash.util.import_utils import recursive_reload
+    from kash.utils.common.import_utils import recursive_reload
 
     module = kash
     exclude = ["kash.xontrib.kash_extension"]  # Don't reload the kash initialization.

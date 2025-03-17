@@ -5,7 +5,7 @@ from typing import NewType
 import regex
 
 from kash.config.logger import get_logger
-from kash.shell_tools.tool_deps import Tool, tool_check
+from kash.shell_utils.sys_tool_deps import SysTool, sys_tool_check
 
 log = get_logger(__name__)
 
@@ -83,7 +83,7 @@ def detect_mime_type(filename: str | Path) -> MimeType | None:
     Get the mime type of a file using libmagic heuristics plus more careful
     detection of HTML, Markdown, and multipart YAML.
     """
-    tool_check().require(Tool.libmagic)
+    sys_tool_check().require(SysTool.libmagic)
     import magic
 
     mime = magic.Magic(mime=True)

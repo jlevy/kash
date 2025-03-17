@@ -16,7 +16,7 @@ from kash.exec.action_registry import get_all_actions_defaults, look_up_action_c
 from kash.model.actions_model import Action, ActionResult, ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
-from kash.util.atomic_var import AtomicVar
+from kash.utils.common.atomic_var import AtomicVar
 from kash.workspaces.workspaces import current_workspace
 
 log = get_logger(__name__)

@@ -4,7 +4,7 @@ from kash.errors import InvalidInput, InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.model.paths_model import StorePath
 from kash.shell_output.shell_output import cprint
-from kash.shell_tools.native_tools import ViewMode, terminal_show_image, view_file_native
+from kash.shell_utils.native_utils import ViewMode, terminal_show_image, view_file_native
 from kash.web_content.file_cache_tools import cache_file
 from kash.workspaces import current_workspace
 

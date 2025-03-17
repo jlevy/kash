@@ -10,7 +10,7 @@ from kash.docs_base.load_recipe_snippets import load_recipe_snippets
 from kash.help.help_embeddings import HelpIndex
 from kash.help.help_types import CommandInfo, Faq, RecipeSnippet
 from kash.help.tldr_help import tldr_descriptions
-from kash.util.lazyobject import lazyobject
+from kash.utils.common.lazyobject import lazyobject
 from kash.xonsh_custom.shell_which import is_valid_command
 
 log = get_logger(__name__)

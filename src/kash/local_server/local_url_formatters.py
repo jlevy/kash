@@ -11,8 +11,8 @@ from kash.config.text_styles import COLOR_HINT
 from kash.errors import InvalidState
 from kash.model.paths_model import StorePath
 from kash.shell_output.kerm_codes import KriLink, TextTooltip, UIAction, UIActionType
-from kash.util.atomic_var import AtomicVar
-from kash.util.format_utils import fmt_loc
+from kash.utils.common.atomic_var import AtomicVar
+from kash.utils.common.format_utils import fmt_loc
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

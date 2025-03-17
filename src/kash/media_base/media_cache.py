@@ -6,7 +6,6 @@ from strif import atomic_output_file
 
 from kash.config.logger import get_logger
 from kash.errors import FileNotFound, InvalidInput, UnexpectedError
-from kash.file_utils.file_formats_model import MediaType
 from kash.media_base.audio_processing import downsample_to_16khz
 from kash.media_base.media_services import (
     canonicalize_media_url,
@@ -14,8 +13,9 @@ from kash.media_base.media_services import (
     get_media_services,
 )
 from kash.media_base.speech_transcription import deepgram_transcribe_audio
-from kash.util.format_utils import fmt_loc
-from kash.util.url import Url, as_file_url, is_url
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.url import Url, as_file_url, is_url
+from kash.utils.file_utils.file_formats_model import MediaType
 from kash.web_content.dir_store import DirStore
 
 log = get_logger(__name__)

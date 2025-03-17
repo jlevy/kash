@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from kash.exec_model.args_model import Signature
 from kash.exec_model.commands_model import CommentedCommand, as_comment
-from kash.util.parse_shell_args import shell_split
+from kash.utils.common.parse_shell_args import shell_split
 
 
 class BareComment(BaseModel):

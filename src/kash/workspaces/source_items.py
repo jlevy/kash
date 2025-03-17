@@ -7,8 +7,8 @@ from kash.exec.preconditions import is_resource
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
-from kash.util.format_utils import fmt_loc
-from kash.util.type_utils import not_none
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.type_utils import not_none
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

@@ -4,7 +4,7 @@ from typing import Any
 
 from kash.help.docstring_utils import parse_docstring
 from kash.model.params_model import ALL_COMMON_PARAMS, Param
-from kash.util.function_inspect import FuncParam, inspect_function_params
+from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 
 
 def _look_up_param_docs(func: Callable[..., Any], kw_params: list[FuncParam]) -> list[Param]:

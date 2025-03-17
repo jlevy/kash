@@ -5,8 +5,8 @@ from kash.errors import InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.shell_output.shell_output import cprint
-from kash.shell_tools.tool_deps import Tool, tool_check
-from kash.util.parse_shell_args import shell_quote
+from kash.shell_utils.sys_tool_deps import SysTool, sys_tool_check
+from kash.utils.common.parse_shell_args import shell_quote
 
 log = get_logger(__name__)
 
@@ -33,7 +33,7 @@ def search(
     :param ignore_case: Ignore case when searching.
     :param verbose: Also print the ripgrep command line.
     """
-    tool_check().require(Tool.ripgrep)
+    sys_tool_check().require(SysTool.ripgrep)
     from ripgrepy import RipGrepNotFound, Ripgrepy
 
     resolved_paths = assemble_path_args(*paths)

@@ -16,7 +16,7 @@ from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
 from kash.errors import ContentError
-from kash.util.task_stack import task_stack
+from kash.utils.common.task_stack import task_stack
 
 log = get_logger(__name__)
 

@@ -3,7 +3,7 @@ from typing import Protocol
 from prettyfmt import abbrev_obj
 from pydantic.dataclasses import dataclass
 
-from kash.util.url import Url
+from kash.utils.common.url import Url
 
 
 @dataclass

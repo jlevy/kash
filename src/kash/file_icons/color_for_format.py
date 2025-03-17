@@ -1,4 +1,4 @@
-from kash.file_utils.file_formats_model import Format
+from kash.utils.file_utils.file_formats_model import Format
 
 # TODO: Consider adding more categories, either aligning with eza or seti-ui/VSCode:
 # https://github.com/jesseweed/seti-ui/blob/master/styles/components/icons/mapping.less

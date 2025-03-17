@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Any
 
 from kash.exec_model.commands_model import Command
-from kash.llm_tools.chat_format import ChatMessage, ChatRole, append_chat_message
+from kash.llm_utils.chat_format import ChatMessage, ChatRole, append_chat_message
 from kash.workspaces import current_workspace
 
 _IGNORE_COMMANDS = ["history", "clear_history", "show", "help"]

@@ -1,7 +1,7 @@
 from funlog import log_if_modifies
 
 from kash.media_base.media_services import canonicalize_media_url, thumbnail_media_url
-from kash.util.url import Url, normalize_url
+from kash.utils.common.url import Url, normalize_url
 
 _normalize_url = log_if_modifies(level="info")(normalize_url)
 

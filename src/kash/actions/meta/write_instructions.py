@@ -1,6 +1,6 @@
 from kash.exec import kash_action
 from kash.form_input.prompt_input import prompt_simple_string
-from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.model import NO_ARGS, ActionInput, ActionResult, Format, Item, ItemType
 
 

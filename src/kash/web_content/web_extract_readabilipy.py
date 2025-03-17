@@ -1,7 +1,7 @@
 from readabilipy.simple_json import simple_json_from_html_string
 
 from kash.errors import InvalidInput
-from kash.util.url import Url
+from kash.utils.common.url import Url
 from kash.web_content.web_page_model import WebPageData
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from kash.util.url import Locator
+from kash.utils.common.url import Locator
 
 CommandArg = Locator | str
 """

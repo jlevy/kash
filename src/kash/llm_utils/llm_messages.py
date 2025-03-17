@@ -5,7 +5,7 @@ from textwrap import dedent
 from pydantic import ValidationInfo
 
 from kash.config.logger import get_logger
-from kash.util.string_template import StringTemplate
+from kash.utils.common.string_template import StringTemplate
 
 log = get_logger(__name__)
 

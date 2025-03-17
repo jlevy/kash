@@ -10,8 +10,8 @@ from frontmatter_format import add_default_yaml_representer
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 
-from kash.util.parse_shell_args import shell_quote
-from kash.util.url import is_url
+from kash.utils.common.parse_shell_args import shell_quote
+from kash.utils.common.url import is_url
 
 
 class StorePathError(ValueError):

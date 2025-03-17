@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import logging
 from enum import Enum
 
-from kash.config.logger import get_logger
-
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 class FileExt(Enum):

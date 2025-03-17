@@ -10,8 +10,8 @@ from kash.model.actions_model import Action, ActionInput, ActionResult, ExecCont
 from kash.model.items_model import Item, State
 from kash.model.params_model import RawParamValues
 from kash.model.paths_model import StorePath
-from kash.util.task_stack import task_stack
-from kash.util.type_utils import not_none
+from kash.utils.common.task_stack import task_stack
+from kash.utils.common.type_utils import not_none
 
 log = get_logger(__name__)
 

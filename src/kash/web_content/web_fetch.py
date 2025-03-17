@@ -7,7 +7,7 @@ from strif import atomic_output_file, copyfile_atomic
 from tqdm import tqdm
 
 from kash.config.logger import get_logger
-from kash.util.url import Url
+from kash.utils.common.url import Url
 
 log = get_logger(__name__)
 

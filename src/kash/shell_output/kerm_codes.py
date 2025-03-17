@@ -77,7 +77,7 @@ from pydantic import BaseModel, Field, TypeAdapter, model_validator
 from rich.style import Style
 from rich.text import Text
 
-from kash.shell_tools.osc_tools import OscStr, osc8_link, osc8_link_codes, osc8_link_rich, osc_code
+from kash.shell_utils.osc_utils import OscStr, osc8_link, osc8_link_codes, osc8_link_rich, osc_code
 
 KC_VERSION = 0
 """Version of the Kerm codes format. Update when we make breaking changes."""

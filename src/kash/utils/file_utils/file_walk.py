@@ -6,8 +6,8 @@ from pathlib import Path
 
 from kash.config.logger import get_logger
 from kash.errors import FileNotFound
-from kash.file_utils.ignore_files import IgnoreFilter
-from kash.util.format_utils import fmt_loc
+from kash.utils.common.format_utils import fmt_loc
+from kash.utils.file_utils.ignore_files import IgnoreFilter
 
 log = get_logger(__name__)
 

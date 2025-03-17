@@ -9,7 +9,7 @@ from kash.docs.load_help_topics import HelpTopics, load_help_topics
 from kash.docs.load_source_code import SourceCode, load_source_code
 from kash.docs_base.docs_base import DocsBase
 from kash.help.help_types import CommandInfo
-from kash.util.lazyobject import lazyobject
+from kash.utils.common.lazyobject import lazyobject
 
 log = get_logger(__name__)
 

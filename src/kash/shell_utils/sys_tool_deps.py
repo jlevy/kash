@@ -17,8 +17,8 @@ from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import CONSOLE_WRAP_WIDTH, EMOJI_WARN
 from kash.errors import SetupError
 from kash.shell_output.shell_output import cprint, format_name_and_value, format_success_or_failure
-from kash.shell_tools.osc_tools import osc8_link_rich, terminal_supports_osc8
-from kash.shell_tools.terminal_images import terminal_supports_sixel
+from kash.shell_utils.osc_utils import osc8_link_rich, terminal_supports_osc8
+from kash.shell_utils.terminal_images import terminal_supports_sixel
 
 log = get_logger(__name__)
 
@@ -33,9 +33,9 @@ PLATFORM = Platform(platform.system())
 
 
 @dataclass(frozen=True)
-class ToolDep:
+class SysToolDep:
     """
-    Information about a tool dependency and how to install it.
+    Information about a system tool dependency and how to install it.
     """
 
     command_names: tuple[str, ...]
@@ -60,57 +60,57 @@ def check_libmagic():
         return False
 
 
-class Tool(Enum):
+class SysTool(Enum):
     """
-    External tools that we like to use.
+    External (usually non-Python) system tools that we like to use.
     """
 
     # These are usually pre-installed on all platforms:
-    less = ToolDep(("less",))
-    tail = ToolDep(("tail",))
+    less = SysToolDep(("less",))
+    tail = SysToolDep(("tail",))
 
-    bat = ToolDep(
+    bat = SysToolDep(
         ("batcat", "bat"),  # batcat for Debian/Ubuntu), bat for macOS
         brew_pkg="bat",
         apt_pkg="bat",
         winget_pkg="sharkdp.bat",
         warn_if_missing=True,
     )
-    ripgrep = ToolDep(
+    ripgrep = SysToolDep(
         ("rg",),
         brew_pkg="ripgrep",
         apt_pkg="ripgrep",
         winget_pkg="BurntSushi.ripgrep",
         warn_if_missing=True,
     )
-    eza = ToolDep(
+    eza = SysToolDep(
         ("eza",),
         brew_pkg="eza",
         apt_pkg="eza",
         winget_pkg="eza-community.eza",
         warn_if_missing=True,
     )
-    zoxide = ToolDep(
+    zoxide = SysToolDep(
         ("zoxide",),
         brew_pkg="zoxide",
         apt_pkg="zoxide",
         winget_pkg="ajeetdsouza.zoxide",
         warn_if_missing=True,
     )
-    hexyl = ToolDep(
+    hexyl = SysToolDep(
         ("hexyl",),
         brew_pkg="hexyl",
         apt_pkg="hexyl",
         winget_pkg="sharkdp.hexyl",
         warn_if_missing=True,
     )
-    pygmentize = ToolDep(
+    pygmentize = SysToolDep(
         ("pygmentize",),
         brew_pkg="pygments",
         apt_pkg="python3-pygments",
         pip_pkg="Pygments",
     )
-    libmagic = ToolDep(
+    libmagic = SysToolDep(
         (),
         comment="""
           For macOS and Linux, brew or apt gives the latest binaries. For Windows, it may be
@@ -122,14 +122,14 @@ class Tool(Enum):
         pip_pkg="python-magic-bin",
         warn_if_missing=True,
     )
-    ffmpeg = ToolDep(
+    ffmpeg = SysToolDep(
         ("ffmpeg",),
         brew_pkg="ffmpeg",
         apt_pkg="ffmpeg",
         winget_pkg="Gyan.FFmpeg",
         warn_if_missing=True,
     )
-    imagemagick = ToolDep(
+    imagemagick = SysToolDep(
         ("magick",),
         brew_pkg="imagemagick",
         apt_pkg="imagemagick",
@@ -146,17 +146,17 @@ class Tool(Enum):
 
 
 @dataclass(frozen=True)
-class InstalledTools:
+class InstalledSysTools:
     """
     Info about which tools are installed.
     """
 
-    tools: dict[Tool, str | bool]
+    tools: dict[SysTool, str | bool]
 
-    def has(self, *tools: Tool) -> bool:
+    def has(self, *tools: SysTool) -> bool:
         return all(self.tools[tool] for tool in tools)
 
-    def require(self, *tools: Tool) -> None:
+    def require(self, *tools: SysTool) -> None:
         for tool in tools:
             if not self.has(tool):
                 print_missing_tool_help(tool)
@@ -164,12 +164,12 @@ class InstalledTools:
                     f"`{tool.value}` ({tool.value.command_names}) needed but not found"
                 )
 
-    def missing_tools(self, *tools: Tool) -> list[Tool]:
+    def missing_tools(self, *tools: SysTool) -> list[SysTool]:
         if not tools:
-            tools = tuple(Tool)
+            tools = tuple(SysTool)
         return [tool for tool in tools if not self.tools[tool]]
 
-    def warn_if_missing(self, *tools: Tool) -> None:
+    def warn_if_missing(self, *tools: SysTool) -> None:
         for tool in self.missing_tools(*tools):
             if tool.value.warn_if_missing:
                 print_missing_tool_help(tool)
@@ -183,7 +183,7 @@ class InstalledTools:
 
         return Group(*texts)
 
-    def items(self) -> list[tuple[Tool, str | bool]]:
+    def items(self) -> list[tuple[SysTool, str | bool]]:
         return sorted(self.tools.items(), key=lambda item: item[0].name)
 
     def status(self) -> Text:
@@ -194,7 +194,7 @@ class InstalledTools:
         return Text.assemble("Tools: ", Text(" ").join(texts))
 
 
-def print_missing_tool_help(tool: Tool):
+def print_missing_tool_help(tool: SysTool):
     warn_str = f"{EMOJI_WARN} {tool.full_name} was not found; it is recommended to install it for better functionality."
     if tool.value.comment:
         warn_str += f" {tool.value.comment}"
@@ -205,7 +205,7 @@ def print_missing_tool_help(tool: Tool):
     cprint(warn_str)
 
 
-def get_install_suggestion(*missing_tools: Tool) -> str | None:
+def get_install_suggestion(*missing_tools: SysTool) -> str | None:
     brew_pkgs = [tool.value.brew_pkg for tool in missing_tools if tool.value.brew_pkg]
     apt_pkgs = [tool.value.apt_pkg for tool in missing_tools if tool.value.apt_pkg]
     winget_pkgs = [tool.value.winget_pkg for tool in missing_tools if tool.value.winget_pkg]
@@ -225,22 +225,22 @@ def get_install_suggestion(*missing_tools: Tool) -> str | None:
 
 
 @cached(TTLCache(maxsize=1, ttl=5.0))
-def tool_check() -> InstalledTools:
+def sys_tool_check() -> InstalledSysTools:
     """
     Check which third-party tools are installed.
     """
-    tools: dict[Tool, str | bool] = {}
+    tools: dict[SysTool, str | bool] = {}
 
-    def which_tool(tool: Tool) -> str | None:
+    def which_tool(tool: SysTool) -> str | None:
         return next(filter(None, (shutil.which(name) for name in tool.value.command_names)), None)
 
-    def check_tool(tool: Tool) -> bool:
+    def check_tool(tool: SysTool) -> bool:
         return bool(tool.value.check_function and tool.value.check_function())
 
-    for tool in Tool:
+    for tool in SysTool:
         tools[tool] = which_tool(tool) or check_tool(tool)
 
-    return InstalledTools(tools)
+    return InstalledSysTools(tools)
 
 
 @dataclass(frozen=True)
@@ -278,7 +278,7 @@ class TerminalInfo:
         )
 
 
-def check_terminal_features() -> TerminalInfo:
+def terminal_feature_check() -> TerminalInfo:
     return TerminalInfo(
         term=os.environ.get("TERM", ""),
         term_program=os.environ.get("TERM_PROGRAM", ""),

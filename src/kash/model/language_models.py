@@ -4,7 +4,7 @@ from enum import Enum
 
 from pydantic import ValidationInfo
 
-from kash.util.type_utils import not_none
+from kash.utils.common.type_utils import not_none
 
 
 class LLMName(str):

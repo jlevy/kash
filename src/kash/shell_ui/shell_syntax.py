@@ -1,6 +1,6 @@
 import re
 
-from kash.util.parse_shell_args import shell_quote
+from kash.utils.common.parse_shell_args import shell_quote
 
 
 def is_assist_request_str(line: str) -> str | None:

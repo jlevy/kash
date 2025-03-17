@@ -4,7 +4,7 @@ from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
 from kash.shell_output.shell_output import cprint
-from kash.shell_tools.tool_deps import check_terminal_features, tool_check
+from kash.shell_utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 
 log = get_logger(__name__)
 
@@ -25,7 +25,7 @@ def self_check(brief: bool = False) -> None:
     Self-check kash setup, including termal settings, tools, and API keys.
     """
     if brief:
-        check_terminal_features().print_term_info()
+        terminal_feature_check().print_term_info()
         print_api_key_setup(once=False)
         check_tools(brief=brief)
         tldr_refresh_cache()
@@ -37,7 +37,7 @@ def self_check(brief: bool = False) -> None:
     else:
         version()
         cprint()
-        check_terminal_features().print_term_info()
+        terminal_feature_check().print_term_info()
         cprint()
         print_api_key_setup(once=False)
         cprint()
@@ -63,16 +63,16 @@ def check_tools(warn_only: bool = False, brief: bool = False) -> None:
     :param brief: Print summary as a single line.
     """
     if warn_only:
-        tool_check().warn_if_missing()
+        sys_tool_check().warn_if_missing()
     else:
         if brief:
-            cprint(tool_check().status())
+            cprint(sys_tool_check().status())
         else:
             cprint("Checking for required tools:")
             cprint()
-            cprint(tool_check().formatted())
+            cprint(sys_tool_check().formatted())
             cprint()
-            tool_check().warn_if_missing()
+            sys_tool_check().warn_if_missing()
 
 
 @kash_command

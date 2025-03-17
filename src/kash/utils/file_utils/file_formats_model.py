@@ -5,10 +5,10 @@ from pathlib import Path
 
 from pydantic.dataclasses import dataclass
 
-from kash.file_utils.file_ext import FileExt
-from kash.file_utils.file_formats import MimeType, detect_mime_type, mime_type_is_text
-from kash.file_utils.filename_parsing import parse_file_ext
-from kash.util.url import Url, is_file_url, parse_file_url
+from kash.utils.common.url import Url, is_file_url, parse_file_url
+from kash.utils.file_utils.file_ext import FileExt
+from kash.utils.file_utils.file_formats import MimeType, detect_mime_type, mime_type_is_text
+from kash.utils.file_utils.filename_parsing import parse_file_ext
 
 
 class MediaType(Enum):

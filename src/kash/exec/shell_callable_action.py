@@ -11,8 +11,8 @@ from kash.help.command_help import print_action_help
 from kash.model.actions_model import Action
 from kash.model.params_model import RawParamValues
 from kash.shell_output.shell_output import PrintHooks
-from kash.shell_tools.exception_printing import summarize_traceback
-from kash.util.parse_shell_args import parse_shell_args
+from kash.shell_utils.exception_printing import summarize_traceback
+from kash.utils.common.parse_shell_args import parse_shell_args
 
 log = get_logger(__name__)
 

@@ -11,11 +11,11 @@ from slugify import slugify
 
 from kash.config.logger import get_logger
 from kash.errors import ApiResultError
-from kash.llm_tools.chat_format import ChatHistory, ChatMessage, ChatRole
-from kash.llm_tools.fuzzy_parsing import is_no_results
-from kash.llm_tools.llm_messages import Message, MessageTemplate
+from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
+from kash.llm_utils.fuzzy_parsing import is_no_results
+from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.language_models import LLMName
-from kash.util.url import Url, is_url
+from kash.utils.common.url import Url, is_url
 
 log = get_logger(__name__)
 

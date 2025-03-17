@@ -7,7 +7,7 @@ from typing import TypeAlias
 from strif import clean_alphanum_hash, file_mtime_hash
 
 from kash.config.logger import get_logger
-from kash.util.url import Url
+from kash.utils.common.url import Url
 
 log = get_logger(__name__)
 

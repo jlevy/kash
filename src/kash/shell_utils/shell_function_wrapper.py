@@ -9,8 +9,8 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidCommand
 from kash.exec.command_registry import CommandFunction
 from kash.help.command_help import print_command_function_help
-from kash.util.function_inspect import FuncParam, inspect_function_params
-from kash.util.parse_shell_args import parse_shell_args
+from kash.utils.common.function_inspect import FuncParam, inspect_function_params
+from kash.utils.common.parse_shell_args import parse_shell_args
 
 log = get_logger(__name__)
 

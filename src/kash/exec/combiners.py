@@ -12,7 +12,7 @@ from kash.model.actions_model import ActionResult
 from kash.model.items_model import Item, ItemRelations, ItemType
 from kash.model.operations_model import OperationSummary
 from kash.model.paths_model import StorePath
-from kash.util.type_utils import not_none
+from kash.utils.common.type_utils import not_none
 
 log = get_logger(__name__)
 

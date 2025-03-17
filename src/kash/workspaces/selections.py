@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field, PrivateAttr, field_serializer, field_vali
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput, InvalidOperation
 from kash.model.paths_model import StorePath
-from kash.shell_tools.native_tools import native_trash
-from kash.util.format_utils import fmt_count_items, fmt_loc
+from kash.shell_utils.native_utils import native_trash
+from kash.utils.common.format_utils import fmt_count_items, fmt_loc
 
 log = get_logger(__name__)
 

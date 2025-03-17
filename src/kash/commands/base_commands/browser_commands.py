@@ -1,7 +1,7 @@
 import urllib.parse
 
 from kash.exec import kash_command
-from kash.shell_tools.native_tools import native_open_url
+from kash.shell_utils.native_utils import native_open_url
 
 
 @kash_command

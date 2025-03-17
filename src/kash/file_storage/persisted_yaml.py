@@ -3,7 +3,7 @@ from typing import Any
 
 from frontmatter_format import read_yaml_file, write_yaml_file
 
-from kash.util.obj_replace import remove_values, replace_values
+from kash.utils.common.obj_replace import remove_values, replace_values
 
 
 class PersistedYaml:

@@ -6,7 +6,6 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import PROMPT_ASSIST, SPINNER
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.file_utils.file_formats_model import Format
 from kash.form_input.prompt_input import prompt_simple_string
 from kash.help.assistant import (
     AssistanceType,
@@ -15,7 +14,8 @@ from kash.help.assistant import (
 )
 from kash.model.items_model import Item, ItemType
 from kash.model.language_models import LLM
-from kash.shell_tools.native_tools import tail_file
+from kash.shell_utils.native_utils import tail_file
+from kash.utils.file_utils.file_formats_model import Format
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

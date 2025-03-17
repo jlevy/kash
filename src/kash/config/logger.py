@@ -30,8 +30,8 @@ from kash.config.text_styles import (
     RICH_STYLES,
     KashHighlighter,
 )
-from kash.util.stack_traces import current_stack_traces
-from kash.util.task_stack import task_stack_prefix_str
+from kash.utils.common.stack_traces import current_stack_traces
+from kash.utils.common.task_stack import task_stack_prefix_str
 
 
 @dataclass(frozen=True)

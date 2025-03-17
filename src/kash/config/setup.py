@@ -10,7 +10,7 @@ def setup(rich_logging: bool):
     """
     from kash.config.api_keys import api_setup
     from kash.config.logger import reload_rich_logging_setup
-    from kash.util.stack_traces import add_stacktrace_handler
+    from kash.utils.common.stack_traces import add_stacktrace_handler
 
     if rich_logging:
         reload_rich_logging_setup()

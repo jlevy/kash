@@ -35,7 +35,7 @@ from kash.model.actions_model import (
 from kash.model.items_model import Item, ItemType, State
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
-from kash.util.function_inspect import FuncParam, inspect_function_params
+from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.workspaces.workspaces import current_workspace
 
 log = get_logger(__name__)

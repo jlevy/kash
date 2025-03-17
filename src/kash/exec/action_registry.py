@@ -7,7 +7,7 @@ from prettyfmt import fmt_lines, fmt_path
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.model.actions_model import Action
-from kash.util.import_utils import Tallies, import_subdirs
+from kash.utils.common.import_utils import Tallies, import_subdirs
 
 log = get_logger(__name__)
 

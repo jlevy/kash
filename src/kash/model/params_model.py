@@ -14,8 +14,8 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidInput, InvalidParamName
 from kash.model.constants import LANGUAGE_LIST
 from kash.model.language_models import LLM, LLMName
-from kash.util.parse_key_vals import format_key_value
-from kash.util.type_utils import instantiate_as_type
+from kash.utils.common.parse_key_vals import format_key_value
+from kash.utils.common.type_utils import instantiate_as_type
 
 log = get_logger(__name__)
 
