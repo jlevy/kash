@@ -24,7 +24,7 @@ HTML and Markdown and processing text.
 - When processing text documents and navigating paragraphs or sentences, use
   `TextDoc.from_text()`.
 
-- When writing HTML within Markdown or converting use tools in text_formatting.py such
+- When writing HTML within Markdown or converting use tools in `kmd.text_handling` such
   as `html_to_plaintext()` and html_in_md.py to write HTML wrappers in of divs or spans
   like `html_div(...)` or `html_span(...)`.
 

@@ -10,8 +10,8 @@ from kash.exec_model.shell_model import ShellResult
 from kash.help.command_help import print_action_help
 from kash.model.actions_model import Action
 from kash.model.params_model import RawParamValues
-from kash.shell_output.shell_output import PrintHooks
-from kash.shell_utils.exception_printing import summarize_traceback
+from kash.shell.output.shell_output import PrintHooks
+from kash.shell.utils.exception_printing import summarize_traceback
 from kash.utils.common.parse_shell_args import parse_shell_args
 
 log = get_logger(__name__)
@@ -29,8 +29,6 @@ class ShellCallableAction:
         self.__doc__ = action_cls.description
 
     def __call__(self, args: list[str]) -> ShellResult | None:
-        from kash.commands.help_commands import help_commands
-
         action_cls = self.action_cls
         PrintHooks.before_shell_action_run()
 
@@ -43,7 +41,7 @@ class ShellCallableAction:
             print_action_help(action, verbose=True)
             return ShellResult()
         elif shell_args.options.get("show_source", False):
-            return help_commands.source_code(action_cls.name)
+            return help.source_code(action_cls.name)
 
         # Handle --rerun option at action invocation time.
         rerun = bool(shell_args.options.get("rerun", False))

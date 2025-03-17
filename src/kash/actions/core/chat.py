@@ -16,7 +16,7 @@ from kash.model import (
     ShellResult,
     common_params,
 )
-from kash.shell_output.shell_output import (
+from kash.shell.output.shell_output import (
     PadStyle,
     Wrap,
     print_markdown,

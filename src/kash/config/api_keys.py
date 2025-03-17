@@ -4,7 +4,7 @@ from enum import Enum
 from dotenv import find_dotenv, load_dotenv
 from rich.text import Text
 
-from kash.shell_output.shell_output import cprint, format_success_or_failure
+from kash.shell.output.shell_output import cprint, format_success_or_failure
 from kash.utils.common.atomic_var import AtomicVar
 
 

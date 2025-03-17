@@ -139,7 +139,7 @@ class TaskStack:
 
     @property
     def _print(self):
-        from kash.shell_output.shell_output import cprint
+        from kash.shell.output.shell_output import cprint
 
         return cprint
 

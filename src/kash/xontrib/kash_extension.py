@@ -11,7 +11,7 @@ Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 # Using absolute imports to avoid polluting the user's shell namespace.
 import kash.actions
 import kash.exec.command_registry
-import kash.shell_output.shell_output
+import kash.shell.output.shell_output
 import kash.utils.common.format_utils
 import kash.xonsh_custom.customize_xonsh
 import kash.xonsh_custom.shell_load_commands
@@ -42,7 +42,7 @@ def load(*paths: str) -> None:
     actions = reload_all_action_classes()
     kash.xonsh_custom.shell_load_commands._register_actions_in_shell(actions)
 
-    kash.shell_output.shell_output.cprint(
+    kash.shell.output.shell.output.cprint(
         "Imported extensions and reloaded actions: %s",
         ", ".join(kash.utils.common.format_utils.fmt_path(p) for p in paths),
     )

@@ -11,7 +11,7 @@ from kash.config.logger import get_log_file_stream, get_logger
 from kash.errors import FileNotFound, InvalidInput
 from kash.file_storage.store_filenames import parse_item_filename
 from kash.model.media_model import MediaMetadata, MediaService, MediaUrlType
-from kash.shell_utils.sys_tool_deps import SysTool, sys_tool_check
+from kash.shell.utils.sys_tool_deps import SysTool, sys_tool_check
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import FileExt, MediaType

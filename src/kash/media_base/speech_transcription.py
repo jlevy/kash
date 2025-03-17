@@ -9,7 +9,7 @@ from openai import OpenAI
 from kash.config.api_keys import api_setup
 from kash.config.logger import get_logger
 from kash.errors import ContentError
-from kash.text_formatting.citations import html_speaker_id_span, html_timestamp_span
+from kash.media_base.timestamp_citations import html_speaker_id_span, html_timestamp_span
 
 log = get_logger(__name__)
 

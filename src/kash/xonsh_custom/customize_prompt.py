@@ -7,7 +7,7 @@ from prompt_toolkit.formatted_text import FormattedText
 from kash.config import colors
 from kash.config.logger import get_console
 from kash.config.text_styles import PROMPT_MAIN
-from kash.shell_output.kerm_code_utils import text_with_tooltip
+from kash.shell.output.kerm_code_utils import text_with_tooltip
 from kash.workspaces import current_workspace
 
 # Xonsh default prompt for reference:

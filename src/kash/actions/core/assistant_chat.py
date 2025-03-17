@@ -5,7 +5,7 @@ from kash.help.assistant import assistant_chat_history, shell_context_assistance
 from kash.help.assistant_output import print_assistant_heading
 from kash.llm_utils.language_models import LLM, LLMName
 from kash.model import NO_ARGS, ActionInput, ActionResult, common_params
-from kash.shell_output.shell_output import PrintHooks, Wrap, print_response
+from kash.shell.output.shell_output import PrintHooks, Wrap, print_response
 
 
 @kash_action(

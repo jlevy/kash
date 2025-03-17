@@ -20,7 +20,7 @@ from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.file_storage.store_filenames import folder_for_type, join_suffix, parse_item_filename
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
-from kash.shell_output.shell_output import PrintHooks, cprint
+from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.uniquifier import Uniquifier
 from kash.utils.common.url import Locator, Url, is_url

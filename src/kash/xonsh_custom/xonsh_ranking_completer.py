@@ -9,9 +9,9 @@ from xonsh.parsers.completion_context import CompletionContext
 
 from kash.config.logger import get_logger
 from kash.help.tldr_help import tldr_description
-from kash.shell_completions.completion_scoring import normalize, score_completions
-from kash.shell_completions.completion_types import ScoredCompletion
-from kash.shell_completions.shell_completions import (
+from kash.shell.completions.completion_scoring import normalize, score_completions
+from kash.shell.completions.completion_types import ScoredCompletion
+from kash.shell.completions.shell_completions import (
     sort_scored_and_grouped,
     trace_completions,
     trace_completions_enabled,

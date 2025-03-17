@@ -20,7 +20,7 @@ from kash.llm_utils.llm_messages import Message
 from kash.model.actions_model import Action
 from kash.model.params_model import COMMON_SHELL_PARAMS, RUNTIME_ACTION_PARAMS, Param
 from kash.model.preconditions_model import Precondition
-from kash.shell_output.shell_output import (
+from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
     format_name_and_description,

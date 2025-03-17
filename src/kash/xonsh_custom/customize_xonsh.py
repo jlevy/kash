@@ -15,14 +15,14 @@ import time
 from xonsh.built_ins import XSH
 from xonsh.prompt.base import PromptFields
 
-from kash.commands.base_commands.general_commands import self_check
-from kash.commands.help_commands import doc_commands
+from kash.commands.base.general_commands import self_check
+from kash.commands.help import doc_commands
 from kash.config.logger import get_logger
 from kash.config.settings import check_kerm_code_support
 from kash.local_server.local_server import start_local_server
 from kash.local_server.local_url_formatters import enable_local_urls
-from kash.shell_output.shell_output import PrintHooks, cprint
-from kash.shell_utils.native_utils import sys_tool_check
+from kash.shell.output.shell_output import PrintHooks, cprint
+from kash.shell.utils.native_utils import sys_tool_check
 from kash.version import get_version_name
 from kash.workspaces import current_workspace
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt

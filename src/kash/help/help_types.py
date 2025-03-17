@@ -24,11 +24,11 @@ from kash.config.text_styles import (
 from kash.exec_model.commands_model import CommentedCommand
 from kash.exec_model.script_model import Script
 from kash.help.recommended_commands import STANDARD_SHELL_COMMANDS
-from kash.shell_output.kmarkdown import KMarkdown
-from kash.shell_ui.shell_syntax import assist_request_str
+from kash.shell.output.kmarkdown import KMarkdown
+from kash.shell.ui.shell_syntax import assist_request_str
 
 if TYPE_CHECKING:
-    from kash.shell_completions.completion_types import CompletionValue
+    from kash.shell.completions.completion_types import CompletionValue
 
 
 class HelpDocType(Enum):
@@ -98,7 +98,7 @@ class Faq(HelpDoc):
         return f"{self.question}\n{self.answer}"
 
     def completion_value(self) -> CompletionValue:
-        from kash.shell_completions.completion_types import CompletionGroup, CompletionValue
+        from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
         return CompletionValue(
             group=CompletionGroup.help,
@@ -140,7 +140,7 @@ class CommandInfo(HelpDoc):
         return f"{self.command}\n{self.help_page}"
 
     def completion_value(self) -> CompletionValue:
-        from kash.shell_completions.completion_types import CompletionGroup, CompletionValue
+        from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
         # Map this command info to completion groups based on whether it's
         # a kash command or action, recommended shell command, etc.
@@ -188,7 +188,7 @@ class RecipeSnippet(HelpDoc):
         return self.command.script_str
 
     def completion_value(self) -> CompletionValue:
-        from kash.shell_completions.completion_types import CompletionGroup, CompletionValue
+        from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
         return CompletionValue(
             group=CompletionGroup.recommanded_shell_command,

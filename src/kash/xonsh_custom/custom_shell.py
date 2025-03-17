@@ -25,8 +25,8 @@ from kash.config.logger import get_console, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
 from kash.config.text_styles import SPINNER
 from kash.help.assistant import AssistanceType
-from kash.shell_output.shell_output import cprint
-from kash.shell_ui.shell_syntax import is_assist_request_str
+from kash.shell.output.shell_output import cprint
+from kash.shell.ui.shell_syntax import is_assist_request_str
 from kash.xonsh_custom.xonsh_ranking_completer import RankingCompleter
 
 log = get_logger(__name__)

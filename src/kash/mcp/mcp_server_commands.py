@@ -3,7 +3,7 @@ from kash.config.settings import global_settings, server_log_file_path
 from kash.exec import kash_command
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_sse import MCP_SERVER_NAME
-from kash.shell_utils.native_utils import tail_file
+from kash.shell.utils.native_utils import tail_file
 
 log = get_logger(__name__)
 

@@ -7,7 +7,7 @@ from chopdiff.html import has_timestamp
 
 from kash.exec.precondition_registry import kash_precondition
 from kash.model.items_model import Item, ItemType
-from kash.text_formatting.markdown_util import extract_bullet_points
+from kash.text_handling.markdown_util import extract_bullet_points
 from kash.utils.file_utils.file_formats_model import Format
 
 

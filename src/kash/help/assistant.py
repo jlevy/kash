@@ -28,7 +28,7 @@ from kash.llm_utils.llm_completion import LLMCompletionResult, llm_completion
 from kash.llm_utils.llm_messages import Message
 from kash.model.assistant_response_model import AssistantResponse
 from kash.model.items_model import Item, ItemType
-from kash.shell_output.shell_output import PrintHooks, cprint, print_assistance, print_markdown
+from kash.shell.output.shell_output import PrintHooks, cprint, print_assistance, print_markdown
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.parse_shell_args import shell_unquote
 from kash.utils.file_utils.file_formats_model import Format
@@ -94,7 +94,7 @@ def _insert_output(func: Callable, name: str) -> str:
 
 @log_calls(level="warning", if_slower_than=0.5)
 def assist_current_state() -> Message:
-    from kash.commands.workspace_commands.workspace_commands import (
+    from kash.commands.workspace.workspace_commands import (
         applicable_actions,
         files,
         history,

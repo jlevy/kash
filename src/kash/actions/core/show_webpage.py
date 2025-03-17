@@ -1,6 +1,6 @@
 from kash.actions.core.webpage_config import webpage_config
 from kash.actions.core.webpage_generate import webpage_generate
-from kash.commands.base_commands.show_command import show
+from kash.commands.base.show_command import show
 from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.preconditions import has_text_body, is_html

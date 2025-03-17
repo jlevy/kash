@@ -21,7 +21,7 @@ from kash.model.items_model import Item, State
 from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
-from kash.shell_output.shell_output import PrintHooks, print_h3
+from kash.shell.output.shell_output import PrintHooks, print_h3
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.lang_utils.inflection import plural

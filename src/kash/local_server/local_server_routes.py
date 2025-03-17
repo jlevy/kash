@@ -9,14 +9,14 @@ from kash.config import colors
 from kash.config.logger import get_logger, record_console
 from kash.config.settings import global_settings
 from kash.errors import FileNotFound, InvalidFilename
-from kash.file_icons.nerd_icons import icon_for_file
 from kash.file_storage.file_store import FileStore
 from kash.help.command_help import print_explain_command
 from kash.llm_utils.language_models import LLM
 from kash.local_server.rich_html_template import RICH_HTML_TEMPLATE
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
-from kash.shell_output.shell_output import Wrap
+from kash.shell.file_icons.nerd_icons import icon_for_file
+from kash.shell.output.shell_output import Wrap
 from kash.utils.common.type_utils import not_none
 from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template

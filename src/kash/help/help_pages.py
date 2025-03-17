@@ -4,7 +4,7 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_HINT
 from kash.docs.all_docs import all_docs
 from kash.help.docstring_utils import parse_docstring
-from kash.shell_output.shell_output import (
+from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
     format_name_and_value,

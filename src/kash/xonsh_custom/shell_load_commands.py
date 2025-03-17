@@ -5,7 +5,6 @@ setup(rich_logging=True)  # Set up logging first.
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
 
-from kash.commands.help_commands import help_commands
 from kash.config.init import kash_reload_all
 from kash.config.logger import get_logger
 from kash.exec.action_registry import get_all_action_classes
@@ -13,10 +12,10 @@ from kash.exec.command_registry import get_all_commands
 from kash.exec.history import wrap_with_history
 from kash.exec.shell_callable_action import ShellCallableAction
 from kash.exec_model.shell_model import ShellResult
-from kash.shell_output.shell_output import PrintHooks, cprint
-from kash.shell_ui.shell_results import show_shell_result
-from kash.shell_utils.exception_printing import wrap_with_exception_printing
-from kash.shell_utils.shell_function_wrapper import wrap_for_shell_args
+from kash.shell.output.shell_output import PrintHooks, cprint
+from kash.shell.ui.shell_results import show_shell_result
+from kash.shell.utils.exception_printing import wrap_with_exception_printing
+from kash.shell.utils.shell_function_wrapper import wrap_for_shell_args
 from kash.workspaces import current_workspace
 from kash.workspaces.workspace_output import post_shell_result
 from kash.xonsh_custom.xonsh_env import is_interactive, set_alias, set_env, update_aliases
@@ -72,6 +71,8 @@ def _register_commands_in_shell(commands: dict[str, Callable]):
     """
     Register all kash commands as xonsh commands.
     """
+    from kash.commands.help import help_commands
+
     kash_commands = {}
 
     # Override default ? command.

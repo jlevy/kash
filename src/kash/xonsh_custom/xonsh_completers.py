@@ -26,8 +26,8 @@ from kash.exec.action_registry import get_all_actions_defaults
 from kash.exec.command_registry import get_all_commands
 from kash.help.function_param_info import annotate_param_info
 from kash.model.params_model import COMMON_SHELL_PARAMS, Param
-from kash.shell_completions.completion_types import CompletionGroup, ScoredCompletion
-from kash.shell_completions.shell_completions import (
+from kash.shell.completions.completion_types import CompletionGroup, ScoredCompletion
+from kash.shell.completions.shell_completions import (
     get_command_and_action_completions,
     get_help_completions_lexical,
     get_help_completions_semantic,
@@ -35,7 +35,7 @@ from kash.shell_completions.shell_completions import (
     get_std_command_completions,
     trace_completions,
 )
-from kash.shell_ui.shell_syntax import assist_request_str
+from kash.shell.ui.shell_syntax import assist_request_str
 from kash.utils.common.atomic_var import AtomicVar
 from kash.xonsh_custom.shell_which import is_valid_command
 
