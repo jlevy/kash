@@ -92,6 +92,7 @@ ptk_newline: PtkTokens = [("", "\n")]
 # Could cap at CONSOLE_WRAP_WIDTH if desired, but this is prettier on wide terminals.
 hrule_width = get_console().width
 
+# Kind of looks nice but ugly with copy/paste.
 ptk_hrule: PtkTokens = [(colors.terminal.black_dark, "─" * hrule_width), ("", "\n")]
 
 
@@ -119,7 +120,7 @@ class PromptStyle(Enum):
             )
         elif self == PromptStyle.clean_dark:
             return PromptSettings(
-                hrule=ptk_hrule,
+                hrule=ptk_newline,
                 color_bg=colors.terminal.black_dark,
                 color_normal=colors.terminal.green_light,
                 color_warn=colors.terminal.yellow_light,

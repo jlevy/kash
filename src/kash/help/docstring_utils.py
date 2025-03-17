@@ -17,6 +17,7 @@ def parse_docstring(docstring: str) -> Docstring:
     """
     Parse a reStructuredText-style docstring.
     """
+    # TODO: Support other standard docstring formats too.
     docstring = dedent(docstring).strip()
 
     lines = docstring.split("\n")

@@ -48,27 +48,45 @@ def help(query: str | None = None, search: bool = False) -> None:
 
 
 @kash_command
-def commands(no_pager: bool = False) -> None:
+def commands(no_pager: bool = False, full: bool = False) -> None:
     """
     Show help on all kash commands.
+
+    :param full: If true, show full help for each command.
     """
     from kash.help.help_pages import print_builtin_commands_help
 
-    with console_pager(use_pager=not no_pager):
-        print_builtin_commands_help()
+    if full:
+        with console_pager(use_pager=not no_pager):
+            print_builtin_commands_help(full_help=True)
         print_see_also(["actions", "help", "faq", "What are the most important kash commands?"])
+    else:
+        print_builtin_commands_help(full_help=False)
+        print_see_also(
+            ["commands --full", "help", "faq", "What are the most important kash commands?"]
+        )
 
 
 @kash_command
-def actions(no_pager: bool = False) -> None:
+def actions(no_pager: bool = False, full: bool = False) -> None:
     """
     Show help on the full list of currently loaded actions.
+
+    :param full: If true, show full help for each action.
     """
     from kash.help.help_pages import print_actions_help
 
-    with console_pager(use_pager=not no_pager):
-        print_actions_help()
-        print_see_also(["commands", "help", "faq", "What are the most important kash commands?"])
+    if full:
+        with console_pager(use_pager=not no_pager):
+            print_actions_help(full_help=True)
+            print_see_also(
+                ["commands", "help", "faq", "What are the most important kash commands?"]
+            )
+    else:
+        print_actions_help(full_help=False)
+        print_see_also(
+            ["actions --full", "help", "faq", "What are the most important kash commands?"]
+        )
 
 
 @kash_command
