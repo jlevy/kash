@@ -5,7 +5,7 @@ from kash.exec.action_exec import SkipItem, assemble_action_input, run_action_wi
 from kash.exec.action_registry import import_action_subdirs
 from kash.exec.command_registry import kash_command
 from kash.exec.llm_transforms import llm_transform_item, llm_transform_str
-from kash.exec.precondition_registry import register_precondition
+from kash.exec.precondition_registry import kash_precondition
 from kash.exec.resolve_args import (
     assemble_path_args,
     assemble_store_path_args,

@@ -1,5 +1,5 @@
 from kash.exec import kash_action
-from kash.exec.precondition_defs import is_chat
+from kash.exec.preconditions import is_chat
 from kash.form_input.prompt_input import prompt_simple_string
 from kash.help.assistant import assistant_chat_history, shell_context_assistance
 from kash.help.assistant_output import print_assistant_heading

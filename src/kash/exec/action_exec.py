@@ -7,7 +7,7 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_SKIP, EMOJI_SUCCESS, EMOJI_TIMING
 from kash.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
 from kash.exec.fetch_url_metadata import fetch_url_item_metadata
-from kash.exec.precondition_defs import is_url_item
+from kash.exec.preconditions import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
 from kash.lang_tools.inflection import plural

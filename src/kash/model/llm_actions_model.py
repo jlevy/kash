@@ -5,7 +5,7 @@ from typing_extensions import override
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.exec.llm_transforms import llm_transform_str
-from kash.exec.precondition_defs import has_div_chunks
+from kash.exec.preconditions import has_div_chunks
 from kash.file_tools.file_formats_model import Format
 from kash.model.actions_model import PerItemAction
 from kash.model.items_model import Item

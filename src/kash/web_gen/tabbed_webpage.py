@@ -5,7 +5,7 @@ from frontmatter_format import read_yaml_file, to_yaml_string, write_yaml_file
 
 from kash.config.logger import get_logger
 from kash.errors import NoMatch
-from kash.exec.precondition_defs import has_thumbnail_url
+from kash.exec.preconditions import has_thumbnail_url
 from kash.file_tools.file_formats_model import Format
 from kash.llm_tools.clean_headings import clean_heading, summary_heading
 from kash.model.items_model import Item, ItemType

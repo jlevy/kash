@@ -3,7 +3,7 @@ from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
 from kash.errors import NoMatch
-from kash.exec.precondition_defs import is_resource
+from kash.exec.preconditions import is_resource
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition

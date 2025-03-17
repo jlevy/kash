@@ -3,7 +3,7 @@ from kash.actions.core.webpage_generate import webpage_generate
 from kash.commands.base_commands.show_command import show
 from kash.config.logger import get_logger
 from kash.exec import kash_action
-from kash.exec.precondition_defs import has_text_body, is_html
+from kash.exec.preconditions import has_text_body, is_html
 from kash.exec_model.commands_model import Command
 from kash.exec_model.shell_model import ShellResult
 from kash.model import ActionInput, ActionResult

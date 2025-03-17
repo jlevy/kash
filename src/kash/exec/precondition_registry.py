@@ -12,7 +12,7 @@ _preconditions: dict[str, Precondition] = {}
 _lock = Lock()
 
 
-def register_precondition(func: Callable[[Item], bool]) -> Precondition:
+def kash_precondition(func: Callable[[Item], bool]) -> Precondition:
     """
     Decorator to register a function as a Precondition.
     The function should return a bool and/or raise `PreconditionFailure`.

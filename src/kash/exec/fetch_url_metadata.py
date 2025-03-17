@@ -1,6 +1,6 @@
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
-from kash.exec.precondition_defs import is_url_item
+from kash.exec.preconditions import is_url_item
 from kash.media_base.media_services import get_media_metadata
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath

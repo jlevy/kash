@@ -21,8 +21,8 @@ from kash.exec import (
 from kash.exec.action_registry import get_all_actions_defaults
 from kash.exec.fetch_url_metadata import fetch_url_metadata
 from kash.exec.precondition_checks import actions_matching_paths
-from kash.exec.precondition_defs import is_url_item
 from kash.exec.precondition_registry import get_all_preconditions
+from kash.exec.preconditions import is_url_item
 from kash.exec_model.shell_model import ShellResult
 from kash.file_tools.dir_size import is_nonempty_dir
 from kash.lang_tools.inflection import plural

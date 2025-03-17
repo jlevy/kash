@@ -1,11 +1,11 @@
 from chopdiff.html import TagMatch, html_extract_attribute_value, html_find_tag
 
-from kash.exec.precondition_registry import register_precondition
+from kash.exec.precondition_registry import kash_precondition
 from kash.model.items_model import Item
 from kash.text_formatting.citations import DATA_SPEAKER_ID
 
 
-@register_precondition
+@kash_precondition
 def has_speaker_ids(item: Item) -> bool:
     return bool(item.body and extract_speaker_id(item.body))
 
