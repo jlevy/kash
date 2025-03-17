@@ -1,3 +1,1 @@
-# TODO: Add tests!
-def test_sample():
-    assert True
+# Note many small tests are inlined in the main code currently.
