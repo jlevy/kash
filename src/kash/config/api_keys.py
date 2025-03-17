@@ -65,7 +65,10 @@ def print_api_key_setup(once: bool = False) -> None:
         )
     )
 
-    texts = [format_success_or_failure(api.value in os.environ, api.name) for api in Api]
+    def is_set(value: str | None) -> bool:
+        return bool(value and value.strip() and "changeme" not in value)
+
+    texts = [format_success_or_failure(is_set(os.environ[api.value]), api.name) for api in Api]
 
     cprint(Text.assemble("API keys: ", Text(" ").join(texts)))
 
