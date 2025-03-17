@@ -7,7 +7,7 @@ from kash.commands.workspace_commands.selection_commands import select
 from kash.config.logger import get_logger
 from kash.exec import assemble_path_args, kash_command, resolvable_paths
 from kash.exec_model.shell_model import ShellResult
-from kash.file_tools.filename_parsing import join_filename, split_filename
+from kash.file_utils.filename_parsing import join_filename, split_filename
 from kash.shell_output.shell_output import print_status
 from kash.text_formatting.doc_normalization import normalize_text_file
 from kash.util.format_utils import fmt_loc

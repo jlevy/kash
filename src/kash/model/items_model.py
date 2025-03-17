@@ -17,7 +17,7 @@ from strif import abbrev_str, format_iso_timestamp
 from kash.concepts.concept_formats import canonicalize_concept
 from kash.config.logger import get_logger
 from kash.errors import FileFormatError
-from kash.file_tools.file_formats_model import FileExt, Format
+from kash.file_utils.file_formats_model import FileExt, Format
 from kash.llm_tools.chat_format import ChatHistory
 from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
@@ -330,7 +330,7 @@ class Item:
         `format` and `file_ext` if possible but will leave them as None if unrecognized.
         """
         from kash.file_storage.store_filenames import parse_item_filename
-        from kash.file_tools.file_formats_model import detect_file_format
+        from kash.file_utils.file_formats_model import detect_file_format
 
         # Will raise error for unrecognized file ext.
         name, filename_item_type, format, file_ext = parse_item_filename(path)

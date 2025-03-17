@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.file_tools.file_formats_model import FileExt, Format
-from kash.file_tools.filename_parsing import split_filename
-from kash.lang_tools.inflection import plural
+from kash.file_utils.file_formats_model import FileExt, Format
+from kash.file_utils.filename_parsing import split_filename
+from kash.lang_utils.inflection import plural
 from kash.model.items_model import ItemType
 
 log = get_logger(__name__)

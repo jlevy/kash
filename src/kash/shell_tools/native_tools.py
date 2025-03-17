@@ -16,8 +16,8 @@ from funlog import log_calls
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
 from kash.errors import FileNotFound, SetupError
-from kash.file_tools.file_formats import is_full_html_page, read_partial_text
-from kash.file_tools.file_formats_model import file_format_info
+from kash.file_utils.file_formats import is_full_html_page, read_partial_text
+from kash.file_utils.file_formats_model import file_format_info
 from kash.shell_output.shell_output import cprint
 from kash.shell_tools.terminal_images import terminal_show_image
 from kash.shell_tools.tool_deps import PLATFORM, Platform, Tool, tool_check

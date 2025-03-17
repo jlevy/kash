@@ -6,7 +6,7 @@ from flowmark.text_wrapping import simple_word_splitter, wrap_paragraph
 from frontmatter_format import fmf_read, fmf_write
 
 from kash.errors import InvalidInput
-from kash.file_tools.file_formats_model import Format, detect_file_format
+from kash.file_utils.file_formats_model import Format, detect_file_format
 from kash.rich_custom.ansi_cell_len import ansi_cell_len
 from kash.util.format_utils import fmt_loc
 from kash.util.type_utils import not_none

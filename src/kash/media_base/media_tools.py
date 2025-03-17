@@ -4,7 +4,7 @@ from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings, update_global_settings
-from kash.file_tools.file_formats_model import MediaType
+from kash.file_utils.file_formats_model import MediaType
 from kash.media_base.media_cache import MediaCache
 from kash.util.url import Url
 

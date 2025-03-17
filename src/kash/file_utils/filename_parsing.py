@@ -4,7 +4,7 @@ from typing import cast
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidFilename
-from kash.file_tools.file_ext import FileExt, canonicalize_file_ext
+from kash.file_utils.file_ext import FileExt, canonicalize_file_ext
 from kash.util.url import Url
 
 log = get_logger(__name__)

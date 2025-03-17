@@ -6,10 +6,10 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidInput, InvalidOperation
 from kash.exec import import_locator_args, kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.file_tools.file_formats_model import Format
+from kash.file_utils.file_formats_model import Format
 from kash.model.items_model import Item, ItemType
 from kash.shell_output.shell_output import Wrap, cprint
-from kash.text_tools.unified_diffs import unified_diff_files, unified_diff_items
+from kash.text_utils.unified_diffs import unified_diff_files, unified_diff_items
 from kash.workspaces import current_workspace
 
 log = get_logger(__name__)

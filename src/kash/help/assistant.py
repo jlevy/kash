@@ -14,10 +14,10 @@ from kash.config.text_styles import EMOJI_WARN
 from kash.docs.all_docs import all_docs
 from kash.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.exec_model.script_model import Script
-from kash.file_tools.file_formats_model import Format
+from kash.file_utils.file_formats_model import Format
 from kash.help.assistant_instructions import assistant_instructions
 from kash.help.assistant_output import print_assistant_response
-from kash.lang_tools.capitalization import capitalize_cms
+from kash.lang_utils.capitalization import capitalize_cms
 from kash.llm_tools.chat_format import (
     ChatHistory,
     ChatMessage,

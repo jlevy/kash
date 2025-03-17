@@ -10,7 +10,7 @@ from kash.exec.fetch_url_metadata import fetch_url_item_metadata
 from kash.exec.preconditions import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
-from kash.lang_tools.inflection import plural
+from kash.lang_utils.inflection import plural
 from kash.model.actions_model import (
     NO_ARGS,
     Action,

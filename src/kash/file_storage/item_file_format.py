@@ -6,7 +6,7 @@ from prettyfmt import custom_key_sort, fmt_size_human
 
 from kash.config.logger import get_logger
 from kash.file_storage.mtime_cache import MtimeCache
-from kash.file_tools.file_formats_model import Format
+from kash.file_utils.file_formats_model import Format
 from kash.model.items_model import ITEM_FIELDS, Item
 from kash.model.operations_model import OPERATION_FIELDS
 from kash.text_formatting.doc_normalization import normalize_formatting_ansi

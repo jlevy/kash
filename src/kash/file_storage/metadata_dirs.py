@@ -9,7 +9,7 @@ from pydantic.dataclasses import dataclass
 from kash.config.logger import get_logger
 from kash.config.settings import CONTENT_CACHE_NAME, DOT_DIR, MEDIA_CACHE_NAME
 from kash.file_storage.persisted_yaml import PersistedYaml
-from kash.file_tools.ignore_files import write_ignore
+from kash.file_utils.ignore_files import write_ignore
 from kash.model.paths_model import StorePath
 from kash.util.format_utils import fmt_loc
 

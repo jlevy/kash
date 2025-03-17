@@ -11,8 +11,8 @@ from rich.text import Text
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import COLOR_SELECTION
 from kash.exec_model.shell_model import ShellResult
-from kash.file_tools.dir_size import get_dir_size
-from kash.file_tools.file_formats_model import file_format_info
+from kash.file_utils.dir_size import get_dir_size
+from kash.file_utils.file_formats_model import file_format_info
 from kash.llm_tools.chat_format import ChatHistory
 from kash.model.items_model import ItemType
 from kash.shell_output.kerm_code_utils import click_to_paste

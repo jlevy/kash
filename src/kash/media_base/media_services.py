@@ -4,7 +4,7 @@ from funlog import log_calls
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
-from kash.file_tools.file_formats_model import MediaType
+from kash.file_utils.file_formats_model import MediaType
 from kash.media_base.services.local_file_media import LocalFileMedia
 from kash.model.media_model import MediaMetadata, MediaService
 from kash.util.atomic_var import AtomicVar

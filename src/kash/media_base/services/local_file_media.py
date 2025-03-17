@@ -10,7 +10,7 @@ from typing_extensions import override
 from kash.config.logger import get_log_file_stream, get_logger
 from kash.errors import FileNotFound, InvalidInput
 from kash.file_storage.store_filenames import parse_item_filename
-from kash.file_tools.file_formats_model import FileExt, MediaType
+from kash.file_utils.file_formats_model import FileExt, MediaType
 from kash.model.media_model import MediaMetadata, MediaService, MediaUrlType
 from kash.shell_tools.tool_deps import Tool, tool_check
 from kash.util.format_utils import fmt_loc

@@ -5,9 +5,9 @@ from pathlib import Path
 
 from pydantic.dataclasses import dataclass
 
-from kash.file_tools.file_ext import FileExt
-from kash.file_tools.file_formats import MimeType, detect_mime_type, mime_type_is_text
-from kash.file_tools.filename_parsing import parse_file_ext
+from kash.file_utils.file_ext import FileExt
+from kash.file_utils.file_formats import MimeType, detect_mime_type, mime_type_is_text
+from kash.file_utils.filename_parsing import parse_file_ext
 from kash.util.url import Url, is_file_url, parse_file_url
 
 

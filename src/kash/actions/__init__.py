@@ -8,7 +8,7 @@ from kash.util.import_utils import import_namespace_modules
 log = get_logger(__name__)
 
 # This hook can be used for auto-registering actions from any module.
-import_action_subdirs(["core"], __package__, Path(__file__).parent)
+import_action_subdirs(["core", "meta"], __package__, Path(__file__).parent)
 
 
 # Import all kits, if available.

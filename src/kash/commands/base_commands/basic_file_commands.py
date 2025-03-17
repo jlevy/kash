@@ -8,7 +8,7 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_EMPH
 from kash.errors import InvalidInput
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
-from kash.file_tools.file_formats_model import detect_file_format
+from kash.file_utils.file_formats_model import detect_file_format
 from kash.shell_output.shell_output import (
     PadStyle,
     PrintHooks,

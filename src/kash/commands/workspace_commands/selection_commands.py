@@ -8,7 +8,7 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.lang_tools.inflection import plural
+from kash.lang_utils.inflection import plural
 from kash.model.paths_model import StorePath
 from kash.shell_ui.shell_results import shell_print_selection_history
 from kash.util.format_utils import fmt_loc

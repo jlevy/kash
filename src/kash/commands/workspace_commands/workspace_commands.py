@@ -24,8 +24,8 @@ from kash.exec.precondition_checks import actions_matching_paths
 from kash.exec.precondition_registry import get_all_preconditions
 from kash.exec.preconditions import is_url_item
 from kash.exec_model.shell_model import ShellResult
-from kash.file_tools.dir_size import is_nonempty_dir
-from kash.lang_tools.inflection import plural
+from kash.file_utils.dir_size import is_nonempty_dir
+from kash.lang_utils.inflection import plural
 from kash.llm_tools.chat_format import tail_chat_history
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.media_base import media_tools
@@ -599,7 +599,7 @@ def reset_ignore_file(append: bool = False) -> None:
     """
     Reset the kash ignore file to the default.
     """
-    from kash.file_tools.ignore_files import write_ignore
+    from kash.file_utils.ignore_files import write_ignore
 
     ws = current_workspace()
     ignore_path = ws.base_dir / ws.dirs.ignore_file
@@ -615,7 +615,7 @@ def ignore_file(pattern: str | None = None) -> None:
     if none is specified.
     """
     from kash.commands.base_commands.show_command import show
-    from kash.file_tools.ignore_files import add_to_ignore
+    from kash.file_utils.ignore_files import add_to_ignore
 
     ws = current_workspace()
     ignore_path = ws.base_dir / ws.dirs.ignore_file

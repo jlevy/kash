@@ -6,7 +6,7 @@ from kash.config.logger import get_logger
 from kash.config.settings import global_settings, update_global_settings
 from kash.errors import FileNotFound, InvalidInput
 from kash.exec.preconditions import has_html_body, is_resource, is_url_item
-from kash.file_tools.file_formats_model import detect_media_type
+from kash.file_utils.file_formats_model import detect_media_type
 from kash.media_base.media_services import is_media_url
 from kash.media_base.media_tools import cache_media
 from kash.model.items_model import Item

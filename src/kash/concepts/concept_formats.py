@@ -1,4 +1,4 @@
-from kash.lang_tools.capitalization import capitalize_cms
+from kash.lang_utils.capitalization import capitalize_cms
 from kash.text_formatting.markdown_util import extract_bullet_points
 
 
