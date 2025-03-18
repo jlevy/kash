@@ -13,7 +13,7 @@ from prettyfmt import fmt_lines
 from strif import copyfile_atomic, hash_file, move_file
 
 from kash.config.logger import get_log_settings, get_logger
-from kash.config.text_styles import EMOJI_SAVED, EMOJI_WARN
+from kash.config.text_styles import COLOR_HINT, EMOJI_SAVED
 from kash.errors import FileExists, FileNotFound, InvalidFilename, SkippableError
 from kash.file_storage.item_file_format import read_item, write_item
 from kash.file_storage.metadata_dirs import MetadataDirs
@@ -593,9 +593,10 @@ class FileStore:
 
         if self.is_scratch:
             PrintHooks.spacer()
+            log.warning("Note you are using the default `scratch` workspace.")
             cprint(
-                f"{EMOJI_WARN} Note you are using the default scratch workspace. "
-                + "Create or switch to another workspace with the `workspace` command."
+                "You may want to create or switch to another workspace with the `workspace` command.",
+                style=COLOR_HINT,
             )
 
         log.info("File store startup took %s.", format_duration(self.end_time - self.start_time))

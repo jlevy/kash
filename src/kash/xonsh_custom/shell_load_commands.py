@@ -147,4 +147,4 @@ def log_command_action_info():
         )
     )
 
-    cprint(Text("Use `commands`, `actions`, or `kits` for details."), style=COLOR_HINT)
+    cprint("Use `commands`, `actions`, or `kits` for details.", style=COLOR_HINT)
