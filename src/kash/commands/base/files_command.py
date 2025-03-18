@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
-from prettyfmt import fmt_size_human, fmt_time
+from prettyfmt import fmt_path, fmt_size_human, fmt_time
 from rich.text import Text
 
 from kash.commands.workspace.selection_commands import select
@@ -16,7 +16,6 @@ from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath, parse_path_spec
 from kash.shell.file_icons.color_for_format import color_for_format
 from kash.shell.output.shell_output import PrintHooks, Wrap, console_pager, cprint
-from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.file_formats_model import Format, guess_format_by_name
 from kash.utils.file_utils.file_sort_filter import (
     FileInfo,
@@ -29,6 +28,7 @@ from kash.utils.file_utils.file_sort_filter import (
     type_suffix,
 )
 from kash.utils.file_utils.ignore_files import ignore_none
+from kash.utils.file_utils.path_utils import common_parent_dir
 from kash.workspaces import current_ignore, current_workspace
 
 log = get_logger(__name__)
@@ -154,11 +154,23 @@ def files(
     # Set up base path. If we have a workspace and if this listing is within the
     # current workspace, detect that, since it's convenient to enable brief listings
     # in workspaces.
-    base_path = Path(".")
+    cwd = Path.cwd()
     ws = current_workspace()
-    active_ws_name = ws.name if base_path.resolve().is_relative_to(ws.base_dir.resolve()) else None
-    base_is_ws = ws.base_dir.resolve() == base_path.resolve()
-    is_ws_listing = active_ws_name and base_is_ws
+    active_ws_name = ws.name if cwd.is_relative_to(ws.base_dir.resolve()) else None
+    # Check if all requested paths are within the current directory, and if so use
+    # that as the base path. Otherwise, use the common parent directory of all paths.
+    if paths_to_show:
+        base_path = common_parent_dir(*paths_to_show)
+        if base_path.is_relative_to(cwd):
+            base_path = cwd
+        within_cwd = base_path.is_relative_to(cwd)
+    else:
+        base_path = Path(".")
+        within_cwd = True
+    # Should we show absolute paths?
+    show_absolute_paths = not within_cwd
+    # Is this a listing of the current workspace?
+    is_ws_listing = active_ws_name and ws.base_dir.resolve() == base_path.resolve()
 
     # Handle lots of different options.
     if recursive:
@@ -200,11 +212,11 @@ def files(
         is_ignored = ignore_none
     else:
         for path in paths_to_show:
-            # log.info("Checking ignore for %s against filter %s", fmt_loc(path), is_ignored)
+            # log.info("Checking ignore for %s against filter %s", fmt_path(path), is_ignored)
             if not no_ignore and is_ignored(path, is_dir=path.is_dir()):
                 log.info(
                     "Requested path is on the ignore list so disabling ignore: %s",
-                    fmt_loc(path),
+                    fmt_path(path),
                 )
                 is_ignored = ignore_none
                 break
@@ -233,6 +245,7 @@ def files(
         max_files_total=max_files,
         base_path=base_path,
         include_dirs=not omit_dirs,
+        resolve_parent=show_absolute_paths,
     )
 
     log.info("Collected %s files.", file_listing.files_total)
@@ -266,13 +279,13 @@ def files(
         item = Item(
             type=ItemType.export,
             title="File Listing",
-            description=f"Files in {', '.join(fmt_loc(p) for p in paths_to_show)}",
+            description=f"Files in {', '.join(fmt_path(p) for p in paths_to_show)}",
             format=Format.csv,
             body=df.to_csv(index=False),
         )
         ws = current_workspace()
         store_path = ws.save(item, as_tmp=False)
-        log.message("File listing saved to: %s", fmt_loc(store_path))
+        log.message("File listing saved to: %s", fmt_path(store_path))
 
         select(store_path)
 
@@ -291,6 +304,7 @@ def files(
     with console_pager(use_pager=pager):
         with local_url_formatter(active_ws_name) as fmt:
             for group_name, group_df in grouped:
+                # If items are grouped e.g. by parent directory, show the group name first.
                 if group_name:
                     cprint(
                         f"{group_name} ({len(group_df)} files)",
