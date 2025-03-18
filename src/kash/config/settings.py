@@ -1,12 +1,12 @@
 import os
-import threading
-from contextlib import contextmanager
 from enum import Enum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
 
 from pydantic.dataclasses import dataclass
+
+from kash.utils.common.atomic_var import AtomicVar
 
 APP_NAME = "kash"
 
@@ -153,49 +153,48 @@ def server_log_file_path(name: str, port: int | str) -> Path:
 
 
 # Initial default settings.
-_settings = Settings(
-    # These default to the global but can be overridden by workspace settings.
-    media_cache_dir=GLOBAL_CACHE_PATH / MEDIA_CACHE_NAME,
-    content_cache_dir=GLOBAL_CACHE_PATH / CONTENT_CACHE_NAME,
-    debug_assistant=True,
-    default_editor="nano",
-    use_sandbox=True,
-    file_log_level=LogLevel.info,
-    console_log_level=DEFAULT_LOG_LEVEL,
-    local_server_ports_start=LOCAL_SERVER_PORT_START,
-    local_server_ports_max=LOCAL_SERVER_PORTS_MAX,
-    local_server_port=0,
-    mcp_server_port=MCP_SERVER_PORT,
-    use_kerm_codes=False,
-    use_nerd_icons=True,
+_settings = AtomicVar(
+    Settings(
+        # These default to the global but can be overridden by workspace settings.
+        media_cache_dir=GLOBAL_CACHE_PATH / MEDIA_CACHE_NAME,
+        content_cache_dir=GLOBAL_CACHE_PATH / CONTENT_CACHE_NAME,
+        debug_assistant=True,
+        default_editor="nano",
+        use_sandbox=True,
+        file_log_level=LogLevel.info,
+        console_log_level=DEFAULT_LOG_LEVEL,
+        local_server_ports_start=LOCAL_SERVER_PORT_START,
+        local_server_ports_max=LOCAL_SERVER_PORTS_MAX,
+        local_server_port=0,
+        mcp_server_port=MCP_SERVER_PORT,
+        use_kerm_codes=False,
+        use_nerd_icons=True,
+    )
 )
 
 
-def global_settings() -> Settings:
+def atomic_global_settings() -> AtomicVar[Settings]:
     """
     Read access to global settings.
     """
     return _settings
 
 
-_settings_lock = threading.RLock()
-
-
-@contextmanager
-def update_global_settings():
+def global_settings() -> Settings:
     """
-    Context manager for thread-safe updates to global settings.
+    Read-only access to global settings.
     """
-    with _settings_lock:
-        yield _settings
+    return atomic_global_settings().copy()
 
 
 def check_kerm_code_support() -> bool:
     """
     Check if the terminal supports Kerm codes.
     """
+    use_kerm_codes = False
     if os.environ.get("TERM_PROGRAM") == "Kerm":
-        with update_global_settings() as settings:
+        with atomic_global_settings().updates() as settings:
             settings.use_kerm_codes = True
+            use_kerm_codes = True
 
-    return _settings.use_kerm_codes
+    return use_kerm_codes

@@ -54,8 +54,8 @@ def import_namespace_modules(namespace: str) -> dict[str, types.ModuleType]:
     # Iterate through all modules in the namespace package
     modules = {}
     for _finder, module_name, _ispkg in pkgutil.iter_modules(package.__path__, f"{namespace}."):
-        log.info(f"Importing module: {module_name}")
         module = importlib.import_module(module_name)  # Propagate import errors
+        log.info(f"Imported module: {module_name} from {module.__file__}")
         modules[module_name] = module
 
     log.info(f"Imported {len(modules)} modules from namespace `{namespace}`")

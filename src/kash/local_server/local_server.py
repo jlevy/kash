@@ -13,7 +13,7 @@ from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
-from kash.config.settings import global_settings, server_log_file_path, update_global_settings
+from kash.config.settings import atomic_global_settings, global_settings, server_log_file_path
 from kash.errors import InvalidInput, InvalidState
 from kash.local_server import local_server_routes
 from kash.local_server.port_tools import find_available_local_port
@@ -79,7 +79,7 @@ def _pick_port() -> int:
         ),
     )
 
-    with update_global_settings() as settings:
+    with atomic_global_settings().updates() as settings:
         settings.local_server_port = port
 
     return port

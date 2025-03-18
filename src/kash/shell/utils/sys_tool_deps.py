@@ -191,7 +191,7 @@ class InstalledSysTools:
         for tool, path in self.items():
             texts.append(format_success_or_failure(bool(path), tool.name))
 
-        return Text.assemble("Local system tools: ", Text(" ").join(texts))
+        return Text.assemble("Local system tools found: ", Text(" ").join(texts))
 
 
 def print_missing_tool_help(tool: SysTool):

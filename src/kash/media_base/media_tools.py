@@ -3,7 +3,7 @@ from pathlib import Path
 from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger
-from kash.config.settings import global_settings, update_global_settings
+from kash.config.settings import atomic_global_settings, global_settings
 from kash.media_base.media_cache import MediaCache
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import MediaType
@@ -18,7 +18,7 @@ def reset_media_cache_dir(path: Path):
     """
     Reset the current media cache directory, if it has changed.
     """
-    with update_global_settings() as settings:
+    with atomic_global_settings().updates() as settings:
         current_cache_dir = settings.media_cache_dir
 
         if current_cache_dir != path:

@@ -69,8 +69,21 @@ def clear_sandbox() -> None:
     ws.log_store_info()
 
 
+def _get_cache_dirs(workspace: str | None = None) -> tuple[Path, Path]:
+    if workspace:
+        ws = get_workspace(workspace)
+        media_cache = (ws.base_dir / ws.dirs.media_cache_dir).resolve()
+        content_cache = (ws.base_dir / ws.dirs.content_cache_dir).resolve()
+    else:
+        settings = global_settings()
+        media_cache = settings.media_cache_dir.resolve()
+        content_cache = settings.content_cache_dir.resolve()
+
+    return media_cache, content_cache
+
+
 @kash_command
-def cache_list(media: bool = False, content: bool = False) -> None:
+def cache_list(media: bool = False, content: bool = False, workspace: str | None = None) -> None:
     """
     List the contents of the workspace media and content caches. By default lists both caches.
 
@@ -81,28 +94,22 @@ def cache_list(media: bool = False, content: bool = False) -> None:
         media = True
         content = True
 
-    ws = current_workspace()
-
-    ws_media_cache = (ws.base_dir / ws.dirs.media_cache_dir).resolve()
-    ws_content_cache = (ws.base_dir / ws.dirs.content_cache_dir).resolve()
-
-    global_media_cache = global_settings().media_cache_dir.resolve()
-    global_content_cache = global_settings().content_cache_dir.resolve()
+    media_cache, content_cache = _get_cache_dirs(workspace)
 
     if media:
-        if is_nonempty_dir(ws_media_cache):
-            files(ws_media_cache, depth=3, omit_dirs=True)
+        if is_nonempty_dir(media_cache):
+            files(media_cache, depth=3, omit_dirs=True)
             PrintHooks.spacer()
-        if ws_media_cache != global_media_cache and is_nonempty_dir(global_media_cache):
-            files(global_media_cache, depth=3, omit_dirs=True)
+        else:
+            cprint("Media cache is empty: %s", fmt_loc(media_cache))
             PrintHooks.spacer()
 
     if content:
-        if is_nonempty_dir(ws_content_cache):
-            files(ws_content_cache, depth=3, omit_dirs=True)
+        if is_nonempty_dir(content_cache):
+            files(content_cache, depth=3, omit_dirs=True)
             PrintHooks.spacer()
-        if ws_content_cache != global_content_cache and is_nonempty_dir(global_content_cache):
-            files(global_content_cache, depth=3, omit_dirs=True)
+        else:
+            cprint("Content cache is empty: %s", fmt_loc(content_cache))
             PrintHooks.spacer()
 
 
@@ -118,16 +125,19 @@ def clear_cache(media: bool = False, content: bool = False) -> None:
         media = True
         content = True
 
-    ws = current_workspace()
+    media_cache, content_cache = _get_cache_dirs()
 
-    ws_media_cache = (ws.base_dir / ws.dirs.media_cache_dir).resolve()
-    ws_content_cache = (ws.base_dir / ws.dirs.content_cache_dir).resolve()
+    if media and is_nonempty_dir(media_cache):
+        trash(media_cache)
+    else:
+        cprint("Media cache is empty: %s", fmt_loc(media_cache))
+        PrintHooks.spacer()
 
-    if media and is_nonempty_dir(ws_media_cache):
-        trash(ws_media_cache)
-
-    if content and is_nonempty_dir(ws_content_cache):
-        trash(ws_content_cache)
+    if content and is_nonempty_dir(content_cache):
+        trash(content_cache)
+    else:
+        cprint("Content cache is empty: %s", fmt_loc(content_cache))
+        PrintHooks.spacer()
 
 
 @kash_command

@@ -24,6 +24,10 @@ STORE_VERSION = "sv1"
 @dataclass(frozen=True)
 class MetadataDirs:
     base_dir: Path
+
+    # All other paths are relative to the base directory so defaults are
+    # always the same and can be set here:
+
     dot_dir: StorePath = StorePath(DOT_DIR)
 
     metadata_yml: StorePath = StorePath(f"{DOT_DIR}/metadata.yml")
@@ -35,6 +39,8 @@ class MetadataDirs:
     params_yml: StorePath = StorePath(f"{DOT_DIR}/settings/params.yml")
     ignore_file: StorePath = StorePath(f"{DOT_DIR}/ignore")
 
+    # Note cache location is also in global settings so might override these,
+    # but usually global settings are the same as the paths here.
     cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache")
     media_cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache/{MEDIA_CACHE_NAME}")
     content_cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache/{CONTENT_CACHE_NAME}")

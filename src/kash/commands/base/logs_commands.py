@@ -6,9 +6,9 @@ from kash.commands.base.basic_file_commands import trash
 from kash.config.logger import get_log_settings, get_logger, reload_rich_logging_setup
 from kash.config.settings import (
     LogLevel,
+    atomic_global_settings,
     global_settings,
     server_log_file_path,
-    update_global_settings,
 )
 from kash.exec import kash_command
 from kash.shell.output.shell_output import cprint, format_name_and_value, print_status
@@ -61,7 +61,7 @@ def log_level(level: str | None = None, console: bool = False, file: bool = Fals
 
     if level:
         level_parsed = LogLevel.parse(level)
-        with update_global_settings() as settings:
+        with atomic_global_settings().updates() as settings:
             if console:
                 settings.console_log_level = level_parsed
             if file:
