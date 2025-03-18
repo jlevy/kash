@@ -50,7 +50,7 @@ from kash.utils.common.url import Url, is_url
 from kash.utils.file_utils.dir_size import is_nonempty_dir
 from kash.utils.lang_utils.inflection import plural
 from kash.web_content.file_cache_utils import cache_file
-from kash.workspaces import current_workspace, get_sandbox_workspace, resolve_workspace, sandbox_dir
+from kash.workspaces import current_workspace, get_scratch_workspace, resolve_workspace, scratch_dir
 from kash.workspaces.workspace_names import check_strict_workspace_name
 from kash.workspaces.workspaces import get_workspace
 
@@ -58,13 +58,13 @@ log = get_logger(__name__)
 
 
 @kash_command
-def clear_sandbox() -> None:
+def clear_scratch() -> None:
     """
-    Clear the entire sandbox by moving it to the trash.
+    Clear the entire scratch by moving it to the trash.
     Use with caution!
     """
-    trash(sandbox_dir())
-    ws = get_sandbox_workspace()
+    trash(scratch_dir())
+    ws = get_scratch_workspace()
     ws.reload()
     ws.log_store_info()
 
@@ -233,10 +233,10 @@ def history(max: int = 30, raw: bool = False) -> None:
 
 
 @kash_command
-def sandbox() -> None:
-    """Change directory to the sandbox workspace."""
-    ws = get_sandbox_workspace()
-    print_status(f"Now in sandbox workspace: {ws.base_dir}")
+def scratch() -> None:
+    """Change directory to the scratch workspace."""
+    ws = get_scratch_workspace()
+    print_status(f"Now in scratch workspace: {ws.base_dir}")
     os.chdir(ws.base_dir)
 
 

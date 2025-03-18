@@ -103,13 +103,13 @@ def assist_current_state() -> Message:
 
     ws = current_workspace()
     ws_base_dir = ws.base_dir
-    is_sandbox = ws.is_sandbox
+    is_scratch = ws.is_scratch
 
-    if ws_base_dir and not is_sandbox:
+    if ws_base_dir and not is_scratch:
         ws_info = f"Based on the current directory, the current workspace is: {ws_base_dir.name} at {fmt_loc(ws_base_dir)}"
     else:
-        if is_sandbox:
-            about_ws = "You are currently using the global sandbox workspace."
+        if is_scratch:
+            about_ws = "You are currently using the global scratch workspace."
         else:
             about_ws = "The current directory is not a workspace."
         ws_info = (

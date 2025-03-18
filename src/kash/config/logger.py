@@ -51,7 +51,7 @@ Parent of the "logs" directory. Initially the global kash data root.
 _log_name = "default"
 """
 Name of the log file. By default the workspace name or "default" if
-for the sandbox.
+for the scratch.
 """
 
 _log_lock = threading.RLock()

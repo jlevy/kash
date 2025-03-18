@@ -20,7 +20,7 @@ def diff_items(*paths: str, force: bool = False) -> ShellResult:
     """
     Show the unified diff between the given files. It's often helpful to treat diffs
     as items themselves, so this works on items. Items are imported as usual into the
-    sandbox workspace if they are not already in the store.
+    scratch workspace if they are not already in the store.
 
     :param stat: Only show the diffstat summary.
     :param force: If true, will run the diff even if the items are of different formats.

@@ -15,7 +15,7 @@ from kash.config.setup import setup
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_stdio import get_log_path, run_mcp_server_stdio
 from kash.version import get_version
-from kash.workspaces.workspaces import get_workspace, sandbox_dir
+from kash.workspaces.workspaces import get_workspace, scratch_dir
 
 __version__ = get_version()
 
@@ -31,8 +31,8 @@ def parse_args():
     )
     parser.add_argument(
         "--workspace",
-        default=sandbox_dir(),
-        help="Set workspace directory. Defaults to kash sandbox directory.",
+        default=scratch_dir(),
+        help="Set workspace directory. Defaults to kash scratch directory.",
     )
     return parser.parse_args()
 

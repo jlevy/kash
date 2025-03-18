@@ -233,12 +233,12 @@ def get_dir_completions(
 def get_item_completions(
     prefix: str,
     precondition: Precondition = Precondition.always,
-    complete_from_sandbox: bool = True,
+    complete_from_scratch: bool = True,
 ) -> set[ScoredCompletion] | None:
     prefix = normalize(prefix.lstrip("@"))
 
     ws = current_workspace()
-    if ws.is_sandbox and not complete_from_sandbox:
+    if ws.is_scratch and not complete_from_scratch:
         return None
 
     # Get immediate subdirectories from workspace base directory.

@@ -17,10 +17,10 @@ log = get_logger(__name__)
 
 # Cache the file store per directory, since it takes a little while to load.
 @cache
-def _load_or_init_file_store(base_dir: Path, is_sandbox: bool) -> FileStore:
+def _load_or_init_file_store(base_dir: Path, is_scratch: bool) -> FileStore:
     from kash.file_storage.file_store import FileStore
 
-    file_store = FileStore(base_dir, is_sandbox, auto_init=True)
+    file_store = FileStore(base_dir, is_scratch, auto_init=True)
     return file_store
 
 
@@ -28,7 +28,7 @@ def _load_or_init_file_store(base_dir: Path, is_sandbox: bool) -> FileStore:
 class WorkspaceInfo:
     name: str
     base_dir: Path
-    is_sandbox: bool
+    is_scratch: bool
 
 
 class WorkspaceRegistry:
@@ -36,7 +36,7 @@ class WorkspaceRegistry:
         self._workspaces: dict[str, WorkspaceInfo] = {}
         self._lock = threading.RLock()
 
-    def load(self, name: str, base_dir: Path | None = None, is_sandbox: bool = False) -> FileStore:
+    def load(self, name: str, base_dir: Path | None = None, is_scratch: bool = False) -> FileStore:
         """
         Load or create a workspace and register it. If path is given and the workspace
         does not exist, create it.
@@ -47,13 +47,13 @@ class WorkspaceRegistry:
 
             if not info:
                 if base_dir:
-                    info = WorkspaceInfo(name, base_dir.resolve(), is_sandbox)
+                    info = WorkspaceInfo(name, base_dir.resolve(), is_scratch)
                     self._workspaces[name] = info
                     log.info("Registered workspace: %s -> %s", name, info)
                 else:
                     raise ValueError(f"Workspace not found: {name}")
 
-            return _load_or_init_file_store(info.base_dir, info.is_sandbox)
+            return _load_or_init_file_store(info.base_dir, info.is_scratch)
 
     def get_by_name(self, name: str) -> WorkspaceInfo | None:
         with self._lock:

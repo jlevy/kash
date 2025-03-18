@@ -27,7 +27,7 @@ PtkTokens = list[PtkToken]
 class PromptInfo:
     workspace_str: str
     workspace_details: str
-    is_sandbox: bool
+    is_scratch: bool
     cwd_str: str
     cwd_details: str
     cwd_in_workspace: bool
@@ -38,12 +38,12 @@ def get_prompt_info() -> PromptInfo:
     # and log info about the whole workspace after a cd so we do that.
     ws = current_workspace()
     ws_name = ws.name
-    is_sandbox = ws.is_sandbox
+    is_scratch = ws.is_scratch
 
-    if ws_name and not is_sandbox:
+    if ws_name and not is_scratch:
         workspace_str = ws_name
     else:
-        workspace_str = "(sandbox)"
+        workspace_str = "(scratch)"
     workspace_details = f"Workspace at {ws.base_dir}"
 
     cwd = Path(".").resolve()
@@ -60,7 +60,7 @@ def get_prompt_info() -> PromptInfo:
     cwd_details = f"Current directory at {cwd}"
 
     return PromptInfo(
-        workspace_str, workspace_details, is_sandbox, cwd_str, cwd_details, cwd_in_workspace
+        workspace_str, workspace_details, is_scratch, cwd_str, cwd_details, cwd_in_workspace
     )
 
 
@@ -162,7 +162,7 @@ def kash_xonsh_prompt() -> FormattedText:
     settings = get_prompt_style().settings
     info = get_prompt_info()
 
-    workspace_color = settings.ptk_style_warn if info.is_sandbox else settings.ptk_style
+    workspace_color = settings.ptk_style_warn if info.is_scratch else settings.ptk_style
     workspace_tokens = text_with_tooltip(
         info.workspace_str, hover_text=info.workspace_details
     ).as_ptk_tokens(style=workspace_color)

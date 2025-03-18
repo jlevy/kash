@@ -59,7 +59,7 @@ class FileStore:
 
     # TODO: Consider using a pluggable filesystem (fsspec AbstractFileSystem).
 
-    def __init__(self, base_dir: Path, is_sandbox: bool, auto_init: bool = True):
+    def __init__(self, base_dir: Path, is_scratch: bool, auto_init: bool = True):
         """
         Load the file store. With `auto_init` true, will initialize if the workspace
         directory metadata if it is not already initialized.
@@ -67,7 +67,7 @@ class FileStore:
 
         self.base_dir = base_dir.resolve()
         self.name = workspace_name(self.base_dir)
-        self.is_sandbox = is_sandbox
+        self.is_scratch = is_scratch
         self._lock = threading.RLock()
         self.reload(auto_init=auto_init)
 
@@ -591,10 +591,10 @@ class FileStore:
         for warning in self.warnings:
             log.warning("%s", warning)
 
-        if self.is_sandbox:
+        if self.is_scratch:
             PrintHooks.spacer()
             cprint(
-                f"{EMOJI_WARN} Note you are using the default sandbox workspace. "
+                f"{EMOJI_WARN} Note you are using the default scratch workspace. "
                 + "Create or switch to another workspace with the `workspace` command."
             )
 

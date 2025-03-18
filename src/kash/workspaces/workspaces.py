@@ -92,9 +92,9 @@ def resolve_workspace(name: str | Path) -> WorkspaceInfo:
         ws_name = workspace_name(name)
         ws_path = parent_dir / ws_name
 
-    is_sandbox = ws_name.lower() == SANDBOX_NAME.lower()
+    is_scratch = ws_name.lower() == SANDBOX_NAME.lower()
 
-    return WorkspaceInfo(ws_name, ws_path, is_sandbox)
+    return WorkspaceInfo(ws_name, ws_path, is_scratch)
 
 
 def get_workspace(name_or_path: str | Path, auto_init: bool = True) -> Workspace:
@@ -109,34 +109,34 @@ def get_workspace(name_or_path: str | Path, auto_init: bool = True) -> Workspace
     if not is_workspace_dir(info.base_dir) and not auto_init:
         raise FileNotFound(f"Not a workspace directory: {fmt_path(info.base_dir)}")
 
-    ws = get_workspace_registry().load(info.name, info.base_dir, info.is_sandbox)
+    ws = get_workspace_registry().load(info.name, info.base_dir, info.is_scratch)
     return ws
 
 
 @cache
-def sandbox_dir() -> Path:
+def scratch_dir() -> Path:
     kb_path = resolve_and_create_dirs(SANDBOX_KB_PATH, is_dir=True)
     log.info("Sandbox KB path: %s", kb_path)
     return kb_path
 
 
-def get_sandbox_workspace() -> Workspace:
+def get_scratch_workspace() -> Workspace:
     """
-    Get the sandbox workspace.
+    Get the scratch workspace.
     """
-    return get_workspace_registry().load(SANDBOX_NAME, sandbox_dir(), True)
+    return get_workspace_registry().load(SANDBOX_NAME, scratch_dir(), True)
 
 
 def _infer_workspace_info() -> tuple[Path | None, bool]:
     from kash.config.settings import global_settings
 
     dir = enclosing_workspace_dir()
-    is_sandbox = False
-    if global_settings().use_sandbox:
-        is_sandbox = not dir
-        if is_sandbox:
-            dir = sandbox_dir()
-    return dir, is_sandbox
+    is_scratch = False
+    if global_settings().use_scratch:
+        is_scratch = not dir
+        if is_scratch:
+            dir = scratch_dir()
+    return dir, is_scratch
 
 
 def _switch_current_workspace(base_dir: Path) -> Workspace:
@@ -144,7 +144,7 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
     Switch the current workspace to the given directory.
     Updates logging and cache directories to be within that workspace.
     Does not reload the workspace if it's already loaded and does not
-    use the sandbox for logs (since it's )
+    use the scratch for logs (since it's )
     """
     from kash.media_base.media_tools import reset_media_cache_dir
     from kash.web_content.file_cache_utils import reset_content_cache_dir
@@ -152,10 +152,10 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
     info = resolve_workspace(base_dir)
     ws_dirs = MetadataDirs(info.base_dir)
 
-    # Use the global log root for the sandbox, and the workspace log root otherwise.
-    reset_log_root(None, info.name if not info.is_sandbox else None)
+    # Use the global log root for the scratch, and the workspace log root otherwise.
+    reset_log_root(None, info.name if not info.is_scratch else None)
 
-    if info.is_sandbox:
+    if info.is_scratch:
         # If not in a workspace, use the global cache locations.
         reset_media_cache_dir(global_settings().media_cache_dir)
         reset_content_cache_dir(global_settings().content_cache_dir)
@@ -163,7 +163,7 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
         reset_media_cache_dir(ws_dirs.media_cache_dir)
         reset_content_cache_dir(ws_dirs.content_cache_dir)
 
-    return get_workspace_registry().load(info.name, info.base_dir, info.is_sandbox)
+    return get_workspace_registry().load(info.name, info.base_dir, info.is_scratch)
 
 
 def current_workspace(silent: bool = False) -> Workspace:
@@ -172,7 +172,7 @@ def current_workspace(silent: bool = False) -> Workspace:
     Also updates logging and cache directories if this has changed.
     """
 
-    base_dir, is_sandbox = _infer_workspace_info()
+    base_dir, is_scratch = _infer_workspace_info()
     if not base_dir:
         raise InvalidState(
             f"No workspace found in {fmt_loc(Path('.').absolute())}.\n"
