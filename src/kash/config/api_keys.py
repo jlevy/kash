@@ -12,6 +12,7 @@ class Api(str, Enum):
     openai = "OPENAI_API_KEY"
     anthropic = "ANTHROPIC_API_KEY"
     gemini = "GEMINI_API_KEY"
+    xai = "XAI_API_KEY"
     deepseek = "DEEPSEEK_API_KEY"
     mistral = "MISTRAL_API_KEY"
     perplexityai = "PERPLEXITYAI_API_KEY"

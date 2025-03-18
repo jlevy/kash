@@ -92,10 +92,11 @@ class LLMDefault(Enum):
 
 class LLM(LLMName, Enum):
     """
-    Convenience names for common LLMs.
+    Convenience names for common LLMs. This isn't exhaustive, but just common
+    ones for autocomplete, docs, etc. Values are all LiteLLM names.
     """
 
-    # These are all LiteLLM names:
+    # https://platform.openai.com/docs/models
     o3_mini = LLMName("o3-mini")
     o1_mini = LLMName("o1-mini")
     o1_preview = LLMName("o1-preview")
@@ -104,6 +105,7 @@ class LLM(LLMName, Enum):
     gpt_4 = LLMName("gpt-4")
     gpt_3_5_turbo = LLMName("gpt-3.5-turbo")
 
+    # https://docs.anthropic.com/en/docs/about-claude/models/all-models
     claude_3_7_sonnet = LLMName("claude-3-7-sonnet-latest")
     claude_3_5_sonnet = LLMName("claude-3-5-sonnet-latest")
     claude_3_5_haiku = LLMName("claude-3-5-haiku-latest")
@@ -111,22 +113,30 @@ class LLM(LLMName, Enum):
     claude_3_sonnet = LLMName("claude-3-sonnet-latest")
     claude_3_haiku = LLMName("claude-3-haiku-latest")
 
+    # https://ai.google.dev/gemini-api/docs/models
     gemini_2_0_flash = LLMName("gemini/gemini-2_0-flash")
     gemini_2_0_pro_exp_02_05 = LLMName("gemini/gemini-2.0-pro-exp-02-05")
     gemini_1_5_flash = LLMName("gemini/gemini-1.5-flash")
     gemini_1_5_flash_8b = LLMName("gemini/gemini-1.5-flash-8b")
 
+    # https://docs.x.ai/docs/models
+    xai_grok_2 = LLMName("xai/grok-2-latest")
+
+    # https://docs.mistral.ai/getting-started/models/models_overview/
     mistral_small = LLMName("mistral/mistral-small-latest")
     mistral_large = LLMName("mistral/mistral-large-latest")
     mistral_codestral = LLMName("mistral/mistral-codestral-latest")
 
+    # https://docs.perplexity.ai/guides/model-cards
     sonar = LLMName("perplexity/sonar")
     sonar_pro = LLMName("perplexity/sonar-pro")
 
+    # https://api-docs.deepseek.com/quick_start/pricing
     deepseek_chat = LLMName("deepseek/deepseek-chat")
     deepseek_coder = LLMName("deepseek/deepseek-coder")
     deepseek_reasoner = LLMName("deepseek/deepseek-reasoner")
 
+    # https://console.groq.com/docs/models
     groq_llama_3_3_7b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_llama_3_1_8b_instant = LLMName("groq/llama-3.1-8b-instant")
     groq_llama_3_1_70b_versatile = LLMName("groq/llama-3.1-70b-versatile")
@@ -136,6 +146,8 @@ class LLM(LLMName, Enum):
     groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")
     groq_deepseek_r1_distill_qwen_32b = LLMName("groq/deepseek-r1-distill-qwen-32b")
 
+    # Allows use of "default_basic" etc as model names and have the
+    # model be looked up from workspace parameter settings.
     default_basic = LLMName("default_basic")
     default_structured = LLMName("default_structured")
     default_careful = LLMName("default_careful")
