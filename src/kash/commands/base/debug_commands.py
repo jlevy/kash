@@ -5,7 +5,7 @@ from flowmark import Wrap
 from strif import single_line
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT, STYLE_KEY
+from kash.config.text_styles import STYLE_HINT, STYLE_KEY
 from kash.errors import InvalidInput
 from kash.exec import kash_command
 from kash.help import tldr_help
@@ -95,7 +95,7 @@ def debug_completions() -> None:
         cprint(to_str(completer), text_wrap=Wrap.NONE, style=STYLE_KEY)
         if completer.__doc__:
             cprint(
-                f"{single_line(completer.__doc__)}", text_wrap=Wrap.WRAP_INDENT, style=COLOR_HINT
+                f"{single_line(completer.__doc__)}", text_wrap=Wrap.WRAP_INDENT, style=STYLE_HINT
             )
 
 

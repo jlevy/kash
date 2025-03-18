@@ -1,4 +1,5 @@
 from kash.config.setup import setup
+from kash.config.text_styles import STYLE_HINT
 from kash.xonsh_custom.shell_load_commands import (
     is_interactive,
     log_command_action_info,
@@ -94,7 +95,8 @@ def customize_xonsh():
             enable_local_urls(True)
         else:
             cprint(
-                "If your terminal supports it, you may use `start_local_server` to enable local links."
+                "If your terminal supports it, you may use `start_local_server` to enable local links.",
+                style=STYLE_HINT,
             )
 
         cprint()

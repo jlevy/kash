@@ -8,7 +8,7 @@ from rich.text import Text
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_EXTRA, COLOR_HINT, EMOJI_WARN, STYLE_EMPH, colorize_qty
+from kash.config.text_styles import COLOR_EXTRA, EMOJI_WARN, STYLE_EMPH, STYLE_HINT, colorize_qty
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.local_server.local_url_formatters import local_url_formatter
@@ -64,7 +64,7 @@ def _print_listing_tallies(
             f"{EMOJI_WARN} {file_listing.files_ignored} files and {file_listing.dirs_ignored} dirs were ignored",
             style=COLOR_EXTRA,
         )
-        cprint("(use --no_ignore to show hidden files)", style=COLOR_HINT)
+        cprint("(use --no_ignore to show hidden files)", style=STYLE_HINT)
 
     if file_listing.total_skipped > 0:
         cprint(
@@ -72,7 +72,7 @@ def _print_listing_tallies(
             f"at max_files={max_files}, max_depth={max_depth}, max_per_subdir={max_per_subdir}",
             style=COLOR_EXTRA,
         )
-        cprint("(use --no_max to remove cutoff)", style=COLOR_HINT)
+        cprint("(use --no_max to remove cutoff)", style=STYLE_HINT)
 
 
 @kash_command

@@ -11,7 +11,6 @@ from rich.text import Text
 from strif import abbrev_str, single_line
 
 from kash.config.text_styles import (
-    COLOR_HINT,
     EMOJI_ACTION,
     EMOJI_COMMAND,
     EMOJI_HELP,
@@ -19,6 +18,7 @@ from kash.config.text_styles import (
     EMOJI_SHELL,
     EMOJI_SNIPPET,
     STYLE_HELP_QUESTION,
+    STYLE_HINT,
     STYLE_KASH_COMMAND,
 )
 from kash.exec_model.commands_model import CommentedCommand
@@ -207,7 +207,7 @@ class RecipeSnippet(HelpDoc):
     def __rich__(self) -> Text:
         if self.command.comment:
             return Text.assemble(
-                Text(f"# {self.command.comment}", style=COLOR_HINT),
+                Text(f"# {self.command.comment}", style=STYLE_HINT),
                 "\n",
                 Text(self.command.command_line),
             )

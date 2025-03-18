@@ -7,7 +7,7 @@ from rich.text import Text
 from typing_extensions import override
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.errors import InvalidState
 from kash.model.paths_model import StorePath
 from kash.shell.output.kerm_codes import KriLink, TextTooltip, UIAction, UIActionType
@@ -55,9 +55,9 @@ class PlaintextFormatter(LinkFormatter):
     @override
     def command_link(self, command_str: str, style: str | Style = "") -> Text:
         return Text.assemble(
-            Text("`", style=COLOR_HINT),
+            Text("`", style=STYLE_HINT),
             Text(command_str, style=style),
-            Text("`", style=COLOR_HINT),
+            Text("`", style=STYLE_HINT),
         )
 
     def __repr__(self):
@@ -96,14 +96,14 @@ class DefaultLinkFormatter(PlaintextFormatter):
 
         url = local_url.explain(text=command_str)
         return Text.assemble(
-            Text("`", style=COLOR_HINT),
+            Text("`", style=STYLE_HINT),
             KriLink.with_attrs(
                 command_str,
                 href=url,
                 click=UIAction(action_type=UIActionType.paste_text),
                 double_click=UIAction(action_type=UIActionType.run_command),
             ).as_rich(style=style),
-            Text("`", style=COLOR_HINT),
+            Text("`", style=STYLE_HINT),
         )
 
     def __repr__(self):

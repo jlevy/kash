@@ -1,6 +1,6 @@
 from rich.text import Text
 
-from kash.config.text_styles import COLOR_HINT, EMOJI_ASSISTANT
+from kash.config.text_styles import EMOJI_ASSISTANT, STYLE_HINT
 from kash.help.help_pages import print_see_also
 from kash.llm_utils.language_models import LLMName
 from kash.model.assistant_response_model import AssistantResponse
@@ -16,7 +16,7 @@ from kash.shell.output.shell_output import (
 
 def print_assistant_heading(model: LLMName) -> None:
     assistant_name = Text(f"{EMOJI_ASSISTANT} Kash Assistant", style="markdown.h3")
-    info = Text(f"({model})", style=COLOR_HINT)
+    info = Text(f"({model})", style=STYLE_HINT)
     cprint(assistant_name + " " + info)
 
 

@@ -72,6 +72,7 @@ STYLE_LOGO = "bold magenta"
 STYLE_HEADING = "bold bright_green"
 STYLE_HELP = "italic bright_blue"
 STYLE_ASSISTANCE = "italic bright_blue"
+STYLE_HINT = f"italic {COLOR_HINT}"
 STYLE_EMPH = "bright_green"
 STYLE_KEY = "bold bright_blue"
 STYLE_CODE = "bold bright_cyan"
@@ -371,6 +372,6 @@ def colorize_qty(text: Text) -> Text:
 
         text.stylize(style, start=0, end=qty_len)
         if qty_len < len(text.plain):
-            text.stylize(COLOR_HINT, start=qty_len, end=len(text.plain))
+            text.stylize(STYLE_HINT, start=qty_len, end=len(text.plain))
 
     return text

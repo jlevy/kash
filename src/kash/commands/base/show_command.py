@@ -1,5 +1,5 @@
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.errors import InvalidInput, InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.model.paths_model import StorePath
@@ -56,7 +56,7 @@ def show(
                         terminal_show_image(local_path)
                     except Exception as e:
                         log.info("Had trouble showing thumbnail image (will skip): %s", e)
-                        cprint(f"[Image: {item.thumbnail_url}]", style=COLOR_HINT)
+                        cprint(f"[Image: {item.thumbnail_url}]", style=STYLE_HINT)
 
             view_file_native(ws.base_dir / input_path, view_mode=view_mode)
         else:

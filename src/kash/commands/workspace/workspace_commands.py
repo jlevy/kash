@@ -10,7 +10,7 @@ from kash.commands.base.files_command import files
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_HINT, COLOR_SUGGESTION, EMOJI_TRUE, EMOJI_WARN, STYLE_EMPH
+from kash.config.text_styles import COLOR_SUGGESTION, EMOJI_TRUE, EMOJI_WARN, STYLE_EMPH, STYLE_HINT
 from kash.errors import InvalidInput
 from kash.exec import (
     assemble_path_args,
@@ -226,7 +226,7 @@ def history(max: int = 30, raw: bool = False) -> None:
         n = len(chat_history.messages)
         for i, message in enumerate(chat_history.messages):
             cprint(
-                Text("% 4d:" % (i - n), style=COLOR_HINT)
+                Text("% 4d:" % (i - n), style=STYLE_HINT)
                 + Text(f" `{message.content}`", style=COLOR_SUGGESTION),
                 text_wrap=Wrap.NONE,
             )
@@ -518,7 +518,7 @@ def applicable_actions(*paths: str, brief: bool = False, all: bool = False) -> N
                 format_name_and_value(
                     "Applicable actions",
                     Text.join(
-                        Text(", ", style=COLOR_HINT),
+                        Text(", ", style=STYLE_HINT),
                         (fmt.command_link(name) for name in action_names),
                     ),
                 ),

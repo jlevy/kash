@@ -6,7 +6,7 @@ from rich.table import Table
 from rich.text import Text
 
 from kash.config.logger import get_console, get_logger
-from kash.config.text_styles import COLOR_HINT, COLOR_SELECTION
+from kash.config.text_styles import COLOR_SELECTION, STYLE_HINT
 from kash.errors import is_fatal
 from kash.exec.command_exec import run_command_or_action
 from kash.exec_model.shell_model import ShellResult
@@ -50,8 +50,8 @@ def shell_print_selection_history(
         for v, selection in enumerate(history_slice):
             i = v + start_idx
             is_current = i == sh.current_index
-            box_color = COLOR_SELECTION if is_current else COLOR_HINT
-            content_color = "default" if is_current else COLOR_HINT
+            box_color = COLOR_SELECTION if is_current else STYLE_HINT
+            content_color = "default" if is_current else STYLE_HINT
 
             if not selection.paths:
                 selection_text = Text("No selection.", style=content_color)
@@ -115,4 +115,4 @@ def show_shell_result(res: ShellResult) -> None:
     if res.result and res.show_result:
         PrintHooks.before_result()
         shell_print_result(res.result)
-        cprint(f"({fmt_count_items(len(res.result), 'item')} in $result)", style=COLOR_HINT)
+        cprint(f"({fmt_count_items(len(res.result), 'item')} in $result)", style=STYLE_HINT)

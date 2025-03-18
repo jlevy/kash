@@ -1,7 +1,7 @@
 from rich.text import Text
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import all_docs
 from kash.help.docstring_utils import parse_docstring
 from kash.shell.output.shell_output import (
@@ -76,7 +76,7 @@ def print_see_also(commands_or_questions: list[str]) -> None:
             Text.assemble(
                 Text("See also: ", "markdown.emph"),
                 Text.join(
-                    Text(", ", COLOR_HINT),
+                    Text(", ", STYLE_HINT),
                     (fmt.command_link(item) for item in commands_or_questions),
                 ),
             )

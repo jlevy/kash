@@ -4,7 +4,7 @@ from pathlib import Path
 
 from thefuzz import fuzz
 
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import all_docs
 from kash.errors import FileNotFound, InvalidInput, NoMatch
 from kash.exec.action_registry import look_up_action_class
@@ -195,7 +195,7 @@ def print_explain_command(text: str, assistant_model: LLM | None = None):
     try:
         faq = look_up_faq(text)
         PrintHooks.spacer()
-        cprint("(Answer from FAQ:)", style=COLOR_HINT)
+        cprint("(Answer from FAQ:)", style=STYLE_HINT)
         PrintHooks.spacer()
         print_markdown(faq.answer)
         return

@@ -7,7 +7,7 @@ from rich.console import Console, ConsoleOptions, RenderResult
 from rich.padding import Padding
 from rich.text import Text
 
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.shell.output.kerm_code_utils import clickable_script_block
 from kash.utils.rich_custom.rich_markdown_fork import FEATURES, CodeBlock, Markdown
 
@@ -40,14 +40,14 @@ class TransformingCodeBlock(CodeBlock):
         if FEATURES.include_fences:
             # Create the fence line with language if present
             lexer_name = self.lexer_name if self.lexer_name != "text" else ""
-            yield Text(f"```{lexer_name}", style=COLOR_HINT)
+            yield Text(f"```{lexer_name}", style=STYLE_HINT)
 
         # pad=0 for no extra newlines around code blocks.
         yield Padding(code, pad=0)
 
         if FEATURES.include_fences:
             # Close the fence
-            yield Text("```", style=COLOR_HINT)
+            yield Text("```", style=STYLE_HINT)
 
         # Previously, we used syntax highlighting, but right now having transform do it.
         # yield Syntax(code, self.lexer_name, theme=self.theme, word_wrap=True, padding=0)

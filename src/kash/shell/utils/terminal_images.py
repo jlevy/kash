@@ -8,7 +8,7 @@ import termios
 from functools import cache
 from pathlib import Path
 
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.errors import SetupError
 from kash.shell.output.shell_output import cprint
 
@@ -130,4 +130,4 @@ def terminal_show_image_graceful(filename: str | Path):
     try:
         terminal_show_image(filename)
     except SetupError:
-        cprint(f"[Image: {filename}]", style=COLOR_HINT)
+        cprint(f"[Image: {filename}]", style=STYLE_HINT)

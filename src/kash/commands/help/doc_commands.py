@@ -3,7 +3,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT, CONSOLE_WRAP_WIDTH, LOGO, STYLE_LOGO
+from kash.config.text_styles import CONSOLE_WRAP_WIDTH, LOGO, STYLE_HINT, STYLE_LOGO
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
@@ -28,7 +28,7 @@ def welcome() -> None:
     header = Text.assemble(
         Text(LOGO, style=STYLE_LOGO),
         Text(separator),
-        Text(version, style=COLOR_HINT, justify="right"),
+        Text(version, style=STYLE_HINT, justify="right"),
     )
 
     PrintHooks.before_welcome()
@@ -37,7 +37,7 @@ def welcome() -> None:
             Markdown(help_topics.welcome),
             title=header,
             title_align="left",
-            border_style=COLOR_HINT,
+            border_style=STYLE_HINT,
             padding=(1, 1),
             box=SQUARE,
         )

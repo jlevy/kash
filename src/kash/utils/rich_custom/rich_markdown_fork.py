@@ -26,7 +26,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text, TextType
 
-from kash.config.text_styles import COLOR_HINT, STYLE_CODE
+from kash.config.text_styles import STYLE_CODE, STYLE_HINT
 from kash.utils.rich_custom.rich_char_transform import text_upper
 
 # Some departures from rich's markdown formatting:
@@ -206,7 +206,7 @@ class CodeBlock(TextElement):
         if FEATURES.include_fences:
             # Create the fence line with language if present
             lexer_name = self.lexer_name if self.lexer_name != "text" else ""
-            yield Text(f"```{lexer_name}", style=COLOR_HINT)
+            yield Text(f"```{lexer_name}", style=STYLE_HINT)
 
         # Render the code content
         syntax = Syntax(code, self.lexer_name, theme=self.theme, word_wrap=True, padding=0)
@@ -214,7 +214,7 @@ class CodeBlock(TextElement):
 
         if FEATURES.include_fences:
             # Close the fence
-            yield Text("```", style=COLOR_HINT)
+            yield Text("```", style=STYLE_HINT)
 
 
 class BlockQuote(TextElement):
@@ -681,9 +681,9 @@ class Markdown(JupyterMixin):
                             # Add backticks around inline code.
                             context.on_text(
                                 Text.assemble(
-                                    ("`", COLOR_HINT),
+                                    ("`", STYLE_HINT),
                                     (token.content, STYLE_CODE),
-                                    ("`", COLOR_HINT),
+                                    ("`", STYLE_HINT),
                                 ),
                                 node_type,
                             )

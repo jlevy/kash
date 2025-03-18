@@ -21,7 +21,6 @@ from rich.text import Text
 from kash.config.logger import get_console
 from kash.config.text_styles import (
     COLOR_FAILURE,
-    COLOR_HINT,
     COLOR_HINT_DIM,
     COLOR_RESPONSE,
     COLOR_STATUS,
@@ -30,6 +29,7 @@ from kash.config.text_styles import (
     HRULE_CHAR,
     STYLE_ASSISTANCE,
     STYLE_HELP,
+    STYLE_HINT,
     emoji_bool,
 )
 from kash.shell.output.kmarkdown import KMarkdown
@@ -63,7 +63,7 @@ def format_name_and_value(
         name = Text(name, style="markdown.h4")
     doc = fill_rich_text(doc, text_wrap=Wrap.HANGING_INDENT, initial_column=len(name) + 2)
 
-    return Text.assemble(name, (": ", COLOR_HINT), doc)
+    return Text.assemble(name, (": ", STYLE_HINT), doc)
 
 
 def format_name_and_description(
@@ -87,7 +87,7 @@ def format_name_and_description(
     else:
         body = fill_rich_text(doc, text_wrap=text_wrap)
 
-    heading = Text.assemble(name, ((" " + extra_note, COLOR_HINT) if extra_note else ""), "\n")
+    heading = Text.assemble(name, ((" " + extra_note, STYLE_HINT) if extra_note else ""), "\n")
     return Group(heading, body)
 
 
@@ -424,7 +424,7 @@ class PrintHooks(Enum):
 
     def nl(self) -> None:
         if DEBUG_SPACING:
-            cprint(f"({HRULE_CHAR * 3} {self.value} {HRULE_CHAR * 3})", style=COLOR_HINT)
+            cprint(f"({HRULE_CHAR * 3} {self.value} {HRULE_CHAR * 3})", style=STYLE_HINT)
         else:
             cprint()
 

@@ -2,7 +2,7 @@ from flowmark import Wrap
 
 from kash.commands.help.doc_commands import manual
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.exec.command_exec import look_up_command_or_action
@@ -119,7 +119,7 @@ def search_help(text: str, max: int = 10, min_score: float = 0.33) -> None:
     hits = all_docs.help_index.rank_docs(text, max, min_score)
     for hit in hits:
         PrintHooks.before_search_help()
-        cprint(f"# {hit.relatedness:.2f} ({hit.doc_key})", style=COLOR_HINT)
+        cprint(f"# {hit.relatedness:.2f} ({hit.doc_key})", style=STYLE_HINT)
         cprint(hit.doc, text_wrap=Wrap.NONE)
         PrintHooks.spacer()
 
