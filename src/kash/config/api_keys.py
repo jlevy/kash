@@ -11,7 +11,9 @@ from kash.utils.common.atomic_var import AtomicVar
 class Api(str, Enum):
     openai = "OPENAI_API_KEY"
     anthropic = "ANTHROPIC_API_KEY"
+    gemini = "GEMINI_API_KEY"
     deepseek = "DEEPSEEK_API_KEY"
+    mistral = "MISTRAL_API_KEY"
     perplexityai = "PERPLEXITYAI_API_KEY"
     deepgram = "DEEPGRAM_API_KEY"
     groq = "GROQ_API_KEY"
@@ -65,10 +67,11 @@ def print_api_key_setup(once: bool = False) -> None:
         )
     )
 
-    def is_set(value: str | None) -> bool:
+    def is_set(key: str) -> bool:
+        value = os.environ.get(key, None)
         return bool(value and value.strip() and "changeme" not in value)
 
-    texts = [format_success_or_failure(is_set(os.environ[api.value]), api.name) for api in Api]
+    texts = [format_success_or_failure(is_set(api.value), api.name) for api in Api]
 
     cprint(Text.assemble("API keys: ", Text(" ").join(texts)))
 

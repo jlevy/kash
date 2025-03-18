@@ -111,6 +111,15 @@ class LLM(LLMName, Enum):
     claude_3_sonnet = LLMName("claude-3-sonnet-latest")
     claude_3_haiku = LLMName("claude-3-haiku-latest")
 
+    gemini_2_0_flash = LLMName("gemini/gemini-2_0-flash")
+    gemini_2_0_pro_exp_02_05 = LLMName("gemini/gemini-2.0-pro-exp-02-05")
+    gemini_1_5_flash = LLMName("gemini/gemini-1.5-flash")
+    gemini_1_5_flash_8b = LLMName("gemini/gemini-1.5-flash-8b")
+
+    mistral_small = LLMName("mistral/mistral-small-latest")
+    mistral_large = LLMName("mistral/mistral-large-latest")
+    mistral_codestral = LLMName("mistral/mistral-codestral-latest")
+
     sonar = LLMName("perplexity/sonar")
     sonar_pro = LLMName("perplexity/sonar-pro")
 
@@ -118,11 +127,14 @@ class LLM(LLMName, Enum):
     deepseek_coder = LLMName("deepseek/deepseek-coder")
     deepseek_reasoner = LLMName("deepseek/deepseek-reasoner")
 
+    groq_llama_3_3_7b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_llama_3_1_8b_instant = LLMName("groq/llama-3.1-8b-instant")
     groq_llama_3_1_70b_versatile = LLMName("groq/llama-3.1-70b-versatile")
     groq_llama_3_1_405b_reasoning = LLMName("groq/llama-3.1-405b-reasoning")
     groq_llama3_8b_8192 = LLMName("groq/llama3-8b-8192")
     groq_llama3_70b_8192 = LLMName("groq/llama3-70b-8192")
+    groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")
+    groq_deepseek_r1_distill_qwen_32b = LLMName("groq/deepseek-r1-distill-qwen-32b")
 
     default_basic = LLMName("default_basic")
     default_structured = LLMName("default_structured")
