@@ -10,7 +10,7 @@ from kash.commands.base.files_command import files
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_EMPH, COLOR_HINT, COLOR_SUGGESTION, EMOJI_TRUE, EMOJI_WARN
+from kash.config.text_styles import COLOR_HINT, COLOR_SUGGESTION, EMOJI_TRUE, EMOJI_WARN, STYLE_EMPH
 from kash.errors import InvalidInput
 from kash.exec import (
     assemble_path_args,
@@ -140,7 +140,7 @@ def cache_media(*urls: str) -> None:
     for url_str in urls:
         url = Url(url_str)
         cached_paths = media_tools.cache_media(url)
-        cprint(f"{url}:", style=COLOR_EMPH, text_wrap=Wrap.NONE)
+        cprint(f"{url}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
         for media_type, path in cached_paths.items():
             cprint(f"{media_type.name}: {fmt_loc(path)}", text_wrap=Wrap.INDENT_ONLY)
         PrintHooks.spacer()
@@ -156,7 +156,7 @@ def cache_content(*urls_or_paths: str) -> None:
         locator = resolve_locator_arg(url_or_path)
         cache_path, was_cached = cache_file(locator)
         cache_str = " (already cached)" if was_cached else ""
-        cprint(f"{fmt_loc(url_or_path)}{cache_str}:", style=COLOR_EMPH, text_wrap=Wrap.NONE)
+        cprint(f"{fmt_loc(url_or_path)}{cache_str}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
         cprint(f"{cache_path}", text_wrap=Wrap.INDENT_ONLY)
         PrintHooks.spacer()
 
@@ -309,7 +309,7 @@ def relations(*paths: str) -> None:
     PrintHooks.spacer()
     for input_path in input_paths:
         item = current_workspace().load(StorePath(input_path))
-        cprint(f"{fmt_store_path(not_none(item.store_path))}:", style=COLOR_EMPH)
+        cprint(f"{fmt_store_path(not_none(item.store_path))}:", style=STYLE_EMPH)
         relations = item.relations.__dict__ if item.relations else {}
         if any(relations.values()):
             cprint(to_yaml_string(relations), text_wrap=Wrap.INDENT_ONLY)

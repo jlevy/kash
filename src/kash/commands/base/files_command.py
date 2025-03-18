@@ -8,7 +8,7 @@ from rich.text import Text
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_EMPH, COLOR_EXTRA, COLOR_HINT, EMOJI_WARN, colorize_qty
+from kash.config.text_styles import COLOR_EXTRA, COLOR_HINT, EMOJI_WARN, STYLE_EMPH, colorize_qty
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.local_server.local_url_formatters import local_url_formatter
@@ -294,7 +294,7 @@ def files(
                 if group_name:
                     cprint(
                         f"{group_name} ({len(group_df)} files)",
-                        style=COLOR_EMPH,
+                        style=STYLE_EMPH,
                         text_wrap=Wrap.NONE,
                     )
 

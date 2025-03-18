@@ -1,6 +1,4 @@
 from kash.config.setup import setup
-from kash.exec.action_registry import get_all_action_classes
-from kash.exec.command_registry import get_all_commands
 from kash.xonsh_custom.shell_load_commands import (
     is_interactive,
     log_command_action_info,
@@ -51,15 +49,6 @@ def _shell_interactive_setup():
     add_key_bindings()
 
     modernize_shell()
-
-
-def _log_command_action_info():
-    action_count = len(get_all_action_classes())
-    command_count = len(get_all_commands())
-    cprint(
-        f"{command_count} commands and {action_count} actions currently loaded. "
-        "Use `commands` and `actions` for details."
-    )
 
 
 def customize_xonsh():

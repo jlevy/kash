@@ -3,7 +3,7 @@ from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
-from kash.shell.output.shell_output import cprint
+from kash.shell.output.shell_output import cprint, format_name_and_value
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 
 log = get_logger(__name__)
@@ -85,3 +85,20 @@ def check_api_keys(warn_only: bool = False) -> None:
         warn_if_missing_api_keys()
     else:
         print_api_key_setup()
+
+
+@kash_command
+def kits() -> None:
+    """
+    List all kits (modules within `kash.kits`).
+    """
+    from kash.actions import get_loaded_kits
+
+    if not get_loaded_kits():
+        cprint(
+            "No kits currently imported (be sure the Python environment has `kash.kits` modules in the load path)"
+        )
+    else:
+        cprint("Currently imported kits:")
+        for kit in get_loaded_kits().values():
+            cprint(format_name_and_value(f"{kit.name} kit", str(kit.path or "")))

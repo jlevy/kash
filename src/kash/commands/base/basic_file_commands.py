@@ -5,7 +5,7 @@ from prettyfmt import fmt_lines
 from strif import copyfile_atomic
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import COLOR_EMPH
+from kash.config.text_styles import STYLE_EMPH
 from kash.errors import InvalidInput
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
 from kash.shell.output.shell_output import (
@@ -97,7 +97,7 @@ def file_info(*paths: str, size_summary: bool = False, format: bool = False) -> 
     # FIXME: Ensure this yields absolute paths for sandbox store paths
     input_paths = assemble_path_args(*paths)
     for input_path in input_paths:
-        cprint(f"{fmt_loc(input_path)}:", style=COLOR_EMPH, text_wrap=Wrap.NONE)
+        cprint(f"{fmt_loc(input_path)}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
         with print_style(PadStyle.INDENT):
             print_file_info(input_path, show_size_details=size_summary, show_format=format)
         PrintHooks.spacer()

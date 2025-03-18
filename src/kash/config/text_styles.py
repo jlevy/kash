@@ -39,7 +39,6 @@ COLOR_SUCCESS = "green"
 COLOR_FAILURE = "bright_red"
 COLOR_WARN = "bright_red"
 COLOR_ERROR = "bright_red"
-COLOR_EMPH = "bright_green"
 COLOR_EXTRA = "bright_blue"
 COLOR_SELECTION = "bright_yellow"
 COLOR_STATUS = "yellow"
@@ -73,6 +72,7 @@ STYLE_LOGO = "bold magenta"
 STYLE_HEADING = "bold bright_green"
 STYLE_HELP = "italic bright_blue"
 STYLE_ASSISTANCE = "italic bright_blue"
+STYLE_EMPH = "bright_green"
 STYLE_KEY = "bold bright_blue"
 STYLE_CODE = "bold bright_cyan"
 # For completions:
@@ -256,9 +256,9 @@ RICH_STYLES = {
     "markdown.item.number": Style(color="magenta", bold=True),
     "markdown.hr": Style(color=COLOR_HINT),
     "markdown.h1.border": Style(),
-    "markdown.h1": Style(color=COLOR_EMPH, bold=True),
-    "markdown.h2": Style(color=COLOR_EMPH, bold=True),
-    "markdown.h3": Style(color=COLOR_EMPH, bold=True, italic=True),
+    "markdown.h1": Style(color=STYLE_EMPH, bold=True),
+    "markdown.h2": Style(color=STYLE_EMPH, bold=True),
+    "markdown.h3": Style(color=STYLE_EMPH, bold=True, italic=True),
     "markdown.h4": Style(color=COLOR_EXTRA, bold=True),
     "markdown.h5": Style(color=COLOR_EXTRA, italic=True),
     "markdown.h6": Style(color=COLOR_EXTRA, italic=True),

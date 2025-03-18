@@ -1,9 +1,13 @@
+from kash.actions import get_loaded_kits
 from kash.config.setup import setup
+from kash.config.text_styles import COLOR_HINT, STYLE_EMPH
 
 setup(rich_logging=True)  # Set up logging first.
 
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
+
+from rich.text import Text
 
 from kash.config.init import kash_reload_all
 from kash.config.logger import get_logger
@@ -123,9 +127,22 @@ def reload_shell_commands_and_actions():
 
 
 def log_command_action_info():
+    kits = get_loaded_kits()
     action_count = len(get_all_action_classes())
     command_count = len(get_all_commands())
     cprint(
-        f"{command_count} commands and {action_count} actions currently loaded. "
-        "Use `commands` and `actions` for details."
+        Text.assemble(
+            Text("Kits loaded: "),
+            Text(f"{', '.join(kits.keys()) if kits else 'none'}", style=STYLE_EMPH if kits else ""),
+        )
     )
+    cprint(
+        Text.assemble(
+            Text(f"{command_count} commands", style=STYLE_EMPH),
+            Text(" and "),
+            Text(f"{action_count} actions", style=STYLE_EMPH),
+            Text(" loaded."),
+        )
+    )
+
+    cprint(Text("Use `commands`, `actions`, or `kits` for details."), style=COLOR_HINT)
