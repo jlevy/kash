@@ -1,9 +1,22 @@
-import copy as copy_module
+import copy as cpy
 import threading
 from collections.abc import Callable
-from typing import Generic, TypeVar
+from contextlib import contextmanager
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
+
+
+def value_is_immutable(obj: Any) -> bool:
+    """
+    Check if a value is of a known immutable type. Just for common cases, not perfect.
+    """
+    immutable_types = (int, float, bool, str, tuple, frozenset, type(None), bytes, complex)
+    if isinstance(obj, immutable_types):
+        return True
+    if hasattr(obj, "__dataclass_params__") and getattr(obj.__dataclass_params__, "frozen", False):
+        return True
+    return False
 
 
 class AtomicVar(Generic[T]):
@@ -38,12 +51,20 @@ class AtomicVar(Generic[T]):
     my_list = AtomicVar([1, 2, 3])
     my_list.update(lambda x: x.append(4))  # In any thread.
     my_list_copy = my_list.copy()  # In any thread.
+
+    # For mutable types, the `updates()` context manager also works:
+    with my_list.updates() as value:
+        value.append(5)
     ```
     """
 
-    def __init__(self, initial_value: T):
+    def __init__(self, initial_value: T, is_immutable: bool | None = None):
         self._value: T = initial_value
         self.lock = threading.Lock()
+        if is_immutable is None:
+            self.is_immutable = value_is_immutable(initial_value)
+        else:
+            self.is_immutable = is_immutable
 
     @property
     def value(self) -> T:
@@ -59,14 +80,14 @@ class AtomicVar(Generic[T]):
         Shallow copy of the current value.
         """
         with self.lock:
-            return copy_module.copy(self._value)
+            return cpy.copy(self._value)
 
     def deepcopy(self) -> T:
         """
         Deep copy of the current value.
         """
         with self.lock:
-            return copy_module.deepcopy(self._value)
+            return cpy.deepcopy(self._value)
 
     def set(self, new_value: T) -> None:
         with self.lock:
@@ -92,6 +113,25 @@ class AtomicVar(Generic[T]):
             if result is not None:
                 self._value = result
             return result
+
+    @contextmanager
+    def updates(self):
+        """
+        Context manager for convenient thread-safe updates. Only applicable to
+        mutable types.
+
+        Usage:
+        ```
+        my_list = AtomicVar([1, 2, 3])
+        with my_list.updates() as value:
+            value.append(4)
+        ```
+        """
+        # Sanity check to avoid accidental use with atomic/immutable types.
+        if self.is_immutable:
+            raise ValueError("Cannot use updates() context manager on immutable value")
+        with self.lock:
+            yield self._value
 
     def __bool__(self) -> bool:
         """
