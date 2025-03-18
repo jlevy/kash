@@ -42,7 +42,9 @@ def parse_args() -> str | None:
         print(APP_VERSION)
         sys.exit(0)
     elif sys.argv[1:] == ["--help"]:
-        help.manual()
+        from kash.commands.help import help_commands
+
+        help_commands.manual()
         sys.exit(0)
     elif len(sys.argv) > 1 and sys.argv[1].startswith("-"):
         print(f"Unrecognized option: {sys.argv[1]}", file=sys.stderr)
