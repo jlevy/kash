@@ -26,9 +26,6 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 
-# Suffix used to identify knowledge base directories.
-KB_SUFFIX = ".kb"
-
 # Currently the same thing as a FileStore, but may want to change
 # this in the future.
 Workspace: TypeAlias = "FileStore"
@@ -43,13 +40,13 @@ def workspace_name(path_or_name: str | Path) -> str:
         raise InvalidInput("Workspace name is required.")
 
     path = Path(path_or_name)
-    name = path.name.rstrip("/").removesuffix(KB_SUFFIX)
+    name = path.name.rstrip("/")
     return name
 
 
 def is_workspace_dir(path: Path) -> bool:
     dirs = MetadataDirs(path)
-    return (path.is_dir() and str(path).endswith(KB_SUFFIX)) or dirs.is_initialized()
+    return dirs.is_initialized()
 
 
 def enclosing_workspace_dir(path: Path = Path(".")) -> Path | None:
@@ -70,11 +67,9 @@ def resolve_workspace(name: str | Path) -> WorkspaceInfo:
     Parse and resolve the given workspace path or name and return a tuple containing
     the workspace name and a resolved directory path.
 
-    "example" -> "example", Path("example.kb")  [if example does not exist]
     "example" -> "example", Path("example")  [if example already exists]
-    "example.kb" -> "example", Path("example.kb")
-    "/path/to/example" -> "example", Path("/path/to/example.kb")
-    "." -> "current_dir", Path("/path/to/current_dir")
+    "/path/to/example" -> "example", Path("/path/to/example")
+    "." -> "current_dir", Path("/path/to/current_dir") [if cwd is /path/to/current_dir]
     """
     if not name:
         raise InvalidInput("Workspace name is required.")
@@ -95,10 +90,9 @@ def resolve_workspace(name: str | Path) -> WorkspaceInfo:
         ws_path = parent_dir / name
     else:
         ws_name = workspace_name(name)
-        # By default we add the .kb suffix to the workspace name for clarity for new workspaces.
-        ws_path = parent_dir / f"{ws_name}{KB_SUFFIX}"
+        ws_path = parent_dir / ws_name
 
-    is_sandbox = ws_name.lower() == SANDBOX_NAME
+    is_sandbox = ws_name.lower() == SANDBOX_NAME.lower()
 
     return WorkspaceInfo(ws_name, ws_path, is_sandbox)
 

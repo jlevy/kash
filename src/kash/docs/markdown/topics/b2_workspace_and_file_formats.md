@@ -7,8 +7,6 @@ It makes sense to devote a workspace to a single topic, project, or area of rese
 
 File formats and conventions:
 
-- The workspace directory should have a `.kb` suffix, such as `fitness.kb`.
-
 - A workspace holds items.
   Items are simply files.
   Files in a workspace are organized into folder by type, including resources, notes,

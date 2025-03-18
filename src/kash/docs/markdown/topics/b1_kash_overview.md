@@ -27,7 +27,6 @@ in how to use kash. Anything you type that ends in a `?` is sent to the assistan
 Kash operates on **items**, which are URLs, files, text or Markdown notes, or other
 documents. These are stored as simple files, in a single directory, called a
 **workspace**. Typically, you want a workspace for a single topic or project.
-By convention, workspace directories should have a `.kb` suffix, such as `fitness.kb`.
 
 Within a workspace, files are organized into folders by type, including resources,
 notes, configs, and exports.

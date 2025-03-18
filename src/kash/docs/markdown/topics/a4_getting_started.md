@@ -206,8 +206,10 @@ Note the `.kash/cache` directory contains all the downloaded videos and media yo
 download, so it can get large.
 You can delete these files if they take up too much space.
 
-Typically, we name them like `health.kb` or `personal.kb`, because that makes it clear
-they are in a certain format and may have other data.
+Note the `.kash/cache` directory contains all the downloaded videos and media you
+download, so it can get large.
+You can delete these files if they take up too much space.
+(See the `cache_list` and `clear_cache` commands.)
 
 Pick a workspace that encompasses a project or topic, and it lets you keep things
 organized.
@@ -227,8 +229,8 @@ To start a new workspace, run a command like
 workspace health
 ```
 
-This will create a workspace directory called `health.kb` in the current directory.
-You can run `cd health.kb` or `workspace health` to switch to that directory and begin
+This will create a workspace directory called `health` in the current directory.
+You can run `cd health` or `workspace health` to switch to that directory and begin
 working.
 
 ### Essential Kash Commands

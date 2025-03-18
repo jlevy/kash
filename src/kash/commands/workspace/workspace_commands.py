@@ -256,8 +256,7 @@ def init_workspace(path: str | None = None) -> None:
 def workspace(workspace_name: str | None = None) -> None:
     """
     Show info on the current workspace (if no arg given), or switch to a new workspace,
-    creating it if it doesn't exist. Adds a `.kb` on the end to indicate the directory
-    is a workspace. Equivalent to `mkdir some_name.kb`.
+    creating it if it doesn't exist.
     """
     if workspace_name:
         info = resolve_workspace(workspace_name)

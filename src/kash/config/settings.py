@@ -17,7 +17,7 @@ GLOBAL_KASH_DIR = Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser()
 RCFILE_PATH = Path("~/.kashrc").expanduser().resolve()
 
 SANDBOX_NAME = "sandbox"
-SANDBOX_KB_PATH = GLOBAL_KASH_DIR / f"{SANDBOX_NAME}.kb"
+SANDBOX_KB_PATH = GLOBAL_KASH_DIR / SANDBOX_NAME
 
 GLOBAL_CACHE_PATH = GLOBAL_KASH_DIR / "cache"
 MEDIA_CACHE_NAME = "media"
