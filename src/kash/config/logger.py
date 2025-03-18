@@ -6,7 +6,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cache
-from logging import INFO, Formatter
+from logging import INFO, Formatter, LogRecord
 from pathlib import Path
 from typing import IO, Any, cast
 
@@ -187,7 +187,9 @@ def reload_rich_logging_setup():
 
 
 def _do_logging_setup(log_settings: LogSettings):
-    kash.config.suppress_warnings.filter_warnings()
+    from kash.config.suppress_warnings import demote_warnings, filter_warnings
+
+    filter_warnings()
 
     os.makedirs(log_settings.log_dir, exist_ok=True)
     os.makedirs(log_settings.log_objects_dir, exist_ok=True)
@@ -197,7 +199,8 @@ def _do_logging_setup(log_settings: LogSettings):
     _file_handler = basic_file_handler(log_settings.log_file_path, log_settings.log_file_level)
 
     class PrefixedRichHandler(RichHandler):
-        def emit(self, record):
+        def emit(self, record: LogRecord):
+            demote_warnings(record)
             # Can add an extra indent to differentiate logs but it's a little messier looking.
             # record.msg = EMOJI_MSG_INDENT + record.msg
             super().emit(record)

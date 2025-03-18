@@ -1,8 +1,9 @@
+import time
 from typing import cast
 
 import litellm
 from flowmark import Wrap, fill_text
-from funlog import log_calls
+from funlog import format_duration, log_calls
 from litellm.types.utils import Choices, ModelResponse
 from litellm.types.utils import Message as LiteLLMMessage
 from pydantic import BaseModel
@@ -10,6 +11,7 @@ from pydantic.dataclasses import dataclass
 from slugify import slugify
 
 from kash.config.logger import get_logger
+from kash.config.text_styles import EMOJI_TIMING
 from kash.errors import ApiResultError
 from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.llm_utils.fuzzy_parsing import is_no_results
@@ -74,12 +76,8 @@ def llm_completion(
         chat_history.size_summary(),
         response_format,
     )
-    # log.info(
-    #     "LLM completion input to model %s:\n%s",
-    #     model,
-    #     indent(chat_history.to_yaml(), prefix="    "),
-    # )
 
+    start_time = time.time()
     llm_output = cast(
         ModelResponse,
         litellm.completion(
@@ -89,6 +87,7 @@ def llm_completion(
             **kwargs,
         ),  # type: ignore
     )
+    elapsed = time.time() - start_time
 
     choices = cast(Choices, llm_output.choices[0])
 
@@ -100,8 +99,11 @@ def llm_completion(
         raise ApiResultError(f"LLM completion failed: {model.litellm_name}: {llm_output}")
 
     total_input_len = sum(len(m["content"]) for m in messages)
+    speed = len(content) / elapsed
     log.message(
-        f"LLM completion from {model.litellm_name}: input {total_input_len} chars in {len(messages)} messages, output {len(content)} chars"
+        f"{EMOJI_TIMING} LLM completion from {model.litellm_name} in {format_duration(elapsed)}: "
+        f"input {total_input_len} chars in {len(messages)} messages, output {len(content)} chars "
+        f"({speed:.0f} char/s)"
     )
 
     citations = llm_output.get("citations", None)

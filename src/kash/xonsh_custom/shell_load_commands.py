@@ -1,6 +1,6 @@
 from kash.actions import get_loaded_kits
 from kash.config.setup import setup
-from kash.config.text_styles import COLOR_HINT, STYLE_EMPH
+from kash.config.text_styles import COLOR_HINT, COLOR_VALUE
 
 setup(rich_logging=True)  # Set up logging first.
 
@@ -133,14 +133,16 @@ def log_command_action_info():
     cprint(
         Text.assemble(
             Text("Kits loaded: "),
-            Text(f"{', '.join(kits.keys()) if kits else 'none'}", style=STYLE_EMPH if kits else ""),
+            Text(
+                f"{', '.join(kits.keys()) if kits else 'none'}", style=COLOR_VALUE if kits else ""
+            ),
         )
     )
     cprint(
         Text.assemble(
-            Text(f"{command_count} commands", style=STYLE_EMPH),
+            Text(f"{command_count} commands", style=COLOR_VALUE),
             Text(" and "),
-            Text(f"{action_count} actions", style=STYLE_EMPH),
+            Text(f"{action_count} actions", style=COLOR_VALUE),
             Text(" loaded."),
         )
     )

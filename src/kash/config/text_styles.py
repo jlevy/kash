@@ -55,7 +55,7 @@ COLOR_HINT_DIM = "dim bright_black"
 COLOR_SKIP = "green"
 COLOR_TASK = "magenta"
 COLOR_SAVED = "blue"
-COLOR_TIMING = "blue"
+COLOR_TIMING = "bright_black"
 COLOR_CALL = "bright_yellow"
 
 COLOR_SIZE1 = "bright_black"
@@ -189,15 +189,16 @@ class KashHighlighter(RegexHighlighter):
             f"(?P<task_stack_header>{re.escape(TASK_STACK_HEADER)})",
             f"(?P<task_stack>{re.escape(EMOJI_BREADCRUMB_SEP)}.*)",
             f"(?P<task_stack_prefix>{re.escape(EMOJI_MSG_INDENT)})",
-            # Emoji colors:
+            # Emojis that color the whole line:
+            f"(?P<timing>{re.escape(EMOJI_TIMING)}.*)",
+            # Color emojis by themselves:
+            f"(?P<saved>{re.escape(EMOJI_SAVED)})",
             f"(?P<task>{re.escape(EMOJI_ACTION)})",
             f"(?P<success>{re.escape(EMOJI_SUCCESS)})",
             f"(?P<skip>{re.escape(EMOJI_SKIP)})",
             f"(?P<failure>{re.escape(EMOJI_FAILURE)})",
-            f"(?P<timing>{re.escape(EMOJI_TIMING)})",
             f"(?P<warn>{re.escape(EMOJI_WARN)})",
             f"(?P<error>{re.escape(EMOJI_ERROR)})",
-            f"(?P<saved>{re.escape(EMOJI_SAVED)})",
             f"(?P<log_call>{re.escape(EMOJI_CALL_BEGIN)}|{re.escape(EMOJI_CALL_END)})",
             f"(?P<box_chars>{HRULE_CHAR}|{VRULE_CHAR}|{UL_CORNER}|{LL_CORNER}|{UR_CORNER}|{LR_CORNER})",
         ),
@@ -317,7 +318,7 @@ RICH_STYLES = {
     "kash.success": Style(color=COLOR_SUCCESS, bold=True),
     "kash.skip": Style(color=COLOR_SKIP, bold=True),
     "kash.failure": Style(color=COLOR_ERROR, bold=True),
-    "kash.timing": Style(color=COLOR_TIMING, bold=True),
+    "kash.timing": Style(color=COLOR_TIMING),
     "kash.saved": Style(color=COLOR_SAVED, bold=True),
     "kash.log_call": Style(color=COLOR_CALL, bold=True),
     "kash.box_chars": Style(color=COLOR_HINT),

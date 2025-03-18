@@ -2,7 +2,6 @@ from os.path import getsize
 from pathlib import Path
 from typing import NamedTuple
 
-from deepgram import ClientOptionsFromEnv, DeepgramClient, FileSource, PrerecordedOptions
 from httpx import Timeout
 from openai import OpenAI
 
@@ -54,7 +53,10 @@ class SpeakerSegment(NamedTuple):
 
 
 def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None) -> str:
-    """Transcribe an audio file using Deepgram."""
+    """
+    Transcribe an audio file using Deepgram.
+    """
+    from deepgram import ClientOptionsFromEnv, DeepgramClient, FileSource, PrerecordedOptions
 
     size = getsize(audio_file_path)
     log.info(

@@ -73,7 +73,7 @@ def print_api_key_setup(once: bool = False) -> None:
 
     texts = [format_success_or_failure(is_set(api.value), api.name) for api in Api]
 
-    cprint(Text.assemble("API keys: ", Text(" ").join(texts)))
+    cprint(Text.assemble("API keys found: ", Text(" ").join(texts)))
 
     warn_if_missing_api_keys()
 
