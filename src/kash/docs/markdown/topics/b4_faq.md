@@ -1,6 +1,6 @@
 ## Frequently Asked Questions
 
-### What is Kash?
+### What is kash?
 
 Kash is an extensible command-line power tool for exploring and organizing knowledge.
 
@@ -19,7 +19,7 @@ directory. These items are processed by a variety of actions.
 For more detailed information, you can run `help` to get background and a list of
 commands and actions.
 
-### How do I get started using kash?
+### How do I get started using ash?
 
 Run `help` to get an overview.
 

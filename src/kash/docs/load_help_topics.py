@@ -25,6 +25,7 @@ def page_field(path: str):
 @dataclass(frozen=True)
 class HelpTopics:
     welcome: str = page_field("markdown/welcome")
+    warning: str = page_field("markdown/warning")
     what_is_kash: str = page_field("markdown/topics/a1_what_is_kash")
     progress: str = page_field("markdown/topics/a2_progress")
     installation: str = page_field("markdown/topics/a3_installation")

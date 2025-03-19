@@ -1,9 +1,18 @@
+import re
+
 from rich.box import SQUARE
+from rich.console import Group
 from rich.panel import Panel
 from rich.text import Text
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import CONSOLE_WRAP_WIDTH, LOGO, STYLE_HINT, STYLE_LOGO
+from kash.config.text_styles import (
+    CONSOLE_WRAP_WIDTH,
+    LOGO_LARGE,
+    STYLE_EMPH,
+    STYLE_HINT,
+    STYLE_LOGO,
+)
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
@@ -24,24 +33,48 @@ def welcome() -> None:
     version = get_version_name()
     # Create header with logo and right-justified version
 
-    separator = " " + "─" * (CONSOLE_WRAP_WIDTH - len(LOGO) - len(version) - 2 - 3 - 3) + " "
+    # Break the line into non-space and space chunks by using a regex.
+    # Colorize each chunk and optionally swap lines to spaces.
+    def colorize_line(line: str, space_replacement: str) -> Text:
+        bits = re.findall(r"[^\s]+|\s+", line)
+        texts = []
+        first_color_done = False
+        for bit in bits:
+            if bit.strip():
+                texts.append(Text(bit, style=STYLE_LOGO if first_color_done else STYLE_EMPH))
+                first_color_done = True
+            else:
+                if len(bit) >= 3:
+                    bit = " " + re.sub(r" ", space_replacement, bit[1:-1]) + " "
+                texts.append(Text(bit, style=STYLE_HINT))
+        return Text.assemble(*texts)
+
+    logo_lines = LOGO_LARGE.split("\n")
+    logo_top = colorize_line(logo_lines[0], "─")
+    logo_bottom = [colorize_line(" " + line, " ") for line in logo_lines[1:]]
+    separator = " " + "─" * (CONSOLE_WRAP_WIDTH - len(logo_top) - len(version) - 2 - 3 - 3) + " "
     header = Text.assemble(
-        Text(LOGO, style=STYLE_LOGO),
-        Text(separator),
+        *logo_top,
+        Text(separator, style=STYLE_HINT),
         Text(version, style=STYLE_HINT, justify="right"),
     )
 
     PrintHooks.before_welcome()
     cprint(
         Panel(
-            Markdown(help_topics.welcome),
+            Group(
+                *logo_bottom,
+                "",
+                Markdown(help_topics.welcome),
+            ),
             title=header,
             title_align="left",
             border_style=STYLE_HINT,
-            padding=(1, 1),
+            padding=(0, 1),
             box=SQUARE,
         )
     )
+    cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=STYLE_HINT))
 
 
 @kash_command

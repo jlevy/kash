@@ -1,4 +1,4 @@
-### Welcome to kash!
+### Welcome to kash, the *knowledge agent shell*!
 
 Use `help` for the manual and full list of available commands.
 

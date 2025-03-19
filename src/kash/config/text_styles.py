@@ -28,7 +28,14 @@ BAT_STYLE = "header-filename,header-filesize,grid,changes"
 
 ## Text styles
 
-LOGO = "⎮Kash⎮"
+LOGO = "kash"
+
+LOGO_LARGE = r"""
+▀▄   █           █
+  ▀▄ █ █ ▀▀█ █▀▀ █▀█
+ ▄▀  █▀▄ █▀█ ▀▀█ █ █
+▀    ▀ ▀ ▀▀▀ ▀▀▀ ▀ ▀
+""".strip()
 
 
 ## Colors
