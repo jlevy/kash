@@ -11,6 +11,7 @@ import kash.commands.base.logs_commands  # noqa: F401
 import kash.commands.base.reformat_command  # noqa: F401
 import kash.commands.base.search_command  # noqa: F401
 import kash.commands.base.show_command  # noqa: F401
+import kash.commands.extras.utils_commands  # noqa: F401
 import kash.commands.help.assistant_commands  # noqa: F401  # noqa: F401
 import kash.commands.help.doc_commands  # noqa: F401
 import kash.commands.help.help_commands  # noqa: F401
