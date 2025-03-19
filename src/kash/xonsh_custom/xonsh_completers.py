@@ -203,7 +203,6 @@ def recommended_shell_completer(context: CompletionContext) -> CompleterResult:
 
 
 @contextual_completer
-@non_exclusive_completer
 @log_calls(level="info", if_slower_than=SLOW_COMPLETION)
 def item_completer(context: CompletionContext) -> CompleterResult:
     """
@@ -223,6 +222,32 @@ def item_completer(context: CompletionContext) -> CompleterResult:
                 return post_process(completions, context)
     except InvalidState:
         return None
+    return None
+
+
+@contextual_completer
+@log_calls(level="info", if_slower_than=SLOW_COMPLETION)
+def command_path_completer(context: CompletionContext) -> CompleterResult:
+    """
+    If the current command a kash command that takes a file path, complete with
+    paths in the current directory.
+    """
+    from xonsh.completers.path import contextual_complete_path
+
+    commands = get_all_commands()
+
+    if context.command and context.command.arg_index >= 1:
+        command_name = context.command.args[0].value
+        param_index = context.command.arg_index - 1
+        command = commands.get(command_name)
+        if command:
+            param_info = annotate_param_info(command)
+            # If this parameter is a path, complete with paths using xonsh's path completer.
+            if param_info and len(param_info) > param_index and param_info[param_index].is_path:
+                completions, lprefix = contextual_complete_path(context.command)
+                scored_completions = {ScoredCompletion.from_unscored(c) for c in completions}
+                trace_completions(f"command_file_completer: {lprefix!r}", scored_completions)
+                return post_process(scored_completions, context)
     return None
 
 

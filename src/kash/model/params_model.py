@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import field, replace
 from enum import Enum
+from pathlib import Path
 from typing import Any, Generic, TypeAlias, TypeVar
 
 from chopdiff.docs import TextUnit
@@ -127,6 +128,13 @@ class Param(Generic[T]):
     @property
     def is_bool(self) -> bool:
         return issubclass(self.type, bool)
+
+    @property
+    def is_path(self) -> bool:
+        return issubclass(self.type, Path) or (
+            # XXX As a convenience, infer path types from the variable name..
+            issubclass(self.type, str) and self.name in ("path", "paths")
+        )
 
     @property
     def shell_prefix(self) -> str:
