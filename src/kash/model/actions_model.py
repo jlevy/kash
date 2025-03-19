@@ -51,6 +51,11 @@ class ActionInput:
 
     items: list[Item]
 
+    @staticmethod
+    def empty() -> ActionInput:
+        """An empty input, for when an action processes no items."""
+        return ActionInput(items=[])
+
 
 @dataclass(frozen=True)
 class ExecContext:

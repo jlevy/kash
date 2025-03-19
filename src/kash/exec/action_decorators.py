@@ -56,6 +56,9 @@ Signature of a simplified action function that processes and returns a single `I
 
 AnyActionFunction: TypeAlias = ActionFunction | SimpleActionFunction
 
+# TODO: Add a NoInputActionFunction convenience type so you can annotate
+# functions that take no input, like `write_instructions`.
+
 AF = TypeVar("AF", bound=AnyActionFunction)
 
 

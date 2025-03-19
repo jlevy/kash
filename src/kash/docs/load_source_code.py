@@ -77,6 +77,9 @@ class SourceCode:
     example_action_src: str
     """Source code for an example action."""
 
+    example_command_src: str
+    """Source code for an example command."""
+
     def self_check(self) -> bool:
         return (
             len(self.model_src.splitlines()) > 5
@@ -85,6 +88,7 @@ class SourceCode:
             and len(self.text_tool_src.splitlines()) > 5
             and len(self.file_formats_src.splitlines()) > 5
             and len(self.example_action_src.splitlines()) > 5
+            and len(self.example_command_src.splitlines()) > 5
         )
 
     def __str__(self) -> str:
@@ -111,6 +115,10 @@ def load_source_code() -> SourceCode:
         example_action_src=read_source_code(
             kash_base_path / "actions" / "core" / "strip_html.py",
             kash_base_path / "actions" / "core" / "summarize_as_bullets.py",
+        ),
+        example_command_src=read_source_code(
+            kash_base_path / "commands" / "extras" / "utils_commands.py",
+            kash_base_path / "commands" / "base" / "reformat_command.py",
         ),
     )
     log.info("Loaded sources: %s", str(code))

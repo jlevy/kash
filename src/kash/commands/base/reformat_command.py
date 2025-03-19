@@ -50,4 +50,5 @@ def reformat(*paths: str, inplace: bool = False) -> ShellResult:
     resolvable = resolvable_paths(final_paths)
     if resolvable:
         select(*resolvable)
+
     return ShellResult(show_selection=len(resolvable) > 0)

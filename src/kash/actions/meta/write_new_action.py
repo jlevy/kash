@@ -2,9 +2,8 @@ from flowmark import Wrap, fill_text
 
 from kash.actions.meta.write_instructions import write_instructions
 from kash.config.logger import get_logger
-from kash.errors import ApiResultError
+from kash.errors import ApiResultError, InvalidInput
 from kash.exec import kash_action
-from kash.exec.action_exec import run_action_with_shell_context
 from kash.exec.preconditions import is_instructions
 from kash.help.assistant import assist_preamble, assistance_structured
 from kash.help.assistant_output import print_assistant_response
@@ -21,7 +20,6 @@ from kash.model import (
     TitleTemplate,
     common_params,
 )
-from kash.model.params_model import RawParamValues
 from kash.utils.common.lazyobject import lazyobject
 from kash.utils.common.type_utils import not_none
 
@@ -34,27 +32,57 @@ def write_action_instructions() -> str:
 
     return (
         """
-        Write a kash action according to the following description. Guidelines:
+        You are a senior software engineer who writes clean code exactly
+        conforming with existing practice using the kash framework, which you understand
+        clearly. You always want to write actions that are helpful and reusable
+        as command-line operations or as Python libraries, since kash makes
+        commands and actions available to use both ways.
+
+        You need to write Python code to implement an action or a command in kash.
+        
+        Guidelines:
 
         - Provide Python code in the python_code field.
+
+        - Choose a command implementation (with @kash_command decorating a function) if the
+          operation is very simple and does not have files (Items) to output. To just read
+          a file and show information, or print something, use a command. Choose an
+          action implementation (with @kash_action decorating a class) if the operation
+          has files (Items) to output.
         
-        - Add non-code commentary in the response_text field.
+        - Add non-code commentary in the response_text field explaining any issues or
+          assumptions you made while writing the code.
 
         - If desired behavior of the code is not clear from the description, add
-            comment placeholders in the code so it can be filled in later.
+          comment placeholders in the code so it can be filled in later.
+
+        - If the user gives other random context, like a previous conversation, consider
+          how you would implement a command or action that would generalize the operation
+          being discussed. Add parameters to the command or action if it makes sense
+          a user would want them, and use defaults as appropriate.
 
         - Look at the example below. Commonly, you will subclass PerItemAction
           for simple actions that work on one item at a time. Subclass LLMAction
           if it is simply a transformation of the input using an LLM.
 .
-        To illustrate, here are a cuople examples of the correct format for an action that
+        To illustrate, here are a couple examples of the correct format for an action that
         strips HTML tags:
         """
         + load_source_code().example_action_src.replace("{", "{{").replace("}", "}}")
         + """
-        
-        I'll give you a description of an action and possibly more refinements
-        and you will write the Python code for the action.
+
+        And here are a couple simple command implementations:
+        """
+        + load_source_code().example_command_src.replace("{", "{{").replace("}", "}}")
+        + """
+
+        Next you will get context or a request from the user on a problem, or
+        simply a previous discussion with an assistant describing a partial solution
+        but from which you can understand what action or command would help solve
+        the problem.
+         
+        After thinking about the context below, describe a useful command or action
+        that is appropriate for the problem, and then give the Python code for it.
         """
     )
 
@@ -69,20 +97,19 @@ def write_action_instructions() -> str:
 )
 def write_new_action(input: ActionInput, model: LLMName = LLM.default_structured) -> ActionResult:
     """
-    Create a new kash action in Python, based on a description of the features.
-    If no input is provided, will start an interactive chat to collect the action
-    description.
+    Create a new kash action or command in Python, based some problem or context or
+    a description of the features.
 
-    Use `write_instructions` to create a chat to use as input for this action.
+    If no input is provided, will start an interactive chat to get
+
+    Or `write_instructions` to create a chat to use as input for this action.
     """
     if not input.items:
         # Start a chat to collect the action description.
         # FIXME: Consider generalizing this so an action can declare an input action to collect its input.
-        chat_result = run_action_with_shell_context(
-            write_instructions.__name__, RawParamValues(), internal_call=True
-        )
+        chat_result = write_instructions(ActionInput.empty())
         if not chat_result.items:
-            raise ApiResultError("No chat input provided")
+            raise InvalidInput("No chat input provided")
 
         action_description_item = chat_result.items[0]
     else:
