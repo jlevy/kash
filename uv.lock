@@ -904,7 +904,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "patch-ng", specifier = ">=1.18.1" },
     { name = "pathspec", specifier = ">=0.12.1" },
-    { name = "prettyfmt", specifier = ">=0.1.8" },
+    { name = "prettyfmt", specifier = ">=0.2.0" },
     { name = "prompt-toolkit", specifier = ">=3.0.50" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pydub", specifier = ">=0.25.1" },
@@ -921,7 +921,7 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.15.2" },
     { name = "send2trash", specifier = ">=1.8.3" },
     { name = "setproctitle", specifier = ">=1.3.5" },
-    { name = "strif", specifier = ">=2.0.2" },
+    { name = "strif", specifier = ">=2.1.0" },
     { name = "tenacity", specifier = ">=9.0.0" },
     { name = "thefuzz", specifier = ">=0.22.1" },
     { name = "tiktoken", specifier = ">=0.9.0" },
@@ -1334,7 +1334,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.66.3"
+version = "1.66.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1346,9 +1346,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/77/5172104ca1df35ed2ed8fb26dbc787f721c39498fc51d666c4db07756a0c/openai-1.66.3.tar.gz", hash = "sha256:8dde3aebe2d081258d4159c4cb27bdc13b5bb3f7ea2201d9bd940b9a89faf0c9", size = 397244 }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/10/b19dc682c806e6735a8387f2003afe2abada9f9e5227318de642c6949524/openai-1.66.5.tar.gz", hash = "sha256:f61b8fac29490ca8fdc6d996aa6926c18dbe5639536f8c40219c40db05511b11", size = 398595 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/5a/e20182f7b6171642d759c548daa0ba20a1d3ac10d2bd0a13fd75704a9ac3/openai-1.66.3-py3-none-any.whl", hash = "sha256:a427c920f727711877ab17c11b95f1230b27767ba7a01e5b66102945141ceca9", size = 567400 },
+    { url = "https://files.pythonhosted.org/packages/c7/3b/1ba418920ecd1eae7cc4d4ac8a01711ee0879b1a57dd81d10551e5b9a2ea/openai-1.66.5-py3-none-any.whl", hash = "sha256:74be528175f8389f67675830c51a15bd51e874425c86d3de6153bf70ed6c2884", size = 571144 },
 ]
 
 [[package]]
@@ -1436,15 +1436,15 @@ wheels = [
 
 [[package]]
 name = "prettyfmt"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "humanize" },
     { name = "strif" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/08/9785c7d64dc5e8f818924f8be8b2604e4dc0cf399d90d9b4b7feed31694b/prettyfmt-0.2.0.tar.gz", hash = "sha256:feba6a541627a1ccf2e2bb7b0b786f103a2dbf0abf983784d8e49c660662688e", size = 26262 }
+sdist = { url = "https://files.pythonhosted.org/packages/54/d3/37d282133f2effcd051128bbc42fbd01ae5402e87e856b8544517ddc6547/prettyfmt-0.2.1.tar.gz", hash = "sha256:80c678c58cb5c14a98a72d6e9c0507b2ef1e99dc29b6f5752fe53ebb4f9e740d", size = 27204 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/c0/4bb38fea45f7379b7d1afb677631b2b21c3a13976cc081c48c0db68a37f2/prettyfmt-0.2.0-py3-none-any.whl", hash = "sha256:30245b03b8bfecbc867522314fc460beca3eb3ef4533bb23b52bc8f7c7aa3219", size = 9363 },
+    { url = "https://files.pythonhosted.org/packages/f1/31/ce1845b4ce4994a8693c8a2e1ed03ab848b184b718ace43e3545c927827b/prettyfmt-0.2.1-py3-none-any.whl", hash = "sha256:0f82796635c48f2e1d4bf58782bd0ea7778966b72f8b52d4b72fbd5720a71371", size = 9574 },
 ]
 
 [[package]]
@@ -2234,11 +2234,11 @@ wheels = [
 
 [[package]]
 name = "strif"
-version = "2.0.2"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e1/08/7ad64e5c8c9306fe5dc31fac5789d0f502c7a3a1e8e796739a897f411e64/strif-2.0.2.tar.gz", hash = "sha256:ee68e013c9d18742e99cb5d5819276b87c855bd9d5b74b55f8b2a15a513814e4", size = 26979 }
+sdist = { url = "https://files.pythonhosted.org/packages/80/98/7cef4d6fcd9273f209c0b732ef76e972477d906576c27691ac6a9f2dc9f4/strif-2.1.0.tar.gz", hash = "sha256:42b19114e8c5e5763936233b4bb5b3f12d421bb138fcd93fa025ab7361cffea7", size = 27093 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/7e/ee486891055d56ce9bcbfd411effad874bbdbd16abab33200ae3d57c49a6/strif-2.0.2-py3-none-any.whl", hash = "sha256:14f820828e27d874bad1d6106250bb1ccc47c0273181f0b4d8c313b195f00edb", size = 11566 },
+    { url = "https://files.pythonhosted.org/packages/9e/95/579444185a9d0800afb009730ea3a2f9f8835be8e67a1edd161efaa89823/strif-2.1.0-py3-none-any.whl", hash = "sha256:eab5372414e75ffbe2c6ac7faffca691fdeaf2c36b5b012c3b7286f07a3b551c", size = 11679 },
 ]
 
 [[package]]

@@ -3,13 +3,12 @@ import os
 import threading
 import time
 from collections.abc import Callable, Generator
-from os import path
 from os.path import join, relpath
 from pathlib import Path
 from typing import Any, TypeVar
 
 from funlog import format_duration, log_calls
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_lines, fmt_path
 from strif import copyfile_atomic, hash_file, move_file
 
 from kash.config.logger import get_log_settings, get_logger
@@ -84,7 +83,7 @@ class FileStore:
         self.uniquifier = Uniquifier()
         self.id_map: dict[ItemId, StorePath] = {}
 
-        self.dirs = MetadataDirs(base_dir=self.base_dir)
+        self.dirs = MetadataDirs(base_dir=self.base_dir, is_scratch=self.is_scratch)
         if not auto_init and not self.dirs.is_initialized():
             raise FileNotFound(f"Directory is not a file store workspace: {self.base_dir}")
 
@@ -139,7 +138,7 @@ class FileStore:
         """
         name, item_type, _format, file_ext = parse_item_filename(store_path)
         if not file_ext:
-            log.debug("Skipping file with unrecognized name or extension: %s", fmt_loc(store_path))
+            log.debug("Skipping file with unrecognized name or extension: %s", fmt_path(store_path))
             return None
 
         full_suffix = join_suffix(item_type.name, file_ext.name) if item_type else file_ext.name
@@ -159,7 +158,7 @@ class FileStore:
                     )
                 self.id_map[item_id] = store_path
         except SkippableError as e:
-            log.warning("Could not read file, skipping: %s: %s", fmt_loc(store_path), e)
+            log.warning("Could not read file, skipping: %s: %s", fmt_path(store_path), e)
 
         return dup_path
 
@@ -580,14 +579,12 @@ class FileStore:
         PrintHooks.before_workspace_info()
         log.message(
             "Using workspace: %s (%s items)",
-            path.abspath(self.base_dir),
+            fmt_path(self.base_dir),
             len(self.uniquifier),
         )
-        log.message(
-            "Logging to: %s", fmt_loc(get_log_settings().log_file_path.absolute(), resolve=False)
-        )
-        log.message("Media cache: %s", fmt_loc(self.base_dir / self.dirs.media_cache_dir))
-        log.message("Content cache: %s", fmt_loc(self.base_dir / self.dirs.content_cache_dir))
+        log.message("Logging to: %s", fmt_path(get_log_settings().log_file_path.absolute()))
+        log.message("Media cache: %s", fmt_path(self.base_dir / self.dirs.media_cache_dir))
+        log.message("Content cache: %s", fmt_path(self.base_dir / self.dirs.content_cache_dir))
         for warning in self.warnings:
             log.warning("%s", warning)
 
@@ -637,7 +634,7 @@ class FileStore:
         Normalize an item or all items in a folder to make sure contents are in current
         format.
         """
-        log.info("Normalizing item: %s", fmt_loc(store_path))
+        log.info("Normalizing item: %s", fmt_path(store_path))
 
         item = self.load(store_path)
         new_store_path = self.save(item)

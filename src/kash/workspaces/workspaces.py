@@ -45,7 +45,7 @@ def workspace_name(path_or_name: str | Path) -> str:
 
 
 def is_workspace_dir(path: Path) -> bool:
-    dirs = MetadataDirs(path)
+    dirs = MetadataDirs(path, False)
     return dirs.is_initialized()
 
 
@@ -150,7 +150,7 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
     from kash.web_content.file_cache_utils import reset_content_cache_dir
 
     info = resolve_workspace(base_dir)
-    ws_dirs = MetadataDirs(info.base_dir)
+    ws_dirs = MetadataDirs(info.base_dir, info.is_scratch)
 
     # Use the global log root for the scratch, and the workspace log root otherwise.
     reset_log_root(None, info.name if not info.is_scratch else None)

@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-from kash.config.settings import CONTENT_CACHE_NAME, DOT_DIR, MEDIA_CACHE_NAME
+from kash.config.settings import CONTENT_CACHE_NAME, DOT_DIR, GLOBAL_CACHE_PATH, MEDIA_CACHE_NAME
 from kash.file_storage.persisted_yaml import PersistedYaml
 from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
@@ -24,6 +24,7 @@ STORE_VERSION = "sv1"
 @dataclass(frozen=True)
 class MetadataDirs:
     base_dir: Path
+    is_scratch: bool
 
     # All other paths are relative to the base directory so defaults are
     # always the same and can be set here:
@@ -39,12 +40,6 @@ class MetadataDirs:
     params_yml: StorePath = StorePath(f"{DOT_DIR}/settings/params.yml")
     ignore_file: StorePath = StorePath(f"{DOT_DIR}/ignore")
 
-    # Note cache location is also in global settings so might override these,
-    # but usually global settings are the same as the paths here.
-    cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache")
-    media_cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache/{MEDIA_CACHE_NAME}")
-    content_cache_dir: StorePath = StorePath(f"{DOT_DIR}/cache/{CONTENT_CACHE_NAME}")
-
     index_dir: StorePath = StorePath(f"{DOT_DIR}/index")
 
     history_dir: StorePath = StorePath(f"{DOT_DIR}/history")
@@ -52,6 +47,30 @@ class MetadataDirs:
     assistant_history_yml: StorePath = StorePath(f"{DOT_DIR}/history/assistant_history.yml")
 
     tmp_dir: StorePath = StorePath(f"{DOT_DIR}/tmp")
+
+    # All dirs that should be created by initialize().
+    INITIALIZED_DIRS = [
+        "dot_dir",
+        "archive_dir",
+        "settings_dir",
+        "index_dir",
+        "history_dir",
+        "tmp_dir",
+    ]
+
+    # Cache is always within the directory, unless it is a scratch workspace,
+    # in which case it is in the global cache path.
+    @property
+    def cache_dir(self) -> Path:
+        return GLOBAL_CACHE_PATH if self.is_scratch else StorePath(f"{DOT_DIR}/cache")
+
+    @property
+    def media_cache_dir(self) -> Path:
+        return self.cache_dir / MEDIA_CACHE_NAME
+
+    @property
+    def content_cache_dir(self) -> Path:
+        return self.cache_dir / CONTENT_CACHE_NAME
 
     def is_initialized(self):
         return (self.base_dir / self.metadata_yml).is_file()
@@ -79,8 +98,8 @@ class MetadataDirs:
 
         # Create directories.
         for field in self.__dataclass_fields__:
-            dir_path = self.base_dir / getattr(self, field)
-            if field.endswith("_dir"):
+            if field in self.INITIALIZED_DIRS:
+                dir_path = self.base_dir / getattr(self, field)
                 dir_path.mkdir(parents=True, exist_ok=True)
 
         # Add a default ignore file if it doesn't exist.

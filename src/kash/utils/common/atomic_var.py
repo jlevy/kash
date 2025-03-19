@@ -60,7 +60,8 @@ class AtomicVar(Generic[T]):
 
     def __init__(self, initial_value: T, is_immutable: bool | None = None):
         self._value: T = initial_value
-        self.lock = threading.Lock()
+        # Use an RLock just in case we read from the var while in an update().
+        self.lock = threading.RLock()
         if is_immutable is None:
             self.is_immutable = value_is_immutable(initial_value)
         else:
