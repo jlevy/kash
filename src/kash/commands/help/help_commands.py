@@ -6,8 +6,9 @@ from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.exec.command_exec import look_up_command_or_action
-from kash.help.command_help import print_explain_command, source_code_path
+from kash.help.help_lookups import look_up_source_code
 from kash.help.help_pages import print_see_also
+from kash.help.help_printing import print_explain_command
 from kash.llm_utils.language_models import LLM
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint
 from kash.shell.utils.native_utils import ViewMode, view_file_native
@@ -96,7 +97,7 @@ def source_code(name: str) -> None:
     new actions or when asking LLMs to write new actions.
     """
     command_or_action = look_up_command_or_action(name)
-    view_file_native(source_code_path(command_or_action), view_mode=ViewMode.console)
+    view_file_native(look_up_source_code(command_or_action), view_mode=ViewMode.console)
 
 
 @kash_command

@@ -7,7 +7,7 @@ log = get_logger(__name__)
 def load_custom_command_info() -> list[CommandInfo]:
     from kash.config.logger import record_console
     from kash.exec.command_registry import CommandFunction, get_all_commands
-    from kash.help.command_help import print_command_function_help
+    from kash.help.help_printing import print_command_function_help
 
     def command_info_for(command: CommandFunction) -> CommandInfo:
         with record_console() as console:

@@ -18,7 +18,7 @@ log = get_logger(__name__)
 
 def print_builtin_commands_help(full_help: bool = False) -> None:
     from kash.exec.command_registry import get_all_commands
-    from kash.help.command_help import print_command_function_help
+    from kash.help.help_printing import print_command_function_help
 
     print_h2("Available Commands")
     cprint()
@@ -40,7 +40,7 @@ def print_builtin_commands_help(full_help: bool = False) -> None:
 
 def print_actions_help(full_help: bool = False) -> None:
     from kash.exec.action_registry import get_all_actions_defaults
-    from kash.help.command_help import print_action_help
+    from kash.help.help_printing import print_action_help
 
     print_h2("Available Actions")
     cprint()

@@ -10,7 +10,7 @@ from kash.config.logger import get_logger, record_console
 from kash.config.settings import global_settings
 from kash.errors import FileNotFound, InvalidFilename
 from kash.file_storage.file_store import FileStore
-from kash.help.command_help import print_explain_command
+from kash.help.help_printing import print_explain_command
 from kash.llm_utils.language_models import LLM
 from kash.local_server.rich_html_template import RICH_HTML_TEMPLATE
 from kash.model.items_model import Item

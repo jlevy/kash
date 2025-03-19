@@ -7,7 +7,7 @@ log = get_logger(__name__)
 def load_action_info() -> list[CommandInfo]:
     from kash.config.logger import record_console
     from kash.exec.action_registry import get_all_actions_defaults
-    from kash.help.command_help import print_action_help
+    from kash.help.help_printing import print_action_help
     from kash.model.actions_model import Action
 
     def action_info_for(action: Action) -> CommandInfo:

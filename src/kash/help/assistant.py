@@ -241,7 +241,7 @@ def shell_context_assistance(
     Get assistance, using the full context of the shell.
     """
     # For fast response, check for near-exact FAQ matches first.
-    from kash.help.command_help import print_explain_command
+    from kash.help.help_printing import print_explain_command
 
     try:
         print_explain_command(input, assistant_model=None)

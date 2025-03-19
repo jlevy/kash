@@ -7,7 +7,7 @@ from typing import Any, TypeVar, cast, get_args
 from kash.config.logger import get_logger
 from kash.errors import InvalidCommand
 from kash.exec.command_registry import CommandFunction
-from kash.help.command_help import print_command_function_help
+from kash.help.help_printing import print_command_function_help
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.utils.common.parse_shell_args import parse_shell_args
 
@@ -111,6 +111,8 @@ def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[list[str]], R | Non
     Wrap a function to accept a list of string shell-style arguments, parse them, and
     call the original function.
     """
+    from kash.commands.help import help_commands
+
     params = inspect_function_params(func)
     pos_params = [p for p in params if p.is_positional]
     kw_params = [p for p in params if p not in pos_params]
@@ -123,7 +125,7 @@ def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[list[str]], R | Non
             print_command_function_help(cast(CommandFunction, func), verbose=True)
             return None
         elif shell_args.options.get("show_source", False):
-            help.source_code(func.__name__)
+            help_commands.source_code(func.__name__)
             return None
 
         pos_values, kw_consumed = _map_positional(shell_args.args, pos_params, kw_params)
