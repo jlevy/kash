@@ -4,10 +4,19 @@ Settings that define the visual appearance of text outputs.
 
 import re
 import shutil
+from pathlib import Path
 
 from rich.highlighter import RegexHighlighter, _combine_regex
 from rich.style import Style
 from rich.text import Text
+
+## Text styles
+
+LOGO_LARGE = (Path(__file__).parent / "logo.txt").read_text().strip()
+
+TAGLINE = "THE KNOWLEDGE AGENT SHELL"
+
+TAGLINE_STYLED = Text(TAGLINE, style=Style(color="bright_green", bold=True))
 
 ## Settings
 
@@ -25,17 +34,6 @@ SPINNER = "dots12"
 BAT_THEME = "Coldark-Dark"
 
 BAT_STYLE = "header-filename,header-filesize,grid,changes"
-
-## Text styles
-
-LOGO = "kash"
-
-LOGO_LARGE = r"""
-▀▄   █           █
-  ▀▄ █ █ ▀▀█ █▀▀ █▀█
- ▄▀  █▀▄ █▀█ ▀▀█ █ █
-▀    ▀ ▀ ▀▀▀ ▀▀▀ ▀ ▀
-""".strip()
 
 
 ## Colors

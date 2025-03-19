@@ -4,9 +4,13 @@
 
 <br/>
 
-<b>⎮Kash⎮</b>
+<b>
 
-<b><i>An AI-native command line for modern workflows.</i></b>
+{doc_logo}
+
+</b>
+
+<b><i>An AI-native command line for advanced workflows</i></b>
 
 ⛭
 

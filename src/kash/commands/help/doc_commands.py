@@ -12,6 +12,7 @@ from kash.config.text_styles import (
     STYLE_EMPH,
     STYLE_HINT,
     STYLE_LOGO,
+    TAGLINE_STYLED,
 )
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
@@ -21,6 +22,57 @@ from kash.utils.rich_custom.rich_markdown_fork import Markdown
 from kash.version import get_version_name
 
 log = get_logger(__name__)
+
+
+def branded_box(content: Group | None, version: str | None = None) -> Panel:
+    # Break the line into non-space and space chunks by using a regex.
+    # Colorize each chunk and optionally swap lines to spaces.
+    def colorize_line(line: str, space_replacement: str) -> Text:
+        bits = re.findall(r"[^\s]+|\s+", line)
+        texts = []
+        block_count = 0
+        for bit in bits:
+            if bit.strip():
+                texts.append(Text(bit, style=STYLE_LOGO if block_count != 0 else STYLE_EMPH))
+                block_count += 1
+            else:
+                if len(bit) >= 3:
+                    bit = " " + re.sub(r" ", space_replacement, bit[1:-1]) + " "
+                texts.append(Text(bit, style=STYLE_HINT))
+        return Text.assemble(*texts)
+
+    logo_lines = LOGO_LARGE.split("\n")
+    logo_top = colorize_line(logo_lines[0], "─")
+    logo_bottom = [colorize_line(" " + line, " ") for line in logo_lines[1:]]
+    if version:
+        separator = (
+            " " + "─" * (CONSOLE_WRAP_WIDTH - len(logo_top) - len(version) - 2 - 3 - 3) + " "
+        )
+        header = Text.assemble(
+            *logo_top,
+            Text(separator, style=STYLE_HINT),
+            Text(version, style=STYLE_HINT, justify="right"),
+        )
+    else:
+        header = Text.assemble(*logo_top)
+
+    body = ["", content] if content else []
+    return Panel(
+        Group(*logo_bottom, Text.assemble(" ", TAGLINE_STYLED), *body),
+        title=header,
+        title_align="left",
+        border_style=STYLE_HINT,
+        padding=(0, 1),
+        box=SQUARE,
+    )
+
+
+@kash_command
+def kash_logo() -> None:
+    """
+    Show the kash logo.
+    """
+    cprint(branded_box(None))
 
 
 @kash_command
@@ -33,45 +85,11 @@ def welcome() -> None:
     version = get_version_name()
     # Create header with logo and right-justified version
 
-    # Break the line into non-space and space chunks by using a regex.
-    # Colorize each chunk and optionally swap lines to spaces.
-    def colorize_line(line: str, space_replacement: str) -> Text:
-        bits = re.findall(r"[^\s]+|\s+", line)
-        texts = []
-        first_color_done = False
-        for bit in bits:
-            if bit.strip():
-                texts.append(Text(bit, style=STYLE_LOGO if first_color_done else STYLE_EMPH))
-                first_color_done = True
-            else:
-                if len(bit) >= 3:
-                    bit = " " + re.sub(r" ", space_replacement, bit[1:-1]) + " "
-                texts.append(Text(bit, style=STYLE_HINT))
-        return Text.assemble(*texts)
-
-    logo_lines = LOGO_LARGE.split("\n")
-    logo_top = colorize_line(logo_lines[0], "─")
-    logo_bottom = [colorize_line(" " + line, " ") for line in logo_lines[1:]]
-    separator = " " + "─" * (CONSOLE_WRAP_WIDTH - len(logo_top) - len(version) - 2 - 3 - 3) + " "
-    header = Text.assemble(
-        *logo_top,
-        Text(separator, style=STYLE_HINT),
-        Text(version, style=STYLE_HINT, justify="right"),
-    )
-
     PrintHooks.before_welcome()
     cprint(
-        Panel(
-            Group(
-                *logo_bottom,
-                "",
-                Markdown(help_topics.welcome),
-            ),
-            title=header,
-            title_align="left",
-            border_style=STYLE_HINT,
-            padding=(0, 1),
-            box=SQUARE,
+        branded_box(
+            Group(Markdown(help_topics.welcome)),
+            version,
         )
     )
     cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=STYLE_HINT))

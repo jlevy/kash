@@ -339,6 +339,7 @@ def run_action_with_caching(
         result_store_paths = [StorePath(not_none(item.store_path)) for item in result.items]
         archived_store_paths = []
 
+        PrintHooks.before_done_message()
         log.message(
             "%s Action skipped: `%s` completed with %s %s",
             EMOJI_SKIP,
@@ -347,9 +348,11 @@ def run_action_with_caching(
             plural("item", len(result.items)),
         )
     else:
+        # Run it!
         result = run_action_operation(context, action_input, operation)
         result_store_paths, archived_store_paths = save_action_result(ws, result, action_input)
 
+        PrintHooks.before_done_message()
         log.message(
             "%s Action done: `%s` completed with %s %s",
             EMOJI_SUCCESS,

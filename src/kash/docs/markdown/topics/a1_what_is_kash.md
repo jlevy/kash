@@ -3,11 +3,20 @@
 > “*Civilization advances by extending the number of important operations which we can
 > perform without thinking about them.*” —Alfred North Whitehead
 
-Kash (“Knowledge Agent SHell”) is a Python framework and an interactive, command-line
-power tool for practical knowledge tasks.
+Kash (“Knowledge Agent SHell”) is an interactive, modern command-line power tool for
+practical knowledge tasks.
 
-It’s an exploration of a better way to remix, combine, and interactively explore how to
-build tools and workflows by composing the myriad of AI tools, APIs, and libraries.
+It's also a Python framework that lets you convert a simple Python function into a
+command and an MCP tool, so it integrates with other tools like Anthropic Desktop or
+Cursor.
+
+It’s an exploration of a better way to remix, combine, and interactively explore tools
+and workflows by composing AI tools, APIs, and libraries.
+
+And of course, kash can read its own functionality and enhance itself by writing new
+actions.
+
+The key parts:
 
 - **Actions:** The core of Kash are **Kash actions**. By decorating a Python function,
   you can turn it into an action, which makes it more flexible and powerful, able to
@@ -24,27 +33,34 @@ build tools and workflows by composing the myriad of AI tools, APIs, and librari
 - **Command-line usage:** In addition to using the function in other libraries and
   tools, an action is also **a command-line tool** (with auto-complete, help, etc.)
   in the Kash shell. So you can simply run `transcribe` to download and transcribe a
-  video.
+  video. In kash you have **smart tab completions**, **Python expressions**, and an **LLM
+  assistant** built into the shell.
 
-- **MCP support:** Finally, an action is also an **MCP tool** you can use it in any MCP
-  client (like Anthropic Desktop).
+- **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
+  in any MCP client, like Anthropic Desktop or Cursor.
 
-- **Full extensibility:** Kash is tool agnostic and runs locally, on file inputs in
+- **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
-  You can use it with **OpenAI GPT-4o and o1**, **Anthropic Claude 3.5/3.7**, **Groq
-  Llama, Qwen, and Deepseek models** (and any others via **LiteLLM**), **Deepgram**,
-  **Perplexity**, **Firecrawl**, **Exa**, **LlamaIndex**, **ChromaDB**, and any Python
-  libraries.
+  You can use it with any models or APIs you like, and is already set up to use the APIs
+  of **OpenAI GPT-4o and o1**, **Anthropic Claude 3.7**, **Google Gemini**, **xAI
+  Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**,
+  **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries.
+  There is also some experimental support for **LlamaIndex** and **ChromaDB**.
 
-Use Kash actions to do deep research, transcribe videos, summarize and organize
+You can use kash actions to do deep research, transcribe videos, summarize and organize
 transcripts and notes, write blog posts, extract or visualize concepts, check citations,
 convert notes to PDFs or beautifully formatted HTML, or perform numerous other
 content-related tasks possible by orchestrating AI tools in the right ways.
 
-As I've been building Kash over the past couple months, I found I've found it's not only
+As I've been building kash over the past couple months, I found I've found it's not only
 faster to do complex things, but that it has also become replacement for my usual shell.
 It's the power-tool I want to use alongside Cursor and ChatGPT/Claude.
-I find it is much more powerful for local usage than than bash/zsh/fish.
+We all know and trust shells like bash, zsh, and fish, but now I fund this is much more
+powerful for everyday usage.
+It has little niceties, like you can just type `files` for a better listing of files or
+`show` and it will show you a file the right way, no matter what kind of file it is.
+You can also type something like "? find md files" and press tab and it will list you I
+find it is much more powerful for local usage than than bash/zsh/fish.
 If you're a command-line nerd, you might like it a lot.
 
 But my hope is that with these enhancements, the shell is also far more friendly and
@@ -52,9 +68,9 @@ usable by anyone reasonably technical, and does not feel so esoteric as a typica
 shell.
 
 Finally, one more thing: Kash is also my way of experimenting with something else new: a
-**rich, web-enhanced terminal UI** that lets you seamlessly add graphics to the
-terminal. I've separately built a new desktop terminal app, Kerm, which adds support for
-a simple "Kerm codes" protocol for UX components like clickable text, buttons, tooltips,
-and popovers in the terminal, encoded as OSC codes.
-Because Kash supports these codes, as this develops you will get the visuals of a web
-app layered on the flexibility of a text-based terminal.
+**terminal GUI support** that adds GUI features terminal like clickable text, buttons,
+tooltips, and popovers in the terminal.
+I've separately built a new desktop terminal app, Kerm, which adds support for a simple
+"Kerm codes" protocol for such visual components, encoded as OSC codes then rendered in
+the terminal. Because Kash supports these codes, as this develops you will get the
+visuals of a web app layered on the flexibility of a text-based terminal.

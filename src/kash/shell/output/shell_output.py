@@ -411,6 +411,7 @@ class PrintHooks(Enum):
     before_assistance = "before_assistance"
     after_assistance = "after_assistance"
     nonfatal_exception = "nonfatal_exception"
+    before_done_message = "before_done_message"
     before_output = "before_output"
     after_output = "after_output"
     before_result = "before_result"
@@ -451,6 +452,8 @@ class PrintHooks(Enum):
         elif self == PrintHooks.after_assistance:
             self.nl()
         elif self == PrintHooks.nonfatal_exception:
+            self.nl()
+        elif self == PrintHooks.before_done_message:
             self.nl()
         elif self == PrintHooks.before_output:
             self.nl()

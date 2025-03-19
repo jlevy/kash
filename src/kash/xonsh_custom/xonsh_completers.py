@@ -243,6 +243,8 @@ def command_path_completer(context: CompletionContext) -> CompleterResult:
         if command:
             param_info = annotate_param_info(command)
             # If this parameter is a path, complete with paths using xonsh's path completer.
+            # TODO: Augment path completions to add more rich info about files/directories
+            # (number of files in a subdir, file type of a file, etc.)
             if param_info and len(param_info) > param_index and param_info[param_index].is_path:
                 completions, lprefix = contextual_complete_path(context.command)
                 scored_completions = {ScoredCompletion.from_unscored(c) for c in completions}

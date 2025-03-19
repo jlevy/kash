@@ -148,3 +148,5 @@ def log_command_action_info():
     )
 
     cprint("Use `commands`, `actions`, or `kits` for details.", style=STYLE_HINT)
+
+    PrintHooks.spacer()
