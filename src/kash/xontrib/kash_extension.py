@@ -32,6 +32,8 @@ def load(*paths: str) -> None:
     import os
     import runpy
 
+    from prettyfmt import fmt_path
+
     for path in paths:
         if os.path.isfile(path) and path.endswith(".py"):
             runpy.run_path(path, run_name="__main__")
@@ -42,9 +44,9 @@ def load(*paths: str) -> None:
     actions = reload_all_action_classes()
     kash.xonsh_custom.shell_load_commands._register_actions_in_shell(actions)
 
-    kash.shell.output.shell.output.cprint(
+    kash.shell.output.shell_output.cprint(
         "Imported extensions and reloaded actions: %s",
-        ", ".join(kash.utils.common.format_utils.fmt_path(p) for p in paths),
+        ", ".join(fmt_path(p) for p in paths),
     )
     # TODO: Track and expose to the user which extensions are loaded.
 

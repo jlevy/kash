@@ -72,7 +72,7 @@ class _LocalUrl:
         params = {
             "store_path": store_path.display_str(),
             "ws_name": ws_name,
-            "max_lines": max_lines,
+            "max_lines": str(max_lines),
         }
         return format_local_url(Route.item_view, **params)
 

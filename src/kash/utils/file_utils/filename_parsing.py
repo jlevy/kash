@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import cast
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidFilename
@@ -43,7 +42,7 @@ def join_filename(dirname: str | Path, name: str, item_type: str | None, ext: st
     Join a filename into a single path, with optional type and extension.
     """
 
-    parts = cast(list[str], filter(bool, [name, item_type, ext]))
+    parts: list[str] = list(filter(bool, [name, item_type, ext]))  # pyright: ignore
     return Path(dirname) / ".".join(parts)
 
 

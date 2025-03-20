@@ -71,6 +71,7 @@ def _update_cache() -> None:
     languages = get_language_list()
     errors = 0
     for language in languages:
+        cache_location = None
         try:
             cache_location = _cache_location(language)
             log.warning(
@@ -85,7 +86,7 @@ def _update_cache() -> None:
                 if match:
                     bytestring = zipfile.read(entry)
                     store_page_to_cache(
-                        bytestring,  # type: ignore (tldr seems to have wrong type)
+                        bytestring,  # pyright: ignore (tldr seems to have wrong type)
                         match.group(2),
                         match.group(1),
                         language,

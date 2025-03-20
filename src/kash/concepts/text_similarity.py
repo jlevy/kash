@@ -65,7 +65,7 @@ def relate_texts_by_embedding(
     log.message("Computing relatedness matrix of %d text embeddings…", len(embeddings.data))
 
     keys = [key for key, _, _ in embeddings.as_iterable()]
-    relatedness_matrix = pd.DataFrame(index=keys, columns=keys)
+    relatedness_matrix = pd.DataFrame(index=keys, columns=keys)  # pyright: ignore
 
     for i, (key1, _, emb1) in enumerate(embeddings.as_iterable()):
         for j, (key2, _, emb2) in enumerate(embeddings.as_iterable()):

@@ -3,12 +3,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
-from pydantic import BaseModel
 from rich.console import Group
 from rich.text import Text
 from strif import abbrev_str, single_line
+from typing_extensions import override
 
 from kash.config.text_styles import (
     EMOJI_ACTION,
@@ -62,12 +62,12 @@ class CommandType(Enum):
         }[self]
 
 
-class HelpDoc(BaseModel, ABC):
+class HelpDoc(ABC):
     """
     Base class for help doc types.
     """
 
-    doc_type: HelpDocType
+    doc_type: ClassVar[HelpDocType]
 
     @abstractmethod
     def emoji(self) -> str:
@@ -82,18 +82,23 @@ class HelpDoc(BaseModel, ABC):
         pass
 
     @abstractmethod
-    def __rich__(self) -> Text:
+    def __rich__(self) -> Group:
         pass
 
 
+@dataclass
 class Faq(HelpDoc):
-    doc_type: HelpDocType = HelpDocType.faq
     question: str
+
     answer: str
 
+    doc_type: ClassVar[HelpDocType] = HelpDocType.faq
+
+    @override
     def emoji(self) -> str:
         return EMOJI_HELP
 
+    @override
     def embedding_text(self) -> str:
         return f"{self.question}\n{self.answer}"
 
@@ -110,19 +115,21 @@ class Faq(HelpDoc):
             append_space=True,
         )
 
+    @override
     def __str__(self) -> str:
         return f"{self.emoji()} {self.question}: {abbrev_str(single_line(self.answer), max_len=40)}"
 
+    @override
     def __rich__(self) -> Group:
         return Group(Text(self.question, style="bold"), "\n", KMarkdown(self.answer))
 
 
+@dataclass
 class CommandInfo(HelpDoc):
     """
     Information about a kash command or action or a shell command.
     """
 
-    doc_type: HelpDocType = HelpDocType.command_info
     command_type: CommandType
 
     command: str
@@ -133,12 +140,17 @@ class CommandInfo(HelpDoc):
     help_page: str | None
     """Full help page, including description and any other docs."""
 
+    doc_type: ClassVar[HelpDocType] = HelpDocType.command_info
+
+    @override
     def emoji(self) -> str:
         return self.command_type.emoji
 
+    @override
     def embedding_text(self) -> str:
         return f"{self.command}\n{self.help_page}"
 
+    @override
     def completion_value(self) -> CompletionValue:
         from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
@@ -166,27 +178,30 @@ class CommandInfo(HelpDoc):
             append_space=True,
         )
 
+    @override
     def __str__(self) -> str:
         return f" {self.emoji()} {self.command}: {abbrev_str(single_line(self.description), max_len=40)}"
 
-    def __rich__(self) -> Text:
-        return Text.assemble(
-            Text(self.command, style="bold"),
-            "\n",
-            Text(self.description),
-        )
+    @override
+    def __rich__(self) -> Group:
+        return Group(Text(self.command, style="bold"), "\n", Text(self.description))
 
 
+@dataclass
 class RecipeSnippet(HelpDoc):
-    doc_type: HelpDocType = HelpDocType.recipe_snippet
     command: CommentedCommand
 
+    doc_type: ClassVar[HelpDocType] = HelpDocType.recipe_snippet
+
+    @override
     def emoji(self) -> str:
         return EMOJI_SNIPPET
 
+    @override
     def embedding_text(self) -> str:
         return self.command.script_str
 
+    @override
     def completion_value(self) -> CompletionValue:
         from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
@@ -201,18 +216,20 @@ class RecipeSnippet(HelpDoc):
             append_space=True,
         )
 
+    @override
     def __str__(self) -> str:
         return f"{self.emoji()} {self.command.script_str}"
 
-    def __rich__(self) -> Text:
+    @override
+    def __rich__(self) -> Group:
         if self.command.comment:
-            return Text.assemble(
+            return Group(
                 Text(f"# {self.command.comment}", style=STYLE_HINT),
                 "\n",
                 Text(self.command.command_line),
             )
         else:
-            return Text(self.command.command_line)
+            return Group(Text(self.command.command_line))
 
 
 @dataclass(frozen=True)

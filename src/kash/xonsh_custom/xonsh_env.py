@@ -5,23 +5,23 @@ from typing import Any
 
 
 def get_env(name: str) -> Any:
-    return __xonsh__.env[name]  # type: ignore  # noqa: F821
+    return __xonsh__.env[name]  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
 
 def set_env(name: str, value: Any) -> None:
-    __xonsh__.env[name] = value  # type: ignore  # noqa: F821
+    __xonsh__.env[name] = value  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
 
 def unset_env(name: str) -> None:
-    del __xonsh__.env[name]  # type: ignore  # noqa: F821
+    del __xonsh__.env[name]  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
 
-def set_alias(name: str, value: str | Callable) -> None:
-    aliases[name] = value  # type: ignore  # noqa: F821
+def set_alias(name: str, value: str | Callable[..., Any]) -> None:
+    aliases[name] = value  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
 
-def update_aliases(new_aliases: dict[str, Callable]) -> None:
-    aliases.update(new_aliases)  # type: ignore  # noqa: F821
+def update_aliases(new_aliases: dict[str, Callable[..., Any]]) -> None:
+    aliases.update(new_aliases)  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
 
 def is_interactive() -> bool:

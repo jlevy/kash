@@ -20,7 +20,7 @@ log = get_logger(__name__)
             "Path for the markdown template to use for formatting. This is plain Markdown "
             "with curly-brace {name} variables for values to insert.",
             type=Path,
-            default_value=None,
+            default_value=Path("template.md"),
         ),
     ),
 )
@@ -36,7 +36,7 @@ def format_markdown_template(
     matching prefixes of the filename of each item, e.g. {body} for a file
     named `body.md` or `body_new_01.md`.
     """
-    template_path = md_template
+    template_path = md_template if md_template else Path("template.md")
     items = input.items
 
     with open(template_path) as f:

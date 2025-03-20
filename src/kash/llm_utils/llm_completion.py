@@ -85,7 +85,7 @@ def llm_completion(
             messages=messages,
             response_format=response_format,
             **kwargs,
-        ),  # type: ignore
+        ),  # pyright: ignore
     )
     elapsed = time.time() - start_time
 

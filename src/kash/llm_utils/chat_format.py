@@ -99,7 +99,7 @@ from enum import Enum
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Union
+from typing import Any
 
 from frontmatter_format import from_yaml_string, new_yaml, to_yaml_string
 from prettyfmt import abbrev_obj, custom_key_sort, fmt_size_human
@@ -124,7 +124,7 @@ class ChatRole(str, Enum):
 
 _custom_key_sort = custom_key_sort(["role", "content"])
 
-ChatContent = Union[str, dict[str, Any]]
+ChatContent = str | dict[str, Any]
 
 
 @dataclass

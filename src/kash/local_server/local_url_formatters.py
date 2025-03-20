@@ -60,7 +60,7 @@ class PlaintextFormatter(LinkFormatter):
             Text("`", style=STYLE_HINT),
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "PlaintextFormatter()"
 
 
@@ -106,7 +106,7 @@ class DefaultLinkFormatter(PlaintextFormatter):
             Text("`", style=STYLE_HINT),
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "DefaultFormatter()"
 
 

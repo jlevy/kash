@@ -598,7 +598,7 @@ class Action(ABC):
 
 
 @dataclass
-class PerItemAction(Action):
+class PerItemAction(Action, ABC):
     """
     Abstract base class for an action that processes one input item and returns
     one output item.
@@ -630,4 +630,4 @@ class PerItemAction(Action):
 
 
 # Handle circular dependency in Python dataclasses.
-rebuild_dataclass(Item)  # type: ignore
+rebuild_dataclass(Item)  # pyright: ignore

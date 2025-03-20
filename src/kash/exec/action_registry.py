@@ -114,7 +114,7 @@ def get_all_actions_defaults() -> dict[str, Action]:
             continue
 
         # Record the source path.
-        action.__source_path__ = getattr(cls, "__source_path__", None)
+        action.__source_path__ = getattr(cls, "__source_path__", None)  # pyright: ignore
 
         actions_map[action.name] = action
 

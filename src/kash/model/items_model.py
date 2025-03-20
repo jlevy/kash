@@ -258,7 +258,7 @@ class Item:
         def set_field(key: str, default: Any, cls_: type[T]) -> T:
             try:
                 if key in item_dict:
-                    return cls_(item_dict[key])  # type: ignore
+                    return cls_(item_dict[key])  # pyright: ignore
                 else:
                     return default
             except (KeyError, ValueError) as e:
@@ -276,7 +276,7 @@ class Item:
         state = set_field("state", State.draft, State)
         format = set_field("format", None, Format)
         file_ext = set_field("file_ext", None, FileExt)
-        source = set_field("source", None, Source.from_dict)  # type: ignore
+        source = set_field("source", None, Source.from_dict)  # pyright: ignore
 
         body = item_dict.get("body")
         history = [OperationSummary(**op) for op in item_dict.get("history", [])]
@@ -333,7 +333,7 @@ class Item:
         from kash.utils.file_utils.file_formats_model import detect_file_format
 
         # Will raise error for unrecognized file ext.
-        name, filename_item_type, format, file_ext = parse_item_filename(path)
+        _name, filename_item_type, format, file_ext = parse_item_filename(path)
         if not format:
             format = detect_file_format(path)
         if not item_type and filename_item_type:

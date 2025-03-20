@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import cast
+from typing import Any, cast
 
 from funlog import log_calls
 from prompt_toolkit import search
@@ -333,7 +333,7 @@ def help_completer(context: CompletionContext) -> CompleterResult:
     return None
 
 
-def _params_for_command(command_name: str) -> list[Param] | None:
+def _params_for_command(command_name: str) -> list[Param[Any]] | None:
     command = get_all_commands().get(command_name)
     action = get_all_actions_defaults().get(command_name)
 
@@ -345,7 +345,7 @@ def _params_for_command(command_name: str) -> list[Param] | None:
         return None
 
 
-def _param_completions(params: list[Param], prefix: str) -> list[ScoredCompletion]:
+def _param_completions(params: list[Param[Any]], prefix: str) -> list[ScoredCompletion]:
     completions = [
         ScoredCompletion(
             param.shell_prefix,
@@ -370,7 +370,7 @@ def _param_completions(params: list[Param], prefix: str) -> list[ScoredCompletio
     return completions
 
 
-def _enum_value_completions(param: Param, prefix: str) -> list[ScoredCompletion]:
+def _enum_value_completions(param: Param[Any], prefix: str) -> list[ScoredCompletion]:
     """
     Get completions for parameter values that start with the given prefix.
     Handles both enum and `str` parameters with valid or suggested values.
@@ -695,9 +695,9 @@ def add_key_bindings() -> None:
         buf.exit_selection()
         buf.reset()
 
-    existing_bindings = __xonsh__.shell.shell.prompter.app.key_bindings  # type: ignore  # noqa: F821
+    existing_bindings = __xonsh__.shell.shell.prompter.app.key_bindings  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
     merged_bindings = merge_key_bindings([existing_bindings, custom_bindings])
-    __xonsh__.shell.shell.prompter.app.key_bindings = merged_bindings  # type: ignore  # noqa: F821
+    __xonsh__.shell.shell.prompter.app.key_bindings = merged_bindings  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
     log.info("Added custom %s key bindings.", len(merged_bindings.bindings))
 

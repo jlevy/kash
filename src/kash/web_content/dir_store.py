@@ -14,7 +14,7 @@ log = get_logger(__name__)
 
 def aws_cli(*cmd):
     # Import dynamically to avoid hard dependency.
-    from awscli.clidriver import create_clidriver  # type: ignore
+    from awscli.clidriver import create_clidriver  # pyright: ignore
 
     log.info("awscli: aws %s" % " ".join(cmd))
     # Run awscli in the same process

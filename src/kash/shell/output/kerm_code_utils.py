@@ -50,7 +50,7 @@ def clickable_script_block(code: str) -> Text:
 
     lines: list[str] = code.splitlines()
     texts: list[Text] = []
-    for i, line in enumerate(lines):
+    for line in lines:
         if is_comment(line):
             texts.append(Text(line, style=COLOR_COMMENT))
         else:

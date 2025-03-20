@@ -4,7 +4,7 @@
 
 This project is set up to use [uv](https://docs.astral.sh/uv/) to manage Python and
 dependencies. First, be sure you
-[have uv installed](https://docs.astral.sh/uv/getting-started/installation/)..
+[have uv installed](https://docs.astral.sh/uv/getting-started/installation/).
 
 Then [fork](https://github.com/jlevy/kash-shell/fork) this repo (having your own fork
 will make it easier to contribute) and

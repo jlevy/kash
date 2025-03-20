@@ -9,7 +9,7 @@ of fnm and uses it within xonsh.
 
 import subprocess
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from xonsh.built_ins import XonshSession
 from xonsh.events import events
@@ -38,7 +38,7 @@ def parse_fnm_env() -> FnmEnv:
         check=True,
     )
 
-    env_vars: FnmEnv = {}  # type: ignore
+    env_vars: FnmEnv = {}  # pyright: ignore
     for line in result.stdout.strip().split("\n"):
         if line.startswith("export "):
             key, value = line.replace("export ", "").split("=", 1)
@@ -71,7 +71,7 @@ def _nvm_stub(args: str, stdin: str, stdout: str, stderr: str) -> None:
     print("error: Oops, `nvm` doesn't work in xonsh; try `fnm` instead!")
 
 
-def _load_xontrib_(xsh: XonshSession, **_) -> dict:
+def _load_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
     """
     Initialize the fnm xontrib.
     """
@@ -97,7 +97,7 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict:
         events.on_chdir(fnm_use_if_file_found)
         fnm_use_if_file_found(".")
 
-        aliases["nvm"] = _nvm_stub  # type: ignore # noqa: F821
+        aliases["nvm"] = _nvm_stub  # noqa: F821 # pyright: ignore[reportUndefinedVariable]
 
         return {}
     except Exception as e:
@@ -105,7 +105,7 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict:
         return {}
 
 
-def _unload_xontrib_(xsh: XonshSession, **_) -> dict:
+def _unload_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
     """
     Clean up the fnm xontrib.
     """

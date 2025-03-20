@@ -38,7 +38,7 @@ class TaskState:
             )
 
         pieces = [self.name, done_str, parenthetical]
-        return " ".join(filter(bool, pieces))
+        return " ".join(list(filter(bool, pieces)))  # pyright: ignore
 
     def err_str(self):
         return f" [{self.errors} {'errs' if self.errors > 1 else 'err'}!]" if self.errors else ""

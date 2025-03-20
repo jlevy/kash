@@ -15,4 +15,4 @@ def plural(word: str, count: int | None = None) -> str:
     """
     if not is_word(word):
         return word
-    return inflect().plural(word, count)  # type: ignore
+    return inflect().plural(word, count)  # pyright: ignore

@@ -140,7 +140,7 @@ class FileFormatError(ContentError):
 
 
 def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
-    exceptions = [SelfExplanatoryError, FileNotFoundError, IOError]
+    exceptions: list[type[Exception]] = [SelfExplanatoryError, FileNotFoundError, IOError]
     try:
         from xonsh.tools import XonshError
 

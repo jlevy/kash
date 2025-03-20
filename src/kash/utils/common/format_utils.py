@@ -54,7 +54,7 @@ def fmt_count_items(count: int, name: str = "item") -> str:
     """
     Format a count and a name as a pluralized phrase, e.g. "1 item" or "2 items".
     """
-    return f"{count} {inflect.plural(name, count)}"  # type: ignore
+    return f"{count} {inflect.plural(name, count)}"  # pyright: ignore
 
 
 ## Tests

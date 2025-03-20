@@ -64,13 +64,14 @@ def download_url(
     if parsed_url.scheme == "file" or parsed_url.scheme == "":
         copyfile_atomic(parsed_url.netloc + parsed_url.path, target_filename)
     elif parsed_url.scheme == "s3":
-        import boto3  # type: ignore
+        import boto3  # pyright: ignore
 
         s3 = boto3.resource("s3")
         s3_path = parsed_url.path.lstrip("/")
         s3.Bucket(parsed_url.netloc).download_file(s3_path, target_filename)
     else:
         client = session or httpx.Client(follow_redirects=True, timeout=timeout)
+        response: httpx.Response | None = None
         try:
             with client.stream(
                 "GET",
@@ -96,4 +97,5 @@ def download_url(
         finally:
             if not session:  # Only close if we created the client
                 client.close()
-            response.raise_for_status()  # In case of errors during streaming
+            if response:
+                response.raise_for_status()  # In case of errors during streaming

@@ -87,19 +87,19 @@ class LazyObject(Generic[T]):
         return bool(self._lazy_obj())
 
     def __iter__(self) -> Iterator:
-        return iter(self._lazy_obj())  # type: ignore
+        return iter(self._lazy_obj())  # pyright: ignore
 
     def __getitem__(self, item: Any) -> Any:
-        return self._lazy_obj()[item]  # type: ignore
+        return self._lazy_obj()[item]  # pyright: ignore
 
     def __setitem__(self, key: Any, value: Any) -> None:
-        self._lazy_obj()[key] = value  # type: ignore
+        self._lazy_obj()[key] = value  # pyright: ignore
 
     def __delitem__(self, item: Any) -> None:
-        del self._lazy_obj()[item]  # type: ignore
+        del self._lazy_obj()[item]  # pyright: ignore
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self._lazy_obj()(*args, **kwargs)  # type: ignore
+        return self._lazy_obj()(*args, **kwargs)  # pyright: ignore
 
     def __lt__(self, other: Any) -> bool:
         return self._lazy_obj() < other
@@ -132,7 +132,7 @@ class LazyObject(Generic[T]):
         return repr(self._lazy_obj())
 
     def __len__(self) -> int:
-        return len(self._lazy_obj())  # type: ignore
+        return len(self._lazy_obj())  # pyright: ignore
 
 
 def lazyobject(f: Callable[[], T]) -> T:

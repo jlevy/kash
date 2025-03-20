@@ -39,6 +39,6 @@ def annotate_param_info(func: Callable[..., Any]) -> list[Param]:
     if not hasattr(func, "__param_info__"):
         params = inspect_function_params(func)
         param_info = _look_up_param_docs(func, params)
-        func.__param_info__ = param_info  # type: ignore
+        func.__param_info__ = param_info  # pyright: ignore
 
-    return func.__param_info__  # type: ignore
+    return func.__param_info__  # pyright: ignore

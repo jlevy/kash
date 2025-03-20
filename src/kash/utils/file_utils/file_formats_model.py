@@ -389,6 +389,7 @@ def choose_file_ext(url_or_path: Url | Path | str) -> FileExt | None:
         fmt = detect_file_format(path)
         return fmt.file_ext if fmt else None
 
+    ext = None
     if isinstance(url_or_path, Path):
         ext = parse_file_ext(url_or_path) or file_ext_for(url_or_path)
     elif is_file_url(url_or_path):

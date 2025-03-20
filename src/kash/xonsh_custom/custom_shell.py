@@ -84,9 +84,10 @@ class CustomPTKPromptFormatter(PTKPromptFormatter):
     """
 
     def __init__(self, shell):
+        super().__init__(shell)
         self.shell = shell
 
-    def __call__(
+    def __call__(  # pyright: ignore
         self,
         template: Callable | str | None = None,
         **kwargs,
@@ -141,6 +142,7 @@ class CustomAssistantShell(PromptToolkitShell):
             self.pt_completer,
         )
 
+    @override
     def default(self, line, raw_line=None):
         from kash.help.assistant import shell_context_assistance
 
@@ -284,7 +286,7 @@ def customize_xonsh_settings(is_interactive: bool):
 
     # Apply settings, unless environment variables are already set otherwise.
     for key, default_value in default_settings.items():
-        XSH.env[key] = os.environ.get(key, default_value)  # type: ignore
+        XSH.env[key] = os.environ.get(key, default_value)  # pyright: ignore
 
 
 def load_rcfiles(execer: Execer, ctx: dict):
@@ -321,7 +323,7 @@ def start_shell(single_command: str | None = None):
         cacheall=False,
     )
     XSH.load(ctx=ctx, execer=execer, inherit_env=True)
-    XSH.shell = CustomShell(execer=execer, ctx=ctx)  # type: ignore
+    XSH.shell = CustomShell(execer=execer, ctx=ctx)  # pyright: ignore
 
     # A hack to get kash help to replace Python help. We just delete the builtin help so
     # that kash's help can be used in its place (otherwise builtins override aliases).
@@ -356,9 +358,9 @@ def start_shell(single_command: str | None = None):
     try:
         if single_command:
             # Run a command.
-            XSH.shell.shell.default(single_command)  # type: ignore
+            XSH.shell.shell.default(single_command)  # pyright: ignore
         else:
-            XSH.shell.shell.cmdloop()  # type: ignore
+            XSH.shell.shell.cmdloop()  # pyright: ignore
     finally:
         XSH.unload()
         XSH.shell = None

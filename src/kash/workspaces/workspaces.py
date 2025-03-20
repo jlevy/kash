@@ -172,7 +172,7 @@ def current_workspace(silent: bool = False) -> Workspace:
     Also updates logging and cache directories if this has changed.
     """
 
-    base_dir, is_scratch = _infer_workspace_info()
+    base_dir, _is_scratch = _infer_workspace_info()
     if not base_dir:
         raise InvalidState(
             f"No workspace found in {fmt_loc(Path('.').absolute())}.\n"

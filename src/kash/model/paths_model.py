@@ -41,7 +41,7 @@ else:
     BasePath = PosixPath
 
 
-class StorePath(BasePath):  # type: ignore
+class StorePath(BasePath):  # pyright: ignore
     """
     A StorePath is a relative Path within a given scope (a directory we call a
     store) with the addition of some additional syntactic conveniences for parsing
@@ -105,19 +105,19 @@ class StorePath(BasePath):  # type: ignore
         # XXX Ugly but not sure of a simpler way to initialize ourselves
         # exactly like a Path in __new__.
         if hasattr(path, "_raw_paths"):  # Needed for Python 3.12 and 3.13
-            self._raw_paths = path._raw_paths  # type: ignore
+            self._raw_paths = path._raw_paths  # pyright: ignore
         if hasattr(self, "_load_parts"):  # Needed for Python 3.12 but not 3.13
-            self._load_parts()  # type: ignore
+            self._load_parts()  # pyright: ignore
 
         return self
 
-    def __init__(
+    def __init__(  # pyright: ignore
         self,
         value: str | Path,
         *rest: str | Path,
         store_name: str | None = None,
     ):
-        pass
+        pass  # not calling super().__init__
 
     @staticmethod
     def parse(value: str | Path) -> tuple[Path, str | None]:
@@ -200,14 +200,14 @@ class StorePath(BasePath):  # type: ignore
             return value
         return cls(value)
 
-    def resolve(self) -> Path:  # type: ignore[override]
+    def resolve(self) -> Path:  # pyright: ignore
         """
         If we resolve a StorePath, it must be a plain Path again, since StorePaths are relative.
         """
         return Path(self).resolve()
 
     @property
-    def parent(self) -> Path:  # type: ignore[override]
+    def parent(self) -> Path:  # pyright: ignore
         """
         The parent of a StorePath is a Path, for simplicity.
         """

@@ -366,7 +366,7 @@ class TextAttrs(BaseModel):
     )
 
     @model_validator(mode="after")
-    def validate(self) -> Self:
+    def validate_self(self) -> Self:
         if self.href and not urlparse(self.href).scheme:
             raise ValueError(f"Not a valid URL: {self.href}")
         if not self.href and not self.hover and not self.click and not self.double_click:

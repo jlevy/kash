@@ -116,6 +116,7 @@ def view_file_native(
     display.
     """
     file_or_url = str(file_or_url)
+    path = None
     if not is_url(file_or_url):
         path = Path(file_or_url)
         if not path.exists():
@@ -128,10 +129,10 @@ def view_file_native(
         url = file_or_url if is_url(file_or_url) else as_file_url(file_or_url)
         log.message("Opening URL in browser: %s", url)
         webbrowser.open(url)
-    elif view_mode == ViewMode.console:
+    elif view_mode == ViewMode.console and path:
         file_size, min_lines = file_size_check(path)
         view_file_console(path, use_pager=min_lines > 40 or file_size > 20 * 1024)
-    elif view_mode == ViewMode.terminal_image:
+    elif view_mode == ViewMode.terminal_image and path:
         try:
             terminal_show_image(path)
         except SetupError as e:
@@ -139,6 +140,8 @@ def view_file_native(
             native_open(path)
     elif view_mode == ViewMode.native:
         native_open(file_or_url)
+    else:
+        raise ValueError(f"Don't know how to view: {view_mode}: {file_or_url}")
 
 
 def tail_file(

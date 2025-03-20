@@ -28,12 +28,12 @@ class RankingCompleter(Completer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.trace_enabled = trace_completions_enabled()
+        self.trace_enabled: bool = trace_completions_enabled()
 
     @override
     def complete_from_context(
-        self, completion_context: CompletionContext, old_completer_args=None
-    ) -> tuple[list[ScoredCompletion], int]:
+        self, completion_context: CompletionContext, old_completer_args: Any = None
+    ) -> tuple[tuple[ScoredCompletion, ...], int]:
         start_time = time.time()
         self._trace("complete_from_context: Getting completions with context", completion_context)
 
@@ -66,17 +66,17 @@ class RankingCompleter(Completer):
             completions,
         )
 
-        return completions, lprefix
+        return tuple(completions), lprefix
 
     def _collect_completions(
-        self, completion_context: CompletionContext, old_completer_args
+        self, completion_context: CompletionContext, old_completer_args: Any
     ) -> Iterator[ScoredCompletion]:
         """
         Collect completions from all registered completers. Ensure all are
         RichCompletions. This does some preliminary truncation of useless results
         but doesn't do final sorting.
         """
-        for completion, prefix_len in self.generate_completions(
+        for completion, _prefix_len in self.generate_completions(
             completion_context, old_completer_args, trace=self.trace_enabled
         ):
             if not isinstance(completion, ScoredCompletion):

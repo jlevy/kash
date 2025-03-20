@@ -1,7 +1,7 @@
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, TypeVar, Union, get_args, get_origin
+from typing import Any, TypeVar, Union, get_args, get_origin  # pyright: ignore
 
 T = TypeVar("T")
 
@@ -51,7 +51,7 @@ def as_dataclass(dict_data: dict[str, Any], dataclass_type: type[T]) -> T:
     with the dataclass's constructor.
     """
 
-    field_types = {f.name: f.type for f in fields(dataclass_type)}  # type: ignore
+    field_types = {f.name: f.type for f in fields(dataclass_type)}  # pyright: ignore
     dataclass_fields = {}
 
     for k, v in dict_data.items():
@@ -65,7 +65,9 @@ def as_dataclass(dict_data: dict[str, Any], dataclass_type: type[T]) -> T:
             else:
                 dataclass_fields[k] = v
         elif is_dataclass(field_type) and isinstance(v, dict):
-            dataclass_fields[k] = as_dataclass(v, field_type)
+            # Ensure field_type is a type object before passing to as_dataclass
+            actual_type = field_type if isinstance(field_type, type) else type(field_type)
+            dataclass_fields[k] = as_dataclass(v, actual_type)
         else:
             dataclass_fields[k] = v
 
@@ -101,7 +103,7 @@ def instantiate_as_type(
         )
 
     origin = get_origin(target_type)
-    if origin is Union:
+    if origin is Union:  # pyright: ignore
         failed_types = []
         for arg in get_args(target_type):
             try:
@@ -130,6 +132,6 @@ def instantiate_as_type(
             raise_value_error([target_type])
         else:
             try:
-                return target_type(value)  # type: ignore
+                return target_type(value)  # pyright: ignore
             except ValueError:
                 raise_value_error([target_type])

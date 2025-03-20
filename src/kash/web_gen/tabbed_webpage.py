@@ -49,18 +49,19 @@ def webpage_config(items: list[Item]) -> Item:
         if not item.store_path:
             raise ValueError(f"Item has no store_path: {item}")
 
-    thumbnail_url = None
-    try:
-        item_with_thumbnail = find_upstream_item(item, has_thumbnail_url)
-        thumbnail_url = item_with_thumbnail.thumbnail_url
-    except NoMatch:
-        log.warning("Item has no thumbnail URL: %s", item)
+    def get_thumbnail_url(item: Item) -> str | None:
+        try:
+            item_with_thumbnail = find_upstream_item(item, has_thumbnail_url)
+            return item_with_thumbnail.thumbnail_url
+        except NoMatch:
+            log.warning("Item has no thumbnail URL: %s", item)
+            return None
 
     tabs = [
         TabInfo(
             label=clean_heading(item.abbrev_title()),
             store_path=item.store_path,
-            thumbnail_url=thumbnail_url,
+            thumbnail_url=get_thumbnail_url(item),
         )
         for item in items
     ]

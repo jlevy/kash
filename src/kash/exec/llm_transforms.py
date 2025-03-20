@@ -51,11 +51,10 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
 
     if options.windowing and options.windowing.size:
         log.message(
-            "Running LLM `%s` sliding transform for %s: %s %s",
+            "Running LLM `%s` sliding transform for %s: %s",
             options.model,
             options.op_name,
             options.windowing,
-            "with filter" if options.diff_filter else "without filter",  # TODO: Give filters names.
         )
         diff_filter = options.diff_filter or accept_all
 

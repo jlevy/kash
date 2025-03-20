@@ -226,10 +226,10 @@ def _do_logging_setup(log_settings: LogSettings):
     try:
         import litellm
         from litellm import _logging  # noqa: F401
+
+        litellm.suppress_debug_info = True  # Suppress overly prominent exception messages.
     except ImportError:
         pass
-
-    litellm.suppress_debug_info = True  # Suppress overly prominent exception messages.
 
     log_levels = {
         None: INFO,

@@ -25,6 +25,7 @@ from rich.style import Style, StyleStack
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text, TextType
+from typing_extensions import override
 
 from kash.config.text_styles import STYLE_CODE, STYLE_HINT
 from kash.utils.rich_custom.rich_char_transform import text_upper
@@ -120,13 +121,16 @@ class TextElement(MarkdownElement):
 
     style_name = "none"
 
+    @override
     def on_enter(self, context: MarkdownContext) -> None:
         self.style = context.enter_style(self.style_name)
         self.text = Text(justify="left")
 
+    @override
     def on_text(self, context: MarkdownContext, text: TextType) -> None:
         self.text.append(text, context.current_style if isinstance(text, str) else None)
 
+    @override
     def on_leave(self, context: MarkdownContext) -> None:
         context.leave_style()
 
@@ -137,6 +141,7 @@ class Paragraph(TextElement):
     style_name = "markdown.paragraph"
     justify: JustifyMethod
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> Paragraph:
         return cls(justify=markdown.justify or "left")
@@ -144,6 +149,7 @@ class Paragraph(TextElement):
     def __init__(self, justify: JustifyMethod) -> None:
         self.justify = justify
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         self.text.justify = self.justify
         yield self.text
@@ -152,10 +158,12 @@ class Paragraph(TextElement):
 class Heading(TextElement):
     """A heading."""
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> Heading:
         return cls(token.tag)
 
+    @override
     def on_enter(self, context: MarkdownContext) -> None:
         self.text = Text()
         context.enter_style(self.style_name)
@@ -165,6 +173,7 @@ class Heading(TextElement):
         self.style_name = f"markdown.{tag}"
         super().__init__()
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         text = self.text
         if self.tag in ["h1", "h2"]:
@@ -190,6 +199,7 @@ class CodeBlock(TextElement):
 
     style_name = "markdown.code_block"
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> CodeBlock:
         node_info = token.info or ""
@@ -200,6 +210,7 @@ class CodeBlock(TextElement):
         self.lexer_name = lexer_name
         self.theme = theme
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         code = str(self.text).lstrip("\n").rstrip()
 
@@ -225,10 +236,12 @@ class BlockQuote(TextElement):
     def __init__(self) -> None:
         self.elements: Renderables = Renderables()
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         self.elements.append(child)
         return False
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         render_options = options.update(width=options.max_width - 4)
         lines = console.render_lines(self.elements, render_options, style=self.style)
@@ -246,6 +259,7 @@ class HorizontalRule(MarkdownElement):
 
     new_line = False
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         style = console.get_style("markdown.hr", default="none")
         yield Rule(style=style)
@@ -258,6 +272,7 @@ class TableElement(MarkdownElement):
         self.header: TableHeaderElement | None = None
         self.body: TableBodyElement | None = None
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         if isinstance(child, TableHeaderElement):
             self.header = child
@@ -267,6 +282,7 @@ class TableElement(MarkdownElement):
             raise RuntimeError("Couldn't process markdown table.")
         return False
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         table = Table(box=box.SIMPLE_HEAVY)
 
@@ -288,6 +304,7 @@ class TableHeaderElement(MarkdownElement):
     def __init__(self) -> None:
         self.row: TableRowElement | None = None
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         assert isinstance(child, TableRowElement)
         self.row = child
@@ -300,6 +317,7 @@ class TableBodyElement(MarkdownElement):
     def __init__(self) -> None:
         self.rows: list[TableRowElement] = []
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         assert isinstance(child, TableRowElement)
         self.rows.append(child)
@@ -312,6 +330,7 @@ class TableRowElement(MarkdownElement):
     def __init__(self) -> None:
         self.cells: list[TableDataElement] = []
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         assert isinstance(child, TableDataElement)
         self.cells.append(child)
@@ -322,6 +341,7 @@ class TableDataElement(MarkdownElement):
     """MarkdownElement corresponding to `td_open` and `td_close`
     and `th_open` and `th_close`."""
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
         style = str(token.attrs.get("style")) or ""
@@ -343,6 +363,7 @@ class TableDataElement(MarkdownElement):
         self.content: Text = Text("", justify=justify)
         self.justify = justify
 
+    @override
     def on_text(self, context: MarkdownContext, text: TextType) -> None:
         text = Text(text) if isinstance(text, str) else text
         text.stylize(context.current_style)
@@ -352,6 +373,7 @@ class TableDataElement(MarkdownElement):
 class ListElement(MarkdownElement):
     """A list element."""
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> ListElement:
         return cls(token.type, int(token.attrs.get("start", 1)))
@@ -361,11 +383,13 @@ class ListElement(MarkdownElement):
         self.list_type = list_type
         self.list_start = list_start
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         assert isinstance(child, ListItem)
         self.items.append(child)
         return False
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         if self.list_type == "bullet_list_open":
             for i, item in enumerate(self.items):
@@ -387,6 +411,7 @@ class ListItem(TextElement):
     def __init__(self) -> None:
         self.elements: Renderables = Renderables()
 
+    @override
     def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
         self.elements.append(child)
         return False
@@ -443,6 +468,7 @@ class ListItem(TextElement):
 
 
 class Link(TextElement):
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
         url = token.attrs.get("href", "#")
@@ -458,6 +484,7 @@ class ImageItem(TextElement):
 
     new_line = False
 
+    @override
     @classmethod
     def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
         """Factory to create markdown element,
@@ -477,11 +504,13 @@ class ImageItem(TextElement):
         self.link: str | None = None
         super().__init__()
 
+    @override
     def on_enter(self, context: MarkdownContext) -> None:
         self.link = context.current_style.link
         self.text = Text(justify="left")
         super().on_enter(context)
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         link_style = Style(link=self.link or self.destination or None)
         title = self.text or Text(self.destination.strip("/").rsplit("/", 1)[-1])
@@ -714,7 +743,7 @@ class Markdown(JupyterMixin):
                 elif self_closing:  # SELF-CLOSING tags (e.g. text, code, image)
                     context.stack.pop()
                     text = token.content
-                    if text is not None:
+                    if text is not None:  # pyright: ignore
                         element.on_text(context, text)
 
                     should_render = (

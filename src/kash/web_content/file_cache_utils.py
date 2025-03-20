@@ -58,6 +58,7 @@ def cache_resource(item: Item) -> dict[MediaType, Path]:
     if not is_resource(item):
         raise ValueError(f"Item is not a resource: {item}")
 
+    path = None
     result: dict[MediaType, Path] = {}
     if item.url:
         if is_media_url(item.url):

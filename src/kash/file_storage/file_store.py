@@ -501,7 +501,7 @@ class FileStore:
         Filter out any paths that don't exist from all selections.
         """
         non_existent = set()
-        for i, selection in enumerate(reversed(self.selections.history)):
+        for selection in reversed(self.selections.history):
             non_existent.update(p for p in selection.paths if not self.exists(p))
 
         if non_existent:

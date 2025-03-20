@@ -3,7 +3,7 @@ import types
 from collections.abc import Callable
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import Any, Union, cast, get_args, get_origin
+from typing import Any, Union, cast, get_args, get_origin  # pyright: ignore
 
 NO_DEFAULT = Parameter.empty
 
@@ -91,14 +91,14 @@ def _extract_simple_type(annotation: Any) -> type | None:
             return non_none_args[0]
 
     origin = get_origin(annotation)
-    if origin is Union:
+    if origin is Union:  # pyright: ignore
         args = get_args(annotation)
         non_none_args = [arg for arg in args if arg is not type(None)]
         if len(non_none_args) == 1 and isinstance(non_none_args[0], type):
             return non_none_args[0]
-    elif origin is not None and isinstance(origin, type):
+    elif origin and isinstance(origin, type):
         # Cast origin to type to satisfy the type checker
-        return cast(type, origin)
+        return cast(type, origin)  # pyright: ignore
 
     return None
 

@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from threading import Lock
-from typing import Union, overload
+from typing import overload
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
@@ -9,7 +9,7 @@ from kash.exec_model.shell_model import ShellResult
 log = get_logger(__name__)
 
 
-CommandFunction = Union[Callable[..., ShellResult], Callable[..., None]]
+CommandFunction = Callable[..., ShellResult] | Callable[..., None]
 """
 A function that can be registered as a kash command. It can take any number
 of args. It can return a `ShellResult` (for reporting exceptions or customizing
@@ -19,6 +19,7 @@ shell output) or return nothing (if it throws exceptions on errors).
 # Global registry of commands.
 _commands: dict[str, CommandFunction] = {}
 _lock = Lock()
+_has_logged = False
 
 
 @overload
@@ -44,11 +45,13 @@ def register_all_commands() -> None:
     """
     Ensure all commands are registered and imported.
     """
-    import kash.commands  # noqa: F401
+    with _lock:
+        import kash.commands  # noqa: F401
 
-    if not hasattr(register_all_commands, "_has_logged"):
-        log.info("Command registry: %d commands registered.", len(_commands))
-        register_all_commands._has_logged = True
+        global _has_logged
+        if not _has_logged:
+            log.info("Command registry: %d commands registered.", len(_commands))
+            _has_logged = True
 
 
 def get_all_commands() -> dict[str, CommandFunction]:

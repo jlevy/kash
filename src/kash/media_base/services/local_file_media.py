@@ -55,7 +55,7 @@ class LocalFileMedia(MediaService):
     def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
         path = self._parse_file_url(url)
         if path:
-            name, _item_type, format, file_ext = parse_item_filename(path)
+            _name, _item_type, format, _file_ext = parse_item_filename(path)
             if format and format.is_audio:
                 return url, MediaUrlType.audio
             elif format and format.is_video:
@@ -153,7 +153,7 @@ class LocalFileMedia(MediaService):
         if not path:
             raise InvalidInput(f"Not a local file URL: {url}")
 
-        name, _item_type, _format, file_ext = parse_item_filename(path)
+        name, _item_type, _format, _file_ext = parse_item_filename(path)
         return MediaMetadata(
             title=name,
             url=url,

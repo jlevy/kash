@@ -74,7 +74,7 @@ def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None
     }
 
     options = PrerecordedOptions(model="nova-2", smart_format=True, diarize=True, language=language)
-    response = deepgram.listen.rest.v("1").transcribe_file(payload, options, timeout=Timeout(500))  # type: ignore
+    response = deepgram.listen.rest.v("1").transcribe_file(payload, options, timeout=Timeout(500))  # pyright: ignore
 
     log.save_object("Deepgram response", None, response)
 

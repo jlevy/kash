@@ -318,7 +318,7 @@ def files(
                     display_df = group_df
 
                 for row in display_df.itertuples(index=False, name="FileInfo"):
-                    row = cast(FileInfo, row)
+                    row = cast(FileInfo, row)  # pyright: ignore
                     short_file_size = fmt_size_human(row.size)
                     full_file_size = f"{row.size} bytes"
                     short_mod_time = fmt_time(row.modified, iso_time=iso_time, now=now, brief=True)

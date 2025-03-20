@@ -102,7 +102,7 @@ class Embeddings:
         df = pd.read_csv(path)
         df["embedding"] = df["embedding"].apply(ast.literal_eval)
         data = {row["key"]: (row["text"], row["embedding"]) for _, row in df.iterrows()}
-        return cls(data=data)
+        return cls(data=data)  # pyright: ignore
 
     def to_npz(self, path: Path) -> None:
         """Save embeddings in numpy's compressed format."""

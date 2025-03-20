@@ -216,13 +216,13 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
 
     except Exception as e:
         log.exception("Error running mcp tool")
-        return ToolResult(
-            action=action,
-            captured_output=capture.output,
-            action_result=ActionResult(items=[]),
-            result_store_paths=[],
-            error=e,
-        ).formatted_for_client()
+        return [
+            TextContent(
+                text=f"Call to tool `{action_name}` had an error: {e}.\n\n"
+                + "Check kash logs for details.",
+                type="text",
+            )
+        ]
 
 
 def create_base_server() -> Server:

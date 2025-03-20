@@ -97,7 +97,7 @@ def kash_action_class(cls: type[A]) -> type[A]:
     else:
         pyd_cls = cast(type[A], cls)
 
-    pyd_cls.__source_path__ = _source_path(cls)
+    pyd_cls.__source_path__ = _source_path(cls)  # pyright: ignore
 
     register_action_class(pyd_cls)
 
@@ -119,7 +119,7 @@ def _register_dynamic_action(
     # Register the new action class.
     pyd_cls = kash_action_class(action_cls)
 
-    pyd_cls.__source_path__ = source_path
+    pyd_cls.__source_path__ = source_path  # pyright: ignore
     return pyd_cls
 
 
@@ -269,6 +269,7 @@ def kash_action(
         # If the original function is a simple action function (processes a single item),
         # wrap it to convert to an ActionFunction.
         is_simple_func = func_params[0].type == Item
+        action_func: ActionFunction
         if is_simple_func:
             simple_func = cast(SimpleActionFunction, orig_func)
 
@@ -279,9 +280,9 @@ def kash_action(
                 result_item = simple_func(input.items[0], *args, **kwargs)
                 return ActionResult(items=[result_item])
 
-            action_func: ActionFunction = converted_func
+            action_func = converted_func
         else:
-            action_func: ActionFunction = cast(ActionFunction, orig_func)
+            action_func = cast(ActionFunction, orig_func)
 
         # Honor an explicit run_per_item, but otherwise infer it from is_simple_func.
         updated_run_per_item = run_per_item if run_per_item is not None else is_simple_func
@@ -340,7 +341,7 @@ def kash_action(
                     fmt_lines([format_func_call(self.name, [input] + pos_args, kw_args)]),
                 )
                 # Call the underlying function with the mapped arg values.
-                return action_func(input, *pos_args, **kw_args)  # type: ignore
+                return action_func(input, *pos_args, **kw_args)  # pyright: ignore
 
         _register_dynamic_action(
             FuncAction, action_name, action_description, _source_path(orig_func)
@@ -390,7 +391,7 @@ def kash_action(
             # Need to convert back to a SimpleActionFunction.
             @wraps(wrapped_func)
             def simple_action_func(item: Item, *args: P.args, **kwargs: P.kwargs) -> Item:
-                result = wrapped_func(ActionInput(items=[item]), *args, **kwargs)  # type: ignore
+                result = wrapped_func(ActionInput(items=[item]), *args, **kwargs)  # pyright: ignore
                 if len(result.items) != 1:
                     raise ValueError(
                         f"Expected exactly one item in result of simple action function "
@@ -398,13 +399,13 @@ def kash_action(
                     )
                 return result.items[0]
 
-            final_func = cast(AF, simple_action_func)
+            final_func = cast(AF, simple_action_func)  # pyright: ignore
         else:
-            final_func = cast(AF, wrapped_func)
+            final_func = cast(AF, wrapped_func)  # pyright: ignore
 
         # Usual __name__ etc already set by @wraps but we also set our own meta fields.
-        final_func.__action_class__ = FuncAction
-        final_func.__source_path__ = _source_path(orig_func)
+        final_func.__action_class__ = FuncAction  # pyright: ignore
+        final_func.__source_path__ = _source_path(orig_func)  # pyright: ignore
 
         return final_func
 

@@ -88,7 +88,7 @@ def _register_commands_in_shell(commands: dict[str, Callable]):
     # An extra name just in case `help` doesn't work.
     set_alias("kash_help", help_commands.help)
     # A backup for xonsh's built-in history command.
-    set_alias("xhistory", aliases["history"])  # type: ignore  # noqa: F821
+    set_alias("xhistory", aliases["history"])  # pyright: ignore  # noqa: F821
 
     # TODO: Doesn't seem to reload modified Python?
     # def reload() -> None:
