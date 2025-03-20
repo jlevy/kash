@@ -590,9 +590,9 @@ class FileStore:
 
         if self.is_global_ws:
             PrintHooks.spacer()
-            log.warning("Note you are using the default `global_ws` workspace.")
+            log.warning("Note you are currently using the default `global` workspace.")
             cprint(
-                "You may want to create or switch to another workspace with the `workspace` command.",
+                "Create or switch to another workspace with the `workspace` command.",
                 style=STYLE_HINT,
             )
 

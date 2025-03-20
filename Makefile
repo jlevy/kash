@@ -16,6 +16,9 @@ lint:
 test:
 	uv run pytest
 
+run: install lint test
+	uv run kash
+
 upgrade:
 	uv sync --upgrade
 

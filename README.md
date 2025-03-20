@@ -7,12 +7,13 @@
 <b>
 
 ```
-┌─ ▀▄ ─ █ ───────── █ ─────────────────────────────────────────────────────────────────┐
-│    ▀▄ █ █ ▀▀█ █▀▀ █▀█                                                                │
-│   ▄▀  █▀▄ █▀█ ▀▀█ █ █                                                                │
-│  ▀    ▀ ▀ ▀▀▀ ▀▀▀ ▀ ▀                                                                │
-│  THE KNOWLEDGE AGENT SHELL                                                           │
-└──────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────── ▀▄ ── █ ───────── █ ─────────────────────────┐
+│                           ▀▄ ▒█ █▒▀▀█▒█▀▀▒█▀█▒                       │
+│                          ▄▀  ▒█▀▄▒█▀█▒▀▀█▒█▒█▒                       │
+│                         ▀    ▒▀▒▀▒▀▀▀▒▀▀▀▒▀▒▀▒                       │
+│                                                                      │
+│                        THE KNOWLEDGE AGENT SHELL                     │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 </b>
@@ -567,7 +568,7 @@ A few of the most important commands for managing files and work are these:
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 
 - `workspace` to show or select or create a new workspace.
-  Initially you work in the global workspace but for more real work you'll want to
+  Initially you work in the "global_ws" workspace but for more real work you'll want to
   create a workspace, which is a directory to hold the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will

@@ -12,11 +12,13 @@ from rich.text import Text
 
 ## Text styles
 
-LOGO_LARGE = (Path(__file__).parent / "logo.txt").read_text().strip()
+LOGO_LARGE: str = (Path(__file__).parent / "logo.txt").read_text().strip()
+LOGO_LARGE_FANCY: str = (Path(__file__).parent / "logo_fancy.txt").read_text().strip()
 
-TAGLINE = "THE KNOWLEDGE AGENT SHELL"
 
-TAGLINE_STYLED = Text(TAGLINE, style=Style(color="bright_green", bold=True))
+TAGLINE = "The knowledge agent shell"
+
+TAGLINE_STYLED = Text(TAGLINE.upper(), style="bold bright_green")
 
 ## Settings
 
@@ -52,6 +54,7 @@ COLOR_RESULT = "default"
 COLOR_RESPONSE = "bright_blue"
 COLOR_SUGGESTION = "bright_blue"
 COLOR_LITERAL = "bright_blue"
+COLOR_GREEN = "bright_green"
 COLOR_KEY = "bright_blue"
 COLOR_VALUE = "cyan"
 COLOR_PATH = "cyan"

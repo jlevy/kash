@@ -51,11 +51,12 @@ class Format(Enum):
     npz = "npz"
     log = "log"
 
-    # Binary formats.
+    # Media formats.
     pdf = "pdf"
     docx = "docx"
     jpeg = "jpeg"
     png = "png"
+    svg = "svg"
     mp3 = "mp3"
     m4a = "m4a"
     mp4 = "mp4"
@@ -79,6 +80,7 @@ class Format(Enum):
             self.markdown,
             self.md_html,
             self.html,
+            self.svg,
             self.yaml,
             self.diff,
             self.python,
@@ -100,7 +102,7 @@ class Format(Enum):
 
     @property
     def is_image(self) -> bool:
-        return self in [self.jpeg, self.png]
+        return self in [self.jpeg, self.png, self.svg]
 
     @property
     def is_audio(self) -> bool:
@@ -162,6 +164,7 @@ class Format(Enum):
             Format.pdf: MediaType.text,
             Format.jpeg: MediaType.image,
             Format.png: MediaType.image,
+            Format.svg: MediaType.image,
             Format.docx: MediaType.text,
             Format.mp3: MediaType.audio,
             Format.m4a: MediaType.audio,
@@ -191,6 +194,7 @@ class Format(Enum):
             FileExt.docx.value: Format.docx,
             FileExt.jpg.value: Format.jpeg,
             FileExt.png.value: Format.png,
+            FileExt.svg.value: Format.svg,
             FileExt.mp3.value: Format.mp3,
             FileExt.m4a.value: Format.m4a,
             FileExt.mp4.value: Format.mp4,
@@ -219,6 +223,7 @@ class Format(Enum):
             Format.docx: FileExt.docx,
             Format.jpeg: FileExt.jpg,
             Format.png: FileExt.png,
+            Format.svg: FileExt.svg,
             Format.mp3: FileExt.mp3,
             Format.m4a: FileExt.m4a,
             Format.mp4: FileExt.mp4,
@@ -246,6 +251,7 @@ class Format(Enum):
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Format.docx,
             "image/jpeg": Format.jpeg,
             "image/png": Format.png,
+            "image/svg+xml": Format.svg,
             "audio/mpeg": Format.mp3,
             "audio/mp3": Format.mp3,
             "audio/mp4": Format.m4a,

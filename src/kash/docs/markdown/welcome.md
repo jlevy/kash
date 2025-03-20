@@ -1,4 +1,4 @@
-Welcome to kash! Use `help` for the manual and full list of available commands.
+**Welcome to kash!** Use `help` for the manual and full list of available commands.
 
 Press **tab** for contextual autocomplete of commands, questions, actions, and files.
 You may simply ask a question and the kash assistant will help you.

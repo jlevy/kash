@@ -30,6 +30,7 @@ class FileExt(Enum):
     docx = "docx"
     jpg = "jpg"
     png = "png"
+    svg = "svg"
     mp3 = "mp3"
     m4a = "m4a"
     mp4 = "mp4"

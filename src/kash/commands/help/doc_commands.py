@@ -1,16 +1,19 @@
 import re
+from pathlib import Path
 
 from rich.box import SQUARE
-from rich.console import Group
+from rich.console import Console, Group
 from rich.panel import Panel
 from rich.text import Text
 
-from kash.config.logger import get_logger
+from kash.config.colors import rich_terminal_dark
+from kash.config.logger import get_logger, record_console
 from kash.config.text_styles import (
+    COLOR_HINT,
     CONSOLE_WRAP_WIDTH,
+    LOGO_LARGE_FANCY,
     LOGO_LARGE,
     STYLE_EMPH,
-    STYLE_HINT,
     STYLE_LOGO,
     TAGLINE_STYLED,
 )
@@ -25,54 +28,90 @@ log = get_logger(__name__)
 
 
 def branded_box(content: Group | None, version: str | None = None) -> Panel:
+    line_char = "─"
+    panel_width = CONSOLE_WRAP_WIDTH
+
     # Break the line into non-space and space chunks by using a regex.
     # Colorize each chunk and optionally swap lines to spaces.
-    def colorize_line(line: str, space_replacement: str) -> Text:
+    def colorize_line(line: str, space_replacement: str, line_offset: int = 0) -> Text:
+        line = " " * line_offset + line
         bits = re.findall(r"[^\s]+|\s+", line)
         texts = []
-        block_count = 0
-        for bit in bits:
+        solid_count = 0
+        for i, bit in enumerate(bits):
             if bit.strip():
-                texts.append(Text(bit, style=STYLE_LOGO if block_count != 0 else STYLE_EMPH))
-                block_count += 1
+                texts.append(
+                    Text(
+                        bit,
+                        style=STYLE_LOGO if solid_count > 0 else STYLE_EMPH,
+                    )
+                )
+                solid_count += 1
             else:
-                if len(bit) >= 3:
-                    bit = " " + re.sub(r" ", space_replacement, bit[1:-1]) + " "
-                texts.append(Text(bit, style=STYLE_HINT))
+                bit = re.sub(r" ", space_replacement, bit)
+                if i > 0:
+                    bit = " " + bit[1:]
+                if i < len(bits) - 1:
+                    bit = bit[:-1] + " "
+                texts.append(Text(bit, style=COLOR_HINT))
         return Text.assemble(*texts)
 
     logo_lines = LOGO_LARGE.split("\n")
-    logo_top = colorize_line(logo_lines[0], "─")
-    logo_bottom = [colorize_line(" " + line, " ") for line in logo_lines[1:]]
+    logo_top = colorize_line(logo_lines[0], line_char)
+    offset = (panel_width - 4 - len(logo_top)) // 2
+    tagline_offset = (panel_width - 4 - len(TAGLINE_STYLED)) // 2 + 1
+
+    logo_rest = [colorize_line(line, " ", offset) for line in logo_lines[1:]]
     if version:
-        separator = (
-            " " + "─" * (CONSOLE_WRAP_WIDTH - len(logo_top) - len(version) - 2 - 3 - 3) + " "
-        )
-        header = Text.assemble(
-            *logo_top,
-            Text(separator, style=STYLE_HINT),
-            Text(version, style=STYLE_HINT, justify="right"),
-        )
+        header = Text.assemble(*logo_top)
+        footer = Text(version, style=COLOR_HINT, justify="right")
     else:
         header = Text.assemble(*logo_top)
+        footer = None
 
     body = ["", content] if content else []
+
     return Panel(
-        Group(*logo_bottom, Text.assemble(" ", TAGLINE_STYLED), *body),
+        Group(
+            *logo_rest,
+            "",
+            Text.assemble(" " * tagline_offset, TAGLINE_STYLED),
+            # Text(" " * tagline_offset + "🮎" * len(TAGLINE_STYLED), style=STYLE_EMPH),
+            *body,
+        ),
         title=header,
-        title_align="left",
-        border_style=STYLE_HINT,
+        title_align="center",
+        subtitle=footer,
+        subtitle_align="right",
+        border_style=COLOR_HINT,
         padding=(0, 1),
+        width=panel_width,
         box=SQUARE,
     )
 
 
 @kash_command
-def kash_logo() -> None:
+def kash_logo(svg_out: str | None = None, html_out: str | None = None) -> None:
     """
     Show the kash logo.
     """
-    cprint(branded_box(None))
+    logo = branded_box(None)
+
+    cprint(logo)
+    if svg_out:
+        console = Console(force_terminal=True, record=True)
+        with record_console() as console:
+            console.print(logo)
+        with Path(svg_out).open("w") as f:
+            f.write(console.export_svg(theme=rich_terminal_dark))
+        log.message(f"Wrote logo: {svg_out}")
+    if html_out:
+        console = Console(force_terminal=True, record=True)
+        with record_console() as console:
+            console.print(logo)
+        with Path(html_out).open("w") as f:
+            f.write(console.export_html(theme=rich_terminal_dark))
+        log.message(f"Wrote logo: {html_out}")
 
 
 @kash_command
@@ -92,7 +131,7 @@ def welcome() -> None:
             version,
         )
     )
-    cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=STYLE_HINT))
+    cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=COLOR_HINT))
 
 
 @kash_command
