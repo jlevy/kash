@@ -48,9 +48,11 @@ _log_base = GLOBAL_KASH_DIR
 Parent of the "logs" directory. Initially the global kash data root.
 """
 
-_log_name = "default"
+LOG_NAME_GLOBAL = "global"
+
+_log_name = LOG_NAME_GLOBAL
 """
-Name of the log file. By default the workspace name or "default" if
+Name of the log file. By default the workspace name or "global" if
 for the global workspace.
 """
 
@@ -94,7 +96,7 @@ def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
     global _log_lock, _log_base, _log_name
     with _log_lock:
         _log_base = log_root or GLOBAL_KASH_DIR
-        _log_name = make_valid_log_name(log_name or "default")
+        _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
         reload_rich_logging_setup()
 
 

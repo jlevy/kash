@@ -103,7 +103,7 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> Workspace:
 @cache
 def global_ws_dir() -> Path:
     kb_path = resolve_and_create_dirs(GLOBAL_WS_PATH, is_dir=True)
-    log.info("Sandbox KB path: %s", kb_path)
+    log.info("Global workspace path: %s", kb_path)
     return kb_path
 
 

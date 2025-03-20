@@ -191,12 +191,13 @@ reportUnknownParameterType = false
 reportMissingParameterType = false
 reportUnannotatedClassAttribute = false
 reportUninitializedInstanceVariable = false
-reportImplicitStringConcatenation = false
-reportUnknownLambdaType = false
 reportCallInDefaultInitializer = false
 # Make ignoring easier:
 reportIgnoreCommentWithoutRule = false
 reportUnnecessaryTypeIgnoreComment = false
+# Seem generally harmless:
+reportImplicitStringConcatenation = false
+reportUnknownLambdaType = false
 # Typically noisy:
 reportMissingTypeStubs = false
 reportUnusedCallResult = false
