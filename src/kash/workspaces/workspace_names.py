@@ -20,7 +20,7 @@ def check_strict_workspace_name(ws_name: str) -> str:
     return ws_name
 
 
-def workspace_name(path_or_name: str | Path) -> str:
+def to_ws_name(path_or_name: str | Path) -> str:
     """
     Get the workspace name from a path or name.
     """

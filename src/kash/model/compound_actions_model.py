@@ -48,7 +48,7 @@ class SequenceAction(Action):
 
     def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
-        from kash.workspaces import current_workspace
+        from kash.workspaces import current_ws
 
         items = input.items
         with task_stack().context(
@@ -104,7 +104,7 @@ class SequenceAction(Action):
                     item.update_relations(derived_from=original_input_paths)
 
             log.message("Action sequence `%s` complete. Archiving transient items.", self.name)
-            ws = current_workspace()
+            ws = current_ws()
             for item in transient_outputs:
                 try:
                     ws.archive(StorePath(not_none(item.store_path)))

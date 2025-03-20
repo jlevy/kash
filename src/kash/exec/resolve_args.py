@@ -10,7 +10,7 @@ from kash.exec_model.args_model import CommandArg
 from kash.model.items_model import ItemType
 from kash.model.paths_model import InvalidStorePath, StorePath, UnresolvedPath, parse_path_spec
 from kash.utils.common.url import Locator, UnresolvedLocator, Url, is_url
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -42,7 +42,7 @@ def resolve_path_arg(path_str: UnresolvedPath) -> Path | StorePath:
         return path
     else:
         try:
-            store_path = current_workspace().resolve_path(path)
+            store_path = current_ws().resolve_path(path)
             if store_path:
                 return store_path
             else:
@@ -59,7 +59,7 @@ def assemble_path_args(*paths_or_strs: UnresolvedPath | None) -> list[StorePath 
     """
     resolved = [resolve_path_arg(p) for p in paths_or_strs if p]
     if not resolved:
-        ws = current_workspace()
+        ws = current_ws()
         resolved = ws.selections.current.paths
         if not resolved:
             raise MissingInput("No selection")
@@ -71,7 +71,7 @@ def _check_store_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
     """
     Check that all paths are store paths.
     """
-    ws = current_workspace()
+    ws = current_ws()
     for path in paths:
         if not ws.exists(StorePath(path)):
             raise InvalidInput(f"Store path not found: {path}")
@@ -96,7 +96,7 @@ def assemble_action_args(
     resolved = [resolve_locator_arg(p) for p in paths_or_strs if p]
     if not resolved and use_selection:
         try:
-            selection_args = current_workspace().selections.current.paths
+            selection_args = current_ws().selections.current.paths
             return cast(list[CommandArg], selection_args), True
         except MissingInput:
             return [], False
@@ -105,7 +105,7 @@ def assemble_action_args(
 
 
 def resolvable_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
-    ws = current_workspace()
+    ws = current_ws()
     resolvable = list(filter(None, (ws.resolve_path(p) for p in paths)))
     return resolvable
 
@@ -119,5 +119,5 @@ def import_locator_args(
     Import locators into the current workspace.
     """
     locators = [resolve_locator_arg(loc) for loc in locators_or_strs]
-    ws = current_workspace()
+    ws = current_ws()
     return ws.import_items(*locators, as_type=as_type, reimport=reimport)

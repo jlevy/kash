@@ -50,28 +50,33 @@ from kash.utils.common.url import Url, is_url
 from kash.utils.file_utils.dir_size import is_nonempty_dir
 from kash.utils.lang_utils.inflection import plural
 from kash.web_content.file_cache_utils import cache_file
-from kash.workspaces import current_workspace, get_scratch_workspace, resolve_workspace, scratch_dir
+from kash.workspaces import (
+    current_ws,
+    get_global_ws,
+    global_ws_dir,
+    resolve_ws,
+)
 from kash.workspaces.workspace_names import check_strict_workspace_name
-from kash.workspaces.workspaces import get_workspace
+from kash.workspaces.workspaces import get_ws
 
 log = get_logger(__name__)
 
 
 @kash_command
-def clear_scratch() -> None:
+def clear_global_ws() -> None:
     """
-    Clear the entire scratch by moving it to the trash.
+    Clear the entire global_ws by moving it to the trash.
     Use with caution!
     """
-    trash(scratch_dir())
-    ws = get_scratch_workspace()
+    trash(global_ws_dir())
+    ws = get_global_ws()
     ws.reload()
     ws.log_store_info()
 
 
 def _get_cache_dirs(workspace: str | None = None) -> tuple[Path, Path]:
     if workspace:
-        ws = get_workspace(workspace)
+        ws = get_ws(workspace)
         media_cache = (ws.base_dir / ws.dirs.media_cache_dir).resolve()
         content_cache = (ws.base_dir / ws.dirs.content_cache_dir).resolve()
     else:
@@ -177,7 +182,7 @@ def download(*urls_or_paths: str) -> None:
     Download a URL or resource. Inputs can be URLs or paths to URL resources.
     """
     # TODO: Add option to include frontmatter metadata for text files.
-    ws = current_workspace()
+    ws = current_ws()
     for url_or_path in urls_or_paths:
         locator = resolve_locator_arg(url_or_path)
         url = None
@@ -216,7 +221,7 @@ def history(max: int = 30, raw: bool = False) -> None:
     :param raw: Show raw command history by tailing the history file directly.
     """
     # TODO: Customize this by time frame.
-    ws = current_workspace()
+    ws = current_ws()
     history_file = ws.base_dir / ws.dirs.shell_history_yml
     chat_history = tail_chat_history(history_file, max)
 
@@ -233,10 +238,10 @@ def history(max: int = 30, raw: bool = False) -> None:
 
 
 @kash_command
-def scratch() -> None:
-    """Change directory to the scratch workspace."""
-    ws = get_scratch_workspace()
-    print_status(f"Now in scratch workspace: {ws.base_dir}")
+def global_ws() -> None:
+    """Change directory to the global_ws workspace."""
+    ws = get_global_ws()
+    print_status(f"Now in global_ws workspace: {ws.base_dir}")
     os.chdir(ws.base_dir)
 
 
@@ -246,7 +251,7 @@ def clear_history() -> None:
     Clear the kash command history for the current workspace. Old history file will be
     moved to the trash.
     """
-    ws = current_workspace()
+    ws = current_ws()
     trash(ws.base_dir / ws.dirs.shell_history_yml)
 
 
@@ -257,9 +262,9 @@ def init_workspace(path: str | None = None) -> None:
     given. If a path is provided, also chdir to the new path.
     """
     base_dir = path or Path(".")
-    get_workspace(base_dir, auto_init=True)
+    get_ws(base_dir, auto_init=True)
     os.chdir(base_dir)
-    current_workspace(silent=True).log_store_info()
+    current_ws(silent=True).log_store_info()
 
 
 @kash_command
@@ -269,7 +274,7 @@ def workspace(workspace_name: str | None = None) -> None:
     creating it if it doesn't exist.
     """
     if workspace_name:
-        info = resolve_workspace(workspace_name)
+        info = resolve_ws(workspace_name)
         name = info.name
         if not info.base_dir.exists():
             # Enforce reasonable naming on new workspaces.
@@ -279,7 +284,7 @@ def workspace(workspace_name: str | None = None) -> None:
         os.chdir(info.base_dir)
         print_status(f"Changed to workspace: {name} ({info.base_dir})")
 
-    current_workspace(silent=True).log_store_info()
+    current_ws(silent=True).log_store_info()
 
 
 @kash_command
@@ -287,7 +292,7 @@ def reload_workspace() -> None:
     """
     Reload the current workspace. Helpful for debugging to reset in-memory state.
     """
-    current_workspace().reload()
+    current_ws().reload()
 
 
 @kash_command
@@ -298,7 +303,7 @@ def item_id(*paths: str) -> None:
     """
     input_paths = assemble_path_args(*paths)
     for path in input_paths:
-        item = current_workspace().load(StorePath(path))
+        item = current_ws().load(StorePath(path))
         id = item.item_id()
         cprint(
             format_name_and_description(fmt_loc(path), str(id), text_wrap=Wrap.INDENT_ONLY),
@@ -317,7 +322,7 @@ def relations(*paths: str) -> None:
 
     PrintHooks.spacer()
     for input_path in input_paths:
-        item = current_workspace().load(StorePath(input_path))
+        item = current_ws().load(StorePath(input_path))
         cprint(f"{fmt_store_path(not_none(item.store_path))}:", style=STYLE_EMPH)
         relations = item.relations.__dict__ if item.relations else {}
         if any(relations.values()):
@@ -333,7 +338,7 @@ def workspace_param(*args: str, no_pager: bool = False) -> None:
     Show or set currently set of workspace parameters, which are settings that may be used
     by commands and actions or to override default parameters.
     """
-    ws = current_workspace()
+    ws = current_ws()
     settable_params = GLOBAL_PARAMS
     if args:
         new_key_vals = dict([parse_key_value(arg) for arg in args])
@@ -391,7 +396,7 @@ def import_item(
     if not files_or_urls:
         raise InvalidInput("No files or URLs provided")
 
-    ws = current_workspace()
+    ws = current_ws()
     store_paths = []
 
     locators = [resolve_locator_arg(r) for r in files_or_urls]
@@ -448,7 +453,7 @@ def archive(*paths: str) -> None:
     Archive the items at the given path, or the current selection.
     """
     store_paths = assemble_store_path_args(*paths)
-    ws = current_workspace()
+    ws = current_ws()
     archived_paths = [ws.archive(store_path) for store_path in store_paths]
 
     print_status(f"Archived:\n{fmt_lines(fmt_loc(p) for p in archived_paths)}")
@@ -460,7 +465,7 @@ def unarchive(*paths: str) -> None:
     """
     Unarchive the items at the given paths.
     """
-    ws = current_workspace()
+    ws = current_ws()
     store_paths = assemble_store_path_args(*paths)
     unarchived_paths = [ws.unarchive(store_path) for store_path in store_paths]
 
@@ -472,7 +477,7 @@ def clear_archive() -> None:
     """
     Empty the archive to trash.
     """
-    ws = current_workspace()
+    ws = current_ws()
     archive_dir = ws.base_dir / ws.dirs.archive_dir
     trash(archive_dir)
     os.makedirs(archive_dir, exist_ok=True)
@@ -496,7 +501,7 @@ def applicable_actions(*paths: str, brief: bool = False, all: bool = False) -> N
     :param all: Include actions with no preconditions.
     """
     store_paths = assemble_store_path_args(*paths)
-    ws = current_workspace()
+    ws = current_ws()
 
     actions = get_all_actions_defaults().values()
     applicable_actions = list(
@@ -552,7 +557,7 @@ def preconditions() -> None:
     List all preconditions and if the current selection meets them.
     """
 
-    ws = current_workspace()
+    ws = current_ws()
     selection = ws.selections.current.paths
     if not selection:
         raise InvalidInput("No selection")
@@ -578,7 +583,7 @@ def normalize(*paths: str) -> ShellResult:
     """
     # TODO: Make a version of this that works outside the workspace on Markdown files,
     # (or another version just called `format` that does this).
-    ws = current_workspace()
+    ws = current_ws()
     store_paths = assemble_store_path_args(*paths)
 
     canon_paths = []
@@ -610,7 +615,7 @@ def reset_ignore_file(append: bool = False) -> None:
     """
     from kash.utils.file_utils.ignore_files import write_ignore
 
-    ws = current_workspace()
+    ws = current_ws()
     ignore_path = ws.base_dir / ws.dirs.ignore_file
     write_ignore(ignore_path, append=append)
 
@@ -626,7 +631,7 @@ def ignore_file(pattern: str | None = None) -> None:
     from kash.commands.base.show_command import show
     from kash.utils.file_utils.ignore_files import add_to_ignore
 
-    ws = current_workspace()
+    ws = current_ws()
     ignore_path = ws.base_dir / ws.dirs.ignore_file
 
     if not pattern:

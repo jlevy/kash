@@ -29,7 +29,7 @@ from kash.utils.file_utils.git_tools import add_to_git_ignore
 from kash.utils.file_utils.ignore_files import IgnoreChecker
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
-from kash.workspaces.workspace_names import workspace_name
+from kash.workspaces.workspace_names import to_ws_name
 
 log = get_logger(__name__)
 
@@ -58,15 +58,15 @@ class FileStore:
 
     # TODO: Consider using a pluggable filesystem (fsspec AbstractFileSystem).
 
-    def __init__(self, base_dir: Path, is_scratch: bool, auto_init: bool = True):
+    def __init__(self, base_dir: Path, is_global_ws: bool, auto_init: bool = True):
         """
         Load the file store. With `auto_init` true, will initialize if the workspace
         directory metadata if it is not already initialized.
         """
 
         self.base_dir = base_dir.resolve()
-        self.name = workspace_name(self.base_dir)
-        self.is_scratch = is_scratch
+        self.name = to_ws_name(self.base_dir)
+        self.is_global_ws = is_global_ws
         self._lock = threading.RLock()
         self.reload(auto_init=auto_init)
 
@@ -83,7 +83,7 @@ class FileStore:
         self.uniquifier = Uniquifier()
         self.id_map: dict[ItemId, StorePath] = {}
 
-        self.dirs = MetadataDirs(base_dir=self.base_dir, is_scratch=self.is_scratch)
+        self.dirs = MetadataDirs(base_dir=self.base_dir, is_global_ws=self.is_global_ws)
         if not auto_init and not self.dirs.is_initialized():
             raise FileNotFound(f"Directory is not a file store workspace: {self.base_dir}")
 
@@ -588,9 +588,9 @@ class FileStore:
         for warning in self.warnings:
             log.warning("%s", warning)
 
-        if self.is_scratch:
+        if self.is_global_ws:
             PrintHooks.spacer()
-            log.warning("Note you are using the default `scratch` workspace.")
+            log.warning("Note you are using the default `global_ws` workspace.")
             cprint(
                 "You may want to create or switch to another workspace with the `workspace` command.",
                 style=STYLE_HINT,

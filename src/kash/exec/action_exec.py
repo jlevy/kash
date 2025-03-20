@@ -25,7 +25,7 @@ from kash.shell.output.shell_output import PrintHooks, print_h3
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.lang_utils.inflection import plural
-from kash.workspaces import Selection, Workspace, current_workspace
+from kash.workspaces import Selection, Workspace, current_ws
 from kash.workspaces.workspace_importing import import_and_load
 
 log = get_logger(__name__)
@@ -386,7 +386,7 @@ def run_action_with_shell_context(
         action_cls = action_spec
 
     # Context for shell calls is the current workspace.
-    ws = current_workspace()
+    ws = current_ws()
 
     # Get the current workspace params.
     ws_params = ws.params.get_raw_values()

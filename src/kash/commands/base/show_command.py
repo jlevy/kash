@@ -6,7 +6,7 @@ from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.native_utils import ViewMode, terminal_show_image, view_file_native
 from kash.web_content.file_cache_utils import cache_file
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -46,7 +46,7 @@ def show(
         input_path = input_paths[0]
 
         if isinstance(input_path, StorePath):
-            ws = current_workspace()
+            ws = current_ws()
             if input_path.is_file():
                 # Optionally, if we can inline display the image (like in kitty) above the text representation, do that.
                 item = ws.load(input_path)

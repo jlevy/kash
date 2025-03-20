@@ -538,7 +538,7 @@ organized.
 Type `workspace` any time to see the current workspace.
 
 By default, when you are not using the shell inside a workspace directory, or when you
-run Kash the first time, it uses the default *scratch workspace*.
+run Kash the first time, it uses the default *global workspace*.
 
 Once you create a workspace, you can `cd` into that workspace and that will become the
 current workspace. (If you're familiar with how the `git` command-line works in
@@ -567,7 +567,7 @@ A few of the most important commands for managing files and work are these:
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 
 - `workspace` to show or select or create a new workspace.
-  Initially you work in the "scratch" workspace but for more real work you'll want to
+  Initially you work in the global workspace but for more real work you'll want to
   create a workspace, which is a directory to hold the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will

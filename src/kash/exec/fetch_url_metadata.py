@@ -8,7 +8,7 @@ from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, is_url
 from kash.web_content.canon_url import canonicalize_url
 from kash.web_content.web_extract import fetch_extract
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -16,7 +16,7 @@ log = get_logger(__name__)
 def fetch_url_metadata(
     locator: Url | StorePath, use_cache: bool = True, refetch: bool = False
 ) -> Item:
-    ws = current_workspace()
+    ws = current_ws()
     if is_url(locator):
         # Import or find URL as a resource in the current workspace.
         store_path = ws.import_item(locator, as_type=ItemType.resource)
@@ -36,7 +36,7 @@ def fetch_url_item_metadata(item: Item, use_cache: bool = True, refetch: bool = 
     Fetch metadata for a URL using a media service if we recognize the URL,
     and otherwise fetching and extracting it from the web page HTML.
     """
-    ws = current_workspace()
+    ws = current_ws()
     if not refetch and item.title and item.description:
         log.message(
             "Already have title and description, will not fetch metadata: %s", item.fmt_loc()

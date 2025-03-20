@@ -78,9 +78,9 @@ class LLMDefault(Enum):
 
     @property
     def workspace_llm(self) -> LLMName:
-        from kash.workspaces.workspaces import workspace_param_value
+        from kash.workspaces.workspaces import ws_param_value
 
-        return not_none(workspace_param_value(self.param_name, type=LLMName))
+        return not_none(ws_param_value(self.param_name, type=LLMName))
 
     @property
     def is_structured(self) -> bool:

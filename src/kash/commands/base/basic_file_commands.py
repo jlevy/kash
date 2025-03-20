@@ -94,7 +94,7 @@ def file_info(*paths: str, size_summary: bool = False, format: bool = False) -> 
     if not size_summary and not format:
         size_summary = format = True
 
-    # FIXME: Ensure this yields absolute paths for scratch store paths
+    # FIXME: Ensure this yields absolute paths for global workspace store paths
     input_paths = assemble_path_args(*paths)
     for input_path in input_paths:
         cprint(f"{fmt_loc(input_path)}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)

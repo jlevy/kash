@@ -10,7 +10,7 @@ from kash.model.items_model import Item, ItemType
 from kash.shell.output.shell_output import Wrap, cprint
 from kash.text_handling.unified_diffs import unified_diff_files, unified_diff_items
 from kash.utils.file_utils.file_formats_model import Format
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -20,12 +20,12 @@ def diff_items(*paths: str, force: bool = False) -> ShellResult:
     """
     Show the unified diff between the given files. It's often helpful to treat diffs
     as items themselves, so this works on items. Items are imported as usual into the
-    scratch workspace if they are not already in the store.
+    global workspace if they are not already in the store.
 
     :param stat: Only show the diffstat summary.
     :param force: If true, will run the diff even if the items are of different formats.
     """
-    ws = current_workspace()
+    ws = current_ws()
     if len(paths) == 2:
         [path1, path2] = paths
     elif len(paths) == 0:
@@ -79,7 +79,7 @@ def diff_files(*paths: str, diffstat: bool = False, save: bool = False) -> Shell
             format=Format.diff,
             body=diff.patch_text,
         )
-        ws = current_workspace()
+        ws = current_ws()
         if save:
             diff_store_path = ws.save(diff_item, as_tmp=False)
             select(diff_store_path)

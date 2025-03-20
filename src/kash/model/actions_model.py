@@ -31,7 +31,7 @@ from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
 from kash.utils.common.string_template import StringTemplate
 from kash.utils.common.type_utils import not_none
-from kash.workspaces.workspaces import Workspace, get_workspace
+from kash.workspaces.workspaces import Workspace, get_ws
 
 log = get_logger(__name__)
 
@@ -77,7 +77,7 @@ class ExecContext:
 
     @property
     def workspace(self) -> Workspace:
-        return get_workspace(self.workspace_dir)
+        return get_ws(self.workspace_dir)
 
     def __repr__(self):
         return abbrev_obj(self, field_max_len=80)

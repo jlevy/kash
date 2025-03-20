@@ -36,7 +36,7 @@ from kash.model.items_model import Item, ItemType, State
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
-from kash.workspaces.workspaces import current_workspace
+from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -379,7 +379,7 @@ def kash_action(
                 context = provided_context
             else:
                 context = ExecContext(
-                    action, current_workspace().base_dir, rerun=rerun, override_state=override_state
+                    action, current_ws().base_dir, rerun=rerun, override_state=override_state
                 )
 
             # Run the action.

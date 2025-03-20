@@ -13,7 +13,7 @@ from kash.utils.common.type_utils import as_dataclass, not_none
 from kash.utils.file_utils.file_formats_model import Format
 from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 from kash.workspaces.source_items import find_upstream_item
 
 log = get_logger(__name__)
@@ -84,7 +84,7 @@ def _load_tab_content(config: TabbedWebpage):
     Load the content for each tab.
     """
     for tab in config.tabs:
-        html = current_workspace().load(StorePath(not_none(tab.store_path))).body_as_html()
+        html = current_ws().load(StorePath(not_none(tab.store_path))).body_as_html()
         tab.content_html = html
 
 

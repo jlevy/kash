@@ -13,7 +13,7 @@ from kash.model.paths_model import StorePath
 from kash.shell.output.kerm_codes import KriLink, TextTooltip, UIAction, UIActionType
 from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.format_utils import fmt_loc
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -154,7 +154,7 @@ def local_url_formatter(ws_name: str | None = None):
     """
     if _local_urls_enabled:
         try:
-            ws_name = current_workspace().name
+            ws_name = current_ws().name
             fmt = WorkspaceLinkFormatter(ws_name)
         except InvalidState:
             fmt = DefaultLinkFormatter()

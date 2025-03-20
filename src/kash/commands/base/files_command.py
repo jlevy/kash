@@ -29,7 +29,7 @@ from kash.utils.file_utils.file_sort_filter import (
 )
 from kash.utils.file_utils.ignore_files import ignore_none
 from kash.utils.file_utils.path_utils import common_parent_dir
-from kash.workspaces import current_ignore, current_workspace
+from kash.workspaces import current_ignore, current_ws
 
 log = get_logger(__name__)
 
@@ -155,7 +155,7 @@ def files(
     # current workspace, detect that, since it's convenient to enable brief listings
     # in workspaces.
     cwd = Path.cwd()
-    ws = current_workspace()
+    ws = current_ws()
     active_ws_name = ws.name if cwd.is_relative_to(ws.base_dir.resolve()) else None
     # Check if all requested paths are within the current directory, and if so use
     # that as the base path. Otherwise, use the common parent directory of all paths.
@@ -283,7 +283,7 @@ def files(
             format=Format.csv,
             body=df.to_csv(index=False),
         )
-        ws = current_workspace()
+        ws = current_ws()
         store_path = ws.save(item, as_tmp=False)
         log.message("File listing saved to: %s", fmt_path(store_path))
 

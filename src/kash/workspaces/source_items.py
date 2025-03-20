@@ -9,7 +9,7 @@ from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.type_utils import not_none
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -48,7 +48,7 @@ def find_upstream_item(
     if not item.relations.derived_from:
         raise NoMatch(f"Item must be derived from another item: {item}")
 
-    workspace = current_workspace()
+    workspace = current_ws()
 
     log.info(
         "Finding items upstream of %s:\n%s",

@@ -12,7 +12,7 @@ from kash.model.paths_model import StorePath
 from kash.shell.ui.shell_results import shell_print_selection_history
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.lang_utils.inflection import plural
-from kash.workspaces import Selection, current_workspace
+from kash.workspaces import Selection, current_ws
 
 log = get_logger(__name__)
 
@@ -50,7 +50,7 @@ def select(
     :param clear: Clear the full selection history.
     :param clear_future: Clear all selections from history after the current one.
     """
-    ws = current_workspace()
+    ws = current_ws()
 
     # TODO: It would be nice to be able to read stdin from a pipe but this isn't working rn.
     # You could then run `... | select --stdin` to select the piped input.
@@ -112,7 +112,7 @@ def unselect(*paths: str) -> ShellResult:
     Remove items from the current selection. Handy if you've just selected some items and
     wish to unselect a few of them. Used without arguments, makes the current selection empty.
     """
-    ws = current_workspace()
+    ws = current_ws()
 
     current_paths = ws.selections.current.paths.copy()
     new_paths = ws.selections.unselect_current([StorePath(path) for path in paths]).paths
@@ -176,7 +176,7 @@ def save(parent: str | None = None, to: str | None = None, no_frontmatter: bool 
         overwrite (and make a backup).
     :param no_frontmatter: If true, will not include YAML frontmatter in the output.
     """
-    ws = current_workspace()
+    ws = current_ws()
     store_paths = ws.selections.current.paths
 
     def copy_file(store_path: StorePath, target_path: Path):

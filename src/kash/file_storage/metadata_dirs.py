@@ -24,7 +24,7 @@ STORE_VERSION = "sv1"
 @dataclass(frozen=True)
 class MetadataDirs:
     base_dir: Path
-    is_scratch: bool
+    is_global_ws: bool
 
     # All other paths are relative to the base directory so defaults are
     # always the same and can be set here:
@@ -58,11 +58,11 @@ class MetadataDirs:
         "tmp_dir",
     ]
 
-    # Cache is always within the directory, unless it is a scratch workspace,
+    # Cache is always within the directory, unless it is the global workspace,
     # in which case it is in the global cache path.
     @property
     def cache_dir(self) -> Path:
-        return GLOBAL_CACHE_PATH if self.is_scratch else StorePath(f"{DOT_DIR}/cache")
+        return GLOBAL_CACHE_PATH if self.is_global_ws else StorePath(f"{DOT_DIR}/cache")
 
     @property
     def media_cache_dir(self) -> Path:

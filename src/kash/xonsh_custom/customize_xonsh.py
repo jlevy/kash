@@ -23,7 +23,7 @@ from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.utils.native_utils import sys_tool_check
 from kash.version import get_version_name
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
 from kash.xonsh_custom.xonsh_completers import load_completers
 from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
@@ -102,7 +102,7 @@ def customize_xonsh():
         cprint()
         log_command_action_info()
 
-        current_workspace()  # Validates and logs info for user.
+        current_ws()  # Validates and logs info for user.
 
         sys_tool_check().warn_if_missing()
 

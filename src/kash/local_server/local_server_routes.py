@@ -31,9 +31,9 @@ DEFAULT_MAX_LINES = 1000
 
 
 def server_get_workspace(ws_name: str) -> FileStore:
-    from kash.workspaces import get_workspace
+    from kash.workspaces import get_ws
 
-    file_store = get_workspace(ws_name)
+    file_store = get_ws(ws_name)
     if not file_store:
         raise HTTPException(status_code=404, detail=f"Workspace not found: `{ws_name}`")
     return file_store

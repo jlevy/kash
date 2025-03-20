@@ -18,7 +18,7 @@ from kash.shell.output.shell_output import PrintHooks, cprint, format_name_and_v
 from kash.utils.common.format_utils import fmt_count_items, fmt_loc
 from kash.utils.file_utils.dir_size import get_dir_size
 from kash.utils.file_utils.file_formats_model import file_format_info
-from kash.workspaces import Selection, current_workspace
+from kash.workspaces import Selection, current_ws
 
 log = get_logger(__name__)
 
@@ -53,7 +53,7 @@ def shell_print_selection(selection: Selection) -> None:
 
 def post_shell_result(res: ShellResult) -> None:
     if res.show_selection or res.suggest_actions:
-        selection = current_workspace().selections.current
+        selection = current_ws().selections.current
 
         if res.show_selection:
             PrintHooks.before_show_selection()

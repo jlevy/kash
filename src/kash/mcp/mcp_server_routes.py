@@ -17,7 +17,7 @@ from kash.model.actions_model import Action, ActionResult, ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
 from kash.utils.common.atomic_var import AtomicVar
-from kash.workspaces.workspaces import current_workspace
+from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -179,7 +179,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
     """
     try:
         with captured_output() as capture:
-            ws = current_workspace()
+            ws = current_ws()
             action_cls = look_up_action_class(action_name)
 
             # Extract items array and remaining params from arguments.

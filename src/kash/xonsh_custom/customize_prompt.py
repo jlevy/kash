@@ -8,7 +8,7 @@ from kash.config import colors
 from kash.config.logger import get_console
 from kash.config.text_styles import PROMPT_MAIN
 from kash.shell.output.kerm_code_utils import text_with_tooltip
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 # Xonsh default prompt for reference:
 # dp = (
@@ -27,7 +27,7 @@ PtkTokens = list[PtkToken]
 class PromptInfo:
     workspace_str: str
     workspace_details: str
-    is_scratch: bool
+    is_global_ws: bool
     cwd_str: str
     cwd_details: str
     cwd_in_workspace: bool
@@ -36,14 +36,14 @@ class PromptInfo:
 def get_prompt_info() -> PromptInfo:
     # Could do this faster with current_workspace_info() but actually it's nicer to load
     # and log info about the whole workspace after a cd so we do that.
-    ws = current_workspace()
+    ws = current_ws()
     ws_name = ws.name
-    is_scratch = ws.is_scratch
+    is_global_ws = ws.is_global_ws
 
-    if ws_name and not is_scratch:
+    if ws_name and not is_global_ws:
         workspace_str = ws_name
     else:
-        workspace_str = "(scratch)"
+        workspace_str = "(global_ws)"
     workspace_details = f"Workspace at {ws.base_dir}"
 
     cwd = Path(".").resolve()
@@ -60,7 +60,7 @@ def get_prompt_info() -> PromptInfo:
     cwd_details = f"Current directory at {cwd}"
 
     return PromptInfo(
-        workspace_str, workspace_details, is_scratch, cwd_str, cwd_details, cwd_in_workspace
+        workspace_str, workspace_details, is_global_ws, cwd_str, cwd_details, cwd_in_workspace
     )
 
 
@@ -162,7 +162,7 @@ def kash_xonsh_prompt() -> FormattedText:
     settings = get_prompt_style().settings
     info = get_prompt_info()
 
-    workspace_color = settings.ptk_style_warn if info.is_scratch else settings.ptk_style
+    workspace_color = settings.ptk_style_warn if info.is_global_ws else settings.ptk_style
     workspace_tokens = text_with_tooltip(
         info.workspace_str, hover_text=info.workspace_details
     ).as_ptk_tokens(style=workspace_color)

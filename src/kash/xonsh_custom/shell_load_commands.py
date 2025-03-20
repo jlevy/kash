@@ -20,7 +20,7 @@ from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.ui.shell_results import show_shell_result
 from kash.shell.utils.exception_printing import wrap_with_exception_printing
 from kash.shell.utils.shell_function_wrapper import wrap_for_shell_args
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 from kash.workspaces.workspace_output import post_shell_result
 from kash.xonsh_custom.xonsh_env import is_interactive, set_alias, set_env, update_aliases
 
@@ -54,7 +54,7 @@ def _wrap_handle_results(func: Callable[..., R]) -> Callable[[list[str]], None]:
 
         silent = not is_interactive()  # Don't log workspace info unless interactive.
 
-        selections = current_workspace(silent=silent).selections
+        selections = current_ws(silent=silent).selections
         selection = selections.current
         set_env("selections", selections)
         set_env("selection", selection)

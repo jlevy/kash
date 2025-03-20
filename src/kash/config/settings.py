@@ -16,8 +16,8 @@ GLOBAL_KASH_DIR = Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser()
 
 RCFILE_PATH = Path("~/.kashrc").expanduser().resolve()
 
-SANDBOX_NAME = "scratch"
-SANDBOX_KB_PATH = GLOBAL_KASH_DIR / SANDBOX_NAME
+GLOBAL_WS_NAME = "global"
+GLOBAL_WS_PATH = GLOBAL_KASH_DIR / GLOBAL_WS_NAME
 
 GLOBAL_CACHE_PATH = GLOBAL_KASH_DIR / "cache"
 MEDIA_CACHE_NAME = "media"
@@ -118,9 +118,6 @@ class Settings:
     default_editor: str
     """The default editor to use for editing files."""
 
-    use_scratch: bool
-    """If not in a workspace, use the scratch workspace."""
-
     console_log_level: LogLevel
     """The log level for console-based logging."""
 
@@ -160,7 +157,6 @@ _settings = AtomicVar(
         content_cache_dir=GLOBAL_CACHE_PATH / CONTENT_CACHE_NAME,
         debug_assistant=True,
         default_editor="nano",
-        use_scratch=True,
         file_log_level=LogLevel.info,
         console_log_level=DEFAULT_LOG_LEVEL,
         local_server_ports_start=LOCAL_SERVER_PORT_START,

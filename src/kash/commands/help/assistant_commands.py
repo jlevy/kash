@@ -16,7 +16,7 @@ from kash.llm_utils.language_models import LLM
 from kash.model.items_model import Item, ItemType
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.file_utils.file_formats_model import Format
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -64,7 +64,7 @@ def assistant_system_message(
             is_structured=is_structured, skip_api_docs=skip_api_docs
         ),
     )
-    ws = current_workspace()
+    ws = current_ws()
     store_path = ws.save(item, as_tmp=True)
 
     log.message("Saved assistant system message to %s", store_path)
@@ -81,7 +81,7 @@ def assistant_history(follow: bool = False) -> None:
 
     :param follow: Follow the file as it grows.
     """
-    ws = current_workspace()
+    ws = current_ws()
     tail_file(ws.base_dir / ws.dirs.assistant_history_yml, follow=follow)
 
 
@@ -91,7 +91,7 @@ def clear_assistant() -> None:
     Clear the assistant history for the current workspace. Old history file will be
     moved to the trash.
     """
-    ws = current_workspace()
+    ws = current_ws()
     path = ws.base_dir / ws.dirs.assistant_history_yml
     if path.exists():
         trash(path)

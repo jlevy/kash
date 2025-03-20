@@ -4,10 +4,10 @@ from kash.workspaces.selections import Selection, SelectionHistory
 from kash.workspaces.workspaces import (
     Workspace,
     current_ignore,
-    current_workspace,
-    get_scratch_workspace,
-    get_workspace,
-    resolve_workspace,
-    scratch_dir,
-    workspace_param_value,
+    current_ws,
+    get_global_ws,
+    get_ws,
+    global_ws_dir,
+    resolve_ws,
+    ws_param_value,
 )

@@ -15,7 +15,7 @@ from kash.config.setup import setup
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_stdio import get_log_path, run_mcp_server_stdio
 from kash.version import get_version
-from kash.workspaces.workspaces import get_workspace, scratch_dir
+from kash.workspaces.workspaces import get_ws, global_ws_dir
 
 __version__ = get_version()
 
@@ -31,8 +31,8 @@ def parse_args():
     )
     parser.add_argument(
         "--workspace",
-        default=scratch_dir(),
-        help="Set workspace directory. Defaults to kash scratch directory.",
+        default=global_ws_dir(),
+        help="Set workspace directory. Defaults to kash global workspace directory.",
     )
     return parser.parse_args()
 
@@ -49,7 +49,7 @@ def main():
     setup(rich_logging=False)
     kash_reload_all()
 
-    ws = get_workspace(base_dir, auto_init=True)
+    ws = get_ws(base_dir, auto_init=True)
 
     log.info("Running on workspace: %s", ws.base_dir)
 

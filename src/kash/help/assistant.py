@@ -33,7 +33,7 @@ from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.parse_shell_args import shell_unquote
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.lang_utils.capitalization import capitalize_cms
-from kash.workspaces import current_workspace
+from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -101,15 +101,15 @@ def assist_current_state() -> Message:
         select,
     )  # Avoid circular imports.
 
-    ws = current_workspace()
+    ws = current_ws()
     ws_base_dir = ws.base_dir
-    is_scratch = ws.is_scratch
+    is_global_ws = ws.is_global_ws
 
-    if ws_base_dir and not is_scratch:
+    if ws_base_dir and not is_global_ws:
         ws_info = f"Based on the current directory, the current workspace is: {ws_base_dir.name} at {fmt_loc(ws_base_dir)}"
     else:
-        if is_scratch:
-            about_ws = "You are currently using the global scratch workspace."
+        if is_global_ws:
+            about_ws = "You are currently using the `global` workspace."
         else:
             about_ws = "The current directory is not a workspace."
         ws_info = (
@@ -166,7 +166,7 @@ def assist_system_message_with_state(is_structured: bool, skip_api_docs: bool = 
 
 
 def assistant_history_file() -> Path:
-    ws = current_workspace()
+    ws = current_ws()
     return ws.base_dir / ws.dirs.assistant_history_yml
 
 
@@ -307,7 +307,7 @@ def shell_context_assistance(
                 format=Format.kash_script,
                 body=script.script_str,
             )
-            ws = current_workspace()
+            ws = current_ws()
             ws.save(item, as_tmp=True)
 
     else:
