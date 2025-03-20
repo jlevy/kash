@@ -3,7 +3,6 @@
 reformat --inplace src/kash/docs/markdown/topics/*.md src/kash/docs/markdown/*.md
 
 format_markdown_template \
-  src/kash/docs/markdown/doc_logo.md \
   src/kash/docs/markdown/topics/a1_what_is_kash.md \
   src/kash/docs/markdown/topics/a2_progress.md \
   src/kash/docs/markdown/topics/a3_installation.md \

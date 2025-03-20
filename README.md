@@ -1,28 +1,9 @@
 <div align="center">
 
-<p style="max-width: 400px;">
+<img width="392" alt="kash"
+src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8d3fe" />
 
-<br/>
-
-<b>
-
-```
-┌──────────────────────── ▀▄ ── █ ───────── █ ─────────────────────────┐
-│                           ▀▄ ▒█ █▒▀▀█▒█▀▀▒█▀█▒                       │
-│                          ▄▀  ▒█▀▄▒█▀█▒▀▀█▒█▒█▒                       │
-│                         ▀    ▒▀▒▀▒▀▀▀▒▀▀▀▒▀▒▀▒                       │
-│                                                                      │
-│                        THE KNOWLEDGE AGENT SHELL                     │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
-</b>
-
-<b><i>An AI-native command line for advanced workflows</i></b>
-
-⛭
-
-</p>
+</div>
 
 </div>
 

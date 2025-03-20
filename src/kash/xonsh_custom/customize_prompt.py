@@ -43,7 +43,7 @@ def get_prompt_info() -> PromptInfo:
     if ws_name and not is_global_ws:
         workspace_str = ws_name
     else:
-        workspace_str = "(global_ws)"
+        workspace_str = "(global)"
     workspace_details = f"Workspace at {ws.base_dir}"
 
     cwd = Path(".").resolve()

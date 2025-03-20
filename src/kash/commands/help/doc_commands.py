@@ -26,41 +26,52 @@ from kash.version import get_version_name
 log = get_logger(__name__)
 
 
+# Break the line into non-space and space chunks by using a regex.
+# Colorize each chunk and optionally swap lines to spaces.
+def logo_colorize_line(line: str, space_replacement: str = " ", line_offset: int = 0) -> Text:
+    line = " " * line_offset + line
+    bits = re.findall(r"[^\s]+|\s+", line)
+    texts = []
+    solid_count = 0
+    for i, bit in enumerate(bits):
+        if bit.strip():
+            texts.append(
+                Text(
+                    bit,
+                    style=STYLE_LOGO if solid_count > 0 else STYLE_EMPH,
+                )
+            )
+            solid_count += 1
+        else:
+            bit = re.sub(r" ", space_replacement, bit)
+            if i > 0:
+                bit = " " + bit[1:]
+            if i < len(bits) - 1:
+                bit = bit[:-1] + " "
+            texts.append(Text(bit, style=COLOR_HINT))
+    return Text.assemble(*texts)
+
+
+def color_logo() -> Group:
+    logo_lines = LOGO_LARGE.split("\n")
+    left_margin = 2
+    offset = 2
+    return Group(
+        *[logo_colorize_line(line, " ", left_margin + offset) for line in logo_lines],
+        Text.assemble(" " * left_margin, TAGLINE_STYLED),
+    )
+
+
 def branded_box(content: Group | None, version: str | None = None) -> Panel:
     line_char = "─"
     panel_width = CONSOLE_WRAP_WIDTH
 
-    # Break the line into non-space and space chunks by using a regex.
-    # Colorize each chunk and optionally swap lines to spaces.
-    def colorize_line(line: str, space_replacement: str, line_offset: int = 0) -> Text:
-        line = " " * line_offset + line
-        bits = re.findall(r"[^\s]+|\s+", line)
-        texts = []
-        solid_count = 0
-        for i, bit in enumerate(bits):
-            if bit.strip():
-                texts.append(
-                    Text(
-                        bit,
-                        style=STYLE_LOGO if solid_count > 0 else STYLE_EMPH,
-                    )
-                )
-                solid_count += 1
-            else:
-                bit = re.sub(r" ", space_replacement, bit)
-                if i > 0:
-                    bit = " " + bit[1:]
-                if i < len(bits) - 1:
-                    bit = bit[:-1] + " "
-                texts.append(Text(bit, style=COLOR_HINT))
-        return Text.assemble(*texts)
-
     logo_lines = LOGO_LARGE.split("\n")
-    logo_top = colorize_line(logo_lines[0], line_char)
+    logo_top = logo_colorize_line(logo_lines[0], line_char)
     offset = (panel_width - 4 - len(logo_top)) // 2
     tagline_offset = (panel_width - 4 - len(TAGLINE_STYLED)) // 2 + 1
 
-    logo_rest = [colorize_line(line, " ", offset) for line in logo_lines[1:]]
+    logo_rest = [logo_colorize_line(line, " ", offset) for line in logo_lines[1:]]
     if version:
         header = Text.assemble(*logo_top)
         footer = Text(version, style=COLOR_HINT, justify="right")
@@ -90,13 +101,14 @@ def branded_box(content: Group | None, version: str | None = None) -> Panel:
 
 
 @kash_command
-def kash_logo(svg_out: str | None = None, html_out: str | None = None) -> None:
+def kash_logo(box: bool = False, svg_out: str | None = None, html_out: str | None = None) -> None:
     """
     Show the kash logo.
     """
-    logo = branded_box(None)
+    logo = branded_box(None) if box else color_logo()
 
     cprint(logo)
+
     if svg_out:
         with record_console() as console:
             console.print(logo)
