@@ -8,9 +8,13 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+ 
+    environment: CI Env
+
     permissions:
       id-token: write # Mandatory for OIDC.
       contents: read
+  
     steps:
       - name: Checkout (official GitHub action)
         uses: actions/checkout@v4
@@ -33,6 +37,8 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         
       - name: Build package
         run: uv build

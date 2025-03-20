@@ -30,7 +30,7 @@ RECOMMENDED_APIS = [
 ]
 
 
-def api_setup() -> str | None:
+def api_setup() -> str:
     dotenv_path = find_dotenv(usecwd=True)
     if dotenv_path:
         load_dotenv(dotenv_path)
@@ -47,7 +47,10 @@ def warn_if_missing_api_keys(keys: list[Api] = RECOMMENDED_APIS) -> list[Api]:
 
     missing_keys = [api for api in keys if api.value not in os.environ]
     if missing_keys:
-        log.warning("Missing recommended API keys (check .env file?): %s", ", ".join(missing_keys))
+        log.warning(
+            "Missing recommended API keys (check .env file or set them?): %s",
+            ", ".join(missing_keys),
+        )
 
     return missing_keys
 
@@ -61,7 +64,7 @@ def print_api_key_setup(once: bool = False) -> None:
     cprint(
         Text.assemble(
             format_success_or_failure(
-                dotenv_path is not None,
+                value=bool(dotenv_path),
                 true_str=f"Found .env file: {dotenv_path}",
                 false_str="No .env file found. Set up your API keys in a .env file.",
             ),

@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from rich.box import SQUARE
-from rich.console import Console, Group
+from rich.console import Group
 from rich.panel import Panel
 from rich.text import Text
 
@@ -11,7 +11,6 @@ from kash.config.logger import get_logger, record_console
 from kash.config.text_styles import (
     COLOR_HINT,
     CONSOLE_WRAP_WIDTH,
-    LOGO_LARGE_FANCY,
     LOGO_LARGE,
     STYLE_EMPH,
     STYLE_LOGO,
@@ -99,14 +98,12 @@ def kash_logo(svg_out: str | None = None, html_out: str | None = None) -> None:
 
     cprint(logo)
     if svg_out:
-        console = Console(force_terminal=True, record=True)
         with record_console() as console:
             console.print(logo)
         with Path(svg_out).open("w") as f:
             f.write(console.export_svg(theme=rich_terminal_dark))
         log.message(f"Wrote logo: {svg_out}")
     if html_out:
-        console = Console(force_terminal=True, record=True)
         with record_console() as console:
             console.print(logo)
         with Path(html_out).open("w") as f:

@@ -26,6 +26,8 @@ jobs:
     # Linux only by default. Use ${{ matrix.os }} for other OSes.
     runs-on: ${{ matrix.os }}
 
+    environment: CI Env
+
     steps:
       # Generally following uv docs:
       # https://docs.astral.sh/uv/guides/integration/github/
@@ -60,3 +62,5 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
