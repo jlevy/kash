@@ -623,7 +623,7 @@ def add_key_bindings() -> None:
         buf.insert_text(" ")
 
     @custom_bindings.add("enter", filter=whitespace_only)
-    def _(event: KeyPressEvent):
+    def _(_event: KeyPressEvent):
         """
         Suppress enter if the command line is empty, but add a newline above the prompt.
         """

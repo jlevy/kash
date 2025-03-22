@@ -67,7 +67,7 @@ def apply_fnm_env(xsh: XonshSession, env_vars: FnmEnv) -> None:
             xsh.env[key] = value
 
 
-def _nvm_stub(args: str, stdin: str, stdout: str, stderr: str) -> None:
+def _nvm_stub(_args: str, _stdin: str, _stdout: str, _stderr: str) -> None:
     print("error: Oops, `nvm` doesn't work in xonsh; try `fnm` instead!")
 
 
@@ -86,7 +86,7 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore
         env_vars = parse_fnm_env()
         apply_fnm_env(xsh, env_vars)
 
-        def fnm_use_if_file_found(newdir: str, olddir: str | None = None) -> None:
+        def fnm_use_if_file_found(_newdir: str, _olddir: str | None = None) -> None:
             """
             Check for Node version files and switch if necessary using xsh session.
             """
@@ -105,7 +105,7 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore
         return {}
 
 
-def _unload_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+def _unload_xontrib_(_xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
     """
     Clean up the fnm xontrib.
     """

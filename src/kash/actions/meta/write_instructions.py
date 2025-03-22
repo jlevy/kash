@@ -9,7 +9,7 @@ from kash.model import NO_ARGS, ActionInput, ActionResult, Format, Item, ItemTyp
     interactive_input=True,
     cacheable=False,
 )
-def write_instructions(input: ActionInput) -> ActionResult:
+def write_instructions(_input: ActionInput) -> ActionResult:
     """
     Write a chat item with system and user instructions.
     """

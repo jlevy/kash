@@ -15,7 +15,7 @@ from kash.shell.output.shell_output import PrintHooks, Wrap, print_response
     precondition=is_chat,
     params=common_params("model"),
 )
-def assistant_chat(input: ActionInput, model: LLMName = LLM.default_careful) -> ActionResult:
+def assistant_chat(_input: ActionInput, model: LLMName = LLM.default_careful) -> ActionResult:
     """
     Chat with the kash assistant. This is just the same as typing on the command line,
     but with a chat session.

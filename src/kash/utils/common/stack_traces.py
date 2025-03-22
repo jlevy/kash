@@ -35,7 +35,7 @@ def dump_stack_traces(all_threads: bool = True, file=sys.stderr):
     print(current_stack_traces(all_threads), file=file)
 
 
-def _dump_stack_traces_handler(signum, frame, file=sys.stderr):
+def _dump_stack_traces_handler(signum, _frame, file=sys.stderr):
     print(f"\n\nReceived signal {signum}, will dump stack traces:", file=file)
     dump_stack_traces()
 

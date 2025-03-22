@@ -24,7 +24,7 @@ class LLMName(str):
         yield cls.validate
 
     @classmethod
-    def validate(cls, value: str, info: ValidationInfo) -> LLMName:
+    def validate(cls, value: str, _info: ValidationInfo) -> LLMName:
         if isinstance(value, cls):
             return value
         if isinstance(value, str):

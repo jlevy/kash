@@ -33,7 +33,7 @@ def _print_command_help(
     param_info: list[Param] | None = None,
     precondition: Precondition | None = None,
     verbose: bool = True,
-    is_action: bool = False,
+    is_action: bool = False,  # pyright: ignore[reportUnusedParameter]
     extra_note: str | None = None,
 ):
     command_str = f"the `{name}` command" if name else "this command"

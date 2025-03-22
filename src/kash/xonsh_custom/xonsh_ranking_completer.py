@@ -140,7 +140,7 @@ class RankingCompleter(Completer):
     def _rank_completions(
         self,
         completions: list[ScoredCompletion],
-        context: CompletionContext,
+        _context: CompletionContext,
     ) -> None:
         sortkey = sort_scored_and_grouped()
         completions.sort(key=sortkey)

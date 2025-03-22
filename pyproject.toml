@@ -180,10 +180,10 @@ ignore = [
 # https://docs.basedpyright.com/latest/configuration/config-files/#sample-pyprojecttoml-file
 [tool.basedpyright]
 include = ["src", "tests", "devtools"]
+reportUnusedParameter = "warning"
 # These likely worth revisiting and re-enabling:
 reportImplicitOverride = false
 reportImportCycles = false
-reportUnusedParameter = false
 reportUnknownMemberType = false
 reportPrivateUsage = false
 reportPrivateLocalImportUsage = false

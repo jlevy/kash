@@ -3,7 +3,7 @@ from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
-from kash.shell.output.shell_output import cprint, format_name_and_value
+from kash.shell.output.shell_output import PrintHooks, cprint, format_name_and_value, print_h2
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 
 log = get_logger(__name__)
@@ -102,3 +102,17 @@ def kits() -> None:
         cprint("Currently imported kits:")
         for kit in get_loaded_kits().values():
             cprint(format_name_and_value(f"{kit.name} kit", str(kit.path or "")))
+
+
+@kash_command
+def settings() -> None:
+    """
+    Show all global kash settings.
+    """
+    from kash.config.settings import global_settings
+
+    settings = global_settings()
+    print_h2("Global Settings")
+    for field, value in settings.__dict__.items():
+        cprint(format_name_and_value(field, str(value)))
+    PrintHooks.spacer()

@@ -124,7 +124,7 @@ def test_inspect_function_params():
     def func4() -> list:
         return []
 
-    def func5(x: int, y: int = 3, *, z: int = 4, **kwargs):
+    def func5(x: int, y: int = 3, *, z: int = 4, **kwargs):  # pyright: ignore[reportUnusedParameter]
         pass
 
     params0 = inspect_function_params(func0)

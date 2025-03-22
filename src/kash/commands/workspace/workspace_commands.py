@@ -74,7 +74,7 @@ def clear_global_ws() -> None:
     ws.log_store_info()
 
 
-def _get_cache_dirs(workspace: str | None = None) -> tuple[Path, Path]:
+def _get_cache_dirs(workspace: str | None) -> tuple[Path, Path]:
     if workspace:
         ws = get_ws(workspace)
         media_cache = (ws.base_dir / ws.dirs.media_cache_dir).resolve()
@@ -119,18 +119,19 @@ def cache_list(media: bool = False, content: bool = False, workspace: str | None
 
 
 @kash_command
-def clear_cache(media: bool = False, content: bool = False) -> None:
+def clear_cache(media: bool = False, content: bool = False, workspace: str | None = None) -> None:
     """
-    Clear the workspace media and content caches. By default clears both caches.
+    Clear the media and content caches. By default clears both caches.
 
     :param media: Clear media cache only.
     :param content: Clear content cache only.
+    :param global_cache: If in a workspace, clear the global caches, not the workspace caches.
     """
     if not media and not content:
         media = True
         content = True
 
-    media_cache, content_cache = _get_cache_dirs()
+    media_cache, content_cache = _get_cache_dirs(workspace)
 
     if media and is_nonempty_dir(media_cache):
         trash(media_cache)

@@ -22,7 +22,7 @@ class Message(str):
         yield cls.validate
 
     @classmethod
-    def validate(cls, value: str, info: ValidationInfo) -> Message:
+    def validate(cls, value: str, _info: ValidationInfo) -> Message:
         return cls(dedent(str(value)).strip())
 
 

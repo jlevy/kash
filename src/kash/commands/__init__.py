@@ -6,7 +6,6 @@ import kash.commands.base.debug_commands  # noqa: F401
 import kash.commands.base.diff_commands  # noqa: F401
 import kash.commands.base.files_command  # noqa: F401
 import kash.commands.base.general_commands  # noqa: F401
-import kash.commands.base.global_state_commands  # noqa: F401
 import kash.commands.base.logs_commands  # noqa: F401
 import kash.commands.base.reformat_command  # noqa: F401
 import kash.commands.base.search_command  # noqa: F401

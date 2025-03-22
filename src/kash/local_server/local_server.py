@@ -32,14 +32,14 @@ def _app_setup() -> FastAPI:
     # Map common exceptions to HTTP codes.
     # FileNotFound first, since it might also be an InvalidInput.
     @app.exception_handler(FileNotFoundError)
-    async def file_not_found_exception_handler(request: Request, exc: FileNotFoundError):
+    async def file_not_found_exception_handler(_request: Request, exc: FileNotFoundError):
         return JSONResponse(
             status_code=404,
             content={"message": f"File not found: {exc}"},
         )
 
     @app.exception_handler(InvalidInput)
-    async def invalid_input_exception_handler(request: Request, exc: InvalidInput):
+    async def invalid_input_exception_handler(_request: Request, exc: InvalidInput):
         return JSONResponse(
             status_code=400,
             content={"message": f"Invalid input: {exc}"},
@@ -47,7 +47,7 @@ def _app_setup() -> FastAPI:
 
     # Global exception handler.
     @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
+    async def global_exception_handler(_request: Request, _exc: Exception):
         return JSONResponse(
             status_code=500,
             content={"message": "Internal server error."},

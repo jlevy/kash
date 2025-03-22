@@ -56,7 +56,7 @@ class MarkdownElement:
     new_line: ClassVar[bool] = True
 
     @classmethod
-    def create(cls, markdown: Markdown, token: Token) -> MarkdownElement:
+    def create(cls, _markdown: Markdown, _token: Token) -> MarkdownElement:
         """Factory to create markdown element,
 
         Args:
@@ -68,28 +68,28 @@ class MarkdownElement:
         """
         return cls()
 
-    def on_enter(self, context: MarkdownContext) -> None:
+    def on_enter(self, _context: MarkdownContext) -> None:
         """Called when the node is entered.
 
         Args:
             context (MarkdownContext): The markdown context.
         """
 
-    def on_text(self, context: MarkdownContext, text: TextType) -> None:
+    def on_text(self, _context: MarkdownContext, _text: TextType) -> None:
         """Called when text is parsed.
 
         Args:
             context (MarkdownContext): The markdown context.
         """
 
-    def on_leave(self, context: MarkdownContext) -> None:
+    def on_leave(self, _context: MarkdownContext) -> None:
         """Called when the parser leaves the element.
 
         Args:
             context (MarkdownContext): [description]
         """
 
-    def on_child_close(self, context: MarkdownContext, child: MarkdownElement) -> bool:
+    def on_child_close(self, _context: MarkdownContext, _child: MarkdownElement) -> bool:
         """Called when a child element is closed.
 
         This method allows a parent element to take over rendering of its children.
