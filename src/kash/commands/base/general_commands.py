@@ -33,7 +33,8 @@ def self_check(brief: bool = False) -> None:
             all_docs.load()
         except Exception as e:
             log.error("Could not index docs: %s", e)
-            raise e
+            cprint("See `logs` for details.")
+            log.info("Exception details", exc_info=True)
     else:
         version()
         cprint()
@@ -51,7 +52,8 @@ def self_check(brief: bool = False) -> None:
             all_docs.load()
         except Exception as e:
             log.error("Could not index docs: %s", e)
-            raise e
+            cprint("See `logs` for details.")
+            log.info("Exception details", exc_info=True)
 
 
 @kash_command

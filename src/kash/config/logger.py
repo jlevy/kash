@@ -38,6 +38,10 @@ from kash.utils.common.task_stack import task_stack_prefix_str
 class LogSettings:
     log_console_level: LogLevel
     log_file_level: LogLevel
+    # Always the same global log directory.
+    global_log_dir: Path
+
+    # These directories can change based on the current workspace:
     log_dir: Path
     log_objects_dir: Path
     log_file_path: Path
@@ -47,6 +51,7 @@ _log_base = GLOBAL_KASH_DIR
 """
 Parent of the "logs" directory. Initially the global kash data root.
 """
+
 
 LOG_NAME_GLOBAL = "global"
 
@@ -70,6 +75,7 @@ def _read_log_settings() -> LogSettings:
     return LogSettings(
         log_console_level=global_settings().console_log_level,
         log_file_level=global_settings().file_log_level,
+        global_log_dir=GLOBAL_KASH_DIR / "logs",
         log_dir=_log_base / "logs",
         log_objects_dir=_log_base / "logs" / "objects" / _log_name,
         log_file_path=_log_base / "logs" / f"{_log_name}.log",

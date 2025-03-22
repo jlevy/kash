@@ -21,7 +21,7 @@ import kash.config.suppress_warnings  # noqa: F401  # usort:skip
 # Keeping initial imports/deps minimal.
 from kash.config import colors
 from kash.config.lazy_imports import import_start_time  # usort:skip
-from kash.config.logger import get_console, get_logger
+from kash.config.logger import get_console, get_log_settings, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
 from kash.config.text_styles import SPINNER
 from kash.help.assistant import AssistanceType
@@ -218,6 +218,7 @@ def customize_xonsh_settings(is_interactive: bool):
     """
     Xonsh settings to customize xonsh better kash usage.
     """
+
     input_color = colors.terminal.input
     default_settings = {
         # Auto-cd if a directory name is typed.
@@ -226,7 +227,10 @@ def customize_xonsh_settings(is_interactive: bool):
         # https://xon.sh/envvars.html#thread-subprocs
         "THREAD_SUBPROCS": False,
         "XONSH_INTERACTIVE": is_interactive,
+        "COLOR_RESULTS": True,
         "XONSH_SHOW_TRACEBACK": XONSH_SHOW_TRACEBACK,
+        # Set this explicitly to disable xonsh's verbose "To log full traceback to a file" messages.
+        "XONSH_TRACEBACK_LOGFILE": get_log_settings().global_log_dir / "xonsh_tracebacks.log",
         # TODO: Consider enabling and adapting auto-suggestions.
         "AUTO_SUGGEST": False,
         # Completions can be "none", "single", "multi", or "readline".
