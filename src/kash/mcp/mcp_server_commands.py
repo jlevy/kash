@@ -1,8 +1,12 @@
+import time
+from pathlib import Path
+
 from kash.config.logger import get_logger
-from kash.config.settings import global_settings, server_log_file_path
+from kash.config.settings import GLOBAL_LOGS_DIR, global_settings, server_log_file_path
+from kash.errors import InvalidState
 from kash.exec import kash_command
-from kash.mcp.mcp_server_routes import publish_mcp_tools
-from kash.mcp.mcp_server_sse import MCP_SERVER_NAME
+from kash.mcp.mcp_server_routes import publish_mcp_tools, unpublish_all_mcp_tools
+from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX, MCP_SERVER_NAME
 from kash.shell.utils.native_utils import tail_file
 
 log = get_logger(__name__)
@@ -11,10 +15,11 @@ log = get_logger(__name__)
 @kash_command
 def start_mcp_server() -> None:
     """
-    Start the MCP server.
+    Start the MCP server, using all currently known actions marked as MCP tools.
     """
     from kash.mcp.mcp_server_sse import start_mcp_server_sse
 
+    publish_mcp_tools()
     start_mcp_server_sse()
 
 
@@ -31,22 +36,54 @@ def stop_mcp_server() -> None:
 @kash_command
 def restart_mcp_server() -> None:
     """
-    Restart the MCP server.
+    Restart the MCP server, republishing all actions marked as MCP tools.
     """
     from kash.mcp.mcp_server_sse import restart_mcp_server_sse
 
+    unpublish_all_mcp_tools()
+    publish_mcp_tools()
     restart_mcp_server_sse()
 
 
 @kash_command
-def mcp_server_logs(follow: bool = False) -> None:
+def mcp_logs(follow: bool = False, all: bool = False) -> None:
     """
-    Show the logs from the MCP server.
+    Show the logs from the MCP server and CLI proxy process.
 
     :param follow: Follow the file as it grows.
+    :param all: Show all logs, not just the server logs, including Claude Desktop logs if found.
     """
-    log_path = server_log_file_path(MCP_SERVER_NAME, global_settings().mcp_server_port)
-    tail_file(log_path, follow=follow)
+    if all:
+        global_log_base = GLOBAL_LOGS_DIR
+        claude_log_base = Path("~/Library/Logs/Claude").expanduser()
+        log_paths = []
+        did_log = False
+        while len(log_paths) == 0:
+            log_paths = list(global_log_base.glob(f"{MCP_LOG_PREFIX}*.log"))
+            claude_logs = list(claude_log_base.glob("mcp*.log"))
+            if claude_logs:
+                log.message("Found Claude Desktop logs, will also tail them: %s", claude_logs)
+                log_paths.extend(claude_logs)
+            if log_paths:
+                break
+            else:
+                if not did_log:
+                    log.message(
+                        "No logs found in %s or %s, waiting for them to appear...",
+                        global_log_base,
+                        claude_log_base,
+                    )
+                    did_log = True
+                time.sleep(1)
+    else:
+        server_log_path = server_log_file_path(MCP_SERVER_NAME, global_settings().mcp_server_port)
+        if not server_log_path.exists():
+            raise InvalidState(
+                f"MCP server log not found (forgot to run `start_mcp_server`?): {server_log_path}"
+            )
+        log_paths = [server_log_path]
+
+    tail_file(*log_paths, follow=follow)
 
 
 @kash_command
@@ -54,4 +91,8 @@ def publish_mcp_tool(*action_names: str) -> None:
     """
     Publish one or more actions as local MCP tools.
     """
-    publish_mcp_tools(list(action_names))
+    if not action_names:
+        log.message("Publishing all actions marked as MCP tools.")
+        publish_mcp_tools()
+    else:
+        publish_mcp_tools(list(action_names))

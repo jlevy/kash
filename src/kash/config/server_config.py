@@ -15,6 +15,8 @@ def create_server_config(
     """
     import uvicorn
 
+    import kash.config.suppress_warnings  # noqa: F401
+
     return uvicorn.Config(
         app,
         host=host,

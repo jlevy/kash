@@ -13,6 +13,7 @@ APP_NAME = "kash"
 DOT_DIR = ".kash"
 
 GLOBAL_KASH_DIR = Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()
+GLOBAL_LOGS_DIR = GLOBAL_KASH_DIR / "logs"
 
 RCFILE_PATH = Path("~/.kashrc").expanduser().resolve()
 
@@ -33,7 +34,7 @@ LOCAL_SERVER_PORT_START = 4470
 LOCAL_SERVER_PORTS_MAX = 30
 
 
-SERVER_LOG_FILE = str(GLOBAL_KASH_DIR / "logs" / "{name}_{port}.log")
+SERVER_LOG_FILE = str(GLOBAL_LOGS_DIR / "{name}_{port}.log")
 
 
 class LogLevel(Enum):

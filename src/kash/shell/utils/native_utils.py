@@ -170,6 +170,9 @@ def tail_file(
     files that have been modified in the last `pick_recent_secs` seconds (by
     default, 1 day).
     """
+    if not paths:
+        raise ValueError("No paths provided")
+
     if pick_recent_secs and len(paths) > 1:
         selected_paths = [
             p for p in paths if Path(p).stat().st_mtime > time.time() - pick_recent_secs

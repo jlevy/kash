@@ -79,6 +79,9 @@ def import_action_subdirs(
 
 @cached(_action_classes_cache)
 def get_all_action_classes() -> dict[str, type[Action]]:
+    # Be sure actions are imported.
+    import kash.actions  # noqa: F401
+
     # Returns a copy for safety.
     action_classes = _action_classes.copy()
     if len(action_classes) == 0:

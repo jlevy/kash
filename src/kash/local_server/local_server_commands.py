@@ -1,5 +1,6 @@
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings, server_log_file_path
+from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.local_server.local_server import LOCAL_SERVER_NAME
 from kash.local_server.local_url_formatters import enable_local_urls
@@ -49,7 +50,9 @@ def local_server_logs(follow: bool = False) -> None:
 
     :param follow: Follow the file as it grows.
     """
-    tail_file(
-        server_log_file_path(LOCAL_SERVER_NAME, global_settings().local_server_port),
-        follow=follow,
-    )
+    log_path = server_log_file_path(LOCAL_SERVER_NAME, global_settings().local_server_port)
+    if not log_path.exists():
+        raise InvalidState(
+            f"Local server log not found (forgot to run `start_local_server`?): {log_path}"
+        )
+    tail_file(log_path, follow=follow)

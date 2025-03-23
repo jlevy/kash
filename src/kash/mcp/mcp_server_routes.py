@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from funlog import log_calls
 from mcp.server.lowlevel import Server
-from mcp.types import TextContent, Tool
+from mcp.types import Prompt, Resource, TextContent, Tool
 from prettyfmt import fmt_path
 
 from kash.config.capture_output import CapturedOutput, captured_output
@@ -26,6 +26,14 @@ log = get_logger(__name__)
 _mcp_published_actions: AtomicVar[list[str]] = AtomicVar([])
 
 
+def unpublish_all_mcp_tools() -> None:
+    """
+    Unpublish all MCP tools.
+    """
+    global _mcp_published_actions
+    _mcp_published_actions.set([])
+
+
 def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     """
     Add actions to the list of published MCP tools.
@@ -36,8 +44,14 @@ def publish_mcp_tools(action_names: list[str] | None = None) -> None:
         actions = get_all_actions_defaults()
         action_names = [name for (name, action) in actions.items() if action.mcp_tool]
 
-    log.info("Publishing MCP tools: %s", action_names)
-    _mcp_published_actions.update(lambda old: list(set(old + action_names)))
+    with _mcp_published_actions.updates() as published_actions:
+        published_actions.extend(action_names)
+        log.message(
+            "Published %s MCP tools (total now %s): %s",
+            len(action_names),
+            len(published_actions),
+            action_names,
+        )
 
 
 def tool_for_action(action: Action) -> Tool:
@@ -56,8 +70,6 @@ def get_published_tools() -> list[Tool]:
     """
     Get all tools that are published as MCP tools.
     """
-    log.info("list_tools: TEST adding tool")
-
     try:
         with captured_output():
             actions = get_all_actions_defaults()
@@ -66,11 +78,14 @@ def get_published_tools() -> list[Tool]:
                 for name in _mcp_published_actions.copy()
                 if name in actions
             ]
-            log.info(
-                "Offering %s tools:\n%s",
-                len(tools),
-                "\n".join(pprint.pformat(t.inputSchema) for t in tools),
-            )
+            if len(tools) > 0:
+                log.info(
+                    "Offering %s tools:\n%s",
+                    len(tools),
+                    "\n".join(pprint.pformat(t.inputSchema) for t in tools),
+                )
+            else:
+                log.warning("No tools to offer! Missing import?")
             return tools
     except Exception:
         log.exception("Error listing tools")
@@ -233,7 +248,23 @@ def create_base_server() -> Server:
 
     @app.list_tools()
     async def list_tools() -> list[Tool]:
+        log.info("Handling list_tools request")
         return await asyncio.to_thread(get_published_tools)
+
+    # We don't support prompts/resources yet but implementing these to avoid
+    # having MCP clients log (possibly confusing) errors.
+
+    @app.list_prompts()
+    async def list_prompts() -> list[Prompt]:
+        log.info("Handling list_prompts request")
+        # Nothing implemented yet!
+        return []
+
+    @app.list_resources()
+    async def list_resources() -> list[Resource]:
+        log.info("Handling list_resources request")
+        # Nothing implemented yet!
+        return []
 
     @app.call_tool()
     async def handle_tool(name: str, arguments: dict) -> list[TextContent]:

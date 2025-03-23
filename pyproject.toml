@@ -78,6 +78,7 @@ dependencies = [
     # MCP:
     "mcp>=1.5.0",
     "anyio>=4.8.0",
+    "mcp-proxy>=0.5.0",
 ]
 
 [dependency-groups]
@@ -92,7 +93,7 @@ dev = [
 
 [project.scripts]
 kash = "kash.shell_main:main"
-kash_mcp = "kash.mcp.mcp_main:main"
+kash_mcp = "kash.mcp.kash_mcp_cli:main"
 
 
 # ---- Build system ----

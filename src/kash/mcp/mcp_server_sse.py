@@ -21,7 +21,8 @@ from kash.mcp import mcp_server_routes
 
 log = get_logger(__name__)
 
-MCP_SERVER_NAME = "kash_mcp_server_sse"
+MCP_LOG_PREFIX = "mcp"
+MCP_SERVER_NAME = f"{MCP_LOG_PREFIX}_server_sse"
 MCP_SERVER_HOST = "127.0.0.1"
 """The local hostname to run the MCP SSE server on."""
 

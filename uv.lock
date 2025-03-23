@@ -849,6 +849,7 @@ dependencies = [
     { name = "litellm" },
     { name = "markdownify" },
     { name = "mcp" },
+    { name = "mcp-proxy" },
     { name = "openai" },
     { name = "pandas" },
     { name = "patch-ng" },
@@ -914,6 +915,7 @@ requires-dist = [
     { name = "litellm", specifier = ">=1.63.11" },
     { name = "markdownify", specifier = ">=0.14.1" },
     { name = "mcp", specifier = ">=1.5.0" },
+    { name = "mcp-proxy", specifier = ">=0.5.0" },
     { name = "openai", specifier = ">=1.66.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "patch-ng", specifier = ">=1.18.1" },
@@ -1170,6 +1172,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6d/c9/c55764824e893fdebe777ac7223200986a275c3191dba9169f8eb6d7c978/mcp-1.5.0.tar.gz", hash = "sha256:5b2766c05e68e01a2034875e250139839498c61792163a7b221fc170c12f5aa9", size = 159128 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/d1/3ff566ecf322077d861f1a68a1ff025cad337417bd66ad22a7c6f7dfcfaf/mcp-1.5.0-py3-none-any.whl", hash = "sha256:51c3f35ce93cb702f7513c12406bbea9665ef75a08db909200b07da9db641527", size = 73734 },
+]
+
+[[package]]
+name = "mcp-proxy"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mcp" },
+    { name = "uvicorn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/c2/493d51af1acf71b6aecf9cc3bed1c8d79d44c245322a4e95d2c2aad9a09e/mcp_proxy-0.5.0.tar.gz", hash = "sha256:31d20352567d19a447a52baf3e301b1085029a0ff36927eacd326d273eecd9bf", size = 17585 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/10/8783049b5186b110f65ea26101852afde383a6831c3d238058d44a98c635/mcp_proxy-0.5.0-py3-none-any.whl", hash = "sha256:7f7814086c2eff31a4808dba9e41a7358b58aebdb9dd533ae58696b230ec2ff9", size = 11813 },
 ]
 
 [[package]]
