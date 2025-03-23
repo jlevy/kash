@@ -22,7 +22,7 @@ from kash.local_server.local_server import start_local_server
 from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.utils.native_utils import sys_tool_check
-from kash.version import get_version_name
+from kash.version import get_version_tag
 from kash.workspaces import current_ws
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
 from kash.xonsh_custom.xonsh_completers import load_completers
@@ -109,4 +109,4 @@ def customize_xonsh():
     else:
         reload_shell_commands_and_actions()
 
-    log.info("kash %s loaded", get_version_name())
+    log.info("kash %s loaded", get_version_tag())

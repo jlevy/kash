@@ -23,9 +23,14 @@ def get_version():
     return metadata.version(PACKAGE_NAME)
 
 
-def get_version_name():
+def get_version_tag():
+    """Version number with a leading 'v', as typically used in git tags."""
     return f"v{get_version()}"
 
 
+def get_full_version_name():
+    return f"{PACKAGE_NAME} {get_version_tag()}"
+
+
 if __name__ == "__main__":
-    print(get_version_name())
+    print(get_version_tag())
