@@ -1,3 +1,4 @@
+import contextvars
 import logging
 import os
 import re
@@ -106,14 +107,11 @@ def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
         reload_rich_logging_setup()
 
 
-@dataclass
-class TlContext(threading.local):
-    console: Console | None = None
-
-
-_tl_context = TlContext()
+console_context_var: contextvars.ContextVar[Console | None] = contextvars.ContextVar(
+    "console", default=None
+)
 """
-Thread-local context override for Rich console.
+Context variable override for Rich console.
 """
 
 
@@ -133,9 +131,9 @@ reconfigure(theme=get_theme(), highlighter=get_highlighter())
 def get_console() -> Console:
     """
     Return the Rich global console, unless it is overridden by a
-    thread-local console.
+    context-local console.
     """
-    return _tl_context.console or rich.get_console()
+    return console_context_var.get() or rich.get_console()
 
 
 def new_console(file: IO[str] | None, record: bool) -> Console:
@@ -149,17 +147,15 @@ def new_console(file: IO[str] | None, record: bool) -> Console:
 @contextmanager
 def record_console() -> Generator[Console, None, None]:
     """
-    Context manager to temporarily override the global console with a thread-local
+    Context manager to temporarily override the global console with a context-local
     console that records output.
     """
-    old_console = _tl_context.console
     console = new_console(file=NULL_FILE, record=True)
-    _tl_context.console = console
-
+    token = console_context_var.set(console)
     try:
         yield console
     finally:
-        _tl_context.console = old_console
+        console_context_var.reset(token)
 
 
 # TODO: Need this to enforce flushing of stream?

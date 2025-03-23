@@ -86,7 +86,8 @@ def _load_xontrib_(xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ignore
         env_vars = parse_fnm_env()
         apply_fnm_env(xsh, env_vars)
 
-        def fnm_use_if_file_found(_newdir: str, _olddir: str | None = None) -> None:
+        # Name of these args matter since xonsh calls them as keywords.
+        def fnm_use_if_file_found(newdir: str, olddir: str | None = None) -> None:  # pyright: ignore
             """
             Check for Node version files and switch if necessary using xsh session.
             """

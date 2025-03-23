@@ -2,11 +2,10 @@
 Output to the shell UI. These are for user interaction, not logging.
 """
 
+import contextvars
 import textwrap
-import threading
 from collections.abc import Callable
 from contextlib import contextmanager
-from dataclasses import dataclass
 from enum import Enum, auto
 
 import rich
@@ -115,14 +114,9 @@ def format_success_or_failure(
         return emoji
 
 
-@dataclass
-class TlPrintContext(threading.local):
-    prefix: str = ""
-
-
-_tl_print_context = TlPrintContext()
+print_context_var: contextvars.ContextVar[str] = contextvars.ContextVar("print_prefix", default="")
 """
-Thread-local print settings.
+Context variable override for print prefix.
 """
 
 
@@ -138,12 +132,11 @@ def print_style(pad_style: PadStyle):
     Context manager for print styles.
     """
     if pad_style == PadStyle.INDENT:
-        original_prefix = _tl_print_context.prefix
-        _tl_print_context.prefix = DEFAULT_INDENT
+        token = print_context_var.set(DEFAULT_INDENT)
         try:
             yield
         finally:
-            _tl_print_context.prefix = original_prefix
+            print_context_var.reset(token)
     elif pad_style == PadStyle.PAD:
         cprint()
         yield
@@ -228,7 +221,7 @@ def cprint(
     """
     empty_indent = extra_indent.strip()
 
-    tl_prefix = _tl_print_context.prefix
+    tl_prefix = print_context_var.get()
     if tl_prefix:
         extra_indent = tl_prefix + extra_indent
 

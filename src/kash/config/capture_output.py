@@ -30,7 +30,7 @@ class CapturedOutput:
 
 class captured_output:
     """
-    Context manager for capturing console and stdout output.
+    Context manager for capturing Rich console and stdout output.
     Returns a CapturedOutput instance when exiting the context.
     """
 

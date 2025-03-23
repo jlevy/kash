@@ -1,4 +1,4 @@
-import threading
+import contextvars
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -144,19 +144,22 @@ class TaskStack:
         return cprint
 
 
-_thread_local = threading.local()
+task_stack_var: contextvars.ContextVar[TaskStack | None] = contextvars.ContextVar(
+    "task_stack", default=None
+)
 
 
 def task_stack() -> TaskStack:
-    if not hasattr(_thread_local, "task_stack"):
-        _thread_local.task_stack = TaskStack()
-
-    return _thread_local.task_stack
+    stack = task_stack_var.get()
+    if stack is None:
+        stack = TaskStack()
+        task_stack_var.set(stack)
+    return stack
 
 
 def task_stack_prefix_str() -> str:
-    if hasattr(_thread_local, "task_stack"):
-        task_stack: TaskStack = _thread_local.task_stack
-        return task_stack.prefix_str()
+    stack = task_stack_var.get()
+    if stack is not None:
+        return stack.prefix_str()
     else:
         return ""
