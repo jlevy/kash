@@ -1,5 +1,5 @@
 import logging
-from logging import Formatter
+from logging import FileHandler, Formatter
 from pathlib import Path
 
 from kash.config.settings import LogLevel
@@ -22,14 +22,17 @@ def basic_stderr_handler(level: LogLevel) -> logging.StreamHandler:
     return handler
 
 
-def basic_logging_setup(file_log_path: Path, level: LogLevel):
+def basic_logging_setup(file_log_path: Path | None, level: LogLevel):
     """
     Set up basic logging to a file and to stderr.
     """
-    file_handler = basic_file_handler(file_log_path, level)
-    stderr_handler = basic_stderr_handler(level)
     root_logger = logging.getLogger()
     for h in root_logger.handlers[:]:
         root_logger.removeHandler(h)
-    root_logger.addHandler(file_handler)
+
+    if file_log_path:
+        file_handler: FileHandler = basic_file_handler(file_log_path, level)
+        root_logger.addHandler(file_handler)
+
+    stderr_handler = basic_stderr_handler(level)
     root_logger.addHandler(stderr_handler)

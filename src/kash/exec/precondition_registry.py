@@ -1,15 +1,14 @@
 from collections.abc import Callable
-from threading import Lock
 
 from kash.config.logger import get_logger
 from kash.model.items_model import Item
 from kash.model.preconditions_model import Precondition
+from kash.utils.common.atomic_var import AtomicVar
 
 log = get_logger(__name__)
 
 # Global registry of preconditions.
-_preconditions: dict[str, Precondition] = {}
-_lock = Lock()
+_preconditions: AtomicVar[dict[str, Precondition]] = AtomicVar({})
 
 
 def kash_precondition(func: Callable[[Item], bool]) -> Precondition:
@@ -24,13 +23,13 @@ def kash_precondition(func: Callable[[Item], bool]) -> Precondition:
     """
     precondition = Precondition(func)
 
-    with _lock:
-        if precondition.name in _preconditions:
+    with _preconditions.updates() as preconditions:
+        if precondition.name in preconditions:
             log.warning(
                 "Duplicate precondition name (defined twice by accident?): %s",
                 precondition.name,
             )
-        _preconditions[precondition.name] = precondition
+        preconditions[precondition.name] = precondition
 
     return precondition
 
@@ -40,4 +39,4 @@ def get_all_preconditions() -> dict[str, Precondition]:
     Returns a copy of all registered preconditions.
     """
     # Return a copy for safety.
-    return dict(_preconditions)
+    return dict(_preconditions.copy())

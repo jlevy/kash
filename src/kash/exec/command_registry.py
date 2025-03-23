@@ -1,10 +1,10 @@
 from collections.abc import Callable
-from threading import Lock
 from typing import overload
 
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.exec_model.shell_model import ShellResult
+from kash.utils.common.atomic_var import AtomicVar
 
 log = get_logger(__name__)
 
@@ -17,8 +17,7 @@ shell output) or return nothing (if it throws exceptions on errors).
 """
 
 # Global registry of commands.
-_commands: dict[str, CommandFunction] = {}
-_lock = Lock()
+_commands: AtomicVar[dict[str, CommandFunction]] = AtomicVar({})
 _has_logged = False
 
 
@@ -34,10 +33,10 @@ def kash_command(func: CommandFunction) -> CommandFunction:
     """
     Decorator to register a command.
     """
-    with _lock:
-        if func.__name__ in _commands:
+    with _commands.updates() as commands:
+        if func.__name__ in commands:
             log.error("Command `%s` already registered; duplicate definition?", func.__name__)
-        _commands[func.__name__] = func
+        commands[func.__name__] = func
     return func
 
 
@@ -45,12 +44,12 @@ def register_all_commands() -> None:
     """
     Ensure all commands are registered and imported.
     """
-    with _lock:
+    with _commands.updates() as commands:
         import kash.commands  # noqa: F401
 
         global _has_logged
         if not _has_logged:
-            log.info("Command registry: %d commands registered.", len(_commands))
+            log.info("Command registry: %d commands registered.", len(commands))
             _has_logged = True
 
 
@@ -59,14 +58,15 @@ def get_all_commands() -> dict[str, CommandFunction]:
     All commands, sorted by name.
     """
     register_all_commands()
-    return dict(sorted(_commands.items()))
+    return dict(sorted(_commands.copy().items()))
 
 
 def look_up_command(name: str) -> CommandFunction:
     """
     Look up a command by name.
     """
-    cmd = _commands.get(name)
-    if not cmd:
-        raise InvalidInput(f"Command `{name}` not found")
-    return cmd
+    with _commands.updates() as commands:
+        cmd = commands.get(name)
+        if not cmd:
+            raise InvalidInput(f"Command `{name}` not found")
+        return cmd

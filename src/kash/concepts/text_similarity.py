@@ -1,3 +1,5 @@
+from typing import cast
+
 import litellm
 import pandas as pd
 from funlog import log_calls, tally_calls
@@ -24,7 +26,9 @@ def cosine_relatedness(x, y):
 @log_calls(level="info", show_return_value=False)
 def embed_query(model: EmbeddingModel, query: str) -> EmbeddingResponse:
     try:
-        response = embedding(model=model.litellm_name, input=[query])
+        response: EmbeddingResponse = cast(
+            EmbeddingResponse, embedding(model=model.litellm_name, input=[query])
+        )
     except litellm.exceptions.APIError as e:
         log.info("API error embedding query: %s", e)
         raise ApiResultError(str(e))
