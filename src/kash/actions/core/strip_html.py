@@ -11,9 +11,9 @@ log = get_logger(__name__)
 @kash_action(precondition=has_html_body | has_text_body)
 def strip_html(item: Item) -> Item:
     """
-    Strip HTML tags from HTML or Markdown. This is a very dumb filter, simply searching
-    for and removing tags by regex. This works well for clean and simple HTML; use
-    `markdownify` for complex HTML.
+    Strip HTML tags from HTML or Markdown. This is a simple filter, simply searching
+    for and removing tags by regex. This works well for basic HTML; use `markdownify`
+    for complex HTML.
     """
     if not item.body:
         raise InvalidInput("Item must have a body")

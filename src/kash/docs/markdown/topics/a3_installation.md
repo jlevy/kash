@@ -3,7 +3,7 @@
 ### Running the Kash Shell
 
 Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with an LLM
-assistant and a few other inhancements.
+assistant and a few other enhancements.
 If you've used a bash or Python shell before, xonsh is very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
@@ -64,8 +64,6 @@ brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg
 For Ubuntu:
 
 ```shell
-# Install pyenv and other tools:
-curl https://pyenv.run | bash
 apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
 ```
 

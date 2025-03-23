@@ -2,19 +2,23 @@
 
 ### What is kash?
 
-Kash is an extensible command-line power tool for exploring and organizing knowledge.
-
-It integrates the models, APIs, and Python libraries with the flexibility and
+Kash is an extensible command-line power tool for all kinds of technical and content
+tasks. It integrates the models, APIs, and Python libraries with the flexibility and
 extensibility of a modern command line interface.
 
-Use it with GPT-4o, Claude 3.5/3.7, Deepgram, and other tools to transcribe, translate,
-summarize, organize, edit, and visualize videos, podcasts, and documents into
-beautifully formatted notes.
+In addition, it is built on a simple set of Python tools and libraries to make it easier
+and more powerful to performing tasks with the help LLM tools and agents.
+
+Finally, kash is compatible with MCP. Any actions in kash are MCP tools!
+The general idea is that any work you or an agent need to do should be broken into known
+tasks, called actions, and these can then be used by you or an agent.
+Anyone, including kash itself, can write new actions easily.
+(Yes, there is an action, `write_new_action`, that helps you write new actions.)
 
 The philosophy behind kash is similar to Unix shell tools: simple commands that can be
 combined in flexible and powerful ways.
 It operates on "items" such as URLs, files, or Markdown notes within a workspace
-directory. These items are processed by a variety of actions.
+directory.
 
 For more detailed information, you can run `help` to get background and a list of
 commands and actions.
@@ -37,7 +41,7 @@ questions.
 
 ### How does kash accept both shell and assistant requests to the LLM with natural language?
 
-By default, if a command is valid shell or Python, Kash will treat it as a shell
+By default, if a command is valid shell or Python, kash will treat it as a shell
 command, using Xonsh's conventions.
 
 Commands that begin with a `?` are automatically considered assistant requests.

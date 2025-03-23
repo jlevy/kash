@@ -10,8 +10,10 @@ It's also a Python framework that lets you convert a simple Python function into
 command and an MCP tool, so it integrates with other tools like Anthropic Desktop or
 Cursor.
 
-It’s an exploration of a better way to remix, combine, and interactively explore tools
-and workflows by composing AI tools, APIs, and libraries.
+You can think of it a kind of hybrid between an AI assistant, a shell, and a developer
+tool like Cursor or Claude Code.
+It's an attempt at finding a way to remix, combine, and interactively explore and then
+gradually automate complex tasks by composing AI tools, APIs, and libraries.
 
 And of course, kash can read its own functionality and enhance itself by writing new
 actions.
@@ -55,7 +57,7 @@ content-related tasks possible by orchestrating AI tools in the right ways.
 As I've been building kash over the past couple months, I found I've found it's not only
 faster to do complex things, but that it has also become replacement for my usual shell.
 It's the power-tool I want to use alongside Cursor and ChatGPT/Claude.
-We all know and trust shells like bash, zsh, and fish, but now I fund this is much more
+We all know and trust shells like bash, zsh, and fish, but now I find this is much more
 powerful for everyday usage.
 It has little niceties, like you can just type `files` for a better listing of files or
 `show` and it will show you a file the right way, no matter what kind of file it is.

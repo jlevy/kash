@@ -158,10 +158,9 @@ Key design choices:
    but also support scripts and use as a Python library, and tools to smooth the
    transition)
 
-7. **Maintain context in one place over time** (keep files organized in a simple
-   workspace folder, and include content, metadata, actions and tools, settings,
-   selections, caches, history, etc.
-   all in one place)
+7. **Maintain context in workspaces** (keep files organized by project or effort in a
+   folder that can be persisted, won't get lost, and includes content, metadata,
+   actions, settings, selections, caches, history, etc.)
 
 8. **Maintain metadata on files** (so you always know where each piece of content comes
    from (and keep this close to the content, as YAML frontmatter)
@@ -175,3 +174,7 @@ Key design choices:
 11. **Docs, code, and examples should be self-explanatory to both LLMs and humans** (so
     it is easy to add new capabilities—an AI-native coding environment should enhance
     itself!)
+
+12. **User interfaces should be data-driven and gradually improve** (visuals and
+    workflows should not be designed up front, but emerge naturally as data is
+    manipulated and use cases become clearer)

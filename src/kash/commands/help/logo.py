@@ -26,16 +26,17 @@ log = get_logger(__name__)
 # Colorize each chunk and optionally swap lines to spaces.
 def logo_colorize_line(line: str, space_replacement: str = " ", line_offset: int = 0) -> Text:
     line = " " * line_offset + line
-    bits = re.findall(r"[^\s]+|\s+", line)
+    # bits = re.findall(r"[^\s]+|\s+", line)
+    bits = line
     texts = []
     solid_count = 0
     for i, bit in enumerate(bits):
         if bit.strip():
-            alt_color = ("▀" in bit or "▄" in bit) and solid_count == 0
+            bg_color = "▒" == bit
             texts.append(
                 Text(
                     bit,
-                    style=STYLE_EMPH if alt_color else STYLE_LOGO,
+                    style=STYLE_LOGO if bg_color else STYLE_EMPH,
                 )
             )
             solid_count += 1
@@ -66,11 +67,13 @@ def branded_box(content: Group | None, version: str | None = None) -> Panel:
     panel_width = CONSOLE_WRAP_WIDTH
 
     logo_lines = LOGO_LARGE.split("\n")
-    logo_top = logo_colorize_line(logo_lines[0], line_char)
-    offset = (panel_width - 4 - len(logo_top)) // 2
+    top_line_len = len(logo_lines[0].strip())
+    rest_line_len = len(logo_lines[1].strip())
+    logo_top = logo_colorize_line(logo_lines[0].strip(), line_char)
+    rest_offset = (panel_width - 4 - top_line_len) // 2 - (rest_line_len - top_line_len)
     tagline_offset = (panel_width - 4 - len(TAGLINE_STYLED)) // 2
 
-    logo_rest = [logo_colorize_line(line, " ", offset) for line in logo_lines[1:]]
+    logo_rest = [logo_colorize_line(line, " ", rest_offset) for line in logo_lines[1:]]
     if version:
         header = Text.assemble(*logo_top)
         footer = Text(version, style=COLOR_HINT, justify="right")
@@ -83,7 +86,6 @@ def branded_box(content: Group | None, version: str | None = None) -> Panel:
     return Panel(
         Group(
             *logo_rest,
-            "",
             Text.assemble(" " * tagline_offset, TAGLINE_STYLED),
             # Text(" " * tagline_offset + "🮎" * len(TAGLINE_STYLED), style=STYLE_EMPH),
             *body,

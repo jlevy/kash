@@ -15,6 +15,28 @@ Type `help` for the full documentation.
 The simplest way to illustrate how to use kash is by example.
 You can go through the commands below a few at a time, trying each one.
 
+This is a "real" example that uses a bunch of libraries.
+So to get it to work you must install not just the main shell but the kash "media kit"
+with extra dependencies.
+
+You need the following tools:
+
+```shell
+# On MacOS:
+brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
+# On Linux:
+apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg
+```
+
+Then install the `kash-media`, which includes kash-shell and many other libs like yt-dlp
+for YouTube handling:
+
+```shell
+uv tool install kash-media
+```
+
+Then run `kash` to start.
+
 For each command below you can use tab completion (which shows information about each
 command or option) or run with `--help` to get more details.
 
@@ -273,9 +295,7 @@ of include:
 
 - `chat` chat with any configured LLM, and save the chat as a chat document.
 
-- `web_search_topic` searches the web using Exa.
-
-- `crawl_webpage` fetches a webpage and scrapes the content as text, using Firecrawl.
+- `markdownify` fetches a webpage and converts it to markdown.
 
 - `download_media` downloads video or audio media from any of several services like
   YouTube or Apple Podcasts, using yt-dlp.
