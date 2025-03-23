@@ -5,6 +5,7 @@ Platform-specific tools and utilities.
 import os
 import shlex
 import subprocess
+import time
 import urllib.parse
 import webbrowser
 from enum import Enum
@@ -145,48 +146,67 @@ def view_file_native(
 
 
 def tail_file(
-    filename: str | Path,
+    *paths: str | Path,
     follow: bool = False,
     max_lines: int = 10000,
-    follow_max_lines: int = 200,
+    follow_max_lines: int = 100,
+    pick_recent_secs: int = 60 * 60 * 24,
 ):
     """
-    Tail a log file. With colorization using bat if available, otherwise using less.
-    If follow is True, follows the file as it grows.
+    Tail one or more log files. Just a wrapper around tail, bat, and/or less,
+    with colorization using bat if available.
+
+    If follow is set, does `tail -f` to follow the file for real-time updates.
 
     Uses bat if available. Note bat doesn't have efficient seek functionality like
     `less +G` so we prefer to use bat with less. Use Ctrl-C to quit less (this is
     enabled with `less -K`).
+
+    For `tail -f`, using less is a worse experience (for example, you can't
+    press enter to scroll down a few lines to observe if something changes)
+    so we don't use less in that case.
+
+    If `pick_recent_secs` is > 0 and multiple files are given, will only tail
+    files that have been modified in the last `pick_recent_secs` seconds (by
+    default, 1 day).
     """
-    filename = str(filename)
-    quoted_filename = shlex.quote(filename)
+    if pick_recent_secs and len(paths) > 1:
+        selected_paths = [
+            p for p in paths if Path(p).stat().st_mtime > time.time() - pick_recent_secs
+        ]
+    else:
+        selected_paths = paths
+
+    quoted_paths = [shlex.quote(str(p)) for p in selected_paths]
+    all_paths_str = " ".join(quoted_paths)
 
     if follow:
         max_lines = follow_max_lines
 
-    sys_tool_check().require(SysTool.less)
-    sys_tool_check().warn_if_missing(SysTool.bat, SysTool.tail)
+    sys_tool_check().require(SysTool.tail)
+    sys_tool_check().warn_if_missing(SysTool.bat)
 
     if follow:
-        if sys_tool_check().has(SysTool.bat, SysTool.tail, SysTool.less):
+        if sys_tool_check().has(SysTool.bat):
             # Follow the file in real-time.
             command = (
-                f"tail -{max_lines} -f {quoted_filename} | "
-                f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log | "
-                "less -K -R +F"
+                f"tail -{max_lines} -f {all_paths_str} | "
+                f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log"
+                # Works nicer without less in this case (doesn't clear the screen).
             )
         else:
-            command = f"tail -f {quoted_filename} | less -R +F"
+            command = f"tail -f {all_paths_str}"
         cprint("Following file: `%s`", command, text_wrap=Wrap.NONE)
     else:
-        if sys_tool_check().has(SysTool.bat, SysTool.tail, SysTool.less):
+        sys_tool_check().require(SysTool.less)
+        if sys_tool_check().has(SysTool.bat, SysTool.less):
             command = (
-                f"tail -{max_lines} {quoted_filename} | "
+                f"tail -{max_lines} {all_paths_str} | "
                 f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log | "
                 "less -K -R +G"
             )
         else:
-            command = f"less +G {quoted_filename}"
+            command = f"less +G {all_paths_str}"
         cprint("Tailing file: `%s`", command, text_wrap=Wrap.NONE)
 
     subprocess.run(command, shell=True, check=True)

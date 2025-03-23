@@ -23,7 +23,7 @@ from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
 from kash.config.logger_basic import basic_file_handler
-from kash.config.settings import GLOBAL_KASH_DIR, LogLevel, global_settings
+from kash.config.settings import GLOBAL_KASH_DIR, GLOBAL_LOGS_DIR, LogLevel, global_settings
 from kash.config.text_styles import (
     EMOJI_ERROR,
     EMOJI_SAVED,
@@ -76,7 +76,7 @@ def _read_log_settings() -> LogSettings:
     return LogSettings(
         log_console_level=global_settings().console_log_level,
         log_file_level=global_settings().file_log_level,
-        global_log_dir=GLOBAL_KASH_DIR / "logs",
+        global_log_dir=GLOBAL_LOGS_DIR,
         log_dir=_log_base / "logs",
         log_objects_dir=_log_base / "logs" / "objects" / _log_name,
         log_file_path=_log_base / "logs" / f"{_log_name}.log",

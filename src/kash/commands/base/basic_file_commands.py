@@ -166,18 +166,18 @@ def strip_frontmatter(*paths: str) -> None:
 
 
 @kash_command
-def tail_file(path: str, follow: bool = False) -> None:
+def tail_file(*paths: str, follow: bool = False) -> None:
     """
-    Tail a file. With colorization using bat if available, otherwise using less.
-    If `follow` is True, follows the file as it grows.
+    Tail one or more files. With colorization using bat if available, otherwise
+    using less. If `follow` is True, follows the file as it grows.
     """
 
-    native_tail_file(path, follow=follow)
+    native_tail_file(*paths, follow=follow)
 
 
 @kash_command
-def follow_file(path: str) -> None:
+def follow_file(*paths: str) -> None:
     """
     Same as `tail_file --follow`.
     """
-    native_tail_file(path, follow=True)
+    native_tail_file(*paths, follow=True)
