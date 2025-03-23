@@ -12,7 +12,6 @@ from kash.config.text_styles import (
     COLOR_HINT,
     CONSOLE_WRAP_WIDTH,
     LOGO_LARGE,
-    STYLE_EMPH,
     STYLE_LOGO,
     TAGLINE_STYLED,
 )
@@ -38,7 +37,8 @@ def logo_colorize_line(line: str, space_replacement: str = " ", line_offset: int
             texts.append(
                 Text(
                     bit,
-                    style=STYLE_LOGO if solid_count > 0 else STYLE_EMPH,
+                    # style=STYLE_LOGO if solid_count > 0 else STYLE_EMPH,
+                    style=STYLE_LOGO,
                 )
             )
             solid_count += 1
@@ -55,9 +55,11 @@ def logo_colorize_line(line: str, space_replacement: str = " ", line_offset: int
 def color_logo() -> Group:
     logo_lines = LOGO_LARGE.split("\n")
     left_margin = 2
-    offset = 2
+    offset = 0
     return Group(
+        "",
         *[logo_colorize_line(line, " ", left_margin + offset) for line in logo_lines],
+        "",
         Text.assemble(" " * left_margin, TAGLINE_STYLED),
     )
 

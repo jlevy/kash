@@ -13,7 +13,6 @@ from rich.text import Text
 ## Text styles
 
 LOGO_LARGE: str = (Path(__file__).parent / "logo.txt").read_text().strip()
-LOGO_LARGE_FANCY: str = (Path(__file__).parent / "logo_fancy.txt").read_text().strip()
 
 
 TAGLINE = "The knowledge agent shell"

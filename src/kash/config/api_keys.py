@@ -71,9 +71,10 @@ def print_api_key_setup(once: bool = False) -> None:
         )
     )
 
+    # Heuristic to detect dummy or empty keys.
     def is_set(key: str) -> bool:
         value = os.environ.get(key, None)
-        return bool(value and value.strip() and "changeme" not in value)
+        return bool(value and len(value.strip()) > 10 and "changeme" not in value)
 
     texts = [format_success_or_failure(is_set(api.value), api.name) for api in Api]
 
