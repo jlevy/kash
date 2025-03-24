@@ -30,11 +30,17 @@ RECOMMENDED_APIS = [
 ]
 
 
-def api_setup() -> str:
-    dotenv_path = find_dotenv(usecwd=True)
+def find_load_dotenv() -> list[str]:
+    paths = []
+    dotenv_path = find_dotenv(filename=".env", usecwd=True)
     if dotenv_path:
         load_dotenv(dotenv_path)
-    return dotenv_path
+        paths.append(dotenv_path)
+    dotenv_path = find_dotenv(filename=".env.local", usecwd=True)
+    if dotenv_path:
+        load_dotenv(dotenv_path)
+        paths.append(dotenv_path)
+    return paths
 
 
 _log_api_setup_done = AtomicVar(False)
@@ -59,14 +65,14 @@ def print_api_key_setup(once: bool = False) -> None:
     if once and _log_api_setup_done:
         return
 
-    dotenv_path = api_setup()
+    dotenv_paths = find_load_dotenv()
 
     cprint(
         Text.assemble(
             format_success_or_failure(
-                value=bool(dotenv_path),
-                true_str=f"Found .env file: {dotenv_path}",
-                false_str="No .env file found. Set up your API keys in a .env file.",
+                value=bool(dotenv_paths),
+                true_str=f"Found .env files: {', '.join(dotenv_paths)}",
+                false_str="No .env files found. Set up your API keys in a .env file.",
             ),
         )
     )

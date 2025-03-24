@@ -8,7 +8,7 @@ def setup(rich_logging: bool):
     """
     One-time setup of essential keys, directories, and configs. Idempotent.
     """
-    from kash.config.api_keys import api_setup
+    from kash.config.api_keys import find_load_dotenv
     from kash.config.logger import reload_rich_logging_setup
     from kash.utils.common.stack_traces import add_stacktrace_handler
 
@@ -19,7 +19,7 @@ def setup(rich_logging: bool):
 
     add_stacktrace_handler()
 
-    api_setup()
+    find_load_dotenv()
 
 
 def _lib_setup():

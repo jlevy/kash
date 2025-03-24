@@ -5,7 +5,7 @@ from typing import NamedTuple
 from httpx import Timeout
 from openai import OpenAI
 
-from kash.config.api_keys import api_setup
+from kash.config.api_keys import find_load_dotenv
 from kash.config.logger import get_logger
 from kash.errors import ContentError
 from kash.media_base.timestamp_citations import html_speaker_id_span, html_timestamp_span
@@ -63,7 +63,7 @@ def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None
         "Transcribing via Deepgram (language %r): %s (size %s)", language, audio_file_path, size
     )
 
-    api_setup()
+    find_load_dotenv()
     deepgram = DeepgramClient("", ClientOptionsFromEnv())
 
     with open(audio_file_path, "rb") as audio_file:

@@ -1,6 +1,7 @@
-from kash.config.api_keys import print_api_key_setup, warn_if_missing_api_keys
+from kash.config.api_keys import find_load_dotenv, print_api_key_setup, warn_if_missing_api_keys
 from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
+from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
 from kash.shell.output.shell_output import PrintHooks, cprint, format_name_and_value, print_h2
@@ -87,6 +88,20 @@ def check_api_keys(warn_only: bool = False) -> None:
         warn_if_missing_api_keys()
     else:
         print_api_key_setup()
+
+
+@kash_command
+def reload_env() -> None:
+    """
+    Reload the environment variables from the .env file.
+    """
+
+    env_paths = find_load_dotenv()
+    if env_paths:
+        cprint("Reloaded environment variables")
+        print_api_key_setup()
+    else:
+        raise InvalidState("No .env file found")
 
 
 @kash_command
