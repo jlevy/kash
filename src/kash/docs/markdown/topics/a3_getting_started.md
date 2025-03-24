@@ -231,8 +231,17 @@ A few of the most important commands for managing files and work are these:
 
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 
-- `workspace` to show or select or create a new workspace.
-  Initially you work in the "global_ws" workspace but for more real work you'll want to
+- `show` lets you show any file you wish, or with no argument shows the first file in
+  the current selection.
+  It auto-detects whether to show the file in the console, the browser, or using a
+  native app (like Excel for a .xls file), but you can customize this with options (see
+  `--help`).
+
+- `show_webpage` formats Markdown or HTML documents as a nice web page and opens your
+  browser to view it.
+
+- `workspace` shows or selects or creates a new workspace.
+  Initially you work in the `global` workspace but for more real work you'll want to
   create a workspace, which is a directory to hold the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will
@@ -240,10 +249,6 @@ A few of the most important commands for managing files and work are these:
 
 - `edit` runs the currently configured editor (based on the `EDITOR` environment
   variable) on any file, or the current selection.
-
-- `show` lets you show the first file in the current selection or any file you wish.
-  It auto-detects whether to show the file in the console, the browser, or using a
-  native app (like Excel for a .xls file).
 
 - `param` lets you set certain common parameters, such as what LLM to use (if you wish
   to use non-default model or language).
@@ -254,31 +259,25 @@ A few of the most important commands for managing files and work are these:
 
 - `import_item` to add a resource such as a URL or a file to your local workspace.
 
-The set of actions that do specific useful things is much longer, but a few to be aware
-of include:
+- `download` downloads a page from a URL, or video/audio media from any of several
+  services like YouTube or Apple Podcasts (using yt-dlp).
 
 - `chat` chat with any configured LLM, and save the chat as a chat document.
 
 - `markdownify` fetches a webpage and converts it to markdown.
 
-- `download_media` downloads video or audio media from any of several services like
-  YouTube or Apple Podcasts, using yt-dlp.
+- `summarize_as_bullets` summarizes a text document as bulleted items.
+
+If you use the `kash-media` kit and its dependencies, you get additional actions like:
 
 - `transcribe` transcribes video or audio as text document, using Deepgram.
 
-- `proofread` proofreads a document, editing it for typos and errors only.
-
-- `describe_briefly` describes the contents of a document in about a paragraph.
-
-- `summarize_as_bullets` summarizes a text document as a bulleted item.
-
-- `break_into_paragraphs` breaks a long block of text into paragraphs.
-
-- `insert_section_headings` inserts section headings into a document, assuming it is a
-  document (like a transcript after you've run `break_into_paragraphs`) that has
-  paragraphs but no section headers.
-
-- `show_webpage` formats Markdown or HTML documents as a nice web page and opens your
-  browser to view it.
-
 - `create_pdf` formats Markdown or HTML documents as a PDF.
+
+All the above commands have help and the ability to see their own source code.
+For example:
+
+```shell
+markdownify --help
+markdownify --show_source 
+```
