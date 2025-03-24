@@ -50,8 +50,8 @@ DEFAULT_IGNORE_PATTERNS = f"""
 .vscode/
 
 # Build and distribution directories
-dist/
-build/
+# dist/
+# build/
 
 # Node.js
 node_modules/
@@ -69,10 +69,6 @@ node_modules/
 *.so
 *.o
 *.a
-
-# Build and distribution directories
-dist/
-build/
 
 # (end of defaults)
 

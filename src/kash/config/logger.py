@@ -23,7 +23,7 @@ from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
 from kash.config.logger_basic import basic_file_handler
-from kash.config.settings import GLOBAL_KASH_DIR, GLOBAL_LOGS_DIR, LogLevel, global_settings
+from kash.config.settings import GLOBAL_LOGS_DIR, LogLevel, get_global_kash_dir, global_settings
 from kash.config.text_styles import (
     EMOJI_ERROR,
     EMOJI_SAVED,
@@ -48,7 +48,7 @@ class LogSettings:
     log_file_path: Path
 
 
-_log_base = GLOBAL_KASH_DIR
+_log_base = get_global_kash_dir()
 """
 Parent of the "logs" directory. Initially the global kash data root.
 """
@@ -102,7 +102,7 @@ def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
     """
     global _log_lock, _log_base, _log_name
     with _log_lock:
-        _log_base = log_root or GLOBAL_KASH_DIR
+        _log_base = log_root or get_global_kash_dir()
         _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
         reload_rich_logging_setup()
 

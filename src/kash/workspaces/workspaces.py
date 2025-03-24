@@ -8,7 +8,7 @@ from kash.config.api_keys import print_api_key_setup
 from kash.config.logger import get_logger, reset_log_root
 from kash.config.settings import (
     GLOBAL_WS_NAME,
-    GLOBAL_WS_PATH,
+    get_global_ws_dir,
     global_settings,
     resolve_and_create_dirs,
 )
@@ -102,7 +102,7 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> Workspace:
 
 @cache
 def global_ws_dir() -> Path:
-    kb_path = resolve_and_create_dirs(GLOBAL_WS_PATH, is_dir=True)
+    kb_path = resolve_and_create_dirs(get_global_ws_dir(), is_dir=True)
     log.info("Global workspace path: %s", kb_path)
     return kb_path
 

@@ -12,15 +12,35 @@ APP_NAME = "kash"
 
 DOT_DIR = ".kash"
 
-GLOBAL_KASH_DIR = Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()
-GLOBAL_LOGS_DIR = GLOBAL_KASH_DIR / "logs"
-
-RCFILE_PATH = Path("~/.kashrc").expanduser().resolve()
-
 GLOBAL_WS_NAME = "global"
-GLOBAL_WS_PATH = GLOBAL_KASH_DIR / GLOBAL_WS_NAME
 
-GLOBAL_CACHE_PATH = GLOBAL_KASH_DIR / "cache"
+
+def get_global_kash_dir() -> Path:
+    return Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()
+
+
+def get_global_ws_dir() -> Path:
+    kash_ws_dir = os.environ.get("KASH_WS_DIR")
+    if kash_ws_dir:
+        return Path(kash_ws_dir).expanduser().resolve()
+    else:
+        docs_dir = Path("~/Documents").expanduser().resolve()
+        if not docs_dir.exists():
+            raise ValueError(
+                f"Documents directory ({docs_dir}) does not exist; set KASH_WS_DIR to specify a global workspace directory"
+            )
+        else:
+            return docs_dir / APP_NAME / GLOBAL_WS_NAME
+
+
+def get_rcfile_path() -> Path:
+    return Path("~/.kashrc").expanduser().resolve()
+
+
+GLOBAL_LOGS_DIR = get_global_kash_dir() / "logs"
+
+
+GLOBAL_CACHE_PATH = get_global_kash_dir() / "cache"
 MEDIA_CACHE_NAME = "media"
 CONTENT_CACHE_NAME = "content"
 
@@ -96,7 +116,7 @@ def find_rcfiles() -> list[Path]:
     """
     Find active rcfiles. Currently only supports one.
     """
-    rcfile_path = Path(RCFILE_PATH).expanduser().resolve()
+    rcfile_path = get_rcfile_path()
     if rcfile_path.exists():
         return [rcfile_path]
     else:

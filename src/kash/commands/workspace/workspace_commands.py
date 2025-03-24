@@ -283,9 +283,11 @@ def workspace(workspace_name: str | None = None) -> None:
 
         os.makedirs(info.base_dir, exist_ok=True)
         os.chdir(info.base_dir)
-        print_status(f"Changed to workspace: {name} ({info.base_dir})")
-
-    current_ws(silent=True).log_store_info()
+        ws = get_ws(name_or_path=info.base_dir, auto_init=True)
+        print_status(f"Changed to workspace: {ws.name} ({ws.base_dir})")
+        ws.log_store_info()
+    else:
+        current_ws(silent=True).log_store_info()
 
 
 @kash_command

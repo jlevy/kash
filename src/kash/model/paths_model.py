@@ -28,10 +28,10 @@ class InvalidStorePath(StorePathError):
 
 _valid_store_name_re = regex.compile(r"^[\p{L}\p{N}_\.]+$", regex.UNICODE)
 
-STORE_PATH_PREFIX = "@"
+AT_PREFIX = "@"
 """
-Any store path can be @-mentioned, and it's fine to include this prefix in
-display strings or when the store path is parsed.
+Any store path can be @-mentioned, and it's fine to include this prefix
+when the store path is parsed.
 """
 
 # Determine the base class for StorePath based on the operating system
@@ -47,25 +47,23 @@ class StorePath(BasePath):  # pyright: ignore
     store) with the addition of some additional syntactic conveniences for parsing
     and displaying.
 
-    Canonical form:
-    The canonical form is `@folder1/folder2/filename.ext`.
-    This indicates a file with the full path
-    `folder1/folder2/filename.ext` within the current store.
+    Standard formats for StorePaths:
+    - `~store_name/folder1/folder2/filename.ext`: A file with the path
+      `folder1/folder2/filename.ext` within the `store_name` store.
+    - `folder1/folder2/filename.ext`: A path within the current store.
+
+    Store names must be alphanumeric (letters, digits, `_`, `.`).
 
     Alternative forms:
-    - Regular relative paths like `folder1/folder2/filename.ext` are parsed as `@folder1/folder2/filename.ext`.
-    - Paths starting like `@/folder1/folder2/filename.ext` are also parsed as `@folder1/folder2/filename.ext`.
-
-    Optional store names:
-    - To reference files with an explicit store name: `@~store_name/folder1/folder2/filename.ext`.
-    - Store names must be alphanumeric (letters, digits, `_`, `.`).
+    - A path may contain an `@` prefix: `@folder1/folder2/filename.ext` and
+      `@/folder1/folder2/filename.ext` both refer to `folder1/folder2/filename.ext`.
 
     Paths containing spaces can be enclosed in single quotes:
-    - `@'folder 1/folder 2/filename.ext'`
+    - `'folder 1/folder 2/filename.ext'`
     - `@'~store_name/file with spaces.txt'`
 
     Restrictions:
-    - Absolute paths like `/home/user/file.ext` are not allowed.
+    - Bare absolute paths like `/home/user/file.ext` are not allowed.
     - Empty or "." paths are not allowed.
     - `~store_name/` and `~store_name` are not valid StorePaths.
     """
@@ -137,8 +135,12 @@ class StorePath(BasePath):  # pyright: ignore
         if path == Path("."):
             raise InvalidStorePath(f"Invalid store path: {value!r}")
         rest = str(value)
-        if rest.startswith(STORE_PATH_PREFIX):
+
+        # Ignore any @ prefix.
+        if rest.startswith(AT_PREFIX):
             rest = rest[1:]
+
+        # Handle single quotes.
         if rest.startswith("'"):
             # Path is enclosed in single quotes
             if rest.endswith("'"):
@@ -146,6 +148,8 @@ class StorePath(BasePath):  # pyright: ignore
                 rest = quoted_path
             else:
                 raise InvalidStorePath(f"Unclosed single quote in store path: {value!r}")
+
+        # Handle store name of form ~store_name/some/path.
         if rest.startswith("~"):
             # Store name is specified.
             rest = rest[1:]
@@ -224,7 +228,7 @@ class StorePath(BasePath):  # pyright: ignore
         else:
             display = shell_quote(path_str)
         if with_at:
-            display = STORE_PATH_PREFIX + display
+            display = AT_PREFIX + display
         return display
 
     def __str__(self) -> str:
@@ -269,13 +273,13 @@ def parse_path_spec(path: str | Path | StorePath) -> Path | StorePath:
     becomes a StorePath. Leaves already-resolved StorePaths and Paths unchanged.
     """
     if "*" in str(path):
-        # Would be nice to have resolution here instead of at the shell level?
+        # Would be nice to have resolution here instead of only at the shell level?
         raise NotImplementedError("Glob resolution not yet implemented for StorePaths")
     if isinstance(path, StorePath):
         return path
     elif isinstance(path, Path):
         return path
-    elif path.startswith(STORE_PATH_PREFIX):
+    elif path.startswith(AT_PREFIX):
         return StorePath(path)
     else:
         return Path(path)
