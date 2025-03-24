@@ -86,9 +86,11 @@ def print_manual() -> None:
 
     print_markdown(help_topics.what_is_kash)
 
-    print_markdown(help_topics.progress)
+    print_markdown(help_topics.installation)
 
     print_markdown(help_topics.getting_started)
+
+    print_markdown(help_topics.elements)
 
     print_markdown(help_topics.tips_for_use_with_other_tools)
 

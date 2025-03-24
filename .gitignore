@@ -1,3 +1,6 @@
+*.bak
+*.orig
+
 # Additions to standard GitHub .gitignore:
 tmp/
 trash/

@@ -12,6 +12,7 @@ from kash.config.text_styles import (
     COLOR_HINT,
     CONSOLE_WRAP_WIDTH,
     LOGO_LARGE,
+    LOGO_SPACER,
     STYLE_EMPH,
     STYLE_LOGO,
     TAGLINE_STYLED,
@@ -32,11 +33,11 @@ def logo_colorize_line(line: str, space_replacement: str = " ", line_offset: int
     solid_count = 0
     for i, bit in enumerate(bits):
         if bit.strip():
-            bg_color = "▒" == bit
+            bright_color = i > line_offset + 5 and bit not in "░"
             texts.append(
                 Text(
                     bit,
-                    style=STYLE_LOGO if bg_color else STYLE_EMPH,
+                    style=STYLE_LOGO if bright_color else STYLE_EMPH,
                 )
             )
             solid_count += 1
@@ -57,37 +58,31 @@ def color_logo() -> Group:
     return Group(
         "",
         *[logo_colorize_line(line, " ", left_margin + offset) for line in logo_lines],
-        "",
         Text.assemble(" " * left_margin, TAGLINE_STYLED),
     )
 
 
 def branded_box(content: Group | None, version: str | None = None) -> Panel:
-    line_char = "─"
     panel_width = CONSOLE_WRAP_WIDTH
 
     logo_lines = LOGO_LARGE.split("\n")
-    top_line_len = len(logo_lines[0].strip())
-    rest_line_len = len(logo_lines[1].strip())
-    logo_top = logo_colorize_line(logo_lines[0].strip(), line_char)
-    rest_offset = (panel_width - 4 - top_line_len) // 2 - (rest_line_len - top_line_len)
+    rest_offset = (panel_width - 4 - len(logo_lines[0])) // 2
     tagline_offset = (panel_width - 4 - len(TAGLINE_STYLED)) // 2
 
-    logo_rest = [logo_colorize_line(line, " ", rest_offset) for line in logo_lines[1:]]
+    colored_lines = [logo_colorize_line(line, " ", rest_offset) for line in logo_lines]
+    header = None
     if version:
-        header = Text.assemble(*logo_top)
         footer = Text(version, style=COLOR_HINT, justify="right")
     else:
-        header = Text.assemble(*logo_top)
         footer = None
 
     body = ["", content] if content else []
 
     return Panel(
         Group(
-            *logo_rest,
+            Text.assemble(" " * tagline_offset, LOGO_SPACER),
+            *colored_lines,
             Text.assemble(" " * tagline_offset, TAGLINE_STYLED),
-            # Text(" " * tagline_offset + "🮎" * len(TAGLINE_STYLED), style=STYLE_EMPH),
             *body,
         ),
         title=header,

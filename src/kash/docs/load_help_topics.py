@@ -27,9 +27,9 @@ class HelpTopics:
     welcome: str = page_field("markdown/welcome")
     warning: str = page_field("markdown/warning")
     what_is_kash: str = page_field("markdown/topics/a1_what_is_kash")
-    progress: str = page_field("markdown/topics/a2_progress")
-    installation: str = page_field("markdown/topics/a3_installation")
-    getting_started: str = page_field("markdown/topics/a4_getting_started")
+    installation: str = page_field("markdown/topics/a2_installation")
+    getting_started: str = page_field("markdown/topics/a3_getting_started")
+    elements: str = page_field("markdown/topics/a4_elements")
     tips_for_use_with_other_tools: str = page_field(
         "markdown/topics/a5_tips_for_use_with_other_tools"
     )

@@ -3,22 +3,24 @@
 > “*Civilization advances by extending the number of important operations which we can
 > perform without thinking about them.*” —Alfred North Whitehead
 
-Kash (“Knowledge Agent SHell”) is an interactive, modern command-line power tool for
+Kash (“Knowledge Agent SHell”) is an **interactive, AI-native command-line** shell for
 practical knowledge tasks.
 
-It's also a Python framework that lets you convert a simple Python function into a
+It's also **a Python library** that lets you convert a simple Python function into a
 command and an MCP tool, so it integrates with other tools like Anthropic Desktop or
 Cursor.
 
-You can think of it a kind of hybrid between an AI assistant, a shell, and a developer
-tool like Cursor or Claude Code.
-It's an attempt at finding a way to remix, combine, and interactively explore and then
+You can think of it a kind of power-tool for technical users who want to use Python and
+APIs, a kind of hybrid between an AI assistant, a shell, and a developer tool like
+Cursor or Claude Code.
+
+It's my attempt at finding a way to remix, combine, and interactively explore and then
 gradually automate complex tasks by composing AI tools, APIs, and libraries.
 
 And of course, kash can read its own functionality and enhance itself by writing new
 actions.
 
-The key parts:
+### Key Concepts
 
 - **Actions:** The core of Kash are **Kash actions**. By decorating a Python function,
   you can turn it into an action, which makes it more flexible and powerful, able to
@@ -49,6 +51,8 @@ The key parts:
   **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries.
   There is also some experimental support for **LlamaIndex** and **ChromaDB**.
 
+### What Can Kash Do?
+
 You can use kash actions to do deep research, transcribe videos, summarize and organize
 transcripts and notes, write blog posts, extract or visualize concepts, check citations,
 convert notes to PDFs or beautifully formatted HTML, or perform numerous other
@@ -76,3 +80,13 @@ I've separately built a new desktop terminal app, Kerm, which adds support for a
 "Kerm codes" protocol for such visual components, encoded as OSC codes then rendered in
 the terminal. Because Kash supports these codes, as this develops you will get the
 visuals of a web app layered on the flexibility of a text-based terminal.
+
+### Is Kash Mature?
+
+No. :) It's the result of a couple months of coding and experimentation, and it's very
+much in progress. Please help me make it better by sharing your ideas and feedback!
+It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
+My contact info is at [github.com/jlevy](https://github.com/jlevy).
+
+[**Please follow or DM me**](https://x.com/ojoshe) for future updates or if you have
+ideas, feedback, or use cases for Kash!

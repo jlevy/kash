@@ -9,11 +9,11 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 
 {a1_what_is_kash}
 
-{a2_progress}
+{a2_installation}
 
-{a3_installation}
+{a3_getting_started}
 
-{a4_getting_started}
+{a4_elements}
 
 {a5_tips_for_use_with_other_tools}
 

@@ -14,10 +14,20 @@ from rich.text import Text
 
 LOGO_LARGE: str = (Path(__file__).parent / "logo.txt").read_text()
 
-
 TAGLINE = "The knowledge agent shell"
 
-TAGLINE_STYLED = Text(TAGLINE.upper(), style="bold bright_green")
+TAGLINE_STYLED = Text.assemble(
+    ("░ ", "bright_green"),
+    (TAGLINE.upper(), "bold bright_green"),
+    (" ░", "bright_green"),
+)
+
+LOGO_SPACER = Text.assemble(
+    ("░ ", "bright_green"),
+    " " * len(TAGLINE),
+    (" ░", "bright_green"),
+)
+
 
 ## Settings
 
