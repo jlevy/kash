@@ -18,22 +18,18 @@ With LLMs and other generative AI models, we've seen big improvements in two are
    want to solve, like Notion, Figma, Descript, etc.
 
 While we have these powerful cloud apps, we all know numerous situations where our
-problems aren't easily solved or automated with the usual tools like the ChatGPT
-interface, Notion, Google Docs, Slack, Excel, and Zapier.
+problems aren't easily solved or automated with single tool like ChatGPT, Notion, Google
+Docs, Slack, Excel, and Zapier.
 
 If you want to use any of the newest AI models and APIs for something not supported by
 an existing tool, you generally have to design and build it yourself—in Python and/or a
 full-stack web app.
 
-We are told how AI is replacing developers—and it's true tools like GitHub Copilot and
-Cursor can help you write code much faster.
-But building apps that are good enough people will pay them is hard.
-And we can't all drop what we're doing and build new apps.
-
-It has long been a rule that once products become widely successful, the curse of
-[Conway's Law](https://en.wikipedia.org/wiki/Conway%27s_law) and the complexity of
-full-stack apps means many companies won't add many of the specific features you want,
-or at best are likely to do it slowly.
+It's true tools like GitHub Copilot, Claude Code, and Cursor can help anyone write code
+much faster. But even if you have a tool like this, building polished apps that are good
+enough people will pay them takes time, and many good product ideas never get built.
+And the curse of [Conway's Law](https://en.wikipedia.org/wiki/Conway%27s_law) means many
+companies won't add specific features you want, or at best are likely to do it slowly.
 
 In short, in spite of AI tools accelerating software, certain things don't change: we
 are waiting for developers, product managers, designers, and entrepreneurs to design and
@@ -127,10 +123,10 @@ That brings us to the goals behind building a new, AI-native shell.
   Better languages and scripting tools can in fact make LLMs smarter, because it allows
   them to solve problems in ways that are simpler and less error prone.
 
-Kash may evolve into more than a command line.
-It's more like a first step toward an item-based information operating system—an
-alternate, more flexible UX and information architecture for knowledge workflows.
-It could be the tool you need when you don't know what tool you need.
+A better command line like a first step toward an item-based information operating
+system—an alternate, more flexible UX and information architecture for knowledge
+workflows. My hope is that kash becomes the tool you need when you don't know what tool
+you need.
 
 ### Design Principles
 

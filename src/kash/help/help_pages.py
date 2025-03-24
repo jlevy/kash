@@ -21,7 +21,6 @@ def print_builtin_commands_help(full_help: bool = False) -> None:
     from kash.help.help_printing import print_command_function_help
 
     print_h2("Available Commands")
-    cprint()
 
     if full_help:
         for command in get_all_commands().values():
@@ -43,7 +42,6 @@ def print_actions_help(full_help: bool = False) -> None:
     from kash.help.help_printing import print_action_help
 
     print_h2("Available Actions")
-    cprint()
 
     if full_help:
         actions = get_all_actions_defaults()
@@ -56,7 +54,7 @@ def print_actions_help(full_help: bool = False) -> None:
             short_description = (
                 action.description.split("\n\n")[0] if action.description else "(no description)"
             )
-            cprint(format_name_and_value(f"`{action.name}`", short_description))
+            cprint(message=format_name_and_value(f"`{action.name}`", short_description))
             cprint()
 
 

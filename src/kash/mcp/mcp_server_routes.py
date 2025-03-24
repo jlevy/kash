@@ -26,14 +26,6 @@ log = get_logger(__name__)
 _mcp_published_actions: AtomicVar[list[str]] = AtomicVar([])
 
 
-def unpublish_all_mcp_tools() -> None:
-    """
-    Unpublish all MCP tools.
-    """
-    global _mcp_published_actions
-    _mcp_published_actions.set([])
-
-
 def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     """
     Add actions to the list of published MCP tools.
@@ -45,13 +37,33 @@ def publish_mcp_tools(action_names: list[str] | None = None) -> None:
         action_names = [name for (name, action) in actions.items() if action.mcp_tool]
 
     with _mcp_published_actions.updates() as published_actions:
-        published_actions.extend(action_names)
+        new_actions = set(action_names).difference(published_actions)
+        published_actions.extend(new_actions)
         log.message(
             "Published %s MCP tools (total now %s): %s",
-            len(action_names),
+            len(new_actions),
             len(published_actions),
-            action_names,
+            new_actions,
         )
+
+
+def unpublish_mcp_tools(action_names: list[str] | None) -> None:
+    """
+    Unpublish one or more actions as local MCP tools.
+    """
+    global _mcp_published_actions
+    with _mcp_published_actions.updates() as published_actions:
+        if action_names is None:
+            published_actions[:] = []
+            log.message("Unpublished all MCP tools")
+        else:
+            published_actions[:] = [name for name in published_actions if name not in action_names]
+            log.message(
+                "Unpublished %s MCP tools (total now %s): %s",
+                len(action_names),
+                len(published_actions),
+                action_names,
+            )
 
 
 def tool_for_action(action: Action) -> Tool:

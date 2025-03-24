@@ -173,55 +173,19 @@ transcribe_format https://www.youtube.com/watch?v=_8djNYprRDI
 # a nicer summary at the top:
 transcribe_annotate_summarize https://www.youtube.com/watch?v=_8djNYprRDI
 
-# A few more possibilities...
-
-# Note it's fine to rerun commands on the same arguments and whenever
-# possible intermediate results are cached. The philosophy is actions
-# should be cached and idempotent when possible (a bit like a makefile).
-
-# Let's now look at the concepts discussed in that video (adjust the filename
-# if needed):
-transcribe_format https://www.youtube.com/watch?v=_8djNYprRDI
-find_concepts
-
-# This is the list of concepts:
-show
-
-# But we can actually save them as items:
-save_concepts
-
-# We now have about 40 concepts. But maybe some are near duplicates (like
-# "high intensity interval training" vs "high intensity intervals").
-# Let's embed them and find near duplicates:
-find_near_duplicates
-
-# In my case I see one near duplicate, which I'll archive:
-archive
-
-# And for fun now let's visualize them in 3d (proof of concept, this could
-# get a lot better):
-graph_view --concepts_only
-
-# We can also list all videos on a channel, saving links to each one as
-# a resource .yml file:
-list_channel https://www.youtube.com/@Kboges
-
-# Look at what we have and transcribe a couple more:
-files resources
-transcribe resources/quality_first.resource.yml resources/why_we_train.resource.yml
-
-# Another interesting note: you can process a really long document.
-# This one is a 3-hour interview. Kash uses sliding windows that process a
-# group of paragraphs at a time, then stitches the results back together:
-transcribe_format https://www.youtube.com/watch?v=juD99_sPWGU
-
 show_webpage
 ```
+
+This is only the beginning but should give a flavor for how you can use kash.
+With more actions, you can then take a transcript like this and have actions to extract
+concepts, look up more about them with Perplexity, and crawl and save all the resources.
+You might then visualize all the concepts.
+All of these steps are just actions.
 
 ### Creating a New Workspace
 
 Although you don't always need one, a *workspace* is very helpful for any real work in
-Kash. It's just a directory of files, plus a `.kash/` directory with various logs and
+kash. It's just a directory of files, plus a `.kash/` directory with various logs and
 metadata.
 
 Note the `.kash/cache` directory contains all the downloaded videos and media you
@@ -239,7 +203,7 @@ organized.
 Type `workspace` any time to see the current workspace.
 
 By default, when you are not using the shell inside a workspace directory, or when you
-run Kash the first time, it uses the default *global workspace*.
+run kash the first time, it uses the default *global workspace*.
 
 Once you create a workspace, you can `cd` into that workspace and that will become the
 current workspace. (If you're familiar with how the `git` command-line works in

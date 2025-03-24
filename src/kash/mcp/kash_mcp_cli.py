@@ -10,6 +10,7 @@ import os
 import time
 from pathlib import Path
 
+import anyio
 import httpcore
 import httpx
 from mcp_proxy.sse_client import run_sse_client
@@ -74,10 +75,26 @@ def run_standalone():
     run_mcp_server_stdio()
 
 
-def connect_to_sse_server(proxy_url: str):
-    def is_connect_exception(e: BaseException) -> bool:
-        return isinstance(e, (httpx.ConnectError, httpcore.ConnectError))
+def is_connect_exception(e: BaseException) -> bool:
+    if isinstance(e, (httpx.ConnectError, httpcore.ConnectError)):
+        return True
+    if isinstance(e, BaseExceptionGroup):
+        return any(is_connect_exception(exc) for exc in e.exceptions)
+    return False
 
+
+def is_closed_exception(e: BaseException) -> bool:
+    # Various kinds of exceptions when input is closed or server is stopped.
+    if isinstance(e, ValueError) and "I/O operation on closed file" in str(e):
+        return True
+    if isinstance(e, anyio.BrokenResourceError):
+        return True
+    if isinstance(e, BaseExceptionGroup):
+        return any(is_closed_exception(exc) for exc in e.exceptions)
+    return False
+
+
+def connect_to_sse_server(proxy_url: str):
     # Try for 5 minutes
     tries = 30
     delay = 10
@@ -85,16 +102,14 @@ def connect_to_sse_server(proxy_url: str):
         try:
             asyncio.run(run_sse_client(proxy_url))
         except Exception as e:
-            if is_connect_exception(e) or (
-                isinstance(e, BaseExceptionGroup)
-                and any(is_connect_exception(exc) for exc in e.exceptions)
-            ):
+            if is_closed_exception(e):
+                log.warning("Input closed, will retry: %s", proxy_url)
+            elif is_connect_exception(e):
                 log.warning("Server is not running yet, will retry: %s", proxy_url)
             else:
                 log.error(
                     "Error connecting to server, will retry: %s: %s", proxy_url, e, exc_info=True
                 )
-
             time.sleep(delay)
 
     log.error("Failed to connect. Giving up.")
