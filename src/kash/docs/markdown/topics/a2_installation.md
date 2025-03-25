@@ -122,11 +122,10 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
    You should see a welcome message with all info about APIs and tools.
 
-   You may also use the `self_check` command to confirm which tools and API keys are
-   working.
+   Use the `self_check` command to confirm which tools and API keys are working.
 
-   You may use the `self_configure` command to fill in additional values in your .env
-   file.
+   Use the `self_configure` command as a quick way to fill in additional values in your
+   .env file and to set workspace parameters on what LLMs to use by default.
 
 ### Running Kash as an MCP Server
 

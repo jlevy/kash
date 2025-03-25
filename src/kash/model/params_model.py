@@ -207,12 +207,12 @@ A list of parameter declarations, possibly with default values.
 # The user may override them with parameters.
 DEFAULT_CAREFUL_LLM = LLM.o1_preview
 DEFAULT_STRUCTURED_LLM = LLM.gpt_4o
-DEFAULT_BASIC_LLM = LLM.claude_3_7_sonnet
+DEFAULT_STANDARD_LLM = LLM.claude_3_7_sonnet
 DEFAULT_FAST_LLM = LLM.claude_3_5_haiku
 
 
 # Parameters set globally such as in the workspace.
-GLOBAL_PARAMS: dict[str, Param] = {
+MODEL_PARAMS: dict[str, Param] = {
     "careful_llm": Param(
         "careful_llm",
         "Default LLM used for complex, unstructured requests (including for the kash assistant).",
@@ -229,10 +229,10 @@ GLOBAL_PARAMS: dict[str, Param] = {
         valid_str_values=list(LLM),
         is_open_ended=True,
     ),
-    "basic_llm": Param(
-        "basic_llm",
+    "standard_llm": Param(
+        "standard_llm",
         "Default LLM used for basic requests (including for the kash assistant).",
-        default_value=DEFAULT_BASIC_LLM,
+        default_value=DEFAULT_STANDARD_LLM,
         type=LLMName,
         valid_str_values=list(LLM),
         is_open_ended=True,
@@ -245,6 +245,10 @@ GLOBAL_PARAMS: dict[str, Param] = {
         valid_str_values=list(LLM),
         is_open_ended=True,
     ),
+}
+
+GLOBAL_PARAMS: dict[str, Param] = {
+    **MODEL_PARAMS,
 }
 
 # Parameters that are common to all actions.

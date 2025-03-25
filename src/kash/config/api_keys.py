@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from enum import Enum
 from logging import getLogger
 
+import litellm
+from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
 from rich.text import Text
 
 from kash.config.dotenv_utils import env_var_is_set, find_load_dotenv
+from kash.llm_utils.language_models import LLM, LLMName
 from kash.shell.output.shell_output import cprint, format_success_or_failure
 from kash.utils.common.atomic_var import AtomicVar
 
@@ -23,6 +28,21 @@ class Api(str, Enum):
     firecrawl = "FIRECRAWL_API_KEY"
     exa = "EXA_API_KEY"
 
+    @classmethod
+    def for_model(cls, model: LLMName) -> Api | None:
+        try:
+            _model, custom_llm_provider, _dynamic_api_key, _api_base = get_llm_provider(model)
+        except litellm.exceptions.BadRequestError:
+            return None
+        try:
+            return getattr(cls, custom_llm_provider.lower())
+        except (AttributeError, ValueError):
+            return None
+
+    @property
+    def env_var(self) -> str:
+        return self.value
+
 
 RECOMMENDED_APIS = [
     Api.openai,
@@ -33,6 +53,24 @@ RECOMMENDED_APIS = [
 
 
 _log_api_setup_done = AtomicVar(False)
+
+
+def have_key_for_model(model: LLMName) -> bool:
+    """
+    Do we have an API key for this model?
+    """
+    try:
+        api = Api.for_model(model)
+        return bool(api and env_var_is_set(api.env_var))
+    except ValueError:
+        return False
+
+
+def get_all_configured_models() -> list[LLMName]:
+    """
+    Get all models that have an API key.
+    """
+    return [model for model in LLM if have_key_for_model(model)]
 
 
 def warn_if_missing_api_keys(keys: list[Api] = RECOMMENDED_APIS) -> list[Api]:

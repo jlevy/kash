@@ -401,7 +401,7 @@ def set_params(*key_vals: str) -> None:
 
 
 @kash_command
-def list_params(no_pager: bool = False) -> None:
+def list_params(full: bool = False) -> None:
     """
     Show or set currently set of workspace parameters, which are settings that may be used
     by commands and actions or to override default parameters.
@@ -411,13 +411,12 @@ def list_params(no_pager: bool = False) -> None:
     ws: Workspace = current_ws()
     settable_params = GLOBAL_PARAMS
 
-    with console_pager(use_pager=not no_pager):
+    with console_pager(use_pager=full):
         print_h2("Available Parameters")
         for param in settable_params.values():
+            description: str | None = param.full_description if full else param.description
             cprint(
-                format_name_and_description(
-                    param.name, param.full_description, extra_note="(parameter)"
-                )
+                format_name_and_description(param.name, description or "", extra_note="(parameter)")
             )
             cprint()
 

@@ -60,7 +60,7 @@ class LLMDefault(Enum):
 
     careful = "careful"
     structured = "structured"
-    basic = "basic"
+    standard = "standard"
     fast = "fast"
 
     @property
@@ -69,8 +69,8 @@ class LLMDefault(Enum):
             return "careful_llm"
         elif self == LLMDefault.structured:
             return "structured_llm"
-        elif self == LLMDefault.basic:
-            return "basic_llm"
+        elif self == LLMDefault.standard:
+            return "standard_llm"
         elif self == LLMDefault.fast:
             return "fast_llm"
         else:
@@ -109,9 +109,6 @@ class LLM(LLMName, Enum):
     claude_3_7_sonnet = LLMName("claude-3-7-sonnet-latest")
     claude_3_5_sonnet = LLMName("claude-3-5-sonnet-latest")
     claude_3_5_haiku = LLMName("claude-3-5-haiku-latest")
-    claude_3_opus = LLMName("claude-3-opus-latest")
-    claude_3_sonnet = LLMName("claude-3-sonnet-latest")
-    claude_3_haiku = LLMName("claude-3-haiku-latest")
 
     # https://ai.google.dev/gemini-api/docs/models
     gemini_2_0_flash = LLMName("gemini/gemini-2_0-flash")
@@ -152,6 +149,10 @@ class LLM(LLMName, Enum):
     default_structured = LLMName("default_structured")
     default_careful = LLMName("default_careful")
     default_fast = LLMName("default_fast")
+
+    @classmethod
+    def all_names(cls) -> list[LLMName]:
+        return [value for name, value in cls.__members__.items() if not name.startswith("default_")]
 
     def __str__(self):
         return f"{self.value}"

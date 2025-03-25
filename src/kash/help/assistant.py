@@ -45,7 +45,7 @@ class AssistanceType(Enum):
 
     careful = LLMDefault.careful
     structured = LLMDefault.structured
-    basic = LLMDefault.basic
+    basic = LLMDefault.standard
     fast = LLMDefault.fast
 
     @property

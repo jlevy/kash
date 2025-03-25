@@ -290,6 +290,7 @@ def print_status(
         style=COLOR_STATUS,
         extra_indent=extra_indent,
     )
+    cprint()
 
 
 def print_result(
@@ -365,6 +366,7 @@ def print_h2(heading: str):
 def print_h3(heading: str):
     text = Text(heading, style="markdown.h3")
     rich_print(text)
+    rich_print()
 
 
 def print_h4(heading: str):

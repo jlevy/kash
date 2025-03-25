@@ -1,7 +1,9 @@
+from kash.commands.workspace.workspace_commands import list_params
 from kash.config.api_keys import (
     RECOMMENDED_APIS,
     Api,
     find_load_dotenv,
+    get_all_configured_models,
     print_api_key_setup,
     warn_if_missing_api_keys,
 )
@@ -11,15 +13,24 @@ from kash.docs.all_docs import all_docs
 from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
+from kash.model.params_model import (
+    DEFAULT_CAREFUL_LLM,
+    DEFAULT_FAST_LLM,
+    DEFAULT_STANDARD_LLM,
+    DEFAULT_STRUCTURED_LLM,
+)
 from kash.shell.input.collect_dotenv import fill_missing_dotenv
+from kash.shell.input.input_prompts import input_choice
 from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
     format_name_and_value,
     format_success_or_failure,
     print_h2,
+    print_h3,
 )
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
+from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -88,6 +99,7 @@ def self_configure(all: bool = False, update: bool = True) -> None:
     else:
         keys_to_update = [key for key in needed_keys if not env_var_is_set(key)]
 
+    print_h3("Checking API keys")
     cprint(
         format_success_or_failure(
             len(keys_to_update) == 0,
@@ -99,7 +111,49 @@ def self_configure(all: bool = False, update: bool = True) -> None:
         fill_missing_dotenv(keys_to_update)
         reload_env()
 
+    cprint()
+    ws = current_ws()
+    print_h3(f"Configuring workspace parameters ({ws.name})")
+    avail_models = get_all_configured_models()
+    cprint(
+        "Available models with configured API keys: %s",
+        ", ".join(f"`{model}`" for model in avail_models),
+    )
+    cprint()
 
+    standard_llm = input_choice(
+        "Select a standard model",
+        choices=[str(model) for model in avail_models],
+        default=DEFAULT_STANDARD_LLM,
+    )
+    careful_llm = input_choice(
+        "Select a careful model",
+        choices=[str(model) for model in avail_models],
+        default=DEFAULT_CAREFUL_LLM,
+    )
+    structured_llm = input_choice(
+        "Select a structured model",
+        choices=[str(model) for model in avail_models],
+        default=DEFAULT_STRUCTURED_LLM,
+    )
+    fast_llm = input_choice(
+        "Select a fast model",
+        choices=[str(model) for model in avail_models],
+        default=DEFAULT_FAST_LLM,
+    )
+    params = {
+        "standard_llm": standard_llm,
+        "careful_llm": careful_llm,
+        "structured_llm": structured_llm,
+        "fast_llm": fast_llm,
+    }
+    ws.params.set(params)
+
+    cprint()
+    list_params()
+
+
+@kash_command
 @kash_command
 def check_tools(warn_only: bool = False, brief: bool = False) -> None:
     """
