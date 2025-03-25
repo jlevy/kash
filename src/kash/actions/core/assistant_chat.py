@@ -4,7 +4,7 @@ from kash.help.assistant import assistant_chat_history, shell_context_assistance
 from kash.help.assistant_output import print_assistant_heading
 from kash.llm_utils.language_models import LLM, LLMName
 from kash.model import NO_ARGS, ActionInput, ActionResult, common_params
-from kash.shell.input.prompt_input import input_simple_string
+from kash.shell.input.input_prompts import input_simple_string
 from kash.shell.output.shell_output import PrintHooks, Wrap, print_response
 
 

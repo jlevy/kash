@@ -10,7 +10,13 @@ from kash.commands.base.files_command import files
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.config.text_styles import COLOR_SUGGESTION, EMOJI_TRUE, EMOJI_WARN, STYLE_EMPH, STYLE_HINT
+from kash.config.text_styles import (
+    COLOR_SUGGESTION,
+    EMOJI_TRUE,
+    EMOJI_WARN,
+    STYLE_EMPH,
+    STYLE_HINT,
+)
 from kash.errors import InvalidInput
 from kash.exec import (
     assemble_path_args,
@@ -31,6 +37,7 @@ from kash.media_base.media_services import is_media_url
 from kash.model.items_model import Item, ItemType
 from kash.model.params_model import GLOBAL_PARAMS
 from kash.model.paths_model import StorePath, fmt_store_path
+from kash.shell.input.param_inputs import input_param_name, input_param_value
 from kash.shell.output.shell_output import (
     PrintHooks,
     Wrap,
@@ -39,6 +46,7 @@ from kash.shell.output.shell_output import (
     format_name_and_description,
     format_name_and_value,
     print_h2,
+    print_h3,
     print_status,
 )
 from kash.shell.utils.native_utils import tail_file
@@ -56,8 +64,9 @@ from kash.workspaces import (
     global_ws_dir,
     resolve_ws,
 )
+from kash.workspaces.param_state import ParamState
 from kash.workspaces.workspace_names import check_strict_workspace_name
-from kash.workspaces.workspaces import get_ws
+from kash.workspaces.workspaces import Workspace, get_ws
 
 log = get_logger(__name__)
 
@@ -335,16 +344,27 @@ def relations(*paths: str) -> None:
         PrintHooks.spacer()
 
 
+def _show_current_params(param_state: ParamState):
+    param_values = param_state.get_raw_values()
+    print_h3("Current Parameters")
+    for key, value in param_values.items():
+        cprint(format_key_value(key, value))
+    cprint()
+
+
 @kash_command
-def workspace_param(*args: str, no_pager: bool = False) -> None:
+def set_params(*key_vals: str) -> None:
     """
     Show or set currently set of workspace parameters, which are settings that may be used
     by commands and actions or to override default parameters.
+
+    Run with no args to interactively set parameters.
     """
     ws = current_ws()
     settable_params = GLOBAL_PARAMS
-    if args:
-        new_key_vals = dict([parse_key_value(arg) for arg in args])
+
+    if key_vals:
+        new_key_vals = dict([parse_key_value(arg) for arg in key_vals])
 
         for key in new_key_vals:
             if key not in settable_params:
@@ -363,9 +383,36 @@ def workspace_param(*args: str, no_pager: bool = False) -> None:
         new_params = remove_values(new_params, deletes)
         ws.params.set(new_params)
 
+    else:
+        param = input_param_name(
+            "What workspace parameter do you want to set?",
+            settable_params,
+        )
+        cprint()
+        print_h3(f"Setting parameter: {param.name}")
+        param_value = input_param_value(
+            "What value do you want to set it to? (Press enter to unset it, Ctrl-C to cancel.)",
+            param,
+        )
+
+        ws.params.set({param.name: param_value})
+
+        _show_current_params(ws.params)
+
+
+@kash_command
+def list_params(no_pager: bool = False) -> None:
+    """
+    Show or set currently set of workspace parameters, which are settings that may be used
+    by commands and actions or to override default parameters.
+
+    Run with no args to interactively set parameters.
+    """
+    ws: Workspace = current_ws()
+    settable_params = GLOBAL_PARAMS
+
     with console_pager(use_pager=not no_pager):
         print_h2("Available Parameters")
-
         for param in settable_params.values():
             cprint(
                 format_name_and_description(
@@ -378,10 +425,7 @@ def workspace_param(*args: str, no_pager: bool = False) -> None:
         if not param_values.values:
             print_status("No parameters are set.")
         else:
-            cprint("Current Parameters", style="markdown.h3")
-            for key, value in param_values.items():
-                cprint(format_key_value(key, value))
-            cprint()
+            _show_current_params(ws.params)
 
 
 @kash_command

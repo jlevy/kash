@@ -96,10 +96,12 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 4. **Set up API keys:**
 
    You will need API keys for all services you wish to use.
-   Configuring OpenAI, Anthropic, Groq (for Llama 3), Deepgram (for transcriptions),
-   Firecrawl (for web crawling and scraping), and Exa (for web search) are recommended.
+   Configuring OpenAI, Anthropic, Groq (for Llama 3), and Deepgram (if you wish to do
+   transcriptions) are a good start.
+   But kash supports dozens of models
+   [via LiteLLM](https://docs.litellm.ai/docs/providers).
 
-   These keys should go in the `.env` file in your current directory.
+   You can set these up now, or after you run kash (below):
 
    ```shell
    # Set up API secrets:
@@ -108,15 +110,23 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    # You can also put .env in ~/.env if you want it to be usable in any directory.
    ```
 
+   These keys should go in the `.env` file in your current work directory or a parent or
+   your home directory (recommended if you'll be working in several directories, as with
+   a typical shell).
+
 5. **Run kash:**
 
    ```shell
    kash
    ```
 
-   You should see a welcome screen with all info about APIs and tools.
+   You should see a welcome message with all info about APIs and tools.
+
    You may also use the `self_check` command to confirm which tools and API keys are
    working.
+
+   You may use the `self_configure` command to fill in additional values in your .env
+   file.
 
 ### Running Kash as an MCP Server
 

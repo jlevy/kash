@@ -13,7 +13,7 @@ from kash.help.assistant import (
 )
 from kash.llm_utils.language_models import LLM
 from kash.model.items_model import Item, ItemType
-from kash.shell.input.prompt_input import input_simple_string
+from kash.shell.input.input_prompts import input_simple_string
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.file_utils.file_formats_model import Format
 from kash.workspaces import current_ws

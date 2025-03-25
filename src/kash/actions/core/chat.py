@@ -15,7 +15,7 @@ from kash.model import (
     ShellResult,
     common_params,
 )
-from kash.shell.input.prompt_input import input_simple_string
+from kash.shell.input.input_prompts import input_simple_string
 from kash.shell.output.shell_output import (
     PadStyle,
     Wrap,
