@@ -1,3 +1,4 @@
+from kash.commands.base.model_commands import list_apis
 from kash.commands.workspace.workspace_commands import list_params
 from kash.config.api_keys import (
     RECOMMENDED_APIS,
@@ -24,10 +25,10 @@ from kash.shell.input.input_prompts import input_choice
 from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
+    format_failure,
     format_name_and_value,
-    format_success_or_failure,
+    format_success,
     print_h2,
-    print_h3,
 )
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 from kash.workspaces.workspaces import current_ws
@@ -83,13 +84,17 @@ def self_check(brief: bool = False) -> None:
 
 
 @kash_command
-def self_configure(all: bool = False, update: bool = True) -> None:
+def self_configure(all: bool = False, update: bool = False) -> None:
     """
     Interactively configure your .env file with recommended API keys.
 
     :param all: Configure all known API keys (instead of just recommended ones).
     :param update: Update values even if they are already set.
     """
+
+    # Show APIs before starting.
+    list_apis()
+
     if all:
         needed_keys = [api.value for api in Api]
     else:
@@ -98,62 +103,63 @@ def self_configure(all: bool = False, update: bool = True) -> None:
         keys_to_update = needed_keys
     else:
         keys_to_update = [key for key in needed_keys if not env_var_is_set(key)]
+        if keys_to_update:
+            cprint()
+            cprint(format_failure(f"API keys needed: {', '.join(keys_to_update)}"))
 
-    print_h3("Checking API keys")
-    cprint(
-        format_success_or_failure(
-            len(keys_to_update) == 0,
-            f"All requested API keys are set! Found: {', '.join(needed_keys)}",
-            f"Need to update API keys: {', '.join(keys_to_update)}",
-        )
-    )
+    cprint()
+    print_h2("Configuring .env file")
     if keys_to_update:
         fill_missing_dotenv(keys_to_update)
         reload_env()
+    else:
+        cprint(format_success("All requested API keys are set!"))
 
     cprint()
     ws = current_ws()
-    print_h3(f"Configuring workspace parameters ({ws.name})")
+    print_h2(f"Configuring workspace parameters ({ws.name})")
     avail_models = get_all_configured_models()
-    cprint(
-        "Available models with configured API keys: %s",
-        ", ".join(f"`{model}`" for model in avail_models),
-    )
-    cprint()
-
-    standard_llm = input_choice(
-        "Select a standard model",
-        choices=[str(model) for model in avail_models],
-        default=DEFAULT_STANDARD_LLM,
-    )
-    careful_llm = input_choice(
-        "Select a careful model",
-        choices=[str(model) for model in avail_models],
-        default=DEFAULT_CAREFUL_LLM,
-    )
-    structured_llm = input_choice(
-        "Select a structured model",
-        choices=[str(model) for model in avail_models],
-        default=DEFAULT_STRUCTURED_LLM,
-    )
-    fast_llm = input_choice(
-        "Select a fast model",
-        choices=[str(model) for model in avail_models],
-        default=DEFAULT_FAST_LLM,
-    )
-    params = {
-        "standard_llm": standard_llm,
-        "careful_llm": careful_llm,
-        "structured_llm": structured_llm,
-        "fast_llm": fast_llm,
-    }
-    ws.params.set(params)
+    if avail_models:
+        cprint(
+            "Available models with configured API keys: %s",
+            ", ".join(f"`{model}`" for model in avail_models),
+        )
+        standard_llm = input_choice(
+            "Select a standard model",
+            choices=[str(model) for model in avail_models],
+            default=DEFAULT_STANDARD_LLM,
+        )
+        careful_llm = input_choice(
+            "Select a careful model",
+            choices=[str(model) for model in avail_models],
+            default=DEFAULT_CAREFUL_LLM,
+        )
+        structured_llm = input_choice(
+            "Select a structured model",
+            choices=[str(model) for model in avail_models],
+            default=DEFAULT_STRUCTURED_LLM,
+        )
+        fast_llm = input_choice(
+            "Select a fast model",
+            choices=[str(model) for model in avail_models],
+            default=DEFAULT_FAST_LLM,
+        )
+        params = {
+            "standard_llm": standard_llm,
+            "careful_llm": careful_llm,
+            "structured_llm": structured_llm,
+            "fast_llm": fast_llm,
+        }
+        ws.params.set(params)
+    else:
+        log.warning(
+            "Hm, still didn't find any models with configured API keys. Check your .env file?"
+        )
 
     cprint()
     list_params()
 
 
-@kash_command
 @kash_command
 def check_tools(warn_only: bool = False, brief: bool = False) -> None:
     """

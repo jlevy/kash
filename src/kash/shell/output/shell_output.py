@@ -19,17 +19,15 @@ from rich.text import Text
 
 from kash.config.logger import get_console
 from kash.config.text_styles import (
-    COLOR_FAILURE,
     COLOR_HINT_DIM,
     COLOR_RESPONSE,
     COLOR_STATUS,
-    COLOR_SUCCESS,
     CONSOLE_WRAP_WIDTH,
     HRULE_CHAR,
     STYLE_ASSISTANCE,
     STYLE_HELP,
     STYLE_HINT,
-    emoji_bool,
+    format_success_emoji,
 )
 from kash.shell.output.kmarkdown import KMarkdown
 from kash.utils.rich_custom.rich_indent import Indent
@@ -100,6 +98,14 @@ def format_paragraphs(*paragraphs: str | Text | Group) -> Group:
     return Group(*text)
 
 
+def format_success(message: str | Text) -> Text:
+    return Text.assemble(format_success_emoji(True), message)
+
+
+def format_failure(message: str | Text) -> Text:
+    return Text.assemble(format_success_emoji(False), message)
+
+
 def format_success_or_failure(
     value: bool, true_str: str | Text = "", false_str: str | Text = "", space: str = ""
 ) -> Text:
@@ -107,7 +113,7 @@ def format_success_or_failure(
     Format a success or failure message with an emoji followed by the true or false string.
     If false_str is not provided, it will be the same as true_str.
     """
-    emoji = Text(emoji_bool(value), style=COLOR_SUCCESS if value else COLOR_FAILURE)
+    emoji = format_success_emoji(value)
     if true_str or false_str:
         return Text.assemble(emoji, space, true_str if value else (false_str or true_str))
     else:
@@ -283,6 +289,7 @@ def print_status(
     text_wrap: Wrap = Wrap.NONE,
     extra_indent: str = "",
 ):
+    PrintHooks.before_status()
     cprint(
         message,
         *args,
@@ -290,7 +297,7 @@ def print_status(
         style=COLOR_STATUS,
         extra_indent=extra_indent,
     )
-    cprint()
+    PrintHooks.after_status()
 
 
 def print_result(
@@ -400,6 +407,8 @@ class PrintHooks(Enum):
     before_workspace_info = "before_workspace_info"
     before_command_run = "before_command_run"
     after_command_run = "after_command_run"
+    before_status = "before_status"
+    after_status = "after_status"
     before_shell_action_run = "before_action_run"
     after_shell_action_run = "after_action_run"
     before_log_action_run = "before_log_action_run"
@@ -435,6 +444,10 @@ class PrintHooks(Enum):
             self.nl()
         elif self == PrintHooks.after_command_run:
             pass
+        elif self == PrintHooks.before_status:
+            self.nl()
+        elif self == PrintHooks.after_status:
+            self.nl()
         elif self == PrintHooks.before_shell_action_run:
             pass
         elif self == PrintHooks.after_shell_action_run:

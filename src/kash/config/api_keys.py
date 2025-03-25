@@ -77,7 +77,7 @@ def warn_if_missing_api_keys(keys: list[Api] = RECOMMENDED_APIS) -> list[Api]:
     missing_keys = [api for api in keys if not env_var_is_set(api.value)]
     if missing_keys:
         log.warning(
-            "Missing recommended API keys (%s). Check .env file or run `self_configure` to set them.",
+            "Missing recommended API keys (%s):\nCheck .env file or run `self_configure` to set them.",
             ", ".join(missing_keys),
         )
 

@@ -6,7 +6,7 @@ from dotenv.parser import parse_stream
 
 from kash.config.dotenv_utils import find_load_dotenv
 from kash.shell.input.input_prompts import input_confirm, input_simple_string
-from kash.shell.output.shell_output import cprint
+from kash.shell.output.shell_output import cprint, print_status
 
 
 def fill_missing_dotenv(keys_to_update: list[str]):
@@ -14,7 +14,7 @@ def fill_missing_dotenv(keys_to_update: list[str]):
     Interactively fill missing values in the active .env file.
     """
     dotenv_paths = find_load_dotenv()
-    dotenv_path = dotenv_paths[0] if dotenv_paths else Path(".") / ".env"
+    dotenv_path = dotenv_paths[0] if dotenv_paths else Path("~/.env").expanduser()
 
     if dotenv_paths:
         cprint(f"Found .env file: {dotenv_path}")
@@ -22,19 +22,36 @@ def fill_missing_dotenv(keys_to_update: list[str]):
         cprint("No .env file found.")
 
     if input_confirm("Do you want to update your .env file?", default=True):
+        dotenv_path_str = input_simple_string(
+            "Path to the .env file to use: ", default=str(dotenv_path)
+        )
+        if not dotenv_path_str:
+            print_status("Config changes cancelled.")
+            raise KeyboardInterrupt()
+
+        dotenv_path = Path(dotenv_path_str)
+
+        cprint(
+            "Enter values for each key, or press enter to leave unset for now. Values need not be quoted."
+        )
         updates = {}
         for key in keys_to_update:
-            updates[key] = input_simple_string(f"Enter value for {key} (value need not be quoted):")
+            cprint()
+            value = input_simple_string(
+                f"Enter value for {key}:",
+                instruction='Leave empty to skip, use "" for a true empty string.',
+            )
+            if value and value.strip():
+                updates[key] = value
+            else:
+                cprint(f"Skipping {key}.")
 
-        cprint("Enter values for each key, or press enter to leave unset for now.")
-
-        env_path_str = input_simple_string("Path to the .env file: ", default=str(dotenv_path))
-        env_path = Path(env_path_str)
         # Actually save the collected variables to the .env file
-        update_env_file(env_path, updates, create_if_missing=True, keep_backup=True)
-        print(f"API keys saved to {env_path}")
+        update_env_file(dotenv_path, updates, create_if_missing=True, keep_backup=True)
+        print(f"API keys saved to {dotenv_path}")
     else:
-        cprint("Config changes cancelled.")
+        print_status("Config changes cancelled.")
+        raise KeyboardInterrupt()
 
 
 def update_env_file(
@@ -45,7 +62,7 @@ def update_env_file(
 ) -> tuple[list[str], list[str]]:
     """
     Updates values in a .env file (safely). Similar to what dotenv offers but allows multiple
-    updates at once and keeps a backup.
+    updates at once and keeps a backup. Values may be quoted or unquoted.
     """
     if not create_if_missing and not dotenv_path.exists():
         raise FileNotFoundError(f".env file does not exist: {dotenv_path}")
@@ -55,12 +72,12 @@ def update_env_file(
         dotenv_path.parent.mkdir(parents=True, exist_ok=True)
 
     def format_line(key: str, value: str) -> str:
-        if not (value.startswith("'") and value.endswith("'")) and not (
+        if (value.startswith("'") and value.endswith("'")) or (
             value.startswith('"') and value.endswith('"')
         ):
-            return f"{key}=" + '"' + value.replace('"', '\\"') + '"'
-        else:
             return f"{key}={value}"
+        else:
+            return f"{key}=" + '"' + value.replace('"', '\\"') + '"'
 
     if keep_backup and dotenv_path.exists():
         copyfile(dotenv_path, dotenv_path.with_suffix(".env.bak"))

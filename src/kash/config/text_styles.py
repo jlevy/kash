@@ -303,8 +303,12 @@ EMOJI_TRUE = "✔︎"
 EMOJI_FALSE = "✘"
 
 
-def emoji_bool(value: bool) -> str:
-    return EMOJI_TRUE if value else EMOJI_FALSE
+def success_emoji(value: bool, success_only: bool = False) -> str:
+    return EMOJI_TRUE if value else " " if success_only else EMOJI_FALSE
+
+
+def format_success_emoji(value: bool, success_only: bool = False) -> Text:
+    return Text(success_emoji(value, success_only), style=COLOR_SUCCESS if value else COLOR_FAILURE)
 
 
 ## Special headings

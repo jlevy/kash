@@ -40,7 +40,7 @@ def assist(
             "What do you need help with? (Ask any question or press enter to see main `help` page.)",
             prompt_symbol=PROMPT_ASSIST,
         )
-        if not input.strip():
+        if not input or not input.strip():
             help()
             return
 

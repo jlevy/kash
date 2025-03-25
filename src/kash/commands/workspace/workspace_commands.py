@@ -12,10 +12,10 @@ from kash.config.logger import get_logger
 from kash.config.settings import global_settings
 from kash.config.text_styles import (
     COLOR_SUGGESTION,
-    EMOJI_TRUE,
     EMOJI_WARN,
     STYLE_EMPH,
     STYLE_HINT,
+    format_success_emoji,
 )
 from kash.errors import InvalidInput
 from kash.exec import (
@@ -388,11 +388,12 @@ def set_params(*key_vals: str) -> None:
             "What workspace parameter do you want to set?",
             settable_params,
         )
+        if not param:
+            raise KeyboardInterrupt()
         cprint()
         print_h3(f"Setting parameter: {param.name}")
         param_value = input_param_value(
-            "What value do you want to set it to? (Press enter to unset it, Ctrl-C to cancel.)",
-            param,
+            "What value do you want to set it to? (Press enter to unset it, Esc to cancel.)", param
         )
 
         ws.params.set({param.name: param_value})
@@ -614,9 +615,11 @@ def preconditions() -> None:
 
     for precondition in get_all_preconditions().values():
         satisfied = all(precondition(item) for item in items)
-        emoji = EMOJI_TRUE if satisfied else " "
+        emoji = format_success_emoji(satisfied, success_only=True)
         satisfied_str = "satisfied" if satisfied else "not satisfied"
-        cprint(f"{emoji} {precondition} {satisfied_str}", text_wrap=Wrap.NONE)
+        cprint(
+            Text.assemble(emoji, " ", str(precondition), " ", satisfied_str), text_wrap=Wrap.NONE
+        )
 
     PrintHooks.spacer()
 

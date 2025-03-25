@@ -35,6 +35,8 @@ def assistant_chat(_input: ActionInput, model: LLMName = LLM.default_careful) ->
             user_message = input_simple_string(f"assistant/{model.litellm_name}")
         except KeyboardInterrupt:
             break
+        if user_message is None:
+            break
 
         user_message = user_message.strip()
         if not user_message or user_message.lower() == "exit" or user_message.lower() == "quit":
