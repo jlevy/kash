@@ -411,6 +411,9 @@ class TypedParamValues:
     each value.
     """
 
+    values: dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Param] = field(default_factory=dict)
+
     def __post_init__(self):
         if set(self.values.keys()) != set(self.params.keys()):
             raise ValueError(
@@ -430,6 +433,3 @@ class TypedParamValues:
                 f"Missing params for supplied values: values for {sorted(values.keys())} but params for {sorted(params.keys())}"
             )
         return TypedParamValues(values=values, params=params)
-
-    values: dict[str, Any] = field(default_factory=dict)
-    params: dict[str, Param] = field(default_factory=dict)

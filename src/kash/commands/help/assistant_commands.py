@@ -6,7 +6,6 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import PROMPT_ASSIST, SPINNER
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.form_input.prompt_input import prompt_simple_string
 from kash.help.assistant import (
     AssistanceType,
     assist_system_message_with_state,
@@ -14,6 +13,7 @@ from kash.help.assistant import (
 )
 from kash.llm_utils.language_models import LLM
 from kash.model.items_model import Item, ItemType
+from kash.shell.input.prompt_input import input_simple_string
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.file_utils.file_formats_model import Format
 from kash.workspaces import current_ws
@@ -36,7 +36,7 @@ def assist(
         for the assistant type is used.
     """
     if not input:
-        input = prompt_simple_string(
+        input = input_simple_string(
             "What do you need help with? (Ask any question or press enter to see main `help` page.)",
             prompt_symbol=PROMPT_ASSIST,
         )

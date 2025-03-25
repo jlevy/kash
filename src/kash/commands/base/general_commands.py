@@ -1,10 +1,24 @@
-from kash.config.api_keys import find_load_dotenv, print_api_key_setup, warn_if_missing_api_keys
+from kash.config.api_keys import (
+    RECOMMENDED_APIS,
+    Api,
+    find_load_dotenv,
+    print_api_key_setup,
+    warn_if_missing_api_keys,
+)
+from kash.config.dotenv_utils import env_var_is_set
 from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
 from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
-from kash.shell.output.shell_output import PrintHooks, cprint, format_name_and_value, print_h2
+from kash.shell.input.collect_dotenv import fill_missing_dotenv
+from kash.shell.output.shell_output import (
+    PrintHooks,
+    cprint,
+    format_name_and_value,
+    format_success_or_failure,
+    print_h2,
+)
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 
 log = get_logger(__name__)
@@ -55,6 +69,35 @@ def self_check(brief: bool = False) -> None:
             log.error("Could not index docs: %s", e)
             cprint("See `logs` for details.")
             log.info("Exception details", exc_info=True)
+
+
+@kash_command
+def self_configure(all: bool = False, update: bool = True) -> None:
+    """
+    Interactively configure your .env file with recommended API keys.
+
+    :param all: Configure all known API keys (instead of just recommended ones).
+    :param update: Update values even if they are already set.
+    """
+    if all:
+        needed_keys = [api.value for api in Api]
+    else:
+        needed_keys = [api.value for api in RECOMMENDED_APIS]
+    if update:
+        keys_to_update = needed_keys
+    else:
+        keys_to_update = [key for key in needed_keys if not env_var_is_set(key)]
+
+    cprint(
+        format_success_or_failure(
+            len(keys_to_update) == 0,
+            f"All requested API keys are set! Found: {', '.join(needed_keys)}",
+            f"Need to update API keys: {', '.join(keys_to_update)}",
+        )
+    )
+    if keys_to_update:
+        fill_missing_dotenv(keys_to_update)
+        reload_env()
 
 
 @kash_command

@@ -68,6 +68,6 @@ from kash.model.params_model import (
     common_params,
 )
 from kash.model.paths_model import StorePath
-from kash.model.preconditions_model import Precondition, precondition
+from kash.model.preconditions_model import Precondition
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.file_formats_model import FileExt, Format, MediaType

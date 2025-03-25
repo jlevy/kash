@@ -88,11 +88,3 @@ class Precondition:
 Precondition.always = Precondition(lambda item: True, "always")
 
 Precondition.never = Precondition(lambda item: False, "never")
-
-
-def precondition(func: Callable[[Item], bool]) -> Precondition:
-    """
-    Decorator to make a function a Precondition. The function should return
-    a bool and/or raise `PreconditionFailure`.
-    """
-    return Precondition(func)

@@ -1,11 +1,13 @@
-import os
 from enum import Enum
+from logging import getLogger
 
-from dotenv import find_dotenv, load_dotenv
 from rich.text import Text
 
+from kash.config.dotenv_utils import env_var_is_set, find_load_dotenv
 from kash.shell.output.shell_output import cprint, format_success_or_failure
 from kash.utils.common.atomic_var import AtomicVar
+
+log = getLogger(__name__)
 
 
 class Api(str, Enum):
@@ -30,31 +32,14 @@ RECOMMENDED_APIS = [
 ]
 
 
-def find_load_dotenv() -> list[str]:
-    paths = []
-    dotenv_path = find_dotenv(filename=".env", usecwd=True)
-    if dotenv_path:
-        load_dotenv(dotenv_path)
-        paths.append(dotenv_path)
-    dotenv_path = find_dotenv(filename=".env.local", usecwd=True)
-    if dotenv_path:
-        load_dotenv(dotenv_path)
-        paths.append(dotenv_path)
-    return paths
-
-
 _log_api_setup_done = AtomicVar(False)
 
 
 def warn_if_missing_api_keys(keys: list[Api] = RECOMMENDED_APIS) -> list[Api]:
-    from kash.config.logger import get_logger
-
-    log = get_logger(__name__)
-
-    missing_keys = [api for api in keys if api.value not in os.environ]
+    missing_keys = [api for api in keys if not env_var_is_set(api.value)]
     if missing_keys:
         log.warning(
-            "Missing recommended API keys (check .env file or set them?): %s",
+            "Missing recommended API keys (%s). Check .env file or run `self_configure` to set them.",
             ", ".join(missing_keys),
         )
 
@@ -77,12 +62,7 @@ def print_api_key_setup(once: bool = False) -> None:
         )
     )
 
-    # Heuristic to detect dummy or empty keys.
-    def is_set(key: str) -> bool:
-        value = os.environ.get(key, None)
-        return bool(value and len(value.strip()) > 10 and "changeme" not in value)
-
-    texts = [format_success_or_failure(is_set(api.value), api.name) for api in Api]
+    texts = [format_success_or_failure(env_var_is_set(api.value), api.name) for api in Api]
 
     cprint(Text.assemble("API keys found: ", Text(" ").join(texts)))
 

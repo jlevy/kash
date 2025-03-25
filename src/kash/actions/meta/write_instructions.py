@@ -1,7 +1,7 @@
 from kash.exec import kash_action
-from kash.form_input.prompt_input import prompt_simple_string
 from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.model import NO_ARGS, ActionInput, ActionResult, Format, Item, ItemType
+from kash.shell.input.prompt_input import input_simple_string
 
 
 @kash_action(
@@ -15,14 +15,12 @@ def write_instructions(_input: ActionInput) -> ActionResult:
     """
     chat_history = ChatHistory()
 
-    system_instructions = prompt_simple_string(
-        "Enter the system instructions (or enter for none): "
-    )
+    system_instructions = input_simple_string("Enter the system instructions (or enter for none): ")
     system_instructions = system_instructions.strip()
     if system_instructions:
         chat_history.append(ChatMessage(ChatRole.system, system_instructions))
 
-    user_instructions = prompt_simple_string("Enter the user instructions: ")
+    user_instructions = input_simple_string("Enter the user instructions: ")
     user_instructions = user_instructions.strip()
     if user_instructions:
         chat_history.append(ChatMessage(ChatRole.user, user_instructions))
