@@ -20,14 +20,15 @@ def get_global_kash_dir() -> Path:
 
 
 def get_global_ws_dir() -> Path:
-    kash_ws_dir = os.environ.get("KASH_WS_DIR")
+    kash_ws_dir = os.environ.get("KASH_GLOBAL_WS")
     if kash_ws_dir:
         return Path(kash_ws_dir).expanduser().resolve()
     else:
         docs_dir = Path("~/Documents").expanduser().resolve()
         if not docs_dir.exists():
             raise ValueError(
-                f"Documents directory ({docs_dir}) does not exist; set KASH_WS_DIR to specify a global workspace directory"
+                f"Documents directory ({docs_dir}) does not exist; "
+                "set KASH_GLOBAL_WS to specify a global workspace directory"
             )
         else:
             return docs_dir / APP_NAME / GLOBAL_WS_NAME

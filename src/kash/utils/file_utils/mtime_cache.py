@@ -1,4 +1,5 @@
 import copy
+import logging
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,9 +8,7 @@ from typing import Generic, TypeVar
 from cachetools import LRUCache
 from strif import file_mtime_hash
 
-from kash.config.logger import get_logger
-
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 

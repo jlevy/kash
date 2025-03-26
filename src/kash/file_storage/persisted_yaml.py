@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 
 from frontmatter_format import read_yaml_file, write_yaml_file
+from funlog import log_calls
 
 from kash.utils.common.obj_replace import remove_values, replace_values
 
@@ -16,6 +17,7 @@ class PersistedYaml:
         self.filename = str(filename)
         self.initialize(init_value)
 
+    @log_calls(level="warning", if_slower_than=1.0)
     def read(self) -> Any:
         return read_yaml_file(self.filename)
 
