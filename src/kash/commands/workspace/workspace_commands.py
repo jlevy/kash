@@ -688,4 +688,4 @@ def ignore_file(pattern: str | None = None) -> None:
     if not pattern:
         show(ignore_path)
     else:
-        add_to_ignore(ignore_path, pattern)
+        add_to_ignore(ignore_path, [pattern])

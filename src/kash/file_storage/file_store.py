@@ -25,8 +25,7 @@ from kash.utils.common.uniquifier import Uniquifier
 from kash.utils.common.url import Locator, Url, is_url
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.file_utils.file_walk import walk_by_dir
-from kash.utils.file_utils.git_tools import add_to_git_ignore
-from kash.utils.file_utils.ignore_files import IgnoreChecker
+from kash.utils.file_utils.ignore_files import IgnoreChecker, add_to_ignore
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
 from kash.workspaces.workspace_names import to_ws_name
@@ -89,7 +88,7 @@ class FileStore:
 
         self.dirs.initialize()
 
-        add_to_git_ignore(self.base_dir, [".kash/"])
+        add_to_ignore(self.base_dir / ".gitignore", [".kash/"])
 
         self.vector_index = None
         # FIXME: Add vector index support dynamically if available.

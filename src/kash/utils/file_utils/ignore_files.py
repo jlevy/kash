@@ -146,17 +146,19 @@ def write_ignore(path: Path, body: str = DEFAULT_IGNORE_PATTERNS, append: bool =
     log.info("Wrote ignore file (%s lines): %s", len(body.splitlines()), fmt_loc(path))
 
 
-def add_to_ignore(path: Path, line: str) -> None:
+def add_to_ignore(path: Path, pat_list: list[str]) -> None:
     """
-    Add a pattern to the ignore file. Doesn't duplicate.
+    Add patterns to a .gitignore file for the given directory.
+    Idempotent.
     """
-    lines: set[str] = set()
-    if path.is_file():
-        with open(path) as f:
-            lines = {line.strip() for line in f.readlines()}
 
-    if line not in lines:
-        lines.add(line)
+    if path.exists():
+        existing_lines = path.read_text().splitlines()
+    else:
+        existing_lines = []
 
     with path.open("a") as f:
-        f.write(line.strip() + "\n")
+        for pat in pat_list:
+            pat = pat.strip()
+            if pat and pat not in existing_lines:
+                f.write(f"{pat}\n")
