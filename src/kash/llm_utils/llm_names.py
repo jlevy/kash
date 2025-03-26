@@ -3,7 +3,9 @@ from __future__ import annotations
 from enum import Enum
 
 from pydantic import ValidationInfo
+from rich.text import Text
 
+from kash.config.text_styles import format_success_emoji
 from kash.utils.common.type_utils import not_none
 
 
@@ -52,6 +54,22 @@ class LLMName(str):
         # Shouldn't be necessary but just in case (e.g. an underscore name was saved),
         # use hyphens only, not Python enum names.
         return name.replace("_", "-")
+
+    @property
+    def supports_structured(self) -> bool:
+        """
+        Whether the model supports structured output.
+        """
+        from litellm.utils import supports_response_schema
+
+        return supports_response_schema(self.litellm_name)
+
+    @property
+    def features_str(self) -> Text:
+        return Text.assemble(
+            format_success_emoji(self.supports_structured),
+            "structured",
+        )
 
 
 class LLMDefault(Enum):

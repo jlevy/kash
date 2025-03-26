@@ -1,10 +1,10 @@
-from kash.commands.base.model_commands import check_apis, check_models
+from kash.commands.base.model_commands import list_apis, list_models
 from kash.commands.workspace.workspace_commands import list_params
 from kash.config.api_keys import (
     RECOMMENDED_APIS,
     Api,
-    find_load_dotenv,
     get_all_configured_models,
+    load_dotenv_paths,
     print_api_key_setup,
 )
 from kash.config.dotenv_utils import env_var_is_set
@@ -66,9 +66,9 @@ def self_check(brief: bool = False) -> None:
         cprint()
         terminal_feature_check().print_term_info()
         cprint()
-        check_apis()
+        list_apis()
         cprint()
-        check_models()
+        list_models()
         cprint()
         check_system_tools(brief=brief)
         cprint()
@@ -94,24 +94,18 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     """
 
     # Show APIs before starting.
-    check_apis()
+    list_apis()
 
-    if all:
-        needed_keys = [api.value for api in Api]
-    else:
-        needed_keys = [api.value for api in RECOMMENDED_APIS]
-    if update:
-        keys_to_update = needed_keys
-    else:
-        keys_to_update = [key for key in needed_keys if not env_var_is_set(key)]
-        if keys_to_update:
-            cprint()
-            cprint(format_failure(f"API keys needed: {', '.join(keys_to_update)}"))
+    apis = Api if all else RECOMMENDED_APIS
+    keys = [api.value for api in apis]
+    if not update:
+        keys = [key for key in keys if not env_var_is_set(key)]
 
     cprint()
     print_h2("Configuring .env file")
-    if keys_to_update:
-        fill_missing_dotenv(keys_to_update)
+    if keys:
+        cprint(format_failure(f"API keys needed: {', '.join(keys)}"))
+        fill_missing_dotenv(keys)
         reload_env()
     else:
         cprint(format_success("All requested API keys are set!"))
@@ -120,6 +114,8 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     ws = current_ws()
     print_h2(f"Configuring workspace parameters ({ws.name})")
     avail_models = get_all_configured_models()
+    avail_structured_models = [model for model in avail_models if model.supports_structured]
+
     if avail_models:
         cprint(
             "Available models with configured API keys: %s",
@@ -135,22 +131,27 @@ def self_configure(all: bool = False, update: bool = False) -> None:
             choices=[str(model) for model in avail_models],
             default=DEFAULT_CAREFUL_LLM,
         )
-        structured_llm = input_choice(
-            "Select a structured model",
-            choices=[str(model) for model in avail_models],
-            default=DEFAULT_STRUCTURED_LLM,
-        )
         fast_llm = input_choice(
             "Select a fast model",
             choices=[str(model) for model in avail_models],
             default=DEFAULT_FAST_LLM,
         )
+        if avail_structured_models:
+            structured_llm = input_choice(
+                "Select a structured model",
+                choices=[str(model) for model in avail_structured_models],
+                default=DEFAULT_STRUCTURED_LLM,
+            )
+        else:
+            log.error("No structured models available, so not setting default structured LLM.")
+            structured_llm = None
         params = {
             "standard_llm": standard_llm,
             "careful_llm": careful_llm,
-            "structured_llm": structured_llm,
             "fast_llm": fast_llm,
         }
+        if structured_llm:
+            params["structured_llm"] = structured_llm
         ws.params.set(params)
     else:
         log.warning(
@@ -187,7 +188,7 @@ def reload_env() -> None:
     Reload the environment variables from the .env file.
     """
 
-    env_paths = find_load_dotenv()
+    env_paths = load_dotenv_paths()
     if env_paths:
         cprint("Reloaded environment variables")
         print_api_key_setup()

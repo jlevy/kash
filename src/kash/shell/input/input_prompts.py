@@ -1,3 +1,4 @@
+from InquirerPy.prompts.checkbox import CheckboxPrompt
 from InquirerPy.prompts.confirm import ConfirmPrompt
 from InquirerPy.prompts.input import InputPrompt
 from InquirerPy.prompts.list import ListPrompt
@@ -8,6 +9,8 @@ from kash.shell.input.inquirer_settings import configure_inquirer, custom_keybin
 from kash.shell.output.shell_output import cprint
 
 DEFAULT_INSTRUCTION = "Esc or Ctrl-C to cancel"
+
+DEFAULT_CHECKBOX_INSTRUCTION = "Space to select/deselect, Enter to submit, Esc or Ctrl-C to cancel"
 
 
 def input_simple_string(
@@ -91,6 +94,36 @@ def input_choice(
         show_cursor=False,
         style=custom_style,
         keybindings=custom_keybindings,
+    )
+
+    # TODO: InquirerPy is missing kwargs for eager=True.
+    @prompt.register_kb("escape")
+    def on_escape(event: KeyPressEvent) -> None:
+        event.app.exit()
+
+    cprint()
+    response = prompt.execute()
+    return response
+
+
+def input_checkboxes(
+    prompt_text: str,
+    choices: list[str],
+    default: list[str] | None = None,
+    instruction: str = DEFAULT_INSTRUCTION,
+) -> list[str] | None:
+    """
+    Prompt user to select multiple options from a list via checkboxes.
+    """
+    configure_inquirer()
+    prompt = CheckboxPrompt(
+        message=prompt_text,
+        choices=choices,
+        default=default,
+        instruction=f"({instruction})",
+        style=custom_style,
+        keybindings=custom_keybindings,
+        show_cursor=False,
     )
 
     # TODO: InquirerPy is missing kwargs for eager=True.

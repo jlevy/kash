@@ -14,6 +14,7 @@ class LLM(LLMName, Enum):
     # https://platform.openai.com/docs/models
     o3_mini = LLMName("o3-mini")
     o1_mini = LLMName("o1-mini")
+    o1 = LLMName("o1")
     o1_preview = LLMName("o1-preview")
     gpt_4o_mini = LLMName("gpt-4o-mini")
     gpt_4o = LLMName("gpt-4o")

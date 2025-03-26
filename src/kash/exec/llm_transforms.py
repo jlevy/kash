@@ -4,7 +4,7 @@ from chopdiff.docs import DiffFilter, TextDoc
 from chopdiff.transforms import WindowSettings, accept_all, filtered_transform
 from flowmark import fill_markdown
 
-from kash.config.api_keys import find_load_dotenv
+from kash.config.api_keys import load_dotenv_paths
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.llm_utils import LLMName
@@ -47,7 +47,7 @@ def windowed_llm_transform(
 
 
 def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: bool = True) -> str:
-    find_load_dotenv()
+    load_dotenv_paths()
 
     if options.windowing and options.windowing.size:
         log.message(

@@ -55,13 +55,19 @@ def fill_rich_text(
 def format_name_and_value(
     name: str | Text,
     doc: str | Text,
+    extra_note: str | None = None,
     text_wrap: Wrap = Wrap.HANGING_INDENT,
 ) -> Text:
     if isinstance(name, str):
         name = Text(name, style="markdown.h4")
     doc = fill_rich_text(doc, text_wrap=text_wrap, initial_column=len(name) + 2)
 
-    return Text.assemble(name, (": ", STYLE_HINT), doc)
+    return Text.assemble(
+        name,
+        ((" " + extra_note, STYLE_HINT) if extra_note else ""),
+        (": ", STYLE_HINT),
+        doc,
+    )
 
 
 def format_name_and_description(
