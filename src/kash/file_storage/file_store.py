@@ -579,12 +579,20 @@ class FileStore:
         PrintHooks.before_workspace_info()
         log.message(
             "Using workspace: %s (%s items)",
-            fmt_path(self.base_dir),
+            fmt_path(self.base_dir, rel_to_cwd=False),
             len(self.uniquifier),
         )
-        log.message("Logging to: %s", fmt_path(get_log_settings().log_file_path.absolute()))
-        log.message("Media cache: %s", fmt_path(self.base_dir / self.dirs.media_cache_dir))
-        log.message("Content cache: %s", fmt_path(self.base_dir / self.dirs.content_cache_dir))
+        log.message(
+            "Logging to: %s",
+            fmt_path(get_log_settings().log_file_path.absolute(), rel_to_cwd=False),
+        )
+        log.message(
+            "Media cache: %s", fmt_path(self.base_dir / self.dirs.media_cache_dir, rel_to_cwd=False)
+        )
+        log.message(
+            "Content cache: %s",
+            fmt_path(self.base_dir / self.dirs.content_cache_dir, rel_to_cwd=False),
+        )
         for warning in self.warnings:
             log.warning("%s", warning)
 

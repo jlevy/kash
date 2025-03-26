@@ -32,7 +32,7 @@ log = get_logger(__name__)
 
 
 def _kash_workspace_str() -> str:
-    return get_prompt_info().workspace_str
+    return get_prompt_info().workspace_name
 
 
 def _shell_interactive_setup():
