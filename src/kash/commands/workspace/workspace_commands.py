@@ -280,8 +280,8 @@ def init_workspace(path: str | None = None) -> None:
 @kash_command
 def workspace(workspace_name: str | None = None) -> None:
     """
-    Show info on the current workspace (if no arg given), or switch to a new workspace,
-    creating it if it doesn't exist.
+    If no args are given, change directory to the current workspace.
+    If a workspace name is given, change to that workspace, creating it if it doesn't exist.
     """
     if workspace_name:
         info = resolve_ws(workspace_name)
@@ -296,7 +296,9 @@ def workspace(workspace_name: str | None = None) -> None:
         print_status(f"Changed to workspace: {ws.name} ({ws.base_dir})")
         ws.log_store_info()
     else:
-        current_ws(silent=True).log_store_info()
+        ws = current_ws(silent=True)
+        os.chdir(ws.base_dir)
+        ws.log_store_info()
 
 
 @kash_command
