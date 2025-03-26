@@ -305,8 +305,8 @@ command or option) or run with `--help` to get more details.
 # Check the help page for a full overview:
 help
 
-# Confirm kash is set up correctly with right tools:
-check_tools
+# Confirm kash is set up correctly with right tools and APIs:
+self_check
 
 # The assistant is built into the shell, so you can just ask questions on the
 # command line. Note you can just press Space twice and it will insert the question
@@ -488,7 +488,9 @@ to see more about the command.
 
 A few of the most important commands for managing files and work are these:
 
-- `check_tools` to confirm your kash setup has necessary tools (like bat and ffmpeg).
+- `self_check` to check existing .env file and installed tools (like bat and ffmpeg)
+
+- `self_configure` to help you configure your .env files and LLM models
 
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 

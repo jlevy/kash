@@ -1,7 +1,7 @@
 from pathlib import Path
 from shutil import copyfile
 
-from dotenv.main import rewrite, with_warn_for_invalid_lines
+from dotenv.main import DotEnv, rewrite, with_warn_for_invalid_lines
 from dotenv.parser import parse_stream
 
 from kash.config.dotenv_utils import find_load_dotenv
@@ -18,12 +18,18 @@ def fill_missing_dotenv(keys_to_update: list[str]):
 
     if dotenv_paths:
         cprint(f"Found .env file: {dotenv_path}")
+        old_dotenv = DotEnv(dotenv_path=dotenv_path).dict()
+        cprint(f"File has {len(old_dotenv)} keys ({', '.join(old_dotenv.keys())})")
     else:
         cprint("No .env file found.")
 
-    if input_confirm("Do you want to update your .env file?", default=True):
+    if input_confirm(
+        "Do you want make updates to your .env file?",
+        instruction="This will only modify the .env file and keys you select and leave others intact",
+        default=True,
+    ):
         dotenv_path_str = input_simple_string(
-            "Path to the .env file to use: ", default=str(dotenv_path)
+            "Path to the .env file to update or create: ", default=str(dotenv_path)
         )
         if not dotenv_path_str:
             print_status("Config changes cancelled.")
@@ -36,7 +42,6 @@ def fill_missing_dotenv(keys_to_update: list[str]):
         )
         updates = {}
         for key in keys_to_update:
-            cprint()
             value = input_simple_string(
                 f"Enter value for {key}:",
                 instruction='Leave empty to skip, use "" for a true empty string.',

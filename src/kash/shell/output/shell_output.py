@@ -55,10 +55,11 @@ def fill_rich_text(
 def format_name_and_value(
     name: str | Text,
     doc: str | Text,
+    text_wrap: Wrap = Wrap.HANGING_INDENT,
 ) -> Text:
     if isinstance(name, str):
         name = Text(name, style="markdown.h4")
-    doc = fill_rich_text(doc, text_wrap=Wrap.HANGING_INDENT, initial_column=len(name) + 2)
+    doc = fill_rich_text(doc, text_wrap=text_wrap, initial_column=len(name) + 2)
 
     return Text.assemble(name, (": ", STYLE_HINT), doc)
 

@@ -4,6 +4,7 @@ from prompt_toolkit.application import get_app
 from kash.config.colors import terminal as colors
 
 custom_style = InquirerPyStyle(
+    # See https://inquirerpy.readthedocs.io/en/latest/pages/style.html#default-style
     {
         "questionmark": colors.green_light,
         "answermark": colors.black_light,

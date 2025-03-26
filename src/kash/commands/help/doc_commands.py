@@ -78,7 +78,7 @@ def installation() -> None:
                 "What are the most important kash commands?",
                 "commands",
                 "actions",
-                "check_tools",
+                "check_system_tools",
                 "faq",
             ]
         )
@@ -99,7 +99,7 @@ def getting_started() -> None:
                 "What are the most important kash commands?",
                 "commands",
                 "actions",
-                "check_tools",
+                "check_system_tools",
                 "faq",
             ]
         )

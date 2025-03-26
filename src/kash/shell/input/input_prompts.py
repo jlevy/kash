@@ -5,6 +5,7 @@ from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 
 from kash.config.text_styles import PROMPT_FORM
 from kash.shell.input.inquirer_settings import configure_inquirer, custom_keybindings, custom_style
+from kash.shell.output.shell_output import cprint
 
 DEFAULT_INSTRUCTION = "Esc or Ctrl-C to cancel"
 
@@ -37,6 +38,7 @@ def input_simple_string(
         def on_esc(event: KeyPressEvent) -> None:
             event.app.exit(result=None)
 
+        cprint()
         response = prompt.execute()
     except EOFError:  # Handle Ctrl-D
         response = None
@@ -64,6 +66,7 @@ def input_confirm(
     def on_escape(event: KeyPressEvent) -> None:
         event.app.exit(result=False)
 
+    cprint()
     response = prompt.execute()
     return response
 
@@ -95,5 +98,6 @@ def input_choice(
     def on_escape(event: KeyPressEvent) -> None:
         event.app.exit()
 
+    cprint()
     response = prompt.execute()
     return response

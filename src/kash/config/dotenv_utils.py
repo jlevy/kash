@@ -3,18 +3,18 @@ import os
 from dotenv import find_dotenv, load_dotenv
 
 
-def find_load_dotenv() -> list[str]:
+def find_load_dotenv(override: bool = True) -> list[str]:
     """
     Find and load .env files.
     """
     paths = []
     dotenv_path = find_dotenv(filename=".env", usecwd=True)
     if dotenv_path:
-        load_dotenv(dotenv_path)
+        load_dotenv(dotenv_path, override=override)
         paths.append(dotenv_path)
     dotenv_path = find_dotenv(filename=".env.local", usecwd=True)
     if dotenv_path:
-        load_dotenv(dotenv_path)
+        load_dotenv(dotenv_path, override=override)
         paths.append(dotenv_path)
     return paths
 

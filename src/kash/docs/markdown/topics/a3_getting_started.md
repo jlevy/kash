@@ -45,7 +45,7 @@ command or option) or run with `--help` to get more details.
 help
 
 # Confirm kash is set up correctly with right tools:
-check_tools
+check_system_tools
 
 # The assistant is built into the shell, so you can just ask questions on the
 # command line. Note you can just press Space twice and it will insert the question
@@ -227,7 +227,8 @@ to see more about the command.
 
 A few of the most important commands for managing files and work are these:
 
-- `check_tools` to confirm your kash setup has necessary tools (like bat and ffmpeg).
+- `check_system_tools` to confirm your kash setup has necessary tools (like bat and
+  ffmpeg).
 
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 

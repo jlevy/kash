@@ -111,7 +111,7 @@ BARE_COMPLETIONS = {
     "commands",
     "actions",
     "getting_started",
-    "check_tools",
+    "check_system_tools",
     "What is kash?",
     "How can I transcribe a YouTube video?",
 }

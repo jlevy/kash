@@ -40,7 +40,7 @@ My strong recommendations:
 - Use `hexyl` instead of `xxd` or `hexdump`
 
 Kash uses or supports several of these for better functionality, they are installed.
-Use `check_tools` to check which kash-supported tools are already installed.
+Use `check_system_tools` to check which kash-supported tools are already installed.
 
 Additional recommendations:
 

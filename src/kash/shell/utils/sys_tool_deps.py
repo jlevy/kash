@@ -178,8 +178,12 @@ class InstalledSysTools:
         texts: list[Text | Group] = []
         for tool, path in self.items():
             found_str = "Found" if isinstance(path, bool) else f"Found: `{path}`"
-            doc = format_success_or_failure(bool(path), true_str=found_str, false_str="Not found!")
-            texts.append(format_name_and_value(tool.name, doc))
+            doc = format_success_or_failure(
+                bool(path),
+                true_str=format_name_and_value(tool.name, found_str),
+                false_str=format_name_and_value(tool.name, "Not found!"),
+            )
+            texts.append(doc)
 
         return Group(*texts)
 

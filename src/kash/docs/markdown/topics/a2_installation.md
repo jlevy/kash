@@ -81,16 +81,18 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 3. **Install kash or a kash kit:**
 
    ```shell
-   uv tool install kash-media
+   uv tool install kash-media --python=3.13
    ```
 
+   Other versions of Python should work but 3.13 is recommended.
    For a setup without the media tools, use `kash-shell` instead.
+
    If you've installed an older version and want to be sure you have the latest shell,
    you may want to add `--upgrade --force` to be sure you get the latest version of the
    kit.
 
-   ```
-   uv tool install --upgrade --force kash-media
+   ```shell
+   uv tool install kash-media --python=3.13 --upgrade --force 
    ```
 
 4. **Set up API keys:**

@@ -1,4 +1,4 @@
-from kash.commands.base.model_commands import list_apis
+from kash.commands.base.model_commands import check_apis, check_models
 from kash.commands.workspace.workspace_commands import list_params
 from kash.config.api_keys import (
     RECOMMENDED_APIS,
@@ -6,7 +6,6 @@ from kash.config.api_keys import (
     find_load_dotenv,
     get_all_configured_models,
     print_api_key_setup,
-    warn_if_missing_api_keys,
 )
 from kash.config.dotenv_utils import env_var_is_set
 from kash.config.logger import get_logger
@@ -54,7 +53,7 @@ def self_check(brief: bool = False) -> None:
     if brief:
         terminal_feature_check().print_term_info()
         print_api_key_setup(once=False)
-        check_tools(brief=brief)
+        check_system_tools(brief=brief)
         tldr_refresh_cache()
         try:
             all_docs.load()
@@ -67,9 +66,11 @@ def self_check(brief: bool = False) -> None:
         cprint()
         terminal_feature_check().print_term_info()
         cprint()
-        print_api_key_setup(once=False)
+        check_apis()
         cprint()
-        check_tools(brief=brief)
+        check_models()
+        cprint()
+        check_system_tools(brief=brief)
         cprint()
         if tldr_refresh_cache():
             cprint("Updated tldr cache")
@@ -93,7 +94,7 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     """
 
     # Show APIs before starting.
-    list_apis()
+    check_apis()
 
     if all:
         needed_keys = [api.value for api in Api]
@@ -161,7 +162,7 @@ def self_configure(all: bool = False, update: bool = False) -> None:
 
 
 @kash_command
-def check_tools(warn_only: bool = False, brief: bool = False) -> None:
+def check_system_tools(warn_only: bool = False, brief: bool = False) -> None:
     """
     Check that all tools are installed.
 
@@ -174,23 +175,10 @@ def check_tools(warn_only: bool = False, brief: bool = False) -> None:
         if brief:
             cprint(sys_tool_check().status())
         else:
-            cprint("Checking for required tools:")
-            cprint()
+            print_h2("Installed System Tools")
             cprint(sys_tool_check().formatted())
             cprint()
             sys_tool_check().warn_if_missing()
-
-
-@kash_command
-def check_api_keys(warn_only: bool = False) -> None:
-    """
-    Check that all recommended API keys are set.
-    """
-
-    if warn_only:
-        warn_if_missing_api_keys()
-    else:
-        print_api_key_setup()
 
 
 @kash_command
