@@ -9,7 +9,7 @@ from kash.exec.command_exec import look_up_command_or_action
 from kash.help.help_lookups import look_up_source_code
 from kash.help.help_pages import print_see_also
 from kash.help.help_printing import print_explain_command
-from kash.llm_utils.language_models import LLM
+from kash.llm_utils import LLM
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint
 from kash.shell.utils.native_utils import ViewMode, view_file_native
 

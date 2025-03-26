@@ -7,8 +7,8 @@ from flowmark import fill_markdown
 from kash.config.api_keys import find_load_dotenv
 from kash.config.logger import get_logger
 from kash.errors import InvalidInput
+from kash.llm_utils import LLMName
 from kash.llm_utils.fuzzy_parsing import strip_markdown_fence
-from kash.llm_utils.language_models import LLMName
 from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions

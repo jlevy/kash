@@ -4,7 +4,7 @@ from kash.config.api_keys import Api
 from kash.config.dotenv_utils import env_var_is_set
 from kash.config.text_styles import format_success_emoji
 from kash.exec.command_registry import kash_command
-from kash.llm_utils.language_models import LLM
+from kash.llm_utils import LLM
 from kash.shell.output.shell_output import cprint, format_name_and_value, print_h2
 
 

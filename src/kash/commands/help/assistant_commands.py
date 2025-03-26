@@ -11,7 +11,7 @@ from kash.help.assistant import (
     assist_system_message_with_state,
     shell_context_assistance,
 )
-from kash.llm_utils.language_models import LLM
+from kash.llm_utils import LLM
 from kash.model.items_model import Item, ItemType
 from kash.shell.input.input_prompts import input_simple_string
 from kash.shell.utils.native_utils import tail_file

@@ -7,21 +7,19 @@ from kash.exec import kash_action
 from kash.exec.preconditions import is_instructions
 from kash.help.assistant import assist_preamble, assistance_structured
 from kash.help.assistant_output import print_assistant_response
-from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
-from kash.llm_utils.language_models import LLMName
+from kash.llm_utils import LLM, LLMName, Message
 from kash.model import (
-    LLM,
     ONE_OR_NO_ARGS,
     ActionInput,
     ActionResult,
     Format,
     ItemType,
-    Message,
     TitleTemplate,
     common_params,
 )
 from kash.utils.common.lazyobject import lazyobject
 from kash.utils.common.type_utils import not_none
+from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
 log = get_logger(__name__)
 

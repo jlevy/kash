@@ -20,8 +20,6 @@ from kash.exec_model.args_model import (
 from kash.exec_model.commands_model import Command, CommentedCommand
 from kash.exec_model.script_model import BareComment, Script
 from kash.exec_model.shell_model import ShellResult
-from kash.llm_utils.language_models import DEFAULT_EMBEDDING_MODEL, LLM, EmbeddingModel
-from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import (
     Action,
     ActionInput,

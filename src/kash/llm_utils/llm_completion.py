@@ -13,11 +13,11 @@ from slugify import slugify
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_TIMING
 from kash.errors import ApiResultError
-from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
 from kash.llm_utils.fuzzy_parsing import is_no_results
-from kash.llm_utils.language_models import LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
+from kash.llm_utils.llm_names import LLMName
 from kash.utils.common.url import Url, is_url
+from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
 log = get_logger(__name__)
 

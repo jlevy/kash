@@ -42,7 +42,7 @@ questions.
 ### How does kash accept both shell and assistant requests to the LLM with natural language?
 
 By default, if a command is valid shell or Python, kash will treat it as a shell
-command, using Xonsh's conventions.
+command, using xonsh's conventions.
 
 Commands that begin with a `?` are automatically considered assistant requests.
 
@@ -116,21 +116,22 @@ transcribe_annotate_summarize 'https://www.youtube.com/watch?v=XRQnWomofIY'
 show_webpage
 ```
 
-### How is kash different from other shells like Bash (or Fish or Xonsh)?
+### How is kash different from other shells like bash (or fish or xonsh)?
 
-Kash is built directly on top of Xonsh, so it is very much like a regular shell, but has
-extra compatibility with Python, like Xonsh.
+Kash is built directly on top of xonsh, so it is very much like a regular shell, but has
+extra compatibility with Python, like xonsh.
 
 But it is intended to be used quite differently from a regular shell.
 
 Although nothing stops you from using traditional commands like `df` or `grep`, most
 commands you will want to use are kash commands that are more powerful.
-For example, `files` is easier to use than `ls`.
+For example, `files` is usually easier to use than `ls` and `show` is easier to use than
+`less` or `open`.
 
 Kash also wraps the shell to natively supports natural language so you can ask questions
-starting with `?`.
+by pressing space before typing a new command (or starting the line with `?`).
 
-There are other customizations kash needs to make to Xonsh, including tab completion to
+There are other customizations kash needs to make to xonsh, including tab completion to
 fit kash commands and actions, reading metadata on items, etc.
 
 ### Can kash replace my regular shell?

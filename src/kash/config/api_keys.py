@@ -8,7 +8,7 @@ from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
 from rich.text import Text
 
 from kash.config.dotenv_utils import env_var_is_set, find_load_dotenv
-from kash.llm_utils.language_models import LLM, LLMName
+from kash.llm_utils import LLM, LLMName
 from kash.shell.output.shell_output import cprint, format_success_or_failure
 from kash.utils.common.atomic_var import AtomicVar
 

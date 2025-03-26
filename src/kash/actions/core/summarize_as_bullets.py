@@ -1,6 +1,6 @@
 from kash.exec import kash_action, llm_transform_item
-from kash.llm_utils.language_models import LLMName
-from kash.model import LLM, Item, LLMOptions, Message, MessageTemplate, common_params
+from kash.llm_utils import LLM, LLMName, Message, MessageTemplate
+from kash.model import Item, LLMOptions, common_params
 
 llm_options = LLMOptions(
     system_message=Message(

@@ -82,7 +82,7 @@ I've tried to build independently useful pieces that fit together in a simple wa
 ## Tools Used by Kash
 
 All of this is only possible by relying on a wide variety of powerful libraries,
-especially [Xonsh](https://github.com/xonsh/xonsh),
+especially [xonsh](https://github.com/xonsh/xonsh),
 [Rich](https://github.com/Textualize/rich),
 [LiteLLM](https://github.com/BerriAI/litellm),
 [Pydantic](https://github.com/pydantic/pydantic),

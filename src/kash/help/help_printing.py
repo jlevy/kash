@@ -7,8 +7,7 @@ from kash.help.docstring_utils import parse_docstring
 from kash.help.function_param_info import annotate_param_info
 from kash.help.help_lookups import look_up_faq
 from kash.help.tldr_help import tldr_help
-from kash.llm_utils.chat_format import ChatHistory, ChatMessage, ChatRole
-from kash.llm_utils.language_models import LLM
+from kash.llm_utils import LLM
 from kash.llm_utils.llm_messages import Message
 from kash.model.actions_model import Action
 from kash.model.params_model import COMMON_SHELL_PARAMS, RUNTIME_ACTION_PARAMS, Param
@@ -21,6 +20,7 @@ from kash.shell.output.shell_output import (
     print_help,
     print_markdown,
 )
+from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
 GENERAL_HELP = (
     "For more information, ask the assistant a question (press space or `?`) or check `help`."
