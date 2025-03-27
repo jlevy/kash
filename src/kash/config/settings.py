@@ -207,10 +207,11 @@ def global_settings() -> Settings:
 
 def check_kerm_code_support() -> bool:
     """
-    Check if the terminal supports Kerm codes.
+    Check if the terminal supports Kerm Codes.
     """
     use_kerm_codes = False
-    if os.environ.get("TERM_PROGRAM") == "Kerm":
+    term_program = os.environ.get("TERM_PROGRAM") or ""
+    if term_program.lower() in ("kerm", "kyrm"):
         with atomic_global_settings().updates() as settings:
             settings.use_kerm_codes = True
             use_kerm_codes = True

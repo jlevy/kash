@@ -1,5 +1,5 @@
 from kash.config.setup import setup
-from kash.config.text_styles import STYLE_HINT
+from kash.config.text_styles import LOGO_NAME, STYLE_HINT
 from kash.xonsh_custom.shell_load_commands import (
     is_interactive,
     log_command_action_info,
@@ -45,7 +45,7 @@ def _shell_interactive_setup():
 
     # Set up the prompt and title template.
     set_env("PROMPT", kash_xonsh_prompt)
-    set_env("TITLE", "kash - {workspace_str}")
+    set_env("TITLE", LOGO_NAME + " - {workspace_str}")
 
     add_key_bindings()
 

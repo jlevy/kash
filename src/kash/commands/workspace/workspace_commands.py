@@ -51,7 +51,7 @@ from kash.shell.output.shell_output import (
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.obj_replace import remove_values
-from kash.utils.common.parse_key_vals import format_key_value, parse_key_value
+from kash.utils.common.parse_key_vals import parse_key_value
 from kash.utils.common.type_utils import not_none
 from kash.utils.common.url import Url, is_url
 from kash.utils.file_formats.chat_format import tail_chat_history
@@ -348,9 +348,9 @@ def relations(*paths: str) -> None:
 
 def _show_current_params(param_state: ParamState):
     param_values = param_state.get_raw_values()
-    print_h3("Current Parameters")
+    print_h2("Current Parameters")
     for key, value in param_values.items():
-        cprint(format_key_value(key, value))
+        cprint(format_name_and_value(key, str(value)))
     cprint()
 
 

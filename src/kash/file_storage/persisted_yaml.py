@@ -37,3 +37,8 @@ class PersistedYaml:
         value = self.read()
         new_value = replace_values(value, replacements)
         self.save(new_value)
+
+    def __repr__(self):
+        return f"PersistedYaml({self.filename!r})"
+
+    __str__ = __repr__

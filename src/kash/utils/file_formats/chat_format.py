@@ -244,7 +244,7 @@ class ChatHistory:
 
 def append_chat_message(path: Path, message: ChatMessage, make_parents: bool = True) -> None:
     """
-    Append a chat message to a YAML file.
+    Append a chat message to a YAML file. Creates the file if it doesn't exist.
     """
     if make_parents:
         path.parent.mkdir(parents=True, exist_ok=True)
