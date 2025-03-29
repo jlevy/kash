@@ -2,6 +2,7 @@ from flowmark import Wrap, fill_text
 
 from kash.actions.meta.write_instructions import write_instructions
 from kash.config.logger import get_logger
+from kash.docs.all_docs import DocSelection
 from kash.errors import ApiResultError, InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import is_instructions
@@ -122,7 +123,7 @@ def write_new_action(input: ActionInput, model: LLMName = LLM.default_structured
 
     # Give the LLM full context on kash APIs.
     # But we do this here lazily to prevent circular dependencies.
-    system_message = Message(assist_preamble(is_structured=True, skip_api_docs=False))
+    system_message = Message(assist_preamble(is_structured=True, doc_selection=DocSelection.full))
     chat_history.extend(
         [
             ChatMessage(ChatRole.system, system_message),
@@ -133,7 +134,7 @@ def write_new_action(input: ActionInput, model: LLMName = LLM.default_structured
 
     assistant_response = assistance_structured(chat_history.as_chat_completion(), model)
 
-    print_assistant_response(assistant_response, model)
+    print_assistant_response(assistant_response, model, DocSelection.programming)
 
     if not assistant_response.python_code:
         raise ApiResultError("No Python code provided in the response.")

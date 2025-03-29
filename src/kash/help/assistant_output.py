@@ -1,6 +1,7 @@
 from rich.text import Text
 
 from kash.config.text_styles import EMOJI_ASSISTANT, STYLE_HINT
+from kash.docs.all_docs import DocSelection
 from kash.help.help_pages import print_see_also
 from kash.llm_utils import LLMName
 from kash.model.assistant_response_model import AssistantResponse
@@ -14,15 +15,17 @@ from kash.shell.output.shell_output import (
 )
 
 
-def print_assistant_heading(model: LLMName) -> None:
+def print_assistant_heading(model: LLMName, doc_selection: DocSelection) -> None:
     assistant_name = Text(f"{EMOJI_ASSISTANT} Kash Assistant", style="markdown.h3")
-    info = Text(f"({model})", style=STYLE_HINT)
+    info = Text(f"({model}, {doc_selection})", style=STYLE_HINT)
     cprint(assistant_name + " " + info)
 
 
-def print_assistant_response(response: AssistantResponse, model: LLMName) -> None:
+def print_assistant_response(
+    response: AssistantResponse, model: LLMName, doc_selection: DocSelection
+) -> None:
     with print_style(PadStyle.PAD):
-        print_assistant_heading(model)
+        print_assistant_heading(model, doc_selection)
         PrintHooks.spacer()
 
         if response.response_text:

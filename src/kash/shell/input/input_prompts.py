@@ -94,6 +94,7 @@ def input_choice(
         show_cursor=False,
         style=custom_style,
         keybindings=custom_keybindings,
+        border=True,
     )
 
     # TODO: InquirerPy is missing kwargs for eager=True.

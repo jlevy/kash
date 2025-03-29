@@ -12,6 +12,7 @@ from pydantic.dataclasses import dataclass
 from pydantic.json_schema import JsonSchemaValue
 
 from kash.config.logger import get_logger
+from kash.docs.all_docs import DocSelection
 from kash.errors import InvalidInput, InvalidParamName
 from kash.llm_utils import LLM, LLMName
 from kash.model.language_list import LANGUAGE_LIST
@@ -287,6 +288,12 @@ COMMON_ACTION_PARAMS: dict[str, Param] = {
         default_value=None,
         is_explicit=True,
     ),
+    "doc_selection": Param(
+        "doc_selection",
+        "Which kash docs to give the LLM assistant.",
+        type=DocSelection,
+        default_value=DocSelection.full,
+    ),
 }
 
 # Extra parameters that are available when an action is invoked from the shell.
@@ -369,7 +376,10 @@ class RawParamValues:
             else:
                 raise InvalidParamName(param_name)
         else:
-            return instantiate_as_type(raw_value, type)
+            try:
+                return instantiate_as_type(raw_value, type)
+            except ValueError as e:
+                raise InvalidInput(f"Invalid value for parameter `{param_name}`: {e}") from e
 
     def parse_all(self, param_info: dict[str, Param]) -> TypedParamValues:
         """

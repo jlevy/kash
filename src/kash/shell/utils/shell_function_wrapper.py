@@ -10,6 +10,7 @@ from kash.exec.command_registry import CommandFunction
 from kash.help.help_printing import print_command_function_help
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.utils.common.parse_shell_args import parse_shell_args
+from kash.utils.common.type_utils import instantiate_as_type
 
 log = get_logger(__name__)
 
@@ -84,13 +85,15 @@ def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: list[FuncParam]) 
                 raise InvalidCommand(f"Option `--{key}` is boolean and does not take a value")
 
             try:
-                kw_values[key] = matching_param_type(value)  # Convert value to type.
+                kw_values[key] = instantiate_as_type(
+                    value, matching_param_type, accept_enum_names=True
+                )
             except Exception as e:
                 valid_values = ""
                 if isinstance(matching_param.type, type) and issubclass(matching_param.type, Enum):
                     valid_values = f" (valid values are: {', '.join('`' + v.name + '`' for v in matching_param.type)})"
                 raise InvalidCommand(
-                    f"Invalid value for option `{key}`: {value}{valid_values}"
+                    f"Invalid value for parameter `{key}` of type {matching_param.type}: {value!r}{valid_values}"
                 ) from e
         elif var_kw_param:
             var_kw_values[key] = value

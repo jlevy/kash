@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
+from enum import Enum
 
 from funlog import log_calls
 
@@ -12,6 +15,57 @@ from kash.help.help_types import CommandInfo
 from kash.utils.common.lazyobject import lazyobject
 
 log = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class DocOptions:
+    """
+    Flags to specify which docs to include. Set all True for everything.
+    """
+
+    api_docs: bool
+    full_manual: bool
+    basic_manual: bool
+    command_docs: bool
+    action_docs: bool
+
+
+class DocSelection(Enum):
+    """
+    Flags to specify which docs to include. Set all True for everything.
+    """
+
+    full = DocOptions(
+        api_docs=True,
+        full_manual=True,
+        basic_manual=True,
+        command_docs=True,
+        action_docs=True,
+    )
+    programming = DocOptions(
+        api_docs=False,
+        full_manual=False,
+        basic_manual=False,
+        command_docs=False,
+        action_docs=True,
+    )
+    basic = DocOptions(
+        api_docs=False,
+        full_manual=False,
+        basic_manual=True,
+        command_docs=True,
+        action_docs=True,
+    )
+    none = DocOptions(
+        api_docs=False,
+        full_manual=False,
+        basic_manual=False,
+        command_docs=False,
+        action_docs=False,
+    )
+
+    def __str__(self) -> str:
+        return f"DocSelection.{self.name}"
 
 
 @dataclass

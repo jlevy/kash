@@ -4,6 +4,7 @@ from kash.commands.base.basic_file_commands import trash
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.config.text_styles import PROMPT_ASSIST, SPINNER
+from kash.docs.all_docs import DocSelection
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.help.assistant import (
@@ -50,7 +51,8 @@ def assist(
 
 @kash_command
 def assistant_system_message(
-    is_structured: bool = False, skip_api_docs: bool = False
+    is_structured: bool = False,
+    doc_selection: DocSelection = DocSelection.full,
 ) -> ShellResult:
     """
     Save the assistant system message. Useful for debugging.
@@ -61,7 +63,8 @@ def assistant_system_message(
         title="Assistant System Message",
         format=Format.markdown,
         body=assist_system_message_with_state(
-            is_structured=is_structured, skip_api_docs=skip_api_docs
+            is_structured=is_structured,
+            doc_selection=doc_selection,
         ),
     )
     ws = current_ws()

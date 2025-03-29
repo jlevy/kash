@@ -2,16 +2,16 @@ import json
 from collections.abc import Callable
 from enum import Enum
 from functools import cache
-from pathlib import Path
 
 from flowmark import Wrap, fill_markdown
 from funlog import log_calls
 from pydantic import ValidationError
+from rich.text import Text
 
 from kash.config.logger import get_logger, record_console
 from kash.config.settings import global_settings
-from kash.config.text_styles import EMOJI_WARN
-from kash.docs.all_docs import all_docs
+from kash.config.text_styles import EMOJI_WARN, STYLE_HINT
+from kash.docs.all_docs import DocSelection, all_docs
 from kash.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.exec_model.script_model import Script
 from kash.help.assistant_instructions import assistant_instructions
@@ -55,20 +55,23 @@ class AssistanceType(Enum):
         return self == AssistanceType.structured
 
     @property
-    def skip_api_docs(self) -> bool:
-        return self == AssistanceType.fast
+    def doc_selection(self) -> DocSelection:
+        if self == AssistanceType.fast:
+            return DocSelection.basic
+        else:
+            return DocSelection.full
 
 
 @cache
-def assist_preamble(is_structured: bool, skip_api_docs: bool = False) -> str:
+def assist_preamble(is_structured: bool, doc_selection: DocSelection) -> str:
     # FIXME: Need to support various sizes of preamble without the full manual
     # as the current one is too large for quick help.
     from kash.help.help_pages import print_manual  # Avoid circular imports.
 
     with record_console() as console:
         cprint(str(assistant_instructions(is_structured)))
-        print_manual()
-        if not skip_api_docs:
+        print_manual(doc_selection)
+        if doc_selection.value.api_docs:
             cprint(all_docs.api_docs, text_wrap=Wrap.NONE)
 
     preamble = console.export_text()
@@ -152,10 +155,13 @@ def assist_current_state() -> Message:
 
 
 @log_calls(level="info")
-def assist_system_message_with_state(is_structured: bool, skip_api_docs: bool = False) -> Message:
+def assist_system_message_with_state(
+    is_structured: bool,
+    doc_selection: DocSelection,
+) -> Message:
     return Message(
         f"""
-        {assist_preamble(is_structured=is_structured, skip_api_docs=skip_api_docs)}
+        {assist_preamble(is_structured=is_structured, doc_selection=doc_selection)}
 
         {assist_current_state()}
         """
@@ -163,32 +169,37 @@ def assist_system_message_with_state(is_structured: bool, skip_api_docs: bool = 
     )
 
 
-def assistant_history_file() -> Path:
-    ws = current_ws()
-    return ws.base_dir / ws.dirs.assistant_history_yml
-
-
 def assistant_chat_history(
     include_system_message: bool,
     is_structured: bool,
-    skip_api_docs: bool = False,
+    doc_selection: DocSelection,
     max_records: int = 20,
 ) -> ChatHistory:
+    ws = current_ws()
+    history_path = ws.base_dir / ws.dirs.assistant_history_yml
+
     assistant_history = ChatHistory()
     try:
-        assistant_history = tail_chat_history(assistant_history_file(), max_records=max_records)
+        assistant_history = tail_chat_history(history_path, max_records=max_records)
     except FileNotFoundError:
-        log.info("No assistant history file found: %s", assistant_history_file)
+        log.info("No assistant history file found: %s", history_path)
     except (InvalidState, ValueError) as e:
         log.warning("Couldn't load assistant history, so skipping it: %s", e)
 
     if include_system_message:
         system_message = assist_system_message_with_state(
-            is_structured=is_structured, skip_api_docs=skip_api_docs
+            is_structured=is_structured, doc_selection=doc_selection
         )
         assistant_history.messages.insert(0, ChatMessage(ChatRole.system, system_message))
 
     return assistant_history
+
+
+def append_assistant_history(user_message: ChatMessage, response_text: ChatMessage):
+    ws = current_ws()
+    history_path = ws.base_dir / ws.dirs.assistant_history_yml
+    append_chat_message(history_path, user_message)
+    append_chat_message(history_path, response_text)
 
 
 def assistance_unstructured(messages: list[dict[str, str]], model: LLMName) -> LLMCompletionResult:
@@ -250,19 +261,27 @@ def shell_context_assistance(
     if not model:
         model = assistance_type.workspace_llm
 
+    doc_selection = assistance_type.doc_selection
     if not silent:
-        cprint(f"Getting assistance ({assistance_type.name}, model {model})…")
+        cprint(
+            Text.assemble(
+                "Getting assistance… ",
+                (f"({assistance_type.name}, {model}, {doc_selection})", STYLE_HINT),
+            )
+        )
 
     # Get shell chat history.
-    skip_api_docs = assistance_type.skip_api_docs
-    is_structured = assistance_type.is_structured
+
     history = assistant_chat_history(
-        include_system_message=False, is_structured=is_structured, skip_api_docs=skip_api_docs
+        include_system_message=False,
+        is_structured=assistance_type.is_structured,
+        doc_selection=doc_selection,
     )
 
     # Insert the system message.
     system_message = assist_system_message_with_state(
-        is_structured=is_structured, skip_api_docs=skip_api_docs
+        is_structured=assistance_type.is_structured,
+        doc_selection=doc_selection,
     )
     history.messages.insert(0, ChatMessage(ChatRole.system, system_message))
 
@@ -279,15 +298,12 @@ def shell_context_assistance(
 
         # Save the user message to the history after a response. That way if the
         # use changes their mind right away and cancels it's not left in the file.
-        history_file = assistant_history_file()
-        append_chat_message(history_file, user_message)
-        # Record the assistant's response, in structured format.
-        append_chat_message(
-            history_file, ChatMessage(ChatRole.assistant, assistant_response.model_dump())
+        append_assistant_history(
+            user_message, ChatMessage(ChatRole.assistant, assistant_response.model_dump())
         )
 
         PrintHooks.before_assistance()
-        print_assistant_response(assistant_response, model)
+        print_assistant_response(assistant_response, model, doc_selection)
         PrintHooks.after_assistance()
 
         # If the assistant suggests commands, also save them as a script.
@@ -310,6 +326,9 @@ def shell_context_assistance(
 
     else:
         assistant_response = assistance_unstructured(history.as_chat_completion(), model)
+        append_assistant_history(
+            user_message, ChatMessage(ChatRole.assistant, assistant_response.content)
+        )
         PrintHooks.before_assistance()
         print_markdown(assistant_response.content)
         PrintHooks.after_assistance()

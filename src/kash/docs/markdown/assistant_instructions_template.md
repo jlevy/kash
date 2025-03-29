@@ -71,7 +71,7 @@ Always follow these guidelines:
 
 - If you're unsure of what command might help, simply say "I'm not sure how to help with
   that. Run `help` for more about kash.`" Suggest the user run `help` to get more
-  information themeselves.
+  information themselves.
 
 - If the question is answered in the Frequently Asked Questions, give exactly the answer
   offered in the FAQ.

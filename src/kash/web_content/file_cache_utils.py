@@ -5,8 +5,6 @@ from prettyfmt import fmt_lines, fmt_path
 from kash.config.logger import get_logger
 from kash.config.settings import atomic_global_settings, global_settings
 from kash.errors import FileNotFound, InvalidInput
-from kash.media_base.media_services import is_media_url
-from kash.media_base.media_tools import cache_media
 from kash.model.items_model import Item
 from kash.model.media_model import MediaType
 from kash.utils.common.url import Url
@@ -54,6 +52,8 @@ def cache_resource(item: Item) -> dict[MediaType, Path]:
     copying as needed. For media this may yield more than one format.
     """
     from kash.exec.preconditions import is_resource
+    from kash.media_base.media_services import is_media_url
+    from kash.media_base.media_tools import cache_media
 
     if not is_resource(item):
         raise ValueError(f"Item is not a resource: {item}")

@@ -7,7 +7,7 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import (
     COLOR_HINT,
 )
-from kash.docs.all_docs import all_docs
+from kash.docs.all_docs import DocSelection, all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, print_markdown
@@ -38,7 +38,7 @@ def welcome() -> None:
 
 
 @kash_command
-def manual(no_pager: bool = False) -> None:
+def manual(no_pager: bool = False, doc_selection: DocSelection = DocSelection.full) -> None:
     """
     Show the kash full manual with all help pages.
     """
@@ -47,7 +47,7 @@ def manual(no_pager: bool = False) -> None:
     from kash.help.help_pages import print_manual
 
     with console_pager(use_pager=not no_pager):
-        print_manual()
+        print_manual(doc_selection)
 
 
 @kash_command

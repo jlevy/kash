@@ -50,12 +50,8 @@ class LLM(LLMName, Enum):
     deepseek_reasoner = LLMName("deepseek/deepseek-reasoner")
 
     # https://console.groq.com/docs/models
-    groq_llama_3_3_7b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_llama_3_1_8b_instant = LLMName("groq/llama-3.1-8b-instant")
-    groq_llama_3_1_70b_versatile = LLMName("groq/llama-3.1-70b-versatile")
-    groq_llama_3_1_405b_reasoning = LLMName("groq/llama-3.1-405b-reasoning")
-    groq_llama3_8b_8192 = LLMName("groq/llama3-8b-8192")
-    groq_llama3_70b_8192 = LLMName("groq/llama3-70b-8192")
+    groq_llama_3_3_70b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")
     groq_deepseek_r1_distill_qwen_32b = LLMName("groq/deepseek-r1-distill-qwen-32b")
 

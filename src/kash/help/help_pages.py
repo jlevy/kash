@@ -2,7 +2,7 @@ from rich.text import Text
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
-from kash.docs.all_docs import all_docs
+from kash.docs.all_docs import DocSelection, all_docs
 from kash.help.docstring_utils import parse_docstring
 from kash.shell.output.shell_output import (
     PrintHooks,
@@ -81,42 +81,47 @@ def print_see_also(commands_or_questions: list[str]) -> None:
         )
 
 
-def print_manual() -> None:
+def print_manual(doc_selection: DocSelection) -> None:
     help_topics = all_docs.help_topics
 
-    print_markdown(help_topics.what_is_kash)
+    if doc_selection.value.basic_manual:
+        print_markdown(help_topics.what_is_kash)
 
-    print_markdown(help_topics.installation)
+    if doc_selection.value.full_manual:
+        print_markdown(help_topics.installation)
 
-    print_markdown(help_topics.getting_started)
+        print_markdown(help_topics.getting_started)
 
-    print_markdown(help_topics.elements)
+    if doc_selection.value.basic_manual:
+        print_markdown(help_topics.elements)
 
-    print_markdown(help_topics.tips_for_use_with_other_tools)
+        print_markdown(help_topics.tips_for_use_with_other_tools)
 
-    print_markdown(help_topics.philosophy_of_kash)
+    if doc_selection.value.full_manual:
+        print_markdown(help_topics.philosophy_of_kash)
 
-    print_markdown(help_topics.kash_overview)
+        print_markdown(help_topics.kash_overview)
 
-    print_markdown(help_topics.workspace_and_file_formats)
+        print_markdown(help_topics.workspace_and_file_formats)
 
-    print_markdown(help_topics.modern_shell_tool_recommendations)
+        print_markdown(help_topics.modern_shell_tool_recommendations)
 
-    print_markdown(help_topics.faq)
+    if doc_selection.value.basic_manual:
+        print_markdown(help_topics.faq)
 
-    cprint()
-    print_builtin_commands_help()
+    if doc_selection.value.command_docs:
+        cprint()
+        print_builtin_commands_help()
 
-    cprint()
-    print_actions_help()
+    if doc_selection.value.action_docs:
+        cprint()
+        print_actions_help()
 
-    cprint()
-
-    print_h2("Additional Help")
-
-    cprint(
-        "Use `help` for this help page or to get help on a command. "
-        "Use `xonfig tutorial` for xonsh help."
-    )
-
-    cprint()
+    if doc_selection.value.basic_manual:
+        cprint()
+        print_h2("Additional Help")
+        cprint(
+            "Use `help` for this help page or to get help on a command. "
+            "Use `xonfig tutorial` for xonsh help."
+        )
+        cprint()

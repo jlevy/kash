@@ -213,6 +213,7 @@ reportMissingTypeArgument = false
 reportUnusedImport = false
 reportIncompatibleVariableOverride = false
 reportUnusedFunction = false
+reportPrivateImportUsage = false
 
 
 [tool.codespell]
