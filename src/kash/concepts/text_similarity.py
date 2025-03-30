@@ -5,8 +5,8 @@ import pandas as pd
 from funlog import log_calls, tally_calls
 from litellm import embedding
 from litellm.types.utils import EmbeddingResponse
-from scipy import spatial
 
+from kash.concepts.cosine import cosine
 from kash.concepts.embeddings import Embeddings
 from kash.config.logger import get_logger
 from kash.errors import ApiResultError
@@ -20,7 +20,7 @@ def sort_by_length(values: list[str]) -> list[str]:
 
 
 def cosine_relatedness(x, y):
-    return 1 - spatial.distance.cosine(x, y)
+    return 1 - cosine(x, y)
 
 
 @log_calls(level="info", show_return_value=False)

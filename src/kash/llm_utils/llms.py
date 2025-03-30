@@ -27,10 +27,10 @@ class LLM(LLMName, Enum):
     claude_3_5_haiku = LLMName("claude-3-5-haiku-latest")
 
     # https://ai.google.dev/gemini-api/docs/models
+    gemini_2_5_pro_exp_03_25 = LLMName("gemini/gemini-2.5-pro-exp-03-25")
     gemini_2_0_flash = LLMName("gemini/gemini-2_0-flash")
+    gemini_2_0_flash_lite = LLMName("gemini/gemini-2.0-flash-lite")
     gemini_2_0_pro_exp_02_05 = LLMName("gemini/gemini-2.0-pro-exp-02-05")
-    gemini_1_5_flash = LLMName("gemini/gemini-1.5-flash")
-    gemini_1_5_flash_8b = LLMName("gemini/gemini-1.5-flash-8b")
 
     # https://docs.x.ai/docs/models
     xai_grok_2 = LLMName("xai/grok-2-latest")

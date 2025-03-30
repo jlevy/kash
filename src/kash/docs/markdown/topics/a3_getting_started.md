@@ -227,8 +227,9 @@ to see more about the command.
 
 A few of the most important commands for managing files and work are these:
 
-- `check_system_tools` to confirm your kash setup has necessary tools (like bat and
-  ffmpeg).
+- `self_check` to check existing .env file and installed tools (like bat and ffmpeg)
+
+- `self_configure` to help you configure your .env files and LLM models
 
 - `files` lists files in one or more paths, with sorting, filtering, and grouping.
 

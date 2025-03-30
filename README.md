@@ -183,25 +183,29 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 3. **Install kash or a kash kit:**
 
    ```shell
-   uv tool install kash-media
+   uv tool install kash-media --python=3.13
    ```
 
+   Other versions of Python should work but 3.13 is recommended.
    For a setup without the media tools, use `kash-shell` instead.
+
    If you've installed an older version and want to be sure you have the latest shell,
    you may want to add `--upgrade --force` to be sure you get the latest version of the
    kit.
 
-   ```
-   uv tool install --upgrade --force kash-media
+   ```shell
+   uv tool install kash-media --python=3.13 --upgrade --force 
    ```
 
 4. **Set up API keys:**
 
    You will need API keys for all services you wish to use.
-   Configuring OpenAI, Anthropic, Groq (for Llama 3), Deepgram (for transcriptions),
-   Firecrawl (for web crawling and scraping), and Exa (for web search) are recommended.
+   Configuring OpenAI, Anthropic, Groq (for Llama 3), and Deepgram (if you wish to do
+   transcriptions) are a good start.
+   But kash supports dozens of models
+   [via LiteLLM](https://docs.litellm.ai/docs/providers).
 
-   These keys should go in the `.env` file in your current directory.
+   You can set these up now, or after you run kash (below):
 
    ```shell
    # Set up API secrets:
@@ -210,15 +214,22 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    # You can also put .env in ~/.env if you want it to be usable in any directory.
    ```
 
+   These keys should go in the `.env` file in your current work directory or a parent or
+   your home directory (recommended if you'll be working in several directories, as with
+   a typical shell).
+
 5. **Run kash:**
 
    ```shell
    kash
    ```
 
-   You should see a welcome screen with all info about APIs and tools.
-   You may also use the `self_check` command to confirm which tools and API keys are
-   working.
+   You should see a welcome message with all info about APIs and tools.
+
+   Use the `self_check` command to confirm which tools and API keys are working.
+
+   Use the `self_configure` command as a quick way to fill in additional values in your
+   .env file and to set workspace parameters on what LLMs to use by default.
 
 ### Running Kash as an MCP Server
 
@@ -305,8 +316,8 @@ command or option) or run with `--help` to get more details.
 # Check the help page for a full overview:
 help
 
-# Confirm kash is set up correctly with right tools and APIs:
-self_check
+# Confirm kash is set up correctly with right tools:
+check_system_tools
 
 # The assistant is built into the shell, so you can just ask questions on the
 # command line. Note you can just press Space twice and it will insert the question

@@ -14,7 +14,7 @@ from rich.text import Text
 
 LOGO_LARGE: str = (Path(__file__).parent / "logo.txt").read_text()
 
-LOGO_NAME = "❱kash"
+LOGO_NAME = "➤kash"
 
 TAGLINE = "The knowledge agent shell"
 

@@ -29,7 +29,7 @@ My strong recommendations:
 
 - Use `jq` to process JSON files
 
-- User `mlr` (miller) for `awk`-like functionality on TSV, CSV, and JSON files
+- Use `mlr` (miller) for `awk`-like functionality on TSV, CSV, and JSON files
 
 - Use `tldr` as a more modern version of `man`
 
