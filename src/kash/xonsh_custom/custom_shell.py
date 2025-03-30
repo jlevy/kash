@@ -23,7 +23,7 @@ from kash.config import colors
 from kash.config.lazy_imports import import_start_time  # usort:skip
 from kash.config.logger import get_console, get_log_settings, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
-from kash.config.text_styles import SPINNER
+from kash.config.text_styles import SPINNER, STYLE_ASSISTANCE
 from kash.help.assistant import AssistanceType
 from kash.shell.output.shell_output import cprint
 from kash.shell.ui.shell_syntax import is_assist_request_str
@@ -198,7 +198,7 @@ def not_found(cmd: list[str]):
 
     # Don't call assistant on one-word typos. It's annoying.
     if len(cmd) >= 2:
-        cprint("Command not found. Getting assistance…")
+        cprint("Not a recognized command.", style=STYLE_ASSISTANCE)
         with get_console().status("", spinner=SPINNER):
             shell_context_assistance(
                 f"""
@@ -206,9 +206,14 @@ def not_found(cmd: list[str]):
 
                 {" ".join(cmd)}
 
-                Please give them a brief suggestion of possible correct commands
-                and how they can get more help with `help` or any question
-                ending with ? in the terminal.
+                If it is clear what command the user probably meant to type, provide it first and
+                give a very concise explanation of what it does.
+
+                Otherwise, suggest any commands that might be what the user had in mind.
+                
+                If it's unclear what the user meant, ask for clarification.
+
+                Finally always mention that they can get more help by asking any question.
                 """,
                 assistance_type=AssistanceType.fast,
             )

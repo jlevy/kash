@@ -38,6 +38,7 @@ def score_completions(
     completions: Iterable[ScoredCompletion],
     subphrase_min_words: int = 5,
     incomplete_discount: float = 0.8,
+    semantic_boost: float = 2.0,
 ) -> None:
     """
     Score completions in place based on a query. If `loose_subphrase` is set, allow any
@@ -55,6 +56,10 @@ def score_completions(
         phrase = score_phrase(query, normalized_value)
 
         score = max(exact_prefix, incomplete_discount * phrase)
+
+        # Boost completions with high relatedness.
+        if completion.relatedness:
+            score += Score(completion.relatedness * 100 * semantic_boost)
 
         # For FAQs and recipe snippets, allow loose subphrase matches, but not for very short queries.
         use_loose_subphrase = (

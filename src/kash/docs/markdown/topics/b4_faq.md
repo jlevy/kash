@@ -23,7 +23,7 @@ directory.
 For more detailed information, you can run `help` to get background and a list of
 commands and actions.
 
-### How do I get started using ash?
+### How do I get started using kash?
 
 Run `help` to get an overview.
 

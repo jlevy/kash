@@ -145,7 +145,7 @@ def get_prompt_style() -> PromptStyle:
     """
     Get the current prompt style from `PROMPT_STYLE` environment variable or default to normal.
     """
-    from kash.xonsh_custom.customize_xonsh import XSH
+    from kash.xonsh_custom.load_into_xonsh import XSH
 
     assert XSH.env
     style_name = str(XSH.env.get("PROMPT_STYLE", PromptStyle.default.value)).lower()

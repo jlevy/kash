@@ -64,6 +64,7 @@ class ScoredCompletion(RichCompletion):
         group: CompletionGroup = CompletionGroup.unknown,
         help_doc: HelpDoc | None = None,
         score: Score | None = None,
+        relatedness: float | None = None,
         replace_input: bool = False,
         prefix_len: int | None = None,
         display: str | None = None,
@@ -76,6 +77,7 @@ class ScoredCompletion(RichCompletion):
             value, prefix_len, display, description, style, append_closing_quote, append_space
         )
         self.score = score
+        self.relatedness = relatedness
         self.group = group
         self.help_doc = help_doc
         self.replace_input = replace_input
@@ -88,11 +90,13 @@ class ScoredCompletion(RichCompletion):
             return cls(completion)
 
     @classmethod
-    def from_value(cls, value: CompletionValue):
+    def from_value(cls, value: CompletionValue, relatedness: float | None = None):
         return cls(
             value=value.value,
             group=value.group,
             help_doc=value.help_doc,
+            score=None,
+            relatedness=relatedness,
             display=(
                 abbrev_str(value.display, COMPLETION_DISPLAY_MAX_LEN)
                 if value.display
@@ -105,8 +109,8 @@ class ScoredCompletion(RichCompletion):
         )
 
     @classmethod
-    def from_help_doc(cls, help_doc: HelpDoc):
-        return cls.from_value(help_doc.completion_value())
+    def from_help_doc(cls, help_doc: HelpDoc, relatedness: float | None = None):
+        return cls.from_value(help_doc.completion_value(), relatedness=relatedness)
 
     def replace(self, **kwargs: dict[str, Any]) -> ScoredCompletion:
         default_kwargs: dict[str, Any] = dict(
@@ -118,6 +122,8 @@ class ScoredCompletion(RichCompletion):
 
     def formatted(self) -> str:
         s = f"Group{self.group.value} {self.score or float('-inf'):2.1f} {self.value!r}"
+        if self.relatedness:
+            s += f" rel={self.relatedness:.2f}"
         if self.display:
             s += f" ({self.display!r} {self.style!r})"
         if self.replace_input:

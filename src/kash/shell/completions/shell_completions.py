@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from funlog import log_calls, tally_calls
 from prettyfmt import fmt_lines
 from strif import abbrev_str, single_line
 from typing_extensions import TypeVar
@@ -43,7 +44,7 @@ MAX_DIR_COMPLETIONS = 100
 
 
 def trace_completions_enabled() -> bool:
-    from kash.xonsh_custom.customize_xonsh import XSH
+    from kash.xonsh_custom.load_into_xonsh import XSH
 
     assert XSH.env
     return bool(XSH.env.get("XONSH_TRACE_COMPLETIONS"))
@@ -158,7 +159,7 @@ def get_help_completions_lexical(query: str, include_bare_qm: bool) -> set[Score
             if c.value.lstrip("? ") in BARE_COMPLETIONS:
                 c.group = CompletionGroup.top_suggestion
 
-        trace_completions("Lexical help completions (bare query)", all_completions)
+        trace_completions("get_help_completions_lexical: bare query", all_completions)
         return set(all_completions)
     else:
         all_completions = (
@@ -171,10 +172,11 @@ def get_help_completions_lexical(query: str, include_bare_qm: bool) -> set[Score
         score_completions(query, all_completions)
         truncate_completions(all_completions)
 
-        trace_completions("Lexical help completions", all_completions)
+        trace_completions("get_help_completions_lexical: regular query", all_completions)
         return set(all_completions)
 
 
+@tally_calls(level="debug")
 def get_help_completions_semantic(query: str) -> set[ScoredCompletion]:
     """
     Semantic lookup of completions from help docs. Requires embededing APIs so
@@ -184,9 +186,11 @@ def get_help_completions_semantic(query: str) -> set[ScoredCompletion]:
         return set()
 
     hits = all_docs.help_index.rank_docs(query, max=10, min_cutoff=0.25)
-    completions = set(ScoredCompletion.from_help_doc(hit.doc) for hit in hits)
+    completions = set(
+        ScoredCompletion.from_help_doc(hit.doc, relatedness=hit.relatedness) for hit in hits
+    )
 
-    trace_completions("Semantic help completions", completions)
+    trace_completions("get_help_completions_lexical", completions)
     return completions
 
 

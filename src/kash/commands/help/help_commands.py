@@ -43,7 +43,7 @@ def help(query: str | None = None, search: bool = False) -> None:
     if not search and not query:
         manual()
     elif search:
-        search_help(query)
+        help_search(query)
     else:
         explain(query)
 
@@ -111,7 +111,7 @@ def explain(text: str, no_assistant: bool = False) -> None:
 
 
 @kash_command
-def search_help(text: str, max: int = 10, min_score: float = 0.33) -> None:
+def help_search(text: str, max: int = 10, min_score: float = 0.33) -> None:
     """
     Search help docs.
 

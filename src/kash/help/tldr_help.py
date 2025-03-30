@@ -164,6 +164,9 @@ def tldr_help(command: str, drop_header: bool = False) -> str | None:
     Get TLDR help for a command, if available. Pre-caches all pages with occasional refresh.
     This way it's fast and fails instantly for unknown commands.
     """
+    if not command.strip():
+        return None
+
     tldr_refresh_cache()
 
     page_str = tldr_page_from_cache(command)

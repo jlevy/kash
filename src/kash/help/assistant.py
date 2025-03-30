@@ -10,7 +10,7 @@ from rich.text import Text
 
 from kash.config.logger import get_logger, record_console
 from kash.config.settings import global_settings
-from kash.config.text_styles import EMOJI_WARN, STYLE_HINT
+from kash.config.text_styles import EMOJI_ASSISTANT, EMOJI_WARN, STYLE_ASSISTANCE, STYLE_HINT
 from kash.docs.all_docs import DocSelection, all_docs
 from kash.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.exec_model.script_model import Script
@@ -265,7 +265,7 @@ def shell_context_assistance(
     if not silent:
         cprint(
             Text.assemble(
-                "Getting assistance… ",
+                (f"{EMOJI_ASSISTANT} Thinking… ", STYLE_ASSISTANCE),
                 (f"({assistance_type.name}, {model}, {doc_selection})", STYLE_HINT),
             )
         )

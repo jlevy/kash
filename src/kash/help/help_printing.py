@@ -1,3 +1,4 @@
+from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
 from kash.errors import InvalidInput, NoMatch
 from kash.exec.action_registry import look_up_action_class
@@ -21,6 +22,8 @@ from kash.shell.output.shell_output import (
     print_markdown,
 )
 from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
+
+log = get_logger(__name__)
 
 GENERAL_HELP = (
     "For more information, ask the assistant a question (press space or `?`) or check `help`."
@@ -115,26 +118,40 @@ def print_explain_command(text: str, assistant_model: LLM | None = None):
     """
     text = text.strip()
 
-    tldr_help_str = tldr_help(text, drop_header=True)
-    if tldr_help_str:
-        cprint(
-            format_name_and_description(f"`{text}`", tldr_help_str, extra_note="(shell command)")
-        )
-        return
+    words = text.split()
+    if not words:
+        raise NoMatch("No command provided")
 
-    try:
-        command = look_up_command(text)
-        print_command_function_help(command)
-        return
-    except InvalidInput:
-        pass
+    if len(words) == 1:
+        first_word = words[0]
+        # Use first word as a command and check for TLDR help.
+        try:
+            tldr_help_str = tldr_help(first_word, drop_header=True)
+            if tldr_help_str:
+                cprint(
+                    format_name_and_description(
+                        f"`{text}`", tldr_help_str, extra_note="(shell command)"
+                    )
+                )
+                return
+        except Exception as e:
+            log.info("No TLDR help found for %s: %s", text, e)
+            pass
 
-    try:
-        action_cls = look_up_action_class(text)
-        print_action_help(action_cls.create(None))
-        return
-    except InvalidInput:
-        pass
+        # Next check if we have help docs.
+        try:
+            command = look_up_command(first_word)
+            print_command_function_help(command)
+            return
+        except InvalidInput:
+            pass
+
+        try:
+            action_cls = look_up_action_class(first_word)
+            print_action_help(action_cls.create(None))
+            return
+        except InvalidInput:
+            pass
 
     try:
         faq = look_up_faq(text)

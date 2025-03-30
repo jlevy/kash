@@ -52,9 +52,9 @@ def _shell_interactive_setup():
     modernize_shell()
 
 
-def customize_xonsh():
+def load_into_xonsh():
     """
-    Everything to customize xonsh for kash. This can be loaded via a xontrib.
+    Everything to load kash setup and commands in xonsh from within xonsh, as a xontrib.
     """
 
     if is_interactive():

@@ -13,7 +13,7 @@ import kash.actions
 import kash.exec.command_registry
 import kash.shell.output.shell_output
 import kash.utils.common.format_utils
-import kash.xonsh_custom.customize_xonsh
+import kash.xonsh_custom.load_into_xonsh
 import kash.xonsh_custom.shell_load_commands
 import kash.xonsh_custom.xonsh_env
 from kash.config.logger import get_logger
@@ -54,7 +54,7 @@ def load(*paths: str) -> None:
 kash.xonsh_custom.xonsh_env.set_alias("load", load)
 
 try:
-    kash.xonsh_custom.customize_xonsh.customize_xonsh()
+    kash.xonsh_custom.load_into_xonsh.load_into_xonsh()
 except Exception as e:
     log = get_logger(__name__)
     log.error("Could not initialize kash: %s", e)

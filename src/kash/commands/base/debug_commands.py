@@ -207,7 +207,7 @@ def reload_commands_and_actions() -> None:
     Reload all commands and actions. This can be needed to register newly imported
     Python files that define commands or actions with the shell.
     """
-    from kash.xonsh_custom.customize_xonsh import reload_shell_commands_and_actions
+    from kash.xonsh_custom.load_into_xonsh import reload_shell_commands_and_actions
     from kash.xonsh_custom.shell_load_commands import log_command_action_info
 
     reload_shell_commands_and_actions()

@@ -17,7 +17,7 @@ class PersistedYaml:
         self.filename = str(filename)
         self.initialize(init_value)
 
-    @log_calls(level="warning", if_slower_than=1.0)
+    @log_calls(level="warning", if_slower_than=2.0)  # Helpful to flag slow disk I/O.
     def read(self) -> Any:
         return read_yaml_file(self.filename)
 
