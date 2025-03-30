@@ -37,6 +37,7 @@ from kash.shell.completions.shell_completions import (
 )
 from kash.shell.ui.shell_syntax import assist_request_str
 from kash.utils.common.atomic_var import AtomicVar
+from kash.xonsh_custom.command_nl_utils import as_nl_words, looks_like_nl
 from kash.xonsh_custom.shell_which import is_valid_command
 
 log = get_logger(__name__)
@@ -55,10 +56,45 @@ class MultiTabState:
     more_results_requested: bool = False
     more_completions: set[ScoredCompletion] | None = None
 
+    def set_first_results(self, context: CommandContext):
+        self.last_context = context
+        self.first_results_shown = True
+        self.more_results_requested = False
+        self.more_completions = None
+
 
 # Maintain state for help completions for single and double tab.
 # TODO: Move this into the CompletionContext.
 _MULTI_TAB_STATE = AtomicVar(MultiTabState())
+
+
+def full_commandline(context: CompletionContext) -> str:
+    # XXX Seems like command.text_before_cursor is not always the whole command line,
+    # especially for NL questions, so we first check the python code if available.
+    text = (
+        context.python
+        and context.python.multiline_code
+        or (context.command and context.command.text_before_cursor or "")
+    )
+    return text
+
+
+def commandline_as_nl(context: CompletionContext) -> str:
+    if not context.command:
+        return ""
+
+    return as_nl_words(full_commandline(context))
+
+
+def is_nl_words(context: CompletionContext) -> bool:
+    """
+    Check if the input looks like plain natural language text, i.e. word chars,
+    possibly with ? or hyphens/apostrophes when inside words but not other
+    code or punctuation.
+    """
+    if not context.command:
+        return False
+    return looks_like_nl(full_commandline(context))
 
 
 def is_assist_request(context: CompletionContext) -> bool:
@@ -70,33 +106,8 @@ def is_assist_request(context: CompletionContext) -> bool:
     `?some question or request`
     `? some question or request`
     """
-    command = context.command
-    if not command:
-        return False
-
-    arg_index = command.arg_index
-    prefix = command.prefix.lstrip()
-
-    return (
-        (arg_index == 0 and (prefix.startswith(" ")))
-        or (arg_index == 0 and prefix.startswith("?"))
-        or (arg_index >= 1 and command.args[0].value.strip().startswith("?"))
-    )
-
-
-def is_nl_words(context: CompletionContext) -> bool:
-    """
-    Check if the input looks like plain natural language text, i.e. word chars,
-    possibly with ? or hyphens/apostrophes when inside words but not other
-    code or punctuation.
-    """
-    if not context.command:
-        return False
-
-    text = context.command.text_before_cursor or ""
-    word_pat = r"[\w]+(?:[-\'][\w]+)*\??"
-    pattern = rf"^{word_pat}(?:\s+{word_pat})$"
-    return bool(re.match(pattern, text))
+    text = full_commandline(context)
+    return text.startswith(" ") or text.startswith("?")
 
 
 def is_textual_request(context: CompletionContext) -> bool:
@@ -124,7 +135,7 @@ def set_replace_prefixes(completions: set[ScoredCompletion], context: Completion
     length of the text before the cursor.
     """
     if context.command:
-        prefix_len = len(context.command.text_before_cursor or "") + 1
+        prefix_len = len(full_commandline(context)) + 1
         for completion in completions:
             if completion.replace_input:
                 completion.prefix_len = prefix_len
@@ -153,8 +164,7 @@ def bare_completer(context: CompletionContext) -> CompleterResult:
 
     trace_completions(f"bare_completer: {context.command!r}")
 
-    prefix = context.command and context.command.prefix
-    if not prefix or not prefix.strip():
+    if not commandline_as_nl(context):
         bare_completions = get_help_completions_lexical("", include_bare_qm=True)
         return post_process(bare_completions, context)
 
@@ -285,25 +295,31 @@ def help_completer(context: CompletionContext) -> CompleterResult:
     Suggest help FAQs and commands. These replace the whole command line.
     We support two levels, lexical and semantic, and activate the semantic
     completions on a second tab press.
-
-    FIXME: Make sure this works for things like "firecrawl search" <tab>.
     """
-
-    # Unless the user pressed tab twice, if the user has already typed a command
-    # we recognize, or this looks more complex like a command with options or
-    # Python code, skip these help completions.
-    if not is_textual_request(context) and not _MULTI_TAB_STATE.value.more_results_requested:
-        trace_completions("help_completer: Skipping help completions since command is recognized")
-        return None
-
-    trace_completions(f"help_completer: {context.command!r}")
-
     if context.command:
-        query = context.command.prefix.lstrip("? ")
+        # Full query is full command line so far, lightly cleaned up.
+        query = commandline_as_nl(context)
+        if not query:
+            return None
+
+        trace_completions(f"help_completer: {query!r}")
+
+        # Don't do full help completions on short commands.
+        if not is_assist_request(context) and len(query.split()) < 2:
+            return None
 
         lex_completions = get_help_completions_lexical(query, include_bare_qm=True)
 
-        def add_completions(state: MultiTabState) -> MultiTabState:
+        with _MULTI_TAB_STATE.updates() as state:
+            # Unless the user pressed tab twice, if the user has already typed a command
+            # we recognize, or this looks more complex like a command with options or
+            # Python code, skip these help completions.
+            if not is_textual_request(context) and not state.more_results_requested:
+                trace_completions(
+                    "help_completer: Skipping help completions since command is recognized"
+                )
+                state.set_first_results(context.command)
+                return None
             if context.command == state.last_context and state.more_results_requested:
                 # User hit tab again so let's fill in slower semantic completions.
                 if state.more_completions is None:
@@ -316,16 +332,10 @@ def help_completer(context: CompletionContext) -> CompleterResult:
                         log.info("Skipping semantic help since embedding API unavailable: %s", e)
                         state.more_completions = None
             else:
-                state.last_context = context.command
-                state.first_results_shown = True
-                state.more_results_requested = False
-                state.more_completions = None
+                state.set_first_results(context.command)
 
-            return state
+            more_completions = set(state.more_completions or set())
 
-        _MULTI_TAB_STATE.update(add_completions)
-
-        more_completions = _MULTI_TAB_STATE.value.more_completions or set()
         completions = lex_completions | more_completions
         trace_completions(f"help_completer: {query!r}: Combined help completions", completions)
         return post_process(completions, context)
@@ -575,13 +585,21 @@ def add_key_bindings() -> None:
         """
         Add a second tab to show more completions.
         """
-
-        def request_more(state: MultiTabState) -> MultiTabState:
+        with _MULTI_TAB_STATE.updates() as state:
             state.more_results_requested = True
-            return state
 
-        _MULTI_TAB_STATE.update(request_more)
-        state = _MULTI_TAB_STATE.value
+        trace_completions("More completion results requested", state)
+
+        # Restart completions.
+        buf = event.app.current_buffer
+        buf.complete_state = None
+        buf.start_completion()
+
+    @custom_bindings.add("s-tab")
+    def _(event: KeyPressEvent):
+        with _MULTI_TAB_STATE.updates() as state:
+            state.more_results_requested = True
+
         trace_completions("More completion results requested", state)
 
         # Restart completions.
