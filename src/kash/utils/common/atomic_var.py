@@ -9,7 +9,8 @@ T = TypeVar("T")
 
 def value_is_immutable(obj: Any) -> bool:
     """
-    Check if a value is of a known immutable type. Just for common cases, not perfect.
+    Check if a value is of a known immutable type. Just a heuristic for common
+    cases and not perfect.
     """
     immutable_types = (int, float, bool, str, tuple, frozenset, type(None), bytes, complex)
     if isinstance(obj, immutable_types):
@@ -46,15 +47,21 @@ class AtomicVar(Generic[T]):
     if global_flag:  # In any thread.
         print("Flag is set")
 
-    # Works on any type, including lists and dicts, but consider using `copy` or
-    # `deepcopy` to access the value:
-    my_list = AtomicVar([1, 2, 3])
-    my_list.update(lambda x: x.append(4))  # In any thread.
-    my_list_copy = my_list.copy()  # In any thread.
+    # Works on any type, including lists and dicts.
 
-    # For mutable types, the `updates()` context manager also works:
+    # For mutable types,consider using `copy` or `deepcopy` to access the value:
+    my_list = AtomicVar([1, 2, 3])
+
+    my_list_copy = my_list.copy()  # In any thread.
+    my_list_deepcopy = my_list.deepcopy()  # In any thread.
+
+    # For mutable types, the `updates()` context manager gives a simple way to
+    # lock on updates:
     with my_list.updates() as value:
         value.append(5)
+
+    # Or if you prefer, via a function:
+    my_list.update(lambda x: x.append(4))  # In any thread.
     ```
     """
 
@@ -71,7 +78,8 @@ class AtomicVar(Generic[T]):
     def value(self) -> T:
         """
         Current value. For immutable types, this is thread safe. For mutable types,
-        consider using `copy` or `deepcopy` instead.
+        this gives direct access to the value, so you should consider using `copy` or
+        `deepcopy` instead.
         """
         with self.lock:
             return self._value
@@ -103,17 +111,20 @@ class AtomicVar(Generic[T]):
             self._value = new_value
             return old_value
 
-    def update(self, fn: Callable[[T], T]) -> T:
+    def update(self, update_func: Callable[[T], T | None]) -> T:
         """
         Update value with a function and return the new value.
 
-        The update can be done in place or may return a new (non-None) value.
+        The `update_func` can either return a new value or update a mutable type in place,
+        in which case it should return None. Always returns the final value of the
+        variable after the update.
         """
         with self.lock:
-            result = fn(self._value)
+            result = update_func(self._value)
             if result is not None:
                 self._value = result
-            return result
+            # Always return the potentially updated self._value
+            return self._value
 
     @contextmanager
     def updates(self):
@@ -130,7 +141,7 @@ class AtomicVar(Generic[T]):
         """
         # Sanity check to avoid accidental use with atomic/immutable types.
         if self.is_immutable:
-            raise ValueError("Cannot use updates() context manager on immutable value")
+            raise ValueError("Cannot use AtomicVar.updates() context manager on an immutable value")
         with self.lock:
             yield self._value
 

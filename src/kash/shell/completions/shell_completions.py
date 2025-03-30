@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from funlog import log_calls, tally_calls
+from funlog import tally_calls
 from prettyfmt import fmt_lines
 from strif import abbrev_str, single_line
 from typing_extensions import TypeVar

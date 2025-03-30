@@ -1,9 +1,11 @@
 import os
+import sys
 import time
 from collections.abc import Callable
 from os.path import expanduser
 from typing import cast
 
+import xonsh.tools as xt
 from prompt_toolkit.formatted_text import FormattedText
 from pygments.token import Token
 from strif import abbrev_str
@@ -13,6 +15,7 @@ from xonsh.environ import xonshrc_context
 from xonsh.execer import Execer
 from xonsh.main import events
 from xonsh.shell import Shell
+from xonsh.shells.base_shell import Tee, run_compiled_code
 from xonsh.shells.ptk_shell.formatter import PTKPromptFormatter
 from xonsh.xontribs import xontribs_load
 
@@ -31,9 +34,6 @@ from kash.xonsh_custom.xonsh_ranking_completer import RankingCompleter
 
 log = get_logger(__name__)
 
-
-# Whether to show Python tracebacks when there are errors.
-XONSH_SHOW_TRACEBACK = True
 
 ## -- Non-customized xonsh shell setup --
 
@@ -118,7 +118,10 @@ class CustomAssistantShell(PromptToolkitShell):
     """
     Our custom version of the interactive xonsh shell.
 
-    Note event hooks in xonsh don't let you disable xonsh's processing, so we use a custom shell.
+    We're trying to reuse code where possible but need to change some of xonsh's
+    behavior. Note event hooks in xonsh do let you customize handling but don't
+    let you disable xonsh's processing, so it seems like this is necessary.
+    so it seems like this is necessary.
     """
 
     def __init__(self, **kwargs):
@@ -154,13 +157,86 @@ class CustomAssistantShell(PromptToolkitShell):
             except Exception as e:
                 log.error(f"Sorry, could not get assistance: {abbrev_str(str(e), max_len=1000)}")
         else:
-            # Call xonsh shell.
-            super().default(line)
+            # Call our version of xonsh's original default() method.
+            self.default_custom(line)
+
+    # XXX Copied and overriding xonsh's default() method to adapt error handling.
+    def default_custom(self, line, raw_line=None):
+        """Implements code execution."""
+        line = line if line.endswith("\n") else line + "\n"
+        if not self.need_more_lines:  # this is the first line
+            if not raw_line:
+                self.src_starts_with_space = False
+            else:
+                self.src_starts_with_space = raw_line[0].isspace()
+        src, code = self.push(line)
+        if code is None:
+            return
+
+        events.on_precommand.fire(cmd=src)
+
+        env = XSH.env or {}
+        hist = XSH.history
+        ts1 = None
+        enc = env.get("XONSH_ENCODING")
+        err = env.get("XONSH_ENCODING_ERRORS")
+        tee = Tee(encoding=enc, errors=err)
+        ts0 = time.time()
+        exc_info = (None, None, None)
+        try:
+            log.info("Running shell code: %r", src)
+            exc_info = run_compiled_code(code, self.ctx, None, "single")
+            if exc_info != (None, None, None):
+                raise exc_info[1]  # pyright: ignore
+            ts1 = time.time()
+            if hist is not None and hist.last_cmd_rtn is None:
+                hist.last_cmd_rtn = 0  # returncode for success
+            log.warning("Shell code completed successfully: %s", src)
+        except xt.XonshError as e:
+            log.info("Shell exception details: %s", e, exc_info=True)
+            print(e.args[0], file=sys.stderr)
+            if hist is not None and hist.last_cmd_rtn is None:  # pyright: ignore
+                hist.last_cmd_rtn = 1  # return code for failure
+        except (SystemExit, KeyboardInterrupt) as err:
+            raise err
+        except BaseException as e:
+            log.info("Shell exception details: %s", e, exc_info=True)
+            xt.print_exception(exc_info=exc_info)
+            if hist is not None and hist.last_cmd_rtn is None:  # pyright: ignore
+                hist.last_cmd_rtn = 1  # return code for failure
+        finally:
+            ts1 = ts1 or time.time()
+            tee_out = tee.getvalue()
+            info = self._append_history(
+                inp=src,
+                ts=[ts0, ts1],
+                spc=self.src_starts_with_space,
+                tee_out=tee_out,
+                cwd=self.precwd,
+            )
+            if not isinstance(exc_info[1], SystemExit):  # pyright: ignore
+                events.on_postcommand.fire(
+                    cmd=info["inp"],
+                    rtn=info["rtn"],
+                    out=info.get("out", None),
+                    ts=info["ts"],
+                )
+            if (
+                tee_out
+                and env
+                and env.get("XONSH_APPEND_NEWLINE")
+                and not tee_out.endswith(os.linesep)
+            ):
+                print(os.linesep, end="")
+            tee.close()
+            self._fix_cwd()
+        if XSH.exit is not None:
+            return True
 
     # XXX Copied and overriding this method.
     @override
     def _get_prompt_tokens(self, env_name: str, prompt_name: str, **kwargs):
-        env = XSH.env  # type:ignore
+        env = XSH.env
         assert env
 
         p = env.get(env_name)
@@ -194,29 +270,33 @@ class CustomShell(Shell):
 
 @events.on_command_not_found
 def not_found(cmd: list[str]):
-    from kash.help.assistant import shell_context_assistance
-
     # Don't call assistant on one-word typos. It's annoying.
     if len(cmd) >= 2:
-        cprint("Not a recognized command.", style=STYLE_ASSISTANCE)
-        with get_console().status("", spinner=SPINNER):
-            shell_context_assistance(
-                f"""
-                The user just typed the following command, but it was not found:
+        assistance_on_not_found(cmd)
 
-                {" ".join(cmd)}
 
-                If it is clear what command the user probably meant to type, provide it first and
-                give a very concise explanation of what it does.
+def assistance_on_not_found(cmd: list[str]):
+    from kash.help.assistant import shell_context_assistance
 
-                Otherwise, suggest any commands that might be what the user had in mind.
-                
-                If it's unclear what the user meant, ask for clarification.
+    cprint("Command was not recognized.", style=STYLE_ASSISTANCE)
+    with get_console().status("", spinner=SPINNER):
+        shell_context_assistance(
+            f"""
+            The user just typed the following command, but it was not found:
 
-                Finally always mention that they can get more help by asking any question.
-                """,
-                assistance_type=AssistanceType.fast,
-            )
+            {" ".join(cmd)}
+
+            If it is clear what command the user probably meant to type, provide it first and
+            give a very concise explanation of what it does.
+
+            Otherwise, suggest any commands that might be what the user had in mind.
+            
+            If it's unclear what the user meant, ask for clarification.
+
+            Finally always mention that they can get more help by asking any question.
+            """,
+            assistance_type=AssistanceType.fast,
+        )
 
 
 def customize_xonsh_settings(is_interactive: bool):
@@ -226,16 +306,21 @@ def customize_xonsh_settings(is_interactive: bool):
 
     input_color = colors.terminal.input
     default_settings = {
+        "XONSH_INTERACTIVE": is_interactive,
         # Auto-cd if a directory name is typed.
         "AUTO_CD": True,
+        "COLOR_RESULTS": True,
         # Having this true makes processes hard to interrupt with Ctrl-C.
         # https://xon.sh/envvars.html#thread-subprocs
         "THREAD_SUBPROCS": False,
-        "XONSH_INTERACTIVE": is_interactive,
-        "COLOR_RESULTS": True,
-        "XONSH_SHOW_TRACEBACK": XONSH_SHOW_TRACEBACK,
+        # We want to know of all subprocess failures and handle them ourselves.
+        "RAISE_SUBPROC_ERROR": True,
+        # We've overridden default behavior and can show tracebacks ourselves.
+        "XONSH_SHOW_TRACEBACK": False,
         # Set this explicitly to disable xonsh's verbose "To log full traceback to a file" messages.
         "XONSH_TRACEBACK_LOGFILE": get_log_settings().global_log_dir / "xonsh_tracebacks.log",
+        # Disable suggest for command not found errors (we handle this ourselves).
+        "SUGGEST_COMMANDS": False,
         # TODO: Consider enabling and adapting auto-suggestions.
         "AUTO_SUGGEST": False,
         # Completions can be "none", "single", "multi", or "readline".
