@@ -191,7 +191,7 @@ class CustomAssistantShell(PromptToolkitShell):
             ts1 = time.time()
             if hist is not None and hist.last_cmd_rtn is None:
                 hist.last_cmd_rtn = 0  # returncode for success
-            log.warning("Shell code completed successfully: %s", src)
+            log.info("Shell code completed successfully: %s", src)
         except xt.XonshError as e:
             log.info("Shell exception details: %s", e, exc_info=True)
             print(e.args[0], file=sys.stderr)

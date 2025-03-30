@@ -1,8 +1,11 @@
 from chopdiff.html import html_a, html_span
 
-from kash.config.text_styles import NBSP
 from kash.media_base.media_services import timestamp_media_url
 from kash.utils.common.url import Url
+
+## Formatting
+
+NBSP = "\u00a0"
 
 DATA_SOURCE_PATH = "data-src"
 """Path to a source file."""

@@ -1,11 +1,10 @@
+import logging
 from os.path import getsize
 from pathlib import Path
 
 from strif import atomic_output_file
 
-from kash.config.logger import get_logger
-
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 def downsample_to_16khz(audio_file_path: Path, downsampled_out_path: Path) -> None:

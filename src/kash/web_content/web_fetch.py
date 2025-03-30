@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -6,10 +7,9 @@ import httpx
 from strif import atomic_output_file, copyfile_atomic
 from tqdm import tqdm
 
-from kash.config.logger import get_logger
 from kash.utils.common.url import Url
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 USER_AGENT = "Mozilla/5.0 (Compatible)"
 

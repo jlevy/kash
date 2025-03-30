@@ -241,10 +241,6 @@ LL_CORNER = "└"
 UR_CORNER = "┐"
 LR_CORNER = "┘"
 
-## Formatting
-
-NBSP = "\u00a0"
-
 
 ## Symbols
 

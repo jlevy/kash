@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from collections.abc import Callable
@@ -9,14 +10,13 @@ from funlog import log_if_modifies
 from prettyfmt import fmt_path
 from strif import atomic_output_file, copyfile_atomic
 
-from kash.config.logger import get_logger
 from kash.errors import FileNotFound, InvalidInput
 from kash.utils.common.url import Url, is_file_url, is_url, normalize_url, parse_file_url
 from kash.utils.file_utils.file_formats_model import choose_file_ext
 from kash.web_content.dir_store import DirStore
 from kash.web_content.web_fetch import download_url
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 _normalize_url = log_if_modifies(level="info")(normalize_url)
 

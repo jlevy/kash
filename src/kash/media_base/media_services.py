@@ -1,8 +1,8 @@
+import logging
 from pathlib import Path
 
 from funlog import log_calls
 
-from kash.config.logger import get_logger
 from kash.errors import InvalidInput
 from kash.media_base.services.local_file_media import LocalFileMedia
 from kash.model.media_model import MediaMetadata, MediaService
@@ -10,7 +10,7 @@ from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import MediaType
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 
 # Start with just local file media.

@@ -1,15 +1,14 @@
+import logging
 from pathlib import Path
 
 from prettyfmt import fmt_path
 
-from kash.config.logger import get_logger
 from kash.config.settings import atomic_global_settings, global_settings
 from kash.media_base.media_cache import MediaCache
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import MediaType
 
-log = get_logger(__name__)
-
+log = logging.getLogger(__name__)
 
 _media_cache = MediaCache(global_settings().media_cache_dir)
 

@@ -6,11 +6,11 @@ from httpx import Timeout
 from openai import OpenAI
 
 from kash.config.api_keys import load_dotenv_paths
-from kash.config.logger import get_logger
+from kash.config.logger import CustomLogger, get_logger
 from kash.errors import ContentError
 from kash.media_base.timestamp_citations import html_speaker_id_span, html_timestamp_span
 
-log = get_logger(__name__)
+log: CustomLogger = get_logger(__name__)
 
 
 def openai_whisper_transcribe_audio_small(audio_file_path: str) -> str:
