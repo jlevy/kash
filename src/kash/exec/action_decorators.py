@@ -19,7 +19,6 @@ from pydantic.dataclasses import is_pydantic_dataclass
 from typing_extensions import override
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidDefinition
 from kash.exec.action_exec import run_action_with_caching
 from kash.exec.action_registry import register_action_class
 from kash.exec_model.args_model import ONE_ARG, ArgCount, ArgType
@@ -36,6 +35,7 @@ from kash.model.items_model import Item, ItemType, State
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
+from kash.utils.errors import InvalidDefinition
 from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)

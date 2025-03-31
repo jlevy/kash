@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidFilename
 from kash.utils.common.url import Url
+from kash.utils.errors import InvalidFilename
 from kash.utils.file_utils.file_ext import FileExt, canonicalize_file_ext
 
 log = get_logger(__name__)

@@ -1,5 +1,5 @@
 from kash.commands.base.general_commands import self_check
-from kash.shell_main import run_shell
+from kash.shell.shell_main import run_shell
 
 
 def test_self_check():

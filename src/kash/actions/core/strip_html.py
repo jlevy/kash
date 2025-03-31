@@ -1,9 +1,9 @@
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import has_html_body, has_text_body
 from kash.model import Format, Item, ItemType
 from kash.utils.common.format_utils import html_to_plaintext
+from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
 

@@ -6,7 +6,6 @@ from strif import single_line
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT, STYLE_KEY
-from kash.errors import InvalidInput
 from kash.exec import kash_command
 from kash.help import tldr_help
 from kash.help.function_param_info import annotate_param_info
@@ -14,6 +13,7 @@ from kash.help.recommended_commands import RECOMMENDED_TLDR_COMMANDS
 from kash.model.params_model import Param
 from kash.shell.output.kerm_codes import IframePopover, TextTooltip
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, format_name_and_value
+from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
 

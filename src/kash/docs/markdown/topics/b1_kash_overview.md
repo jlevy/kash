@@ -119,7 +119,7 @@ Here is an example action:
 
 ```python
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
+from kash.utils.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import has_html_body, has_text_body
 from kash.model import Format, Item, ItemType

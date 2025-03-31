@@ -1,7 +1,7 @@
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.model import ActionInput, ActionResult
+from kash.utils.errors import InvalidInput
 from kash.web_gen import tabbed_webpage
 
 log = get_logger(__name__)

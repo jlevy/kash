@@ -1,10 +1,10 @@
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
-from kash.errors import InvalidInput, InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.native_utils import ViewMode, terminal_show_image, view_file_native
+from kash.utils.errors import InvalidInput, InvalidState
 from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import current_ws
 

@@ -9,8 +9,8 @@ from functools import cache
 from pathlib import Path
 
 from kash.config.text_styles import STYLE_HINT
-from kash.errors import SetupError
 from kash.shell.output.shell_output import cprint
+from kash.utils.errors import SetupError
 
 
 @cache

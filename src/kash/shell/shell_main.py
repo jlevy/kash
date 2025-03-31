@@ -6,7 +6,7 @@ import xonsh.main
 from kash.config.logger import get_logger
 from kash.config.settings import APP_NAME
 from kash.config.setup import setup
-from kash.version import get_version
+from kash.shell.version import get_version
 from kash.xonsh_custom.custom_shell import install_to_xonshrc, start_shell
 
 setup(rich_logging=True)  # Set up logging first.

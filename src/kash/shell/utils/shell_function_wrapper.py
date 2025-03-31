@@ -5,12 +5,12 @@ from functools import wraps
 from typing import Any, TypeVar, cast, get_args
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidCommand
 from kash.exec.command_registry import CommandFunction
 from kash.help.help_printing import print_command_function_help
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.utils.common.parse_shell_args import parse_shell_args
 from kash.utils.common.type_utils import instantiate_as_type
+from kash.utils.errors import InvalidCommand
 
 log = get_logger(__name__)
 

@@ -1,6 +1,5 @@
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
-from kash.errors import InvalidInput, NoMatch
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
 from kash.help.assistant import assist_preamble, assistance_unstructured
@@ -21,6 +20,7 @@ from kash.shell.output.shell_output import (
     print_help,
     print_markdown,
 )
+from kash.utils.errors import InvalidInput, NoMatch
 from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
 log = get_logger(__name__)

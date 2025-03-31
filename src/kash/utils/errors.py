@@ -1,5 +1,5 @@
 """
-Unified hierarchy of error types. These inherit from standard errors like
+Common hierarchy of error types. These inherit from standard errors like
 ValueError and FileExistsError but are more fine-grained.
 """
 

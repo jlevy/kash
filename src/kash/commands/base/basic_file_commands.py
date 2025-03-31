@@ -6,7 +6,6 @@ from strif import copyfile_atomic
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_EMPH
-from kash.errors import InvalidInput
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
 from kash.shell.output.shell_output import (
     PadStyle,
@@ -19,6 +18,7 @@ from kash.shell.output.shell_output import (
 from kash.shell.utils.native_utils import edit_files, native_trash
 from kash.shell.utils.native_utils import tail_file as native_tail_file
 from kash.utils.common.format_utils import fmt_loc
+from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import detect_file_format
 from kash.workspaces.workspace_output import print_file_info
 

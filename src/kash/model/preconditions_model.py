@@ -7,8 +7,8 @@ from prettyfmt import fmt_words
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 
-from kash.errors import PreconditionFailure
 from kash.model.items_model import Item
+from kash.utils.errors import PreconditionFailure
 
 
 class Precondition:

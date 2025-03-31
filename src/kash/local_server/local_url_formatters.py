@@ -8,11 +8,11 @@ from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
-from kash.errors import InvalidState
 from kash.model.paths_model import StorePath
 from kash.shell.output.kerm_codes import KriLink, TextTooltip, UIAction, UIActionType
 from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.format_utils import fmt_loc
+from kash.utils.errors import InvalidState
 from kash.workspaces import current_ws
 
 log = get_logger(__name__)

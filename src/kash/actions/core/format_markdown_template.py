@@ -2,11 +2,11 @@ import re
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import is_markdown
 from kash.model import ONE_OR_MORE_ARGS, ActionInput, ActionResult, ItemType, Param
 from kash.utils.common.type_utils import not_none
+from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
 

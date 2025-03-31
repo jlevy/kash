@@ -1,5 +1,5 @@
-from kash.errors import InvalidInput
 from kash.utils.common.url import Url
+from kash.utils.errors import InvalidInput
 from kash.web_content.web_page_model import WebPageData
 
 

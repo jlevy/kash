@@ -11,8 +11,8 @@ from kash.docs.all_docs import DocSelection, all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, print_markdown
+from kash.shell.version import get_full_version_name
 from kash.utils.rich_custom.rich_markdown_fork import Markdown
-from kash.version import get_full_version_name
 
 log = get_logger(__name__)
 

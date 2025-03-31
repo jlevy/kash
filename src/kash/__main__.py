@@ -1,4 +1,4 @@
-from kash.shell_main import main
+from kash.shell.shell_main import main
 
 if __name__ == "__main__":
     main()

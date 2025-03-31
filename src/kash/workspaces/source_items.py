@@ -2,13 +2,13 @@ from funlog import log_calls
 from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
-from kash.errors import NoMatch
 from kash.exec.preconditions import is_resource
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.type_utils import not_none
+from kash.utils.errors import NoMatch
 from kash.workspaces import current_ws
 
 log = get_logger(__name__)

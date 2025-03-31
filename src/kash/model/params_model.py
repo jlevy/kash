@@ -13,11 +13,11 @@ from pydantic.json_schema import JsonSchemaValue
 
 from kash.config.logger import get_logger
 from kash.docs.all_docs import DocSelection
-from kash.errors import InvalidInput, InvalidParamName
 from kash.llm_utils import LLM, LLMName
 from kash.model.language_list import LANGUAGE_LIST
 from kash.utils.common.parse_key_vals import format_key_value
 from kash.utils.common.type_utils import instantiate_as_type
+from kash.utils.errors import InvalidInput, InvalidParamName
 
 log = get_logger(__name__)
 

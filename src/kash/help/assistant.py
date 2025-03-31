@@ -12,7 +12,6 @@ from kash.config.logger import get_logger, record_console
 from kash.config.settings import global_settings
 from kash.config.text_styles import EMOJI_ASSISTANT, EMOJI_WARN, STYLE_ASSISTANCE, STYLE_HINT
 from kash.docs.all_docs import DocSelection, all_docs
-from kash.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.exec_model.script_model import Script
 from kash.help.assistant_instructions import assistant_instructions
 from kash.help.assistant_output import print_assistant_response
@@ -22,6 +21,7 @@ from kash.model.items_model import Item, ItemType
 from kash.shell.output.shell_output import PrintHooks, cprint, print_assistance, print_markdown
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.parse_shell_args import shell_unquote
+from kash.utils.errors import InvalidState, KashRuntimeError, NoMatch
 from kash.utils.file_formats.chat_format import (
     ChatHistory,
     ChatMessage,

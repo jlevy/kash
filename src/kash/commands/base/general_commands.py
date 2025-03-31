@@ -10,7 +10,6 @@ from kash.config.api_keys import (
 from kash.config.dotenv_utils import env_var_is_set
 from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
-from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
 from kash.model.params_model import (
@@ -30,6 +29,7 @@ from kash.shell.output.shell_output import (
     print_h2,
 )
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
+from kash.utils.errors import InvalidState
 from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
@@ -40,7 +40,7 @@ def version() -> None:
     """
     Show the version of kash.
     """
-    from kash.shell_main import APP_VERSION
+    from kash.shell.shell_main import APP_VERSION
 
     cprint(APP_VERSION)
 

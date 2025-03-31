@@ -9,8 +9,8 @@ from litellm.types.utils import EmbeddingResponse
 from kash.concepts.cosine import cosine
 from kash.concepts.embeddings import Embeddings
 from kash.config.logger import get_logger
-from kash.errors import ApiResultError
 from kash.llm_utils.llms import DEFAULT_EMBEDDING_MODEL, EmbeddingModel
+from kash.utils.errors import ApiResultError
 
 log = get_logger(__name__)
 

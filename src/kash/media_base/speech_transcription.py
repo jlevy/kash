@@ -7,8 +7,8 @@ from openai import OpenAI
 
 from kash.config.api_keys import load_dotenv_paths
 from kash.config.logger import CustomLogger, get_logger
-from kash.errors import ContentError
 from kash.media_base.timestamp_citations import html_speaker_id_span, html_timestamp_span
+from kash.utils.errors import ContentError
 
 log: CustomLogger = get_logger(__name__)
 

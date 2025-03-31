@@ -4,10 +4,10 @@ from prettyfmt import fmt_lines, fmt_path
 
 from kash.config.logger import get_logger
 from kash.config.settings import atomic_global_settings, global_settings
-from kash.errors import FileNotFound, InvalidInput
 from kash.model.items_model import Item
 from kash.model.media_model import MediaType
 from kash.utils.common.url import Url
+from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_formats_model import detect_media_type
 from kash.web_content.canon_url import canonicalize_url
 from kash.web_content.local_file_cache import Loadable, LocalFileCache

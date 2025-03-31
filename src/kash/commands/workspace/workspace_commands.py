@@ -17,7 +17,6 @@ from kash.config.text_styles import (
     STYLE_HINT,
     format_success_emoji,
 )
-from kash.errors import InvalidInput
 from kash.exec import (
     assemble_path_args,
     assemble_store_path_args,
@@ -54,6 +53,7 @@ from kash.utils.common.obj_replace import remove_values
 from kash.utils.common.parse_key_vals import parse_key_value
 from kash.utils.common.type_utils import not_none
 from kash.utils.common.url import Url, is_url
+from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
 from kash.utils.file_utils.dir_size import is_nonempty_dir
 from kash.utils.lang_utils.inflection import plural

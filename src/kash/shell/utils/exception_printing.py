@@ -4,8 +4,8 @@ from typing import TypeVar
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_ERROR
-from kash.errors import NONFATAL_EXCEPTIONS
 from kash.shell.output.shell_output import PrintHooks
+from kash.utils.errors import NONFATAL_EXCEPTIONS
 
 log = get_logger(__name__)
 

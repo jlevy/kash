@@ -1,10 +1,10 @@
-from kash.errors import InvalidInput
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
 from kash.exec.shell_callable_action import ShellCallableAction
 from kash.exec_model.commands_model import Command
 from kash.exec_model.shell_model import ShellResult
 from kash.model.actions_model import Action
+from kash.utils.errors import InvalidInput
 
 
 def look_up_command_or_action(name: str) -> CommandFunction | type[Action]:

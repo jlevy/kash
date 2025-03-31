@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidState
 from kash.exec import assemble_path_args, kash_command
 from kash.exec_model.shell_model import ShellResult
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.sys_tool_deps import SysTool, sys_tool_check
 from kash.utils.common.parse_shell_args import shell_quote
+from kash.utils.errors import InvalidState
 
 log = get_logger(__name__)
 

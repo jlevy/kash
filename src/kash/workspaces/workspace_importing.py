@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.file_storage.file_store import FileStore
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.utils.common.url import Locator, Url, is_url
+from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 from kash.web_content.canon_url import canonicalize_url
 

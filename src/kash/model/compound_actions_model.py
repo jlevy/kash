@@ -4,7 +4,6 @@ from textwrap import dedent
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.exec.combiners import Combiner
 from kash.model.actions_model import Action, ActionInput, ActionResult, ExecContext
 from kash.model.items_model import Item, State
@@ -12,6 +11,7 @@ from kash.model.params_model import RawParamValues
 from kash.model.paths_model import StorePath
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
+from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
 

@@ -3,7 +3,6 @@ from flowmark import Wrap, fill_text
 from kash.actions.meta.write_instructions import write_instructions
 from kash.config.logger import get_logger
 from kash.docs.all_docs import DocSelection
-from kash.errors import ApiResultError, InvalidInput
 from kash.exec import kash_action
 from kash.exec.preconditions import is_instructions
 from kash.help.assistant import assist_preamble, assistance_structured
@@ -20,6 +19,7 @@ from kash.model import (
 )
 from kash.utils.common.lazyobject import lazyobject
 from kash.utils.common.type_utils import not_none
+from kash.utils.errors import ApiResultError, InvalidInput
 from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
 log = get_logger(__name__)

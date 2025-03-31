@@ -2,7 +2,6 @@ from funlog import log_tallies
 
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import COLOR_ERROR, SPINNER
-from kash.errors import NONFATAL_EXCEPTIONS
 from kash.exec.action_exec import run_action_with_shell_context
 from kash.exec.history import record_command
 from kash.exec_model.commands_model import Command
@@ -13,6 +12,7 @@ from kash.model.params_model import RawParamValues
 from kash.shell.output.shell_output import PrintHooks
 from kash.shell.utils.exception_printing import summarize_traceback
 from kash.utils.common.parse_shell_args import parse_shell_args
+from kash.utils.errors import NONFATAL_EXCEPTIONS
 
 log = get_logger(__name__)
 

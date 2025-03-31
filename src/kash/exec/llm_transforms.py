@@ -6,13 +6,13 @@ from flowmark import fill_markdown
 
 from kash.config.api_keys import load_dotenv_paths
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
 from kash.llm_utils import LLMName
 from kash.llm_utils.fuzzy_parsing import strip_markdown_fence
 from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
 from kash.model.items_model import Item, ItemType
+from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 
 log = get_logger(__name__)

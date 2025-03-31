@@ -3,12 +3,12 @@ from pathlib import Path
 
 from kash.config.logger import get_logger
 from kash.config.settings import GLOBAL_LOGS_DIR, global_settings, server_log_file_path
-from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.mcp import mcp_server_routes
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX, MCP_SERVER_NAME
 from kash.shell.output.shell_output import cprint, format_name_and_value, print_h2
 from kash.shell.utils.native_utils import tail_file
+from kash.utils.errors import InvalidState
 
 log = get_logger(__name__)
 

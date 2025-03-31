@@ -16,12 +16,12 @@ from funlog import log_calls
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
-from kash.errors import FileNotFound, SetupError
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.sys_tool_deps import PLATFORM, Platform, SysTool, sys_tool_check
 from kash.shell.utils.terminal_images import terminal_show_image
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import as_file_url, is_file_url, is_url
+from kash.utils.errors import FileNotFound, SetupError
 from kash.utils.file_utils.file_formats import is_full_html_page, read_partial_text
 from kash.utils.file_utils.file_formats_model import file_format_info
 

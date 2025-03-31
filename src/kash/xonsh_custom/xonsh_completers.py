@@ -21,7 +21,6 @@ from xonsh.parsers.completion_context import CommandContext
 
 from kash.actions.core.assistant_chat import assistant_chat
 from kash.config.logger import get_logger
-from kash.errors import ApiResultError, InvalidState
 from kash.exec.action_registry import get_all_actions_defaults
 from kash.exec.command_registry import get_all_commands
 from kash.help.function_param_info import annotate_param_info
@@ -37,6 +36,7 @@ from kash.shell.completions.shell_completions import (
 )
 from kash.shell.ui.shell_syntax import assist_request_str
 from kash.utils.common.atomic_var import AtomicVar
+from kash.utils.errors import ApiResultError, InvalidState
 from kash.xonsh_custom.command_nl_utils import as_nl_words, looks_like_nl
 from kash.xonsh_custom.shell_which import is_valid_command
 

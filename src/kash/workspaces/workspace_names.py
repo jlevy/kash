@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput
+from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
 

@@ -5,11 +5,11 @@ from typing import cast
 from funlog import log_calls
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidInput, MissingInput
 from kash.exec_model.args_model import CommandArg
 from kash.model.items_model import ItemType
 from kash.model.paths_model import InvalidStorePath, StorePath, UnresolvedPath, parse_path_spec
 from kash.utils.common.url import Locator, UnresolvedLocator, Url, is_url
+from kash.utils.errors import InvalidInput, MissingInput
 from kash.workspaces import current_ws
 
 log = get_logger(__name__)

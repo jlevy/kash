@@ -18,7 +18,6 @@ from pydantic.json_schema import JsonSchemaValue
 from typing_extensions import override
 
 from kash.config.logger import get_logger
-from kash.errors import InvalidDefinition, InvalidInput
 from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Signature
 from kash.exec_model.shell_model import ShellResult
 from kash.file_storage.file_store import FileStore
@@ -36,6 +35,7 @@ from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
 from kash.utils.common.string_template import StringTemplate
 from kash.utils.common.type_utils import not_none
+from kash.utils.errors import InvalidDefinition, InvalidInput
 from kash.workspaces.workspaces import get_ws
 
 log = get_logger(__name__)

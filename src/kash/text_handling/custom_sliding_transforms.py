@@ -15,8 +15,8 @@ from flowmark import fill_markdown
 from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
-from kash.errors import ContentError
 from kash.utils.common.task_stack import task_stack
+from kash.utils.errors import ContentError
 
 log = get_logger(__name__)
 

@@ -5,10 +5,10 @@ from pathlib import Path
 from thefuzz import fuzz
 
 from kash.docs.all_docs import all_docs
-from kash.errors import FileNotFound, NoMatch
 from kash.exec.command_registry import CommandFunction
 from kash.help.help_types import Faq
 from kash.model.actions_model import Action
+from kash.utils.errors import FileNotFound, NoMatch
 
 
 def look_up_source_code(command_or_action: CommandFunction | Action | type[Action]) -> Path:

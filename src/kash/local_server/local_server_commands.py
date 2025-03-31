@@ -1,10 +1,10 @@
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings, server_log_file_path
-from kash.errors import InvalidState
 from kash.exec import kash_command
 from kash.local_server.local_server import LOCAL_SERVER_NAME
 from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.utils.native_utils import tail_file
+from kash.utils.errors import InvalidState
 
 log = get_logger(__name__)
 

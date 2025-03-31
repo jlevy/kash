@@ -7,11 +7,11 @@ from rich.text import Text
 
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import COLOR_SELECTION, STYLE_HINT
-from kash.errors import is_fatal
 from kash.exec.command_exec import run_command_or_action
 from kash.exec_model.shell_model import ShellResult
 from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, print_result
 from kash.utils.common.format_utils import fmt_count_items, fmt_loc
+from kash.utils.errors import is_fatal
 from kash.workspaces import SelectionHistory
 
 log = get_logger(__name__)

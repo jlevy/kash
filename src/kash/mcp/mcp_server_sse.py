@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
 from kash.config.settings import MCP_SERVER_PORT, server_log_file_path
-from kash.errors import InvalidState
 from kash.mcp import mcp_server_routes
+from kash.utils.errors import InvalidState
 
 log = get_logger(__name__)
 

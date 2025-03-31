@@ -14,9 +14,9 @@ from kash.config.settings import (
     global_settings,
     resolve_and_create_dirs,
 )
-from kash.errors import FileNotFound, InvalidInput, InvalidState
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
+from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
 from kash.workspaces.workspace_names import check_strict_workspace_name, to_ws_name
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
@@ -145,7 +145,7 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":
 @cache
 def global_ws_dir() -> Path:
     kb_path = resolve_and_create_dirs(get_global_ws_dir(), is_dir=True)
-    log.info("Global workspace path: %s", kb_path)
+    log.debug("Global workspace path: %s", kb_path)
     return kb_path
 
 

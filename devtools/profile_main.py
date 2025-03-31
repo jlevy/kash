@@ -5,7 +5,7 @@ Quick profiler, helpful to monitor startup time etc.
 import cProfile
 import pstats
 
-from kash.shell_main import main
+from kash.shell.shell_main import main
 
 
 def entrypoint():

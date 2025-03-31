@@ -9,7 +9,7 @@ from prettyfmt import fmt_path
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-from kash.errors import FileNotFound, InvalidInput
+from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_walk import IgnoreFilter, walk_by_dir
 
 log = get_logger(__name__)

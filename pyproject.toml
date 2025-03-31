@@ -37,6 +37,7 @@ dependencies = [
     "xonsh>=0.19.3",
     "prompt-toolkit>=3.0.50",
     "rich>=14.0.0",
+    "rich-argparse>=1.7.0",
     "setproctitle>=1.3.5",
     "python-dotenv>=1.0.1",
     "send2trash>=1.8.3",
@@ -90,7 +91,7 @@ dev = [
 ]
 
 [project.scripts]
-kash = "kash.shell_main:main"
+kash = "kash.shell.shell_main:main"
 kash_mcp = "kash.mcp.kash_mcp_cli:main"
 
 

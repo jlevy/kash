@@ -14,6 +14,7 @@ import anyio
 import httpcore
 import httpx
 from mcp_proxy.sse_client import run_sse_client
+from rich_argparse.contrib import ParagraphRichHelpFormatter
 
 from kash.config.init import kash_reload_all
 from kash.config.logger_basic import basic_logging_setup
@@ -22,7 +23,7 @@ from kash.config.setup import setup
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
 from kash.mcp.mcp_server_stdio import run_mcp_server_stdio
-from kash.version import get_version
+from kash.shell.version import get_version
 from kash.workspaces.workspaces import Workspace, get_ws, global_ws_dir
 
 __version__ = get_version()
@@ -39,7 +40,9 @@ log = logging.getLogger()
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=ParagraphRichHelpFormatter
+    )
     parser.add_argument(
         "--version",
         action="version",
