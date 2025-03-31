@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, ClassVar
 
+from flowmark.sentence_split_regex import split_sentences_regex
 from rich.console import Group
 from rich.text import Text
 from strif import abbrev_str, single_line
@@ -242,6 +243,29 @@ class RecipeScript:
     name: str
     script: Script
 
-    def all_snippets(self) -> list[CommentedCommand]:
-        """Return all commands that have a comment explaining what they do."""
-        return [c for c in self.script.commands if isinstance(c, CommentedCommand) and c.comment]
+    def all_snippets(self, enrich_descriptions: bool = True) -> list[CommentedCommand]:
+        """Return all commands that have a comment explaining what they do.
+
+        If enrich_descriptions is True, add the first sentence of the command description
+        to the comment to help give more context for semantic completions.
+        """
+        from kash.help.tldr_help import tldr_description
+
+        commented_commands = [
+            c for c in self.script.commands if isinstance(c, CommentedCommand) and c.comment
+        ]
+        if enrich_descriptions:
+            for c in commented_commands:
+                command_name = c.uses[0]
+                desc = tldr_description(command_name)
+                if desc:
+                    first_sentence = split_sentences_regex(desc)[0]
+                    extra_context = (
+                        f" [{command_name}: {first_sentence}]"
+                        if first_sentence
+                        else f" [{command_name}]"
+                    )
+                    full_comment = f"{c.comment}{extra_context}"
+                    c.comment = full_comment
+
+        return commented_commands
