@@ -29,6 +29,7 @@ from kash.shell.output.shell_output import (
     print_h2,
 )
 from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
+from kash.shell.version import get_full_version_name
 from kash.utils.errors import InvalidState
 from kash.workspaces.workspaces import current_ws
 
@@ -40,9 +41,7 @@ def version() -> None:
     """
     Show the version of kash.
     """
-    from kash.shell.shell_main import APP_VERSION
-
-    cprint(APP_VERSION)
+    cprint(get_full_version_name())
 
 
 @kash_command

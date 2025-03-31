@@ -18,7 +18,7 @@ from rich_argparse.contrib import ParagraphRichHelpFormatter
 
 from kash.config.init import kash_reload_all
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import APP_NAME, GLOBAL_LOGS_DIR, MCP_SERVER_PORT, LogLevel
+from kash.config.settings import GLOBAL_LOGS_DIR, MCP_SERVER_PORT, LogLevel
 from kash.config.setup import setup
 from kash.mcp.mcp_server_routes import publish_mcp_tools
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
@@ -27,8 +27,6 @@ from kash.shell.version import get_version
 from kash.workspaces.workspaces import Workspace, get_ws, global_ws_dir
 
 __version__ = get_version()
-
-APP_VERSION = f"{APP_NAME} {__version__}"
 
 DEFAULT_PROXY_URL = f"http://localhost:{MCP_SERVER_PORT}/sse"
 

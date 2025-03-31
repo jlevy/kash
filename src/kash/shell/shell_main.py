@@ -1,66 +1,76 @@
-import sys
+"""
+Welcome to kash! Main way to run the kash shell.
+
+Usually this is used to start the kash interactively but you can also pass a single
+command to run non-interactively.
+
+Run `kash manual` for general help. Run `kash self_check` to check the kash environment.
+Run `kash --help` for this page.
+
+More information at: github.com/jlevy/kash
+"""
+
+import argparse
+import threading
 
 import xonsh.main
+from rich_argparse.contrib import ParagraphRichHelpFormatter
+from strif import quote_if_needed
 
-# Keeping initial imports/deps minimal.
-from kash.config.logger import get_logger
-from kash.config.settings import APP_NAME
 from kash.config.setup import setup
-from kash.shell.version import get_version
+from kash.shell.version import get_full_version_name, get_version
 from kash.xonsh_custom.custom_shell import install_to_xonshrc, start_shell
 
 setup(rich_logging=True)  # Set up logging first.
 
-log = get_logger(__name__)
 
 __version__ = get_version()
 
-APP_VERSION = f"{APP_NAME} {__version__}"
 
-# If true use the kash-customized xonsh shell. This is the standard way to run kash since
-# it then supports custom parsing of shell input to include LLM-based assistance, etc.
-# Alternatively, we can run a regular xonsh shell and have it load kash commands via the
-# xontrib only (in ~/.xonshrc) but this is not preferred.
-CUSTOMIZE_XONSH = True
+# No longer using, but keeping for reference.
+def run_plain_xonsh():
+    """
+    The standard way to run kash is now via the customized shell.
+    But we can also run a regular xonsh shell and have it load kash commands via the
+    xontrib only (in ~/.xonshrc), but the full customizations of prompts, tab
+    completion, etc are not available.
+    """
+    install_to_xonshrc()
+    xonsh.main.main()
+
+
+# Event to monitor loading.
+shell_ready_event = threading.Event()
 
 
 def run_shell(single_command: str | None = None):
-    if CUSTOMIZE_XONSH:
-        start_shell(single_command)
-    else:
-        # For a more basic xonsh init without a customized shell.
-        # This isn't recommended since some features aren't available.
-        # When running in regular xonsh we need to load kash xontrib via xonshrc.
-        install_to_xonshrc()
-        xonsh.main.main()
+    """
+    Run the kash shell interactively or non-interactively with a single command.
+    """
+    start_shell(single_command, shell_ready_event)
 
 
-def parse_args() -> str | None:
-    # Do our own arg parsing since everything except these two options
-    # should be handled as a kash command.
-    if sys.argv[1:] == ["--version"]:
-        print(APP_VERSION)
-        sys.exit(0)
-    elif sys.argv[1:] == ["--help"]:
-        from kash.commands.help import help_commands
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=ParagraphRichHelpFormatter
+    )
 
-        help_commands.manual()
-        sys.exit(0)
-    elif len(sys.argv) > 1 and sys.argv[1].startswith("-"):
-        print(f"Unrecognized option: {sys.argv[1]}", file=sys.stderr)
-        sys.exit(2)
+    parser.add_argument("--version", action="version", version=get_full_version_name())
 
-    # Everything else is a kash command so passed to the shell.
-    return " ".join(sys.argv[1:]) if len(sys.argv) > 1 else None
+    return parser
 
 
 def main():
-    """
-    Main entry point for kash shell.
-    Uses customized xonsh shell.
-    """
-    command = parse_args()
-    run_shell(command)
+    parser = build_parser()
+    _args, unknown = parser.parse_known_args()
+
+    # Join remaining arguments to pass as a single command to kash.
+    # Use Python-style quoting only if needed for xonsh.
+    single_command = None
+    if unknown:
+        single_command = " ".join(quote_if_needed(arg) for arg in unknown)
+
+    run_shell(single_command)
 
 
 if __name__ == "__main__":

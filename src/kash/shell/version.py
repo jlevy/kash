@@ -1,7 +1,7 @@
 import subprocess
 from importlib import metadata
 
-PACKAGE_NAME = "kash_shell"
+PACKAGE_NAME = "kash-shell"
 
 
 def get_git_hash() -> str:

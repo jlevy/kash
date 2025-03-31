@@ -1,5 +1,6 @@
 *.bak
 *.orig
+*.stash.*
 
 # Additions to standard GitHub .gitignore:
 tmp/

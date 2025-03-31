@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 import time
 from collections.abc import Callable
 from os.path import expanduser
@@ -390,13 +391,16 @@ def load_rcfiles(execer: Execer, ctx: dict):
         xonshrc_context(rcfiles=rcfiles, execer=execer, ctx=ctx, env=XSH.env, login=True)
 
 
-def start_shell(single_command: str | None = None):
+def start_shell(single_command: str | None = None, ready_event: threading.Event | None = None):
     """
     Main entry point to start a customized xonsh shell, with custom shell settings.
 
     This does more than just the xontrib as we add hack the input loop and do some
     other customizations but then the rest of the customization is via the `kash_extension`
     xontrib.
+
+    :param single_command: Optional command to run in non-interactive mode
+    :param shell_ready_event: Optional event to signal when shell is ready
     """
     import builtins
 
@@ -447,6 +451,10 @@ def start_shell(single_command: str | None = None):
     # Imports are so slow we will need to improve this. Let's time it.
     startup_time = time.time() - import_start_time
     log.info(f"kash startup took {startup_time:.2f}s.")
+
+    # Report we are now ready (may be useful for loading spinners).
+    if ready_event:
+        ready_event.set()
 
     # Main loop.
     try:
