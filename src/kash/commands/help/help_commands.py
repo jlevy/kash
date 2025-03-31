@@ -106,7 +106,7 @@ def explain(text: str, no_assistant: bool = False) -> None:
     Give help on a command or action.  If `no_assistant` is True then will not use the
     assistant if the command or text is not recognized.
     """
-    model = None if no_assistant else LLM.default_basic
+    model = None if no_assistant else LLM.default_standard
     print_explain_command(text, assistant_model=model)
 
 

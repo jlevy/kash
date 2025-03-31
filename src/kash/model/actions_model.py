@@ -21,6 +21,7 @@ from kash.config.logger import get_logger
 from kash.errors import InvalidDefinition, InvalidInput
 from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Signature
 from kash.exec_model.shell_model import ShellResult
+from kash.file_storage.file_store import FileStore
 from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.items_model import UNTITLED, Item, ItemType, State
@@ -35,7 +36,7 @@ from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
 from kash.utils.common.string_template import StringTemplate
 from kash.utils.common.type_utils import not_none
-from kash.workspaces.workspaces import Workspace, get_ws
+from kash.workspaces.workspaces import get_ws
 
 log = get_logger(__name__)
 
@@ -80,7 +81,7 @@ class ExecContext:
     """If specified, override the state of result items. Useful to mark items as transient."""
 
     @property
-    def workspace(self) -> Workspace:
+    def workspace(self) -> FileStore:
         return get_ws(self.workspace_dir)
 
     def __repr__(self):

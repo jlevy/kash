@@ -5,19 +5,19 @@ from funlog import format_duration
 
 from kash.config.logger import get_logger
 from kash.errors import SkippableError
+from kash.file_storage.file_store import FileStore
 from kash.model.actions_model import Action
 from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.format_utils import fmt_loc
-from kash.workspaces import Workspace
 
 log = get_logger(__name__)
 
 
 def actions_matching_paths(
     actions: Iterable[Action],
-    ws: Workspace,
+    ws: FileStore,
     paths: list[StorePath],
     include_no_precondition: bool = False,
 ) -> Iterable[Action]:
@@ -37,7 +37,7 @@ def actions_matching_paths(
 
 
 def items_matching_precondition(
-    ws: Workspace, precondition: Precondition, max_results: int = 0
+    ws: FileStore, precondition: Precondition, max_results: int = 0
 ) -> Iterable[Item]:
     """
     Yield items matching the given precondition, up to max_results if specified.

@@ -10,6 +10,7 @@ from typing import Any, TypeVar
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
 from strif import copyfile_atomic, hash_file, move_file
+from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
 from kash.config.text_styles import EMOJI_SAVED, STYLE_HINT
@@ -29,6 +30,7 @@ from kash.utils.file_utils.ignore_files import IgnoreChecker, add_to_ignore
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
 from kash.workspaces.workspace_names import to_ws_name
+from kash.workspaces.workspaces import Workspace
 
 log = get_logger(__name__)
 
@@ -49,10 +51,10 @@ def synchronized(method: Callable[..., T]) -> Callable[..., T]:
     return synchronized_method
 
 
-class FileStore:
+class FileStore(Workspace):
     """
     The main class to manage files in a workspace, holding settings and files with items.
-    Should be thread safe since file operations are atomic and mutable state is synchronized.
+    Thread safe since file operations are atomic and mutable state is synchronized.
     """
 
     # TODO: Consider using a pluggable filesystem (fsspec AbstractFileSystem).
@@ -63,11 +65,16 @@ class FileStore:
         directory metadata if it is not already initialized.
         """
 
-        self.base_dir = base_dir.resolve()
+        self.base_dir_path = base_dir.resolve()
         self.name = to_ws_name(self.base_dir)
         self.is_global_ws = is_global_ws
         self._lock = threading.RLock()
         self.reload(auto_init=auto_init)
+
+    @property
+    @override
+    def base_dir(self) -> Path:
+        return self.base_dir_path
 
     @synchronized
     @log_calls(level="warning", if_slower_than=2.0)

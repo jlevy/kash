@@ -1,6 +1,8 @@
+import contextvars
+from abc import ABC, abstractmethod
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from prettyfmt import fmt_path
 
@@ -26,9 +28,52 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 
-# Currently the same thing as a FileStore, but may want to change
-# this in the future.
-Workspace: TypeAlias = "FileStore"
+class Workspace(ABC):
+    """
+    A workspace is the context for actions and is tied to a folder on disk.
+
+    This is a minimal base class for use as a context manager. Most functionality
+    is still in `FileStore`.
+
+    Workspaces may be detected based on the current working directory or explicitly
+    set using a `with` block:
+    ```
+    ws = get_ws("my_workspace")
+    with ws:
+        # code that calls current_ws() will use this workspace
+    ```
+    """
+
+    @property
+    @abstractmethod
+    def base_dir(self) -> Path:
+        """The base directory for this workspace."""
+
+    def __enter__(self):
+        """
+        Context manager to temporarily set this workspace as the current workspace.
+        """
+        from kash.workspaces.workspaces import current_ws_context
+
+        self._token = current_ws_context.set(self.base_dir)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Restore the previous workspace context.
+        """
+        from kash.workspaces.workspaces import current_ws_context
+
+        current_ws_context.reset(self._token)
+
+
+current_ws_context: contextvars.ContextVar[Path | None] = contextvars.ContextVar(
+    "current_ws_context", default=None
+)
+"""
+Context variable that tracks the current workspace. Only used if it is
+explicitly set with a `with ws.as_current()` block.
+"""
 
 
 def is_ws_dir(path: Path) -> bool:
@@ -36,7 +81,7 @@ def is_ws_dir(path: Path) -> bool:
     return dirs.is_initialized()
 
 
-def enclosing_ws_dir(path: Path = Path(".")) -> Path | None:
+def enclosing_ws_dir(path: Path) -> Path | None:
     """
     Get the workspace directory enclosing the given path (itself or a parent or None).
     """
@@ -79,12 +124,10 @@ def resolve_ws(name: str | Path) -> WorkspaceInfo:
         ws_name = to_ws_name(name)
         ws_path = parent_dir / ws_name
 
-    is_global_ws = ws_name.lower() == GLOBAL_WS_NAME.lower()
-
-    return WorkspaceInfo(ws_name, ws_path, is_global_ws)
+    return WorkspaceInfo(ws_name, ws_path, is_global_ws_path(ws_path))
 
 
-def get_ws(name_or_path: str | Path, auto_init: bool = True) -> Workspace:
+def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":
     """
     Get a workspace by name or path. Adds to the in-memory registry so we reuse it.
     With `auto_init` true, will initialize the workspace if it is not already initialized.
@@ -107,22 +150,18 @@ def global_ws_dir() -> Path:
     return kb_path
 
 
-def get_global_ws() -> Workspace:
+def is_global_ws_path(path: Path) -> bool:
+    return path.name.lower() == GLOBAL_WS_NAME.lower()
+
+
+def get_global_ws() -> "FileStore":
     """
     Get the global_ws workspace.
     """
     return get_ws_registry().load(GLOBAL_WS_NAME, global_ws_dir(), True)
 
 
-def _infer_ws_info() -> tuple[Path | None, bool]:
-    dir = enclosing_ws_dir()
-    is_global_ws = not dir
-    if is_global_ws:
-        dir = global_ws_dir()
-    return dir, is_global_ws
-
-
-def _switch_current_workspace(base_dir: Path) -> Workspace:
+def _switch_current_workspace(base_dir: Path) -> "FileStore":
     """
     Switch the current workspace to the given directory.
     Updates logging and cache directories to be within that workspace.
@@ -149,13 +188,31 @@ def _switch_current_workspace(base_dir: Path) -> Workspace:
     return get_ws_registry().load(info.name, info.base_dir, info.is_global_ws)
 
 
-def current_ws(silent: bool = False) -> Workspace:
+def _current_ws_info() -> tuple[Path | None, bool]:
+    """
+    Infer the current workspace from context or the current working directory.
+    Does not load the workspace.
+    """
+    # First check if we have an explicit workspace context.
+    override_dir = current_ws_context.get()
+    if override_dir is not None:
+        return override_dir, is_global_ws_path(override_dir)
+
+    # Fall back to detecting from the current working directory.
+    dir = enclosing_ws_dir(Path("."))
+    is_global_ws = is_global_ws_path(dir) if dir else False
+    if is_global_ws:
+        dir = global_ws_dir()
+    return dir, is_global_ws
+
+
+def current_ws(silent: bool = False) -> "FileStore":
     """
     Get the current workspace based on the current working directory.
+    Loads and registers the workspace if it is not already loaded.
     Also updates logging and cache directories if this has changed.
     """
-
-    base_dir, _is_global_ws = _infer_ws_info()
+    base_dir, _is_global_ws = _current_ws_info()
     if not base_dir:
         raise InvalidState(
             f"No workspace found in {fmt_loc(Path('.').absolute())}.\n"

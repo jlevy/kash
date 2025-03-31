@@ -9,6 +9,7 @@ from kash.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
 from kash.exec.preconditions import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
+from kash.file_storage.file_store import FileStore
 from kash.model.actions_model import (
     NO_ARGS,
     Action,
@@ -25,13 +26,13 @@ from kash.shell.output.shell_output import PrintHooks, print_h3
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.lang_utils.inflection import plural
-from kash.workspaces import Selection, Workspace, current_ws
+from kash.workspaces import Selection, current_ws
 from kash.workspaces.workspace_importing import import_and_load
 
 log = get_logger(__name__)
 
 
-def assemble_action_input(ws: Workspace, *input_args: CommandArg) -> ActionInput:
+def assemble_action_input(ws: FileStore, *input_args: CommandArg) -> ActionInput:
     """
     Prepare input args, which may be URLs or paths, into items that correspond to
     URL or file resources, either finding them in the workspace or importing them.
@@ -53,7 +54,7 @@ def assemble_action_input(ws: Workspace, *input_args: CommandArg) -> ActionInput
     return ActionInput(input_items)
 
 
-def validate_action_input(ws: Workspace, action: Action, action_input: ActionInput) -> Operation:
+def validate_action_input(ws: FileStore, action: Action, action_input: ActionInput) -> Operation:
     """
     Validate an action input, ensuring the right number of args, all explicit params are filled,
     and the precondition holds and return an `Operation` that describes what will happen.
@@ -258,7 +259,7 @@ def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult
 
 
 def save_action_result(
-    ws: Workspace, result: ActionResult, action_input: ActionInput
+    ws: FileStore, result: ActionResult, action_input: ActionInput
 ) -> tuple[list[StorePath], list[StorePath]]:
     """
     Save the result of an action to the workspace. Handles skipping duplicates and
