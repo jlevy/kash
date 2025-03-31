@@ -70,6 +70,7 @@ class FileStore:
         self.reload(auto_init=auto_init)
 
     @synchronized
+    @log_calls(level="warning", if_slower_than=2.0)
     def reload(self, auto_init: bool = True):
         """
         Load or reload all state.
@@ -569,7 +570,10 @@ class FileStore:
         move_file(full_input_path, original_path)
         return StorePath(store_path)
 
-    def log_store_info(self, once: bool = False):
+    def log_workspace_info(self, once: bool = False):
+        """
+        Log helpful information about the workspace.
+        """
         if once and self.info_logged:
             return
 

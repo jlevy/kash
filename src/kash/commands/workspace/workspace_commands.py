@@ -80,7 +80,7 @@ def clear_global_ws() -> None:
     trash(global_ws_dir())
     ws = get_global_ws()
     ws.reload()
-    ws.log_store_info()
+    ws.log_workspace_info()
 
 
 def _get_cache_dirs(workspace: str | None) -> tuple[Path, Path]:
@@ -274,7 +274,7 @@ def init_workspace(path: str | None = None) -> None:
     base_dir = path or Path(".")
     get_ws(base_dir, auto_init=True)
     os.chdir(base_dir)
-    current_ws(silent=True).log_store_info()
+    current_ws(silent=True).log_workspace_info()
 
 
 @kash_command
@@ -294,11 +294,11 @@ def workspace(workspace_name: str | None = None) -> None:
         os.chdir(info.base_dir)
         ws = get_ws(name_or_path=info.base_dir, auto_init=True)
         print_status(f"Changed to workspace: {ws.name} ({ws.base_dir})")
-        ws.log_store_info()
+        ws.log_workspace_info()
     else:
         ws = current_ws(silent=True)
         os.chdir(ws.base_dir)
-        ws.log_store_info()
+        ws.log_workspace_info()
 
 
 @kash_command

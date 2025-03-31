@@ -167,7 +167,7 @@ def current_ws(silent: bool = False) -> Workspace:
     if not silent:
         # Delayed, once-only logging of any setup warnings.
         print_api_key_setup(once=True)
-        ws.log_store_info(once=True)
+        ws.log_workspace_info(once=True)
 
     return ws
 

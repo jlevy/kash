@@ -62,7 +62,7 @@ class TaskStack:
 
     def __init__(self):
         self.stack: list[TaskState] = []
-        self.exceptions: set[Exception] = set()
+        self.exceptions_logged: set[Exception] = set()
 
     def push(self, name: str, total_parts: int = 1, unit: str = ""):
         self.stack.append(TaskState(name, 0, total_parts, unit))
@@ -122,9 +122,11 @@ class TaskStack:
             yield self
         except Exception as e:
             # Log immediately where the exception occurred, but don't double-log.
-            if e not in self.exceptions:
-                self._log.warning("Exception in task context: %s: %s", type(e).__name__, e)
-                self.exceptions.add(e)
+            if e not in self.exceptions_logged:
+                self._log.warning(
+                    "Exception in task context: %s: %s", type(e).__name__, e, exc_info=True
+                )
+                self.exceptions_logged.add(e)
             self.next(last_had_error=True)
             raise
         finally:

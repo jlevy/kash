@@ -25,7 +25,11 @@ from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.items_model import UNTITLED, Item, ItemType, State
 from kash.model.operations_model import Operation, Source
-from kash.model.params_model import ALL_COMMON_PARAMS, ParamDeclarations, TypedParamValues
+from kash.model.params_model import (
+    ALL_COMMON_PARAMS,
+    ParamDeclarations,
+    TypedParamValues,
+)
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
@@ -166,7 +170,7 @@ class LLMOptions:
     """
 
     op_name: str | None = None
-    model: LLMName = LLM.default_basic
+    model: LLMName = LLM.default_standard
     system_message: Message = Message("")
     body_template: MessageTemplate = MessageTemplate("{body}")
     windowing: WindowSettings = WINDOW_NONE
@@ -429,7 +433,10 @@ class Action(ABC):
         )
 
     def _field_info(self, param_name: str) -> DataclassField | None:
-        return next((f for f in self.__dataclass_fields__.values() if f.name == param_name), None)
+        return next(
+            (f for f in self.__dataclass_fields__.values() if f.name == param_name),
+            None,
+        )
 
     def _update_param_values(
         self,
@@ -555,7 +562,11 @@ class Action(ABC):
         Generate a JSON schema for this action in MCP tool schema format.
         """
         # Create the base schema
-        input_schema: JsonSchemaValue = {"type": "object", "properties": {}, "required": []}
+        input_schema: JsonSchemaValue = {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        }
 
         # Add input items schema with constraints from ArgCount.
         # TODO: Perhaps better to simplify the schema and remove the array for exactly one arg?

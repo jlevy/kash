@@ -55,9 +55,9 @@ class LLM(LLMName, Enum):
     groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")
     groq_deepseek_r1_distill_qwen_32b = LLMName("groq/deepseek-r1-distill-qwen-32b")
 
-    # Allows use of "default_basic" etc as model names and have the
+    # Allows use of "default_standard" etc as model names and have the
     # model be looked up from workspace parameter settings.
-    default_basic = LLMName("default_basic")
+    default_standard = LLMName("default_standard")
     default_structured = LLMName("default_structured")
     default_careful = LLMName("default_careful")
     default_fast = LLMName("default_fast")

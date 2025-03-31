@@ -26,7 +26,7 @@ log = get_logger(__name__)
 def assist(
     input: str | None = None,
     model: LLM | None = None,
-    type: AssistanceType = AssistanceType.basic,
+    type: AssistanceType = AssistanceType.standard,
 ) -> None:
     """
     Invoke the kash assistant. You don't normally need this command as it is the same as just

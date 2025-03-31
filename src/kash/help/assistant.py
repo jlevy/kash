@@ -43,7 +43,7 @@ class AssistanceType(Enum):
 
     careful = LLMDefault.careful
     structured = LLMDefault.structured
-    basic = LLMDefault.standard
+    standard = LLMDefault.standard
     fast = LLMDefault.fast
 
     @property
@@ -244,7 +244,7 @@ def shell_context_assistance(
     input: str,
     silent: bool = False,
     model: LLMName | None = None,
-    assistance_type: AssistanceType = AssistanceType.basic,
+    assistance_type: AssistanceType = AssistanceType.standard,
 ) -> None:
     """
     Get assistance, using the full context of the shell.
@@ -334,7 +334,7 @@ def shell_context_assistance(
         PrintHooks.after_assistance()
 
     # FIXME: Make these obvious buttons.
-    if assistance_type in (AssistanceType.fast, AssistanceType.basic):
+    if assistance_type in (AssistanceType.fast, AssistanceType.standard):
         PrintHooks.spacer()
         print_assistance(
             f"{EMOJI_WARN} For more detailed assistance, use `assist --type=careful` or `assist --type=structured`."
