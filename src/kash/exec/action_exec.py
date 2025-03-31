@@ -32,13 +32,15 @@ from kash.workspaces.workspace_importing import import_and_load
 log = get_logger(__name__)
 
 
-def assemble_action_input(ws: FileStore, *input_args: CommandArg) -> ActionInput:
+def prepare_action_input(*input_args: CommandArg) -> ActionInput:
     """
     Prepare input args, which may be URLs or paths, into items that correspond to
     URL or file resources, either finding them in the workspace or importing them.
     Also fetches metadata for URLs if they don't already have title and description.
     """
     from kash.exec.fetch_url_metadata import fetch_url_item_metadata
+
+    ws = current_ws()
 
     # Ensure input items are already saved in the workspace and load the corresponding items.
     # This also imports any URLs.
@@ -420,7 +422,7 @@ def run_action_with_shell_context(
         )
 
     # Get items for each input arg.
-    input = assemble_action_input(ws, *args)
+    input = prepare_action_input(*args)
 
     # Finally, run the action.
     result, result_store_paths, archived_store_paths = run_action_with_caching(context, input)

@@ -34,6 +34,17 @@ def get_global_ws_dir() -> Path:
             return docs_dir / APP_NAME / GLOBAL_WS_NAME
 
 
+def get_mcp_ws_dir() -> Path | None:
+    """
+    Get the directory for the MCP workspace, if set.
+    """
+    mcp_dir = os.environ.get("KASH_MCP_WS")
+    if mcp_dir:
+        return Path(mcp_dir).expanduser().resolve()
+    else:
+        return None
+
+
 def get_rcfile_path() -> Path:
     return Path("~/.kashrc").expanduser().resolve()
 

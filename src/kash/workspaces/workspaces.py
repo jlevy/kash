@@ -17,7 +17,6 @@ from kash.config.settings import (
 from kash.errors import FileNotFound, InvalidInput, InvalidState
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
-from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
 from kash.workspaces.workspace_names import check_strict_workspace_name, to_ws_name
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
@@ -51,7 +50,7 @@ class Workspace(ABC):
 
     def __enter__(self):
         """
-        Context manager to temporarily set this workspace as the current workspace.
+        Context manager to set this workspace as the current workspace.
         """
         from kash.workspaces.workspaces import current_ws_context
 
@@ -201,7 +200,7 @@ def _current_ws_info() -> tuple[Path | None, bool]:
     # Fall back to detecting from the current working directory.
     dir = enclosing_ws_dir(Path("."))
     is_global_ws = is_global_ws_path(dir) if dir else False
-    if is_global_ws:
+    if not dir or is_global_ws:
         dir = global_ws_dir()
     return dir, is_global_ws
 
@@ -215,7 +214,7 @@ def current_ws(silent: bool = False) -> "FileStore":
     base_dir, _is_global_ws = _current_ws_info()
     if not base_dir:
         raise InvalidState(
-            f"No workspace found in {fmt_loc(Path('.').absolute())}.\n"
+            f"No workspace found in: {fmt_path(Path('.').absolute(), resolve=False)}\n"
             "Create one with the `workspace` command."
         )
 

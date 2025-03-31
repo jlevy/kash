@@ -11,13 +11,14 @@ from prettyfmt import fmt_path
 
 from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger
-from kash.exec.action_exec import assemble_action_input, run_action_with_caching
+from kash.config.settings import get_mcp_ws_dir
+from kash.exec.action_exec import prepare_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
 from kash.model.actions_model import Action, ActionResult, ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
 from kash.utils.common.atomic_var import AtomicVar
-from kash.workspaces.workspaces import current_ws
+from kash.workspaces.workspaces import current_ws, get_ws
 
 log = get_logger(__name__)
 
@@ -206,31 +207,37 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
     """
     try:
         with captured_output() as capture:
-            ws = current_ws()
-            action_cls = look_up_action_class(action_name)
+            # XXX For now, unless the user has overridden the MCP workspace, we use the
+            # current workspace, which could be changed by the user by changing working
+            # directories. Maybe confusing?
+            explicit_mcp_ws = get_mcp_ws_dir()
+            ws = get_ws(explicit_mcp_ws) if explicit_mcp_ws else current_ws()
 
-            # Extract items array and remaining params from arguments.
-            input_items = arguments.pop("items", [])
+            with ws:
+                action_cls = look_up_action_class(action_name)
 
-            # Create typed param values directly from schema-validated inputs, then
-            # create an action instance with fully set parameters.
-            param_values = TypedParamValues.create(arguments, action_cls.create(None).params)
-            action = action_cls.create(param_values)
+                # Extract items array and remaining params from arguments.
+                input_items = arguments.pop("items", [])
 
-            # Create execution context and assemble action input.
-            context = ExecContext(
-                action=action,
-                workspace_dir=ws.base_dir,
-                # Enabling rerun always for now, seems good for tools.
-                rerun=True,
-                # Keeping all transient files for now, but maybe make transient?
-                override_state=None,
-            )
-            action_input = assemble_action_input(ws, *input_items)
+                # Create typed param values directly from schema-validated inputs, then
+                # create an action instance with fully set parameters.
+                param_values = TypedParamValues.create(arguments, action_cls.create(None).params)
+                action = action_cls.create(param_values)
 
-            result, result_store_paths, _archived_store_paths = run_action_with_caching(
-                context=context, action_input=action_input
-            )
+                # Create execution context and assemble action input.
+                context = ExecContext(
+                    action=action,
+                    workspace_dir=ws.base_dir,
+                    # Enabling rerun always for now, seems good for tools.
+                    rerun=True,
+                    # Keeping all transient files for now, but maybe make transient?
+                    override_state=None,
+                )
+                action_input = prepare_action_input(*input_items)
+
+                result, result_store_paths, _archived_store_paths = run_action_with_caching(
+                    context=context, action_input=action_input
+                )
 
         # Return final result, formatted for the LLM to understand.
         return ToolResult(
