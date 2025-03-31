@@ -35,6 +35,8 @@ llm_options = LLMOptions(
 
         - If the input is very short or so unclear you can't summarize it, simply output "(No results)".
 
+        - If the input is in a language other than English, output the summary in the same language.
+
         Input text:
 
         {body}

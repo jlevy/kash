@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
-from pydantic import ValidationInfo
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import CoreSchema, PydanticCustomError
+from pydantic_core.core_schema import (
+    no_info_after_validator_function,
+    str_schema,
+    to_string_ser_schema,
+)
 from rich.text import Text
 
 from kash.config.text_styles import format_success_emoji
@@ -20,13 +27,8 @@ class LLMName(str):
     https://docs.litellm.ai/docs/providers
     """
 
-    # Pydantic support.
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: str, _info: ValidationInfo) -> LLMName:
+    def _validate(cls, value: Any) -> LLMName:
         from kash.llm_utils import LLM
 
         if isinstance(value, cls):
@@ -38,7 +40,15 @@ class LLMName(str):
             except KeyError:
                 # Otherwise this is the name.
                 return cls(value)
-        raise ValueError(f"Invalid LLM name: {value!r}")
+        raise PydanticCustomError("value_error", "Invalid LLM name: {value!r}", {"value": value})
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> CoreSchema:
+        return no_info_after_validator_function(
+            cls._validate, str_schema(), serialization=to_string_ser_schema()
+        )
 
     @property
     def litellm_name(self) -> str:
