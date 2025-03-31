@@ -162,11 +162,11 @@ class CommandInfo(HelpDoc):
         elif self.command_type == CommandType.kash_action:
             group = CompletionGroup.kash
         elif self.command.strip() in STANDARD_SHELL_COMMANDS:
-            group = CompletionGroup.recommanded_shell_command
+            group = CompletionGroup.rec_cmd
         elif self.description:
-            group = CompletionGroup.recognized_shell_command
+            group = CompletionGroup.reg_cmd
         else:
-            group = CompletionGroup.unknown
+            group = CompletionGroup.standard
 
         return CompletionValue(
             group=group,
@@ -207,7 +207,7 @@ class RecipeSnippet(HelpDoc):
         from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
         return CompletionValue(
-            group=CompletionGroup.recommanded_shell_command,
+            group=CompletionGroup.rec_cmd,
             help_doc=self,
             value=self.command.command_line,
             display=f"{self.emoji()} {self.command.command_line}",

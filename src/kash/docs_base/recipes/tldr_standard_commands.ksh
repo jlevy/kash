@@ -202,25 +202,7 @@ cat -n {{path/to/file}}
 cat -v -t -e {{path/to/file}}
 
 
-# cd
 
-# Go to the specified directory
-cd {{path/to/directory}}
-
-# Go up to the parent of the current directory
-cd ..
-
-# Go to the home directory of the current user
-cd
-
-# Go to the home directory of the specified user
-cd ~{{username}}
-
-# Go to the previously chosen directory
-cd -
-
-# Go to the root directory
-cd /
 
 
 # chmod

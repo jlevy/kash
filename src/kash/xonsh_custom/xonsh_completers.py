@@ -110,17 +110,6 @@ def is_assist_request(context: CompletionContext) -> bool:
     return text.startswith(" ") or text.startswith("?")
 
 
-def is_textual_request(context: CompletionContext) -> bool:
-    """
-    Check if this is a plain command (such as an initial part of a command)
-    or natural language request and not a known command or Python.
-    """
-
-    return not is_recognized_command(context) and (
-        is_assist_request(context) or is_nl_words(context)
-    )
-
-
 def is_recognized_command(context: CompletionContext) -> bool:
     return not is_assist_request(context) and bool(
         context.command
@@ -289,38 +278,46 @@ def at_prefix_completer(context: CompletionContext) -> CompleterResult:
 
 
 @contextual_completer
+@non_exclusive_completer
 @log_calls(level="info", if_slower_than=SLOW_COMPLETION)
 def help_completer(context: CompletionContext) -> CompleterResult:
     """
     Suggest help FAQs and commands. These replace the whole command line.
+    This aims to only activate if the text is likely a natural language.
+    If it's a command, let other completions handle it.
     We support two levels, lexical and semantic, and activate the semantic
     completions on a second tab press.
     """
     if context.command:
         # Full query is full command line so far, lightly cleaned up.
         query = commandline_as_nl(context)
+        num_words = len(query.split())
+        is_long = num_words > 4
+        is_recognized = is_recognized_command(context)
+        is_nl = is_nl_words(context)
+        show_immediate_help = not is_recognized and is_nl
+        allow_subsequent_help = is_long
+
+        trace_completions(f"help_completer: {query!r} {is_long=} {is_recognized=} {is_nl=}")
+
+        # Don't do full help on completions on short commands like "cd foo".
         if not query:
             return None
 
-        trace_completions(f"help_completer: {query!r}")
-
-        # Don't do full help completions on short commands.
-        if not is_assist_request(context) and len(query.split()) < 2:
-            return None
-
-        lex_completions = get_help_completions_lexical(query, include_bare_qm=True)
-
         with _MULTI_TAB_STATE.updates() as state:
-            # Unless the user pressed tab twice, if the user has already typed a command
-            # we recognize, or this looks more complex like a command with options or
-            # Python code, skip these help completions.
-            if not is_textual_request(context) and not state.more_results_requested:
+            # If the user has already typed a command we recognize, don't ever give help
+            # unless it's quite a long command.
+            if not show_immediate_help and not state.more_results_requested:
                 trace_completions(
                     "help_completer: Skipping help completions since command is recognized"
                 )
                 state.set_first_results(context.command)
                 return None
-            if context.command == state.last_context and state.more_results_requested:
+            if (
+                context.command == state.last_context
+                and state.more_results_requested
+                and allow_subsequent_help
+            ):
                 # User hit tab again so let's fill in slower semantic completions.
                 if state.more_completions is None:
                     trace_completions(
@@ -336,6 +333,7 @@ def help_completer(context: CompletionContext) -> CompleterResult:
 
             more_completions = set(state.more_completions or set())
 
+        lex_completions = get_help_completions_lexical(query, include_bare_qm=True)
         completions = lex_completions | more_completions
         trace_completions(f"help_completer: {query!r}: Combined help completions", completions)
         return post_process(completions, context)
@@ -359,7 +357,7 @@ def _param_completions(params: list[Param[Any]], prefix: str) -> list[ScoredComp
     completions = [
         ScoredCompletion(
             param.shell_prefix,
-            group=CompletionGroup.relevant_options,
+            group=CompletionGroup.relev_opt,
             display=param.display,
             description=param.description or "",
             append_space=param.is_bool,
@@ -393,7 +391,7 @@ def _enum_value_completions(param: Param[Any], prefix: str) -> list[ScoredComple
         values = [
             ScoredCompletion(
                 param.shell_prefix + value,
-                group=CompletionGroup.relevant_options,
+                group=CompletionGroup.relev_opt,
                 display=value,
                 replace_input=False,
                 append_space=True,
@@ -476,7 +474,7 @@ def options_enum_completer(context: CompletionContext) -> CompleterResult:
     return None
 
 
-# FIXME: Other completions needed for specific kash commands:
+# TODO: Other contextual completions needed for specific kash commands:
 # - `help`
 # - `source_code`
 

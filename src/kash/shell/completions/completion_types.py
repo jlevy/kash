@@ -29,12 +29,13 @@ class CompletionGroup(int, Enum):
 
     top_suggestion = 0
     kash = 1
-    help = 2
-    relevant_options = 3
-    recommanded_shell_command = 4
-    recognized_shell_command = 5
-    python = 6
-    unknown = 9
+    standard = 2  # Sort xonsh completions before help completions.
+    help = 3
+    relev_opt = 4  # Relevant options.
+    rec_cmd = 5  # Recommended shell command.
+    reg_cmd = 6  # Regular shell command.
+    python = 7
+    other = 8
 
 
 @dataclass(frozen=True)
@@ -61,7 +62,7 @@ class ScoredCompletion(RichCompletion):
     def __init__(
         self,
         value: str,
-        group: CompletionGroup = CompletionGroup.unknown,
+        group: CompletionGroup = CompletionGroup.standard,
         help_doc: HelpDoc | None = None,
         score: Score | None = None,
         relatedness: float | None = None,
@@ -121,7 +122,7 @@ class ScoredCompletion(RichCompletion):
         return ScoredCompletion(**default_kwargs)
 
     def formatted(self) -> str:
-        s = f"Group{self.group.value} {self.score or float('-inf'):2.1f} {self.value!r}"
+        s = f"Group{self.group.value}:{self.group.name:10s} {self.score or float('-inf'):2.1f} {self.value!r}"
         if self.relatedness:
             s += f" rel={self.relatedness:.2f}"
         if self.display:
