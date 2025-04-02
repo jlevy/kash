@@ -1,7 +1,7 @@
 ## What is Kash?
 
-> “*Civilization advances by extending the number of important operations which we can
-> perform without thinking about them.*” —Alfred North Whitehead
+> “*Simple should be simple.
+> Complex should be possible.*” —Alan Kay
 
 Kash (“Knowledge Agent SHell”) is an **interactive, AI-native command-line** shell for
 practical knowledge tasks.

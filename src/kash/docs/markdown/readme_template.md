@@ -24,3 +24,8 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 ⛭
 
 </div>
+
+* * *
+
+*This project was built from
+[simple-modern-uv](https://github.com/jlevy/simple-modern-uv).*

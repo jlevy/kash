@@ -1,7 +1,7 @@
 ## The Philosophy of Kash
 
-> “*Simple should be simple.
-> Complex should be possible.*” —Alan Kay
+> “*Civilization advances by extending the number of important operations which we can
+> perform without thinking about them.*” —Alfred North Whitehead
 
 Here is a bit more motivation for experimenting with kash, why I think it's potentially
 so useful, and some design principles.

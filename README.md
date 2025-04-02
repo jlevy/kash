@@ -9,8 +9,8 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 
 ## What is Kash?
 
-> “*Civilization advances by extending the number of important operations which we can
-> perform without thinking about them.*” —Alfred North Whitehead
+> “*Simple should be simple.
+> Complex should be possible.*” —Alan Kay
 
 Kash (“Knowledge Agent SHell”) is an **interactive, AI-native command-line** shell for
 practical knowledge tasks.
@@ -741,3 +741,8 @@ Kash uses Markdown files with YAML frontmatter, which is fully compatible with
 ⛭
 
 </div>
+
+* * *
+
+*This project was built from
+[simple-modern-uv](https://github.com/jlevy/simple-modern-uv).*

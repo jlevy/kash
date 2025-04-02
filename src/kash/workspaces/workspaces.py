@@ -194,7 +194,7 @@ def _current_ws_info() -> tuple[Path | None, bool]:
     """
     # First check if we have an explicit workspace context.
     override_dir = current_ws_context.get()
-    if override_dir is not None:
+    if override_dir:
         return override_dir, is_global_ws_path(override_dir)
 
     # Fall back to detecting from the current working directory.
