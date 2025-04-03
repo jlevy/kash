@@ -36,7 +36,7 @@ def linear_boost(score: Score, min_score: Score) -> Score:
 def score_completions(
     query: str,
     completions: Iterable[ScoredCompletion],
-    subphrase_min_words: int = 5,
+    subphrase_min_words: int = 4,
     incomplete_discount: float = 0.8,
     semantic_boost: float = 2.0,
 ) -> None:
@@ -69,12 +69,10 @@ def score_completions(
                 HelpDocType.faq,
                 HelpDocType.recipe_snippet,
             )
-            and len(query) > 5
+            and len(query.split()) > subphrase_min_words
         )
         if use_loose_subphrase:
-            value_word_count = len(normalized_value.split())
-            if value_word_count > subphrase_min_words:
-                score = max(score, incomplete_discount * score_subphrase(query, normalized_value))
+            score = max(score, incomplete_discount * score_subphrase(query, normalized_value))
 
         # Boost completions with descriptions (means we have tldr docs and are likely more useful).
         if (

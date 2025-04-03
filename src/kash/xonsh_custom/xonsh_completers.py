@@ -56,11 +56,14 @@ class MultiTabState:
     more_results_requested: bool = False
     more_completions: set[ScoredCompletion] | None = None
 
-    def set_first_results(self, context: CommandContext):
+    def reset_first_results(self, context: CommandContext):
         self.last_context = context
         self.first_results_shown = True
         self.more_results_requested = False
         self.more_completions = None
+
+    def could_show_more(self) -> bool:
+        return self.first_results_shown and not self.more_results_requested
 
 
 # Maintain state for help completions for single and double tab.
@@ -311,7 +314,7 @@ def help_completer(context: CompletionContext) -> CompleterResult:
                 trace_completions(
                     "help_completer: Skipping help completions since command is recognized"
                 )
-                state.set_first_results(context.command)
+                state.reset_first_results(context.command)
                 return None
             if (
                 context.command == state.last_context
@@ -329,7 +332,7 @@ def help_completer(context: CompletionContext) -> CompleterResult:
                         log.info("Skipping semantic help since embedding API unavailable: %s", e)
                         state.more_completions = None
             else:
-                state.set_first_results(context.command)
+                state.reset_first_results(context.command)
 
             more_completions = set(state.more_completions or set())
 
@@ -566,8 +569,7 @@ def is_completion_menu_active() -> bool:
 
 @Condition
 def could_show_more_tab_completions() -> bool:
-    state = _MULTI_TAB_STATE.value
-    return state.first_results_shown and not state.more_results_requested
+    return _MULTI_TAB_STATE.value.could_show_more()
 
 
 # Set up prompt_toolkit key bindings.
