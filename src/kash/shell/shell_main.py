@@ -14,10 +14,10 @@ import argparse
 import threading
 
 import xonsh.main
-from rich_argparse.contrib import ParagraphRichHelpFormatter
 from strif import quote_if_needed
 
 from kash.config.setup import setup
+from kash.shell.utils.argparse_utils import WrappedColorFormatter
 from kash.shell.version import get_full_version_name, get_version
 from kash.xonsh_custom.custom_shell import install_to_xonshrc, start_shell
 
@@ -51,9 +51,7 @@ def run_shell(single_command: str | None = None):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=ParagraphRichHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=WrappedColorFormatter)
 
     parser.add_argument("--version", action="version", version=get_full_version_name())
 

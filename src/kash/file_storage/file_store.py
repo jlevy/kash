@@ -29,7 +29,6 @@ from kash.utils.file_utils.file_walk import walk_by_dir
 from kash.utils.file_utils.ignore_files import IgnoreChecker, add_to_ignore
 from kash.workspaces import SelectionHistory
 from kash.workspaces.param_state import ParamState
-from kash.workspaces.workspace_names import to_ws_name
 from kash.workspaces.workspaces import Workspace
 
 log = get_logger(__name__)
@@ -66,7 +65,7 @@ class FileStore(Workspace):
         """
 
         self.base_dir_path = base_dir.resolve()
-        self.name = to_ws_name(self.base_dir)
+        self.name = self.base_dir_path.name
         self.is_global_ws = is_global_ws
         self._lock = threading.RLock()
         self.reload(auto_init=auto_init)

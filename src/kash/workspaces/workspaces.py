@@ -1,4 +1,5 @@
 import contextvars
+import re
 from abc import ABC, abstractmethod
 from functools import cache
 from pathlib import Path
@@ -11,6 +12,7 @@ from kash.config.logger import get_logger, reset_log_root
 from kash.config.settings import (
     GLOBAL_WS_NAME,
     get_global_ws_dir,
+    get_ws_root_dir,
     global_settings,
     resolve_and_create_dirs,
 )
@@ -18,13 +20,25 @@ from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
 from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
-from kash.workspaces.workspace_names import check_strict_workspace_name, to_ws_name
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
 
 if TYPE_CHECKING:
     from kash.file_storage.file_store import FileStore
 
 log = get_logger(__name__)
+
+
+def normalize_workspace_name(ws_name: str) -> str:
+    return str(ws_name).strip().rstrip("/")
+
+
+def check_strict_workspace_name(ws_name: str) -> str:
+    ws_name = normalize_workspace_name(ws_name)
+    if not re.match(r"^[\w.-]+$", ws_name):
+        raise InvalidInput(
+            f"Use an alphanumeric name (- and . also allowed) for the workspace name: `{ws_name}`"
+        )
+    return ws_name
 
 
 class Workspace(ABC):
@@ -105,25 +119,28 @@ def resolve_ws(name: str | Path) -> WorkspaceInfo:
     if not name:
         raise InvalidInput("Workspace name is required.")
 
-    name = str(name).strip().rstrip("/")
+    name_str = str(name).strip().rstrip("/")
 
-    # Check if name is a full path. Otherwise, we'll resolve it relative to the
-    # current directory.
-    if "/" in name or name.startswith("."):
-        resolved = Path(name).resolve()
+    if isinstance(name, Path):
+        # Absolute paths respected otherwise relative to workspace root.
+        if name.is_absolute():
+            resolved = name
+            parent_dir = resolved.parent
+        else:
+            parent_dir = get_ws_root_dir()
+            resolved = parent_dir / name
+    elif name_str.startswith(".") or name_str.startswith("/"):
+        # Explicit paths respected otherwise use workspace root.
+        resolved = Path(name_str).resolve()
         parent_dir = resolved.parent
         name = resolved.name
     else:
-        parent_dir = Path(".").resolve()
+        parent_dir = get_ws_root_dir()
+        resolved = parent_dir / Path(name_str)
 
-    if (parent_dir / name).exists():
-        ws_name = to_ws_name(name)
-        ws_path = parent_dir / name
-    else:
-        ws_name = to_ws_name(name)
-        ws_path = parent_dir / ws_name
+    ws_name = check_strict_workspace_name(resolved.name)
 
-    return WorkspaceInfo(ws_name, ws_path, is_global_ws_path(ws_path))
+    return WorkspaceInfo(ws_name, resolved, is_global_ws_path(resolved))
 
 
 def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":

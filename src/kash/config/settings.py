@@ -3,6 +3,7 @@ from enum import Enum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
+from typing import overload
 
 from pydantic.dataclasses import dataclass
 
@@ -19,10 +20,30 @@ def get_global_kash_dir() -> Path:
     return Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()
 
 
+@overload
+def path_from_env(env_name: str, default: None) -> None: ...
+
+
+@overload
+def path_from_env(env_name: str, default: Path) -> Path: ...
+
+
+def path_from_env(env_name: str, default: Path | None) -> Path | None:
+    value = os.environ.get(env_name)
+    if value:
+        return Path(value).expanduser().resolve()
+    else:
+        return default.expanduser().resolve() if default else None
+
+
+def get_ws_root_dir() -> Path:
+    return path_from_env("KASH_WS_ROOT", Path("."))
+
+
 def get_global_ws_dir() -> Path:
-    kash_ws_dir = os.environ.get("KASH_GLOBAL_WS")
+    kash_ws_dir = path_from_env("KASH_GLOBAL_WS", None)
     if kash_ws_dir:
-        return Path(kash_ws_dir).expanduser().resolve()
+        return kash_ws_dir
     else:
         docs_dir = Path("~/Documents").expanduser().resolve()
         if not docs_dir.exists():

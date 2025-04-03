@@ -65,8 +65,7 @@ from kash.workspaces import (
     resolve_ws,
 )
 from kash.workspaces.param_state import ParamState
-from kash.workspaces.workspace_names import check_strict_workspace_name
-from kash.workspaces.workspaces import Workspace, get_ws
+from kash.workspaces.workspaces import Workspace, check_strict_workspace_name, get_ws
 
 log = get_logger(__name__)
 
