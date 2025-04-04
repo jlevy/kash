@@ -81,7 +81,7 @@ CONTENT_CACHE_NAME = "content"
 # https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=444
 # https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=447
 
-MCP_SERVER_PORT = 4440
+DEFAULT_MCP_SERVER_PORT = 4440
 
 LOCAL_SERVER_PORT_START = 4470
 LOCAL_SERVER_PORTS_MAX = 30
@@ -216,7 +216,7 @@ _settings = AtomicVar(
         local_server_ports_start=LOCAL_SERVER_PORT_START,
         local_server_ports_max=LOCAL_SERVER_PORTS_MAX,
         local_server_port=0,
-        mcp_server_port=MCP_SERVER_PORT,
+        mcp_server_port=DEFAULT_MCP_SERVER_PORT,
         use_kerm_codes=False,
         use_nerd_icons=True,
     )

@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import GLOBAL_LOGS_DIR, MCP_SERVER_PORT, LogLevel
+from kash.config.settings import DEFAULT_MCP_SERVER_PORT, GLOBAL_LOGS_DIR, LogLevel
 from kash.config.setup import setup
 from kash.mcp.mcp_main import McpMode, run_mcp_server
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
@@ -20,7 +20,7 @@ from kash.workspaces.workspaces import Workspace, get_ws, global_ws_dir
 
 __version__ = get_version()
 
-DEFAULT_PROXY_URL = f"http://localhost:{MCP_SERVER_PORT}/sse"
+DEFAULT_PROXY_URL = f"http://localhost:{DEFAULT_MCP_SERVER_PORT}/sse"
 
 LOG_PATH = GLOBAL_LOGS_DIR / f"{MCP_LOG_PREFIX}_cli.log"
 
@@ -29,7 +29,7 @@ basic_logging_setup(LOG_PATH, LogLevel.info)
 log = logging.getLogger()
 
 
-def parse_args():
+def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=WrappedColorFormatter)
     parser.add_argument(
         "--version",
@@ -55,11 +55,11 @@ def parse_args():
         ),
     )
     parser.add_argument("--sse", action="store_true", help="Run in SSE standalone mode")
-    return parser.parse_args()
+    return parser
 
 
 def main():
-    args = parse_args()
+    args = build_parser().parse_args()
 
     base_dir = Path(args.workspace)
 

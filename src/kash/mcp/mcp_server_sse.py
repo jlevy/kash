@@ -16,9 +16,10 @@ if TYPE_CHECKING:
 
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
-from kash.config.settings import MCP_SERVER_PORT, server_log_file_path
+from kash.config.settings import server_log_file_path
 from kash.mcp import mcp_server_routes
 from kash.utils.errors import InvalidState
+from kash.utils.settings import get_global_settings
 
 log = get_logger(__name__)
 
@@ -63,7 +64,7 @@ class MCPServerSSE:
         # in the correct event loop when needed
         AppStatus.should_exit_event = None
 
-        port = MCP_SERVER_PORT
+        port = get_global_settings().mcp_server_port
         self.log_path = server_log_file_path(MCP_SERVER_NAME, port)
         config = create_server_config(
             self.app, MCP_SERVER_HOST, port, MCP_SERVER_NAME, self.log_path
