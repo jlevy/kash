@@ -147,3 +147,17 @@ def stop_mcp_server_sse():
 def restart_mcp_server_sse():
     """Restart the SSE server."""
     _mcp_sse_server.restart_server()
+
+
+def run_mcp_server_sse():
+    """Run server, blocking until shutdown. Handles graceful shutdown for both daemon and blocking usage."""
+    try:
+        start_mcp_server_sse()
+        _mcp_sse_server.did_exit.wait()
+    except KeyboardInterrupt:
+        log.warning("Interrupt, shutting down SSE server")
+        stop_mcp_server_sse()
+    except Exception as e:
+        log.error("MCP Server failed: %s", e)
+        stop_mcp_server_sse()
+        raise  # Re-raise to allow caller to handle fatal errors
