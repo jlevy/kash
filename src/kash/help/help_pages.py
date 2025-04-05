@@ -4,10 +4,10 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import DocSelection, all_docs
 from kash.help.docstring_utils import parse_docstring
+from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
-    format_name_and_value,
     print_h2,
     print_hrule,
     print_markdown,

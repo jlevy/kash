@@ -4,7 +4,7 @@ from xonsh.built_ins import XSH
 from xonsh.xontribs import xontribs_load
 
 from kash.config.settings import global_settings
-from kash.shell.utils.sys_tool_deps import SysTool, sys_tool_check
+from kash.shell.clideps.sys_tool_deps import SysTool, sys_tool_check
 
 
 def modernize_shell() -> None:

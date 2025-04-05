@@ -1,34 +1,32 @@
 from kash.commands.base.model_commands import list_apis, list_models
 from kash.commands.workspace.workspace_commands import list_params
-from kash.config.api_keys import (
-    RECOMMENDED_APIS,
-    Api,
-    get_all_configured_models,
-    load_dotenv_paths,
-    print_api_key_setup,
-)
-from kash.config.dotenv_utils import env_var_is_set
 from kash.config.logger import get_logger
+from kash.config.settings import RECOMMENDED_API_KEYS
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
+from kash.llm_utils.llm_api_keys import get_all_configured_models
 from kash.model.params_model import (
     DEFAULT_CAREFUL_LLM,
     DEFAULT_FAST_LLM,
     DEFAULT_STANDARD_LLM,
     DEFAULT_STRUCTURED_LLM,
 )
+from kash.shell.clideps.api_keys import (
+    ApiEnvKey,
+    load_dotenv_paths,
+    print_api_key_setup,
+)
+from kash.shell.clideps.dotenv_utils import env_var_is_set
+from kash.shell.clideps.sys_tool_deps import sys_tool_check, terminal_feature_check
 from kash.shell.input.collect_dotenv import fill_missing_dotenv
 from kash.shell.input.input_prompts import input_choice
+from kash.shell.output.shell_formatting import format_failure, format_name_and_value, format_success
 from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
-    format_failure,
-    format_name_and_value,
-    format_success,
     print_h2,
 )
-from kash.shell.utils.sys_tool_deps import sys_tool_check, terminal_feature_check
 from kash.shell.version import get_full_version_name
 from kash.utils.errors import InvalidState
 from kash.workspaces.workspaces import current_ws
@@ -51,7 +49,7 @@ def self_check(brief: bool = False) -> None:
     """
     if brief:
         terminal_feature_check().print_term_info()
-        print_api_key_setup(once=False)
+        print_api_key_setup(recommended_keys=RECOMMENDED_API_KEYS, once=False)
         check_system_tools(brief=brief)
         tldr_refresh_cache()
         try:
@@ -95,16 +93,19 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     # Show APIs before starting.
     list_apis()
 
-    apis = Api if all else RECOMMENDED_APIS
-    keys = [api.value for api in apis]
+    if all:
+        api_keys = [key.value for key in ApiEnvKey]
+    else:
+        api_keys = RECOMMENDED_API_KEYS
+
     if not update:
-        keys = [key for key in keys if not env_var_is_set(key)]
+        api_keys = [key for key in api_keys if not env_var_is_set(key)]
 
     cprint()
     print_h2("Configuring .env file")
-    if keys:
-        cprint(format_failure(f"API keys needed: {', '.join(keys)}"))
-        fill_missing_dotenv(keys)
+    if api_keys:
+        cprint(format_failure(f"API keys needed: {', '.join(api_keys)}"))
+        fill_missing_dotenv(api_keys)
         reload_env()
     else:
         cprint(format_success("All requested API keys are set!"))
@@ -190,7 +191,7 @@ def reload_env() -> None:
     env_paths = load_dotenv_paths()
     if env_paths:
         cprint("Reloaded environment variables")
-        print_api_key_setup()
+        print_api_key_setup(RECOMMENDED_API_KEYS)
     else:
         raise InvalidState("No .env file found")
 

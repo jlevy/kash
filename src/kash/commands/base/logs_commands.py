@@ -11,7 +11,8 @@ from kash.config.settings import (
     server_log_file_path,
 )
 from kash.exec import kash_command
-from kash.shell.output.shell_output import cprint, format_name_and_value, print_status
+from kash.shell.output.shell_formatting import format_name_and_value
+from kash.shell.output.shell_output import cprint, print_status
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.common.format_utils import fmt_loc
 

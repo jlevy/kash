@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, TypeVar
 
 from prettyfmt import fmt_path
 
-from kash.config.api_keys import print_api_key_setup
 from kash.config.logger import get_logger, reset_log_root
 from kash.config.settings import (
     GLOBAL_WS_NAME,
+    RECOMMENDED_API_KEYS,
     get_global_ws_dir,
     get_ws_root_dir,
     global_settings,
@@ -18,6 +18,7 @@ from kash.config.settings import (
 )
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
+from kash.shell.clideps.api_keys import print_api_key_setup
 from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
@@ -239,7 +240,7 @@ def current_ws(silent: bool = False) -> "FileStore":
 
     if not silent:
         # Delayed, once-only logging of any setup warnings.
-        print_api_key_setup(once=True)
+        print_api_key_setup(RECOMMENDED_API_KEYS, once=True)
         ws.log_workspace_info(once=True)
 
     return ws

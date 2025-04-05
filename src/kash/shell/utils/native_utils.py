@@ -16,8 +16,8 @@ from funlog import log_calls
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
+from kash.shell.clideps.sys_tool_deps import PLATFORM, Platform, SysTool, sys_tool_check
 from kash.shell.output.shell_output import cprint
-from kash.shell.utils.sys_tool_deps import PLATFORM, Platform, SysTool, sys_tool_check
 from kash.shell.utils.terminal_images import terminal_show_image
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import as_file_url, is_file_url, is_url

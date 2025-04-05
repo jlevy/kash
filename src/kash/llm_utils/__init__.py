@@ -1,5 +1,6 @@
 # flake8: noqa: F401
 
+from kash.llm_utils.llm_api_keys import api_for_model, get_all_configured_models, have_key_for_model
 from kash.llm_utils.llm_completion import (
     LLMCompletionResult,
     llm_completion,

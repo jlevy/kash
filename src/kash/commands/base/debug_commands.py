@@ -12,7 +12,8 @@ from kash.help.function_param_info import annotate_param_info
 from kash.help.recommended_commands import RECOMMENDED_TLDR_COMMANDS
 from kash.model.params_model import Param
 from kash.shell.output.kerm_codes import IframePopover, TextTooltip
-from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, format_name_and_value
+from kash.shell.output.shell_formatting import format_name_and_value
+from kash.shell.output.shell_output import PrintHooks, console_pager, cprint
 from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)

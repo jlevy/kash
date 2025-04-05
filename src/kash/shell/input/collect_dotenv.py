@@ -4,9 +4,10 @@ from flowmark import Wrap
 from prettyfmt import fmt_lines
 from strif import abbrev_str
 
-from kash.config.dotenv_utils import find_dotenv_paths, read_dotenv_file, update_env_file
+from kash.shell.clideps.dotenv_utils import find_dotenv_paths, read_dotenv_file, update_env_file
 from kash.shell.input.input_prompts import input_confirm, input_simple_string
-from kash.shell.output.shell_output import cprint, format_success, print_status
+from kash.shell.output.shell_formatting import format_success
+from kash.shell.output.shell_output import cprint, print_status
 
 
 def fill_missing_dotenv(keys: list[str]) -> bool:

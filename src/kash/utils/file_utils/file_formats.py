@@ -5,7 +5,7 @@ from typing import NewType
 import regex
 
 from kash.config.logger import get_logger
-from kash.shell.utils.sys_tool_deps import SysTool, sys_tool_check
+from kash.shell.clideps.sys_tool_deps import SysTool, sys_tool_check
 
 log = get_logger(__name__)
 

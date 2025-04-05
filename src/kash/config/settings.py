@@ -15,6 +15,13 @@ DOT_DIR = ".kash"
 
 GLOBAL_WS_NAME = "global"
 
+RECOMMENDED_API_KEYS = [
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "DEEPGRAM_API_KEY",
+    "GROQ_API_KEY",
+]
+
 
 def get_global_kash_dir() -> Path:
     return Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()

@@ -15,7 +15,8 @@ from rich.text import Text
 
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import CONSOLE_WRAP_WIDTH, EMOJI_WARN
-from kash.shell.output.shell_output import cprint, format_name_and_value, format_success_or_failure
+from kash.shell.output.shell_formatting import format_name_and_value, format_success_or_failure
+from kash.shell.output.shell_output import cprint
 from kash.shell.utils.osc_utils import osc8_link_rich, terminal_supports_osc8
 from kash.shell.utils.terminal_images import terminal_supports_sixel
 from kash.utils.errors import SetupError

@@ -13,7 +13,8 @@ from kash.config.text_styles import COLOR_SELECTION
 from kash.exec_model.shell_model import ShellResult
 from kash.model.items_model import ItemType
 from kash.shell.output.kerm_code_utils import click_to_paste
-from kash.shell.output.shell_output import PrintHooks, cprint, format_name_and_value
+from kash.shell.output.shell_formatting import format_name_and_value
+from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.common.format_utils import fmt_count_items, fmt_loc
 from kash.utils.file_formats.chat_format import ChatHistory
 from kash.utils.file_utils.dir_size import get_dir_size

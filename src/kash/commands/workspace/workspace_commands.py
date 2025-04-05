@@ -36,13 +36,12 @@ from kash.model.items_model import Item, ItemType
 from kash.model.params_model import GLOBAL_PARAMS
 from kash.model.paths_model import StorePath, fmt_store_path
 from kash.shell.input.param_inputs import input_param_name, input_param_value
+from kash.shell.output.shell_formatting import format_name_and_description, format_name_and_value
 from kash.shell.output.shell_output import (
     PrintHooks,
     Wrap,
     console_pager,
     cprint,
-    format_name_and_description,
-    format_name_and_value,
     print_h2,
     print_h3,
     print_status,
