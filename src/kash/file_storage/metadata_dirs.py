@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
-from kash.config.settings import CONTENT_CACHE_NAME, DOT_DIR, GLOBAL_CACHE_PATH, MEDIA_CACHE_NAME
+from kash.config.settings import CONTENT_CACHE_NAME, DOT_DIR, MEDIA_CACHE_NAME, get_system_cache_dir
 from kash.file_storage.persisted_yaml import PersistedYaml
 from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
@@ -62,7 +62,7 @@ class MetadataDirs:
     # in which case it is in the global cache path.
     @property
     def cache_dir(self) -> Path:
-        return GLOBAL_CACHE_PATH if self.is_global_ws else StorePath(f"{DOT_DIR}/cache")
+        return get_system_cache_dir() if self.is_global_ws else StorePath(f"{DOT_DIR}/cache")
 
     @property
     def media_cache_dir(self) -> Path:

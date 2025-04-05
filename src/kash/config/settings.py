@@ -23,10 +23,6 @@ RECOMMENDED_API_KEYS = [
 ]
 
 
-def get_global_kash_dir() -> Path:
-    return Path(os.environ.get("KASH_DIR", "~/.local/kash")).expanduser().resolve()
-
-
 @overload
 def path_from_env(env_name: str, default: None) -> None: ...
 
@@ -44,22 +40,27 @@ def path_from_env(env_name: str, default: Path | None) -> Path | None:
 
 
 def get_ws_root_dir() -> Path:
-    return path_from_env("KASH_WS_ROOT", Path("."))
+    """Default root directory for kash workspaces."""
+    return path_from_env("KASH_WS_ROOT", Path("~/Kash").expanduser().resolve())
 
 
 def get_global_ws_dir() -> Path:
+    """Default global workspace directory."""
     kash_ws_dir = path_from_env("KASH_GLOBAL_WS", None)
     if kash_ws_dir:
         return kash_ws_dir
     else:
-        docs_dir = Path("~/Documents").expanduser().resolve()
-        if not docs_dir.exists():
-            raise ValueError(
-                f"Documents directory ({docs_dir}) does not exist; "
-                "set KASH_GLOBAL_WS to specify a global workspace directory"
-            )
-        else:
-            return docs_dir / APP_NAME / GLOBAL_WS_NAME
+        return get_ws_root_dir() / GLOBAL_WS_NAME
+
+
+def get_system_logs_dir() -> Path:
+    """Default global and system logs directory (for server logs, etc)."""
+    return path_from_env("KASH_SYSTEM_LOGS_DIR", get_ws_root_dir() / "logs")
+
+
+def get_system_cache_dir() -> Path:
+    """Default global and system cache directory (for global media, content, etc)."""
+    return path_from_env("KASH_SYSTEM_CACHE_DIR", get_ws_root_dir() / "cache")
 
 
 def get_mcp_ws_dir() -> Path | None:
@@ -77,10 +78,6 @@ def get_rcfile_path() -> Path:
     return Path("~/.kashrc").expanduser().resolve()
 
 
-GLOBAL_LOGS_DIR = get_global_kash_dir() / "logs"
-
-
-GLOBAL_CACHE_PATH = get_global_kash_dir() / "cache"
 MEDIA_CACHE_NAME = "media"
 CONTENT_CACHE_NAME = "content"
 
@@ -94,7 +91,7 @@ LOCAL_SERVER_PORT_START = 4470
 LOCAL_SERVER_PORTS_MAX = 30
 
 
-SERVER_LOG_FILE = str(GLOBAL_LOGS_DIR / "{name}_{port}.log")
+SERVER_LOG_FILE = str(get_system_logs_dir() / "{name}_{port}.log")
 
 
 class LogLevel(Enum):
@@ -214,8 +211,8 @@ def server_log_file_path(name: str, port: int | str) -> Path:
 _settings = AtomicVar(
     Settings(
         # These default to the global but can be overridden by workspace settings.
-        media_cache_dir=GLOBAL_CACHE_PATH / MEDIA_CACHE_NAME,
-        content_cache_dir=GLOBAL_CACHE_PATH / CONTENT_CACHE_NAME,
+        media_cache_dir=get_system_cache_dir() / MEDIA_CACHE_NAME,
+        content_cache_dir=get_system_cache_dir() / CONTENT_CACHE_NAME,
         debug_assistant=True,
         default_editor="nano",
         file_log_level=LogLevel.info,

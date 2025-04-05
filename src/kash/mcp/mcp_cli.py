@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import DEFAULT_MCP_SERVER_PORT, GLOBAL_LOGS_DIR, LogLevel
+from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, get_system_logs_dir
 from kash.config.setup import setup
 from kash.mcp.mcp_main import McpMode, run_mcp_server
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
@@ -22,7 +22,7 @@ __version__ = get_version()
 
 DEFAULT_PROXY_URL = f"http://localhost:{DEFAULT_MCP_SERVER_PORT}/sse"
 
-LOG_PATH = GLOBAL_LOGS_DIR / f"{MCP_LOG_PREFIX}_cli.log"
+LOG_PATH = get_system_logs_dir() / f"{MCP_LOG_PREFIX}_cli.log"
 
 basic_logging_setup(LOG_PATH, LogLevel.info)
 

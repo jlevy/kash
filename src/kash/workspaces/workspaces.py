@@ -149,10 +149,9 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":
     Get a workspace by name or path. Adds to the in-memory registry so we reuse it.
     With `auto_init` true, will initialize the workspace if it is not already initialized.
     """
-    path = Path(name_or_path)
-    name = path.name
+    name = Path(name_or_path).name
     name = check_strict_workspace_name(name)
-    info = resolve_ws(path)
+    info = resolve_ws(name_or_path)
     if not is_ws_dir(info.base_dir) and not auto_init:
         raise FileNotFound(f"Not a workspace directory: {fmt_path(info.base_dir)}")
 
@@ -178,18 +177,17 @@ def get_global_ws() -> "FileStore":
     return get_ws_registry().load(GLOBAL_WS_NAME, global_ws_dir(), True)
 
 
-def _switch_current_workspace(base_dir: Path) -> "FileStore":
+def switch_to_ws(base_dir: Path) -> "FileStore":
     """
     Switch the current workspace to the given directory.
     Updates logging and cache directories to be within that workspace.
-    Does not reload the workspace if it's already loaded and does not
-    use the global_ws for logs (since it's )
+    Does not reload the workspace if it's already loaded.
     """
     from kash.media_base.media_tools import reset_media_cache_dir
     from kash.web_content.file_cache_utils import reset_content_cache_dir
 
     info = resolve_ws(base_dir)
-    ws_dirs = MetadataDirs(info.base_dir, info.is_global_ws)
+    ws_dirs = MetadataDirs(base_dir=info.base_dir, is_global_ws=info.is_global_ws)
 
     # Use the global log root for the global_ws, and the workspace log root otherwise.
     reset_log_root(None, info.name if not info.is_global_ws else None)
@@ -236,7 +234,7 @@ def current_ws(silent: bool = False) -> "FileStore":
             "Create one with the `workspace` command."
         )
 
-    ws = _switch_current_workspace(base_dir)
+    ws = switch_to_ws(base_dir)
 
     if not silent:
         # Delayed, once-only logging of any setup warnings.

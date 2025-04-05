@@ -1,4 +1,5 @@
 import logging
+import sys
 from logging import FileHandler, Formatter
 from pathlib import Path
 
@@ -16,7 +17,7 @@ def basic_file_handler(path: Path, level: LogLevel) -> logging.FileHandler:
 
 
 def basic_stderr_handler(level: LogLevel) -> logging.StreamHandler:
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(stream=sys.stderr)
     handler.setLevel(level.value)
     handler.setFormatter(Formatter("%(asctime)s %(levelname).1s %(name)s - %(message)s"))
     return handler

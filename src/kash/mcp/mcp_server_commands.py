@@ -2,7 +2,11 @@ import time
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.config.settings import GLOBAL_LOGS_DIR, global_settings, server_log_file_path
+from kash.config.settings import (
+    get_system_logs_dir,
+    global_settings,
+    server_log_file_path,
+)
 from kash.exec import kash_command
 from kash.mcp import mcp_server_routes
 from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX, MCP_SERVER_NAME
@@ -56,7 +60,7 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
     :param all: Show all logs, not just the server logs, including Claude Desktop logs if found.
     """
     if all:
-        global_log_base = GLOBAL_LOGS_DIR
+        global_log_base = get_system_logs_dir()
         claude_log_base = Path("~/Library/Logs/Claude").expanduser()
         log_paths = []
         did_log = False

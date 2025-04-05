@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import IO, Any, cast
 
 import rich
-from rich import reconfigure
 from rich._null_file import NULL_FILE
 from rich.console import Console
 from rich.logging import RichHandler
@@ -22,8 +21,12 @@ from strif import atomic_output_file, new_timestamped_uid
 from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
-from kash.config.logger_basic import basic_file_handler
-from kash.config.settings import GLOBAL_LOGS_DIR, LogLevel, get_global_kash_dir, global_settings
+from kash.config.logger_basic import basic_file_handler, basic_stderr_handler
+from kash.config.settings import (
+    LogLevel,
+    get_system_logs_dir,
+    global_settings,
+)
 from kash.config.text_styles import (
     EMOJI_ERROR,
     EMOJI_SAVED,
@@ -48,9 +51,9 @@ class LogSettings:
     log_file_path: Path
 
 
-_log_base = get_global_kash_dir()
+_log_dir = get_system_logs_dir()
 """
-Parent of the "logs" directory. Initially the global kash data root.
+Parent of the "logs" directory. Initially the global kash workspace.
 """
 
 
@@ -72,14 +75,14 @@ def make_valid_log_name(name: str) -> str:
 
 
 def _read_log_settings() -> LogSettings:
-    global _log_base, _log_name
+    global _log_dir, _log_name
     return LogSettings(
         log_console_level=global_settings().console_log_level,
         log_file_level=global_settings().file_log_level,
-        global_log_dir=GLOBAL_LOGS_DIR,
-        log_dir=_log_base / "logs",
-        log_objects_dir=_log_base / "logs" / "objects" / _log_name,
-        log_file_path=_log_base / "logs" / f"{_log_name}.log",
+        global_log_dir=get_system_logs_dir(),
+        log_dir=_log_dir,
+        log_objects_dir=_log_dir / "objects" / _log_name,
+        log_file_path=_log_dir / f"{_log_name}.log",
     )
 
 
@@ -102,7 +105,7 @@ def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
     """
     global _log_lock, _log_base, _log_name
     with _log_lock:
-        _log_base = log_root or get_global_kash_dir()
+        _log_base = log_root or get_system_logs_dir()
         _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
         reload_rich_logging_setup()
 
@@ -123,9 +126,6 @@ def get_highlighter():
 @cache
 def get_theme():
     return Theme(RICH_STYLES)
-
-
-reconfigure(theme=get_theme(), highlighter=get_highlighter())
 
 
 def get_console() -> Console:
@@ -166,7 +166,7 @@ def record_console() -> Generator[Console, None, None]:
 
 
 _file_handler: logging.FileHandler
-_console_handler: RichHandler
+_console_handler: logging.Handler
 
 
 def reload_rich_logging_setup():
@@ -210,20 +210,25 @@ def _do_logging_setup(log_settings: LogSettings):
             super().emit(record)
 
     global _console_handler
-    _console_handler = PrefixedRichHandler(
-        # For now we use the fixed global console for logging.
-        # In the future we may want to add a way to have thread-local capture
-        # of all system logs.
-        console=rich.get_console(),
-        level=log_settings.log_console_level.value,
-        show_time=False,
-        show_path=False,
-        show_level=False,
-        highlighter=get_highlighter(),
-        markup=True,
-    )
-    _console_handler.setLevel(log_settings.log_console_level.value)
-    _console_handler.setFormatter(Formatter("%(message)s"))
+
+    # Use the Rich stdout handler only on terminals, stderr for servers or non-interactive use.
+    if get_console().is_terminal:
+        _console_handler = PrefixedRichHandler(
+            # For now we use the fixed global console for logging.
+            # In the future we may want to add a way to have thread-local capture
+            # of all system logs.
+            console=rich.get_console(),
+            level=log_settings.log_console_level.value,
+            show_time=False,
+            show_path=False,
+            show_level=False,
+            highlighter=get_highlighter(),
+            markup=True,
+        )
+        _console_handler.setLevel(log_settings.log_console_level.value)
+        _console_handler.setFormatter(Formatter("%(message)s"))
+    else:
+        _console_handler = basic_stderr_handler(log_settings.log_console_level)
 
     # Manually adjust logging for a few packages, removing previous verbose default handlers.
 
@@ -337,17 +342,12 @@ class CustomLogger(logging.Logger):
         )
 
 
-logging.setLoggerClass(CustomLogger)
-
-
-reload_rich_logging_setup()
-
-
 def get_logger(name: str) -> CustomLogger:
     """
     Get a logger that's compatible with system logging but has our additional custom
     methods.
     """
+    init_rich_logging()
     logger = logging.getLogger(name)
     # print("Logger is", logger)
     return cast(CustomLogger, logger)
@@ -355,3 +355,12 @@ def get_logger(name: str) -> CustomLogger:
 
 def get_log_file_stream():
     return _file_handler.stream
+
+
+@cache
+def init_rich_logging():
+    rich.reconfigure(theme=get_theme(), highlighter=get_highlighter())
+
+    logging.setLoggerClass(CustomLogger)
+
+    reload_rich_logging_setup()
