@@ -13,7 +13,8 @@ def find_dotenv_paths() -> list[str]:
     """
     Find .env files in the current directory and return a list of paths.
     """
-    return [find_dotenv(filename=path, usecwd=True) for path in DOTENV_NAMES]
+    paths = [find_dotenv(filename=path, usecwd=True) for path in DOTENV_NAMES]
+    return [path for path in paths if path]
 
 
 def load_dotenv_paths(override: bool = True) -> list[str]:

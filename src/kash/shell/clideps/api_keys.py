@@ -61,6 +61,12 @@ def warn_if_missing_api_keys(env_keys: list[str]) -> list[str]:
     return missing_apis
 
 
+def available_api_keys(all_keys: list[str] | None) -> list[tuple[ApiEnvKey, bool]]:
+    if not all_keys:
+        all_keys = [key.value for key in ApiEnvKey]
+    return [(ApiEnvKey(key), env_var_is_set(key)) for key in all_keys]
+
+
 def print_api_key_setup(
     recommended_keys: list[str], all_keys: list[str] | None = None, once: bool = False
 ) -> None:
@@ -82,8 +88,8 @@ def print_api_key_setup(
     )
 
     texts = [
-        format_success_or_failure(env_var_is_set(key), ApiEnvKey(key).provider_name)
-        for key in all_keys
+        format_success_or_failure(is_found, key.provider_name)
+        for key, is_found in available_api_keys(all_keys)
     ]
 
     cprint(Text.assemble("API keys found: ", Text(" ").join(texts)))

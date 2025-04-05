@@ -4,19 +4,52 @@ from flowmark import Wrap
 from prettyfmt import fmt_lines
 from strif import abbrev_str
 
-from kash.shell.clideps.dotenv_utils import find_dotenv_paths, read_dotenv_file, update_env_file
+from kash.shell.clideps.dotenv_utils import (
+    env_var_is_set,
+    find_dotenv_paths,
+    read_dotenv_file,
+    update_env_file,
+)
 from kash.shell.input.input_prompts import input_confirm, input_simple_string
-from kash.shell.output.shell_formatting import format_success
-from kash.shell.output.shell_output import cprint, print_status
+from kash.shell.output.shell_formatting import format_failure, format_success
+from kash.shell.output.shell_output import (
+    cprint,
+    print_h2,
+    print_status,
+)
 
 
-def fill_missing_dotenv(keys: list[str]) -> bool:
+def interactive_dotenv_setup(
+    api_keys: list[str],
+    update: bool = False,
+) -> None:
+    """
+    Interactively configure your .env file with the requested API key
+    environment variables.
+
+    :param all: Configure all known API keys (instead of just recommended ones).
+    :param update: Update values even if they are already set.
+    """
+
+    if not update:
+        api_keys = [key for key in api_keys if not env_var_is_set(key)]
+
+    cprint()
+    print_h2("Configuring .env file")
+    if api_keys:
+        cprint(format_failure(f"API keys needed: {', '.join(api_keys)}"))
+        interactive_update_dotenv(api_keys)
+    else:
+        cprint(format_success("All requested API keys are set!"))
+
+
+def interactive_update_dotenv(keys: list[str]) -> bool:
     """
     Interactively fill missing values in the active .env file.
     Returns True if the user made changes, False otherwise.
     """
     dotenv_paths = find_dotenv_paths()
-    dotenv_path = dotenv_paths[0] if dotenv_paths else Path("~/.env").expanduser()
+    dotenv_path = dotenv_paths[0] if dotenv_paths else Path("~/.env.local").expanduser()
 
     if dotenv_paths:
         print_status(f"Found .env file you will update: {dotenv_path}")
@@ -28,7 +61,7 @@ def fill_missing_dotenv(keys: list[str]) -> bool:
             )
             cprint(f"File has {len(old_dotenv)} keys:\n{summary}", text_wrap=Wrap.NONE)
     else:
-        cprint("No .env file found.")
+        print_status("No .env file found.")
 
     if input_confirm(
         "Do you want make updates to your .env file?",

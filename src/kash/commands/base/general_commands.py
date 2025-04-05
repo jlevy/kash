@@ -17,11 +17,11 @@ from kash.shell.clideps.api_keys import (
     load_dotenv_paths,
     print_api_key_setup,
 )
-from kash.shell.clideps.dotenv_utils import env_var_is_set
-from kash.shell.clideps.sys_tool_deps import sys_tool_check, terminal_feature_check
-from kash.shell.input.collect_dotenv import fill_missing_dotenv
+from kash.shell.clideps.dotenv_setup import interactive_dotenv_setup
+from kash.shell.clideps.pkg_deps import pkg_check
+from kash.shell.clideps.terminal_features import terminal_check
 from kash.shell.input.input_prompts import input_choice
-from kash.shell.output.shell_formatting import format_failure, format_name_and_value, format_success
+from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import (
     PrintHooks,
     cprint,
@@ -48,7 +48,7 @@ def self_check(brief: bool = False) -> None:
     Self-check kash setup, including termal settings, tools, and API keys.
     """
     if brief:
-        terminal_feature_check().print_term_info()
+        terminal_check().print_term_info()
         print_api_key_setup(recommended_keys=RECOMMENDED_API_KEYS, once=False)
         check_system_tools(brief=brief)
         tldr_refresh_cache()
@@ -61,7 +61,7 @@ def self_check(brief: bool = False) -> None:
     else:
         version()
         cprint()
-        terminal_feature_check().print_term_info()
+        terminal_check().print_term_info()
         cprint()
         list_apis()
         cprint()
@@ -84,31 +84,18 @@ def self_check(brief: bool = False) -> None:
 @kash_command
 def self_configure(all: bool = False, update: bool = False) -> None:
     """
-    Interactively configure your .env file with recommended API keys.
-
-    :param all: Configure all known API keys (instead of just recommended ones).
-    :param update: Update values even if they are already set.
+    Interactively configure API keys and preferred models.
     """
-
-    # Show APIs before starting.
-    list_apis()
 
     if all:
         api_keys = [key.value for key in ApiEnvKey]
     else:
         api_keys = RECOMMENDED_API_KEYS
+    # Show APIs before starting.
+    list_apis()
 
-    if not update:
-        api_keys = [key for key in api_keys if not env_var_is_set(key)]
-
-    cprint()
-    print_h2("Configuring .env file")
-    if api_keys:
-        cprint(format_failure(f"API keys needed: {', '.join(api_keys)}"))
-        fill_missing_dotenv(api_keys)
-        reload_env()
-    else:
-        cprint(format_success("All requested API keys are set!"))
+    interactive_dotenv_setup(api_keys, update=update)
+    reload_env()
 
     cprint()
     ws = current_ws()
@@ -171,15 +158,15 @@ def check_system_tools(warn_only: bool = False, brief: bool = False) -> None:
     :param brief: Print summary as a single line.
     """
     if warn_only:
-        sys_tool_check().warn_if_missing()
+        pkg_check().warn_if_missing()
     else:
         if brief:
-            cprint(sys_tool_check().status())
+            cprint(pkg_check().status())
         else:
             print_h2("Installed System Tools")
-            cprint(sys_tool_check().formatted())
+            cprint(pkg_check().formatted())
             cprint()
-            sys_tool_check().warn_if_missing()
+            pkg_check().warn_if_missing()
 
 
 @kash_command

@@ -16,7 +16,8 @@ from funlog import log_calls
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
-from kash.shell.clideps.sys_tool_deps import PLATFORM, Platform, SysTool, sys_tool_check
+from kash.shell.clideps.pkg_deps import Pkg, pkg_check
+from kash.shell.clideps.platforms import PLATFORM, Platform
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.terminal_images import terminal_show_image
 from kash.utils.common.format_utils import fmt_loc
@@ -186,11 +187,11 @@ def tail_file(
     if follow:
         max_lines = follow_max_lines
 
-    sys_tool_check().require(SysTool.tail)
-    sys_tool_check().warn_if_missing(SysTool.bat)
+    pkg_check().require(Pkg.tail)
+    pkg_check().warn_if_missing(Pkg.bat)
 
     if follow:
-        if sys_tool_check().has(SysTool.bat):
+        if pkg_check().has(Pkg.bat):
             # Follow the file in real-time.
             command = (
                 f"tail -{max_lines} -f {all_paths_str} | "
@@ -201,8 +202,8 @@ def tail_file(
             command = f"tail -f {all_paths_str}"
         cprint("Following file: `%s`", command, text_wrap=Wrap.NONE)
     else:
-        sys_tool_check().require(SysTool.less)
-        if sys_tool_check().has(SysTool.bat, SysTool.less):
+        pkg_check().require(Pkg.less)
+        if pkg_check().has(Pkg.bat, Pkg.less):
             command = (
                 f"tail -{max_lines} {all_paths_str} | "
                 f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log | "
@@ -226,17 +227,17 @@ def view_file_console(filename: str | Path, use_pager: bool = True):
 
     is_text = file_format_info(filename).is_text
     if is_text:
-        sys_tool_check().require(SysTool.less)
-        if sys_tool_check().has(SysTool.bat):
+        pkg_check().require(Pkg.less)
+        if pkg_check().has(Pkg.bat):
             pager_str = "--pager=always --pager=less " if use_pager else ""
             command = f"bat {pager_str}--color=always --style={BAT_STYLE} --theme={BAT_THEME} {quoted_filename}"
         else:
-            sys_tool_check().require(SysTool.pygmentize)
+            pkg_check().require(Pkg.pygmentize)
             command = f"pygmentize -g {quoted_filename}"
             if use_pager:
                 command = f"{command} | less -R"
     else:
-        sys_tool_check().require(SysTool.hexyl)
+        pkg_check().require(Pkg.hexyl)
         command = f"hexyl {quoted_filename}"
         if use_pager:
             command = f"{command} | less -R"

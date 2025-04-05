@@ -20,7 +20,7 @@ from kash.config.logger import get_logger
 from kash.config.settings import check_kerm_code_support
 from kash.local_server.local_server import start_local_server
 from kash.local_server.local_url_formatters import enable_local_urls
-from kash.shell.clideps.sys_tool_deps import sys_tool_check
+from kash.shell.clideps.pkg_deps import pkg_check
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.version import get_version_tag
 from kash.workspaces import current_ws
@@ -104,7 +104,7 @@ def load_into_xonsh():
 
         current_ws()  # Validates and logs info for user.
 
-        sys_tool_check().warn_if_missing()
+        pkg_check().warn_if_missing()
 
     else:
         reload_shell_commands_and_actions()

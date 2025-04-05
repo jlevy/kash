@@ -4,7 +4,7 @@ from xonsh.built_ins import XSH
 from xonsh.xontribs import xontribs_load
 
 from kash.config.settings import global_settings
-from kash.shell.clideps.sys_tool_deps import SysTool, sys_tool_check
+from kash.shell.clideps.pkg_deps import Pkg, pkg_check
 
 
 def modernize_shell() -> None:
@@ -23,19 +23,19 @@ def add_fnm() -> None:
 
 
 def enable_zoxide() -> None:
-    installed_tools = sys_tool_check()
+    installed_tools = pkg_check()
 
-    if installed_tools.has(SysTool.zoxide):
+    if installed_tools.has(Pkg.zoxide):
         assert XSH.builtins
         zoxide_init = subprocess.check_output(["zoxide", "init", "xonsh"]).decode()
         XSH.builtins.execx(zoxide_init, "exec", XSH.ctx, filename="zoxide")
 
 
 def add_aliases() -> None:
-    installed_tools = sys_tool_check()
+    installed_tools = pkg_check()
 
     assert XSH.aliases
-    if installed_tools.has(SysTool.eza):
+    if installed_tools.has(Pkg.eza):
         if global_settings().use_nerd_icons:
             icons = ["--icons"]
         else:

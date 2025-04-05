@@ -149,7 +149,7 @@ def cprint(
         width = CONSOLE_WRAP_WIDTH
 
     # Handle unexpected types gracefully.
-    if not isinstance(message, (Text, Markdown, RenderableType)):
+    if not isinstance(message, (Text, Markdown)) and not isinstance(message, RenderableType):
         message = str(message)
 
     if message:

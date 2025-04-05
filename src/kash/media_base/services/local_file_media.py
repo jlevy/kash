@@ -10,7 +10,7 @@ from typing_extensions import override
 from kash.config.logger import get_log_file_stream, get_logger
 from kash.file_storage.store_filenames import parse_item_filename
 from kash.model.media_model import MediaMetadata, MediaService, MediaUrlType
-from kash.shell.clideps.sys_tool_deps import SysTool, sys_tool_check
+from kash.shell.clideps.pkg_deps import Pkg, pkg_check
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url
 from kash.utils.errors import FileNotFound, InvalidInput
@@ -20,7 +20,7 @@ log = get_logger(__name__)
 
 
 def _run_ffmpeg(cmdline: list[str]) -> None:
-    sys_tool_check().require(SysTool.ffmpeg)
+    pkg_check().require(Pkg.ffmpeg)
     log.message("Running: %s", " ".join([shlex.quote(arg) for arg in cmdline]))
     subprocess.run(
         cmdline,

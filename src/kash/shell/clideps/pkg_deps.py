@@ -1,40 +1,24 @@
-"""
-Platform-specific tools and utilities.
-"""
-
-import os
-import platform
+import logging
 import shutil
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum, StrEnum
+from enum import Enum
 
 from cachetools import TTLCache, cached
 from rich.console import Group
 from rich.text import Text
 
-from kash.config.logger import get_console, get_logger
-from kash.config.text_styles import CONSOLE_WRAP_WIDTH, EMOJI_WARN
+from kash.config.text_styles import EMOJI_WARN
+from kash.shell.clideps.platforms import PLATFORM, Platform
 from kash.shell.output.shell_formatting import format_name_and_value, format_success_or_failure
 from kash.shell.output.shell_output import cprint
-from kash.shell.utils.osc_utils import osc8_link_rich, terminal_supports_osc8
-from kash.shell.utils.terminal_images import terminal_supports_sixel
 from kash.utils.errors import SetupError
 
-log = get_logger(__name__)
-
-
-class Platform(StrEnum):
-    Darwin = "Darwin"
-    Linux = "Linux"
-    Windows = "Windows"
-
-
-PLATFORM = Platform(platform.system())
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class SysToolDep:
+class PkgDep:
     """
     Information about a system tool dependency and how to install it.
     """
@@ -61,57 +45,57 @@ def check_libmagic():
         return False
 
 
-class SysTool(Enum):
+class Pkg(Enum):
     """
     External (usually non-Python) system tools that we like to use.
     """
 
     # These are usually pre-installed on all platforms:
-    less = SysToolDep(("less",))
-    tail = SysToolDep(("tail",))
+    less = PkgDep(("less",))
+    tail = PkgDep(("tail",))
 
-    bat = SysToolDep(
+    bat = PkgDep(
         ("batcat", "bat"),  # batcat for Debian/Ubuntu), bat for macOS
         brew_pkg="bat",
         apt_pkg="bat",
         winget_pkg="sharkdp.bat",
         warn_if_missing=True,
     )
-    ripgrep = SysToolDep(
+    ripgrep = PkgDep(
         ("rg",),
         brew_pkg="ripgrep",
         apt_pkg="ripgrep",
         winget_pkg="BurntSushi.ripgrep",
         warn_if_missing=True,
     )
-    eza = SysToolDep(
+    eza = PkgDep(
         ("eza",),
         brew_pkg="eza",
         apt_pkg="eza",
         winget_pkg="eza-community.eza",
         warn_if_missing=True,
     )
-    zoxide = SysToolDep(
+    zoxide = PkgDep(
         ("zoxide",),
         brew_pkg="zoxide",
         apt_pkg="zoxide",
         winget_pkg="ajeetdsouza.zoxide",
         warn_if_missing=True,
     )
-    hexyl = SysToolDep(
+    hexyl = PkgDep(
         ("hexyl",),
         brew_pkg="hexyl",
         apt_pkg="hexyl",
         winget_pkg="sharkdp.hexyl",
         warn_if_missing=True,
     )
-    pygmentize = SysToolDep(
+    pygmentize = PkgDep(
         ("pygmentize",),
         brew_pkg="pygments",
         apt_pkg="python3-pygments",
         pip_pkg="Pygments",
     )
-    libmagic = SysToolDep(
+    libmagic = PkgDep(
         (),
         comment="""
           For macOS and Linux, brew or apt gives the latest binaries. For Windows, it may be
@@ -123,14 +107,14 @@ class SysTool(Enum):
         pip_pkg="python-magic-bin",
         warn_if_missing=True,
     )
-    ffmpeg = SysToolDep(
+    ffmpeg = PkgDep(
         ("ffmpeg",),
         brew_pkg="ffmpeg",
         apt_pkg="ffmpeg",
         winget_pkg="Gyan.FFmpeg",
         warn_if_missing=True,
     )
-    imagemagick = SysToolDep(
+    imagemagick = PkgDep(
         ("magick",),
         brew_pkg="imagemagick",
         apt_pkg="imagemagick",
@@ -147,17 +131,17 @@ class SysTool(Enum):
 
 
 @dataclass(frozen=True)
-class InstalledSysTools:
+class InstalledPkgs:
     """
     Info about which tools are installed.
     """
 
-    tools: dict[SysTool, str | bool]
+    tools: dict[Pkg, str | bool]
 
-    def has(self, *tools: SysTool) -> bool:
+    def has(self, *tools: Pkg) -> bool:
         return all(self.tools[tool] for tool in tools)
 
-    def require(self, *tools: SysTool) -> None:
+    def require(self, *tools: Pkg) -> None:
         for tool in tools:
             if not self.has(tool):
                 print_missing_tool_help(tool)
@@ -165,12 +149,12 @@ class InstalledSysTools:
                     f"`{tool.value}` ({tool.value.command_names}) needed but not found"
                 )
 
-    def missing_tools(self, *tools: SysTool) -> list[SysTool]:
+    def missing_tools(self, *tools: Pkg) -> list[Pkg]:
         if not tools:
-            tools = tuple(SysTool)
+            tools = tuple(Pkg)
         return [tool for tool in tools if not self.tools[tool]]
 
-    def warn_if_missing(self, *tools: SysTool) -> None:
+    def warn_if_missing(self, *tools: Pkg) -> None:
         for tool in self.missing_tools(*tools):
             if tool.value.warn_if_missing:
                 print_missing_tool_help(tool)
@@ -188,7 +172,7 @@ class InstalledSysTools:
 
         return Group(*texts)
 
-    def items(self) -> list[tuple[SysTool, str | bool]]:
+    def items(self) -> list[tuple[Pkg, str | bool]]:
         return sorted(self.tools.items(), key=lambda item: item[0].name)
 
     def status(self) -> Text:
@@ -199,7 +183,7 @@ class InstalledSysTools:
         return Text.assemble("Local system tools found: ", Text(" ").join(texts))
 
 
-def print_missing_tool_help(tool: SysTool):
+def print_missing_tool_help(tool: Pkg):
     warn_str = f"{EMOJI_WARN} {tool.full_name} was not found; it is recommended to install it for better functionality."
     if tool.value.comment:
         warn_str += f" {tool.value.comment}"
@@ -210,7 +194,7 @@ def print_missing_tool_help(tool: SysTool):
     cprint(warn_str)
 
 
-def get_install_suggestion(*missing_tools: SysTool) -> str | None:
+def get_install_suggestion(*missing_tools: Pkg) -> str | None:
     brew_pkgs = [tool.value.brew_pkg for tool in missing_tools if tool.value.brew_pkg]
     apt_pkgs = [tool.value.apt_pkg for tool in missing_tools if tool.value.apt_pkg]
     winget_pkgs = [tool.value.winget_pkg for tool in missing_tools if tool.value.winget_pkg]
@@ -230,65 +214,19 @@ def get_install_suggestion(*missing_tools: SysTool) -> str | None:
 
 
 @cached(TTLCache(maxsize=1, ttl=5.0))
-def sys_tool_check() -> InstalledSysTools:
+def pkg_check() -> InstalledPkgs:
     """
     Check which third-party tools are installed.
     """
-    tools: dict[SysTool, str | bool] = {}
+    tools: dict[Pkg, str | bool] = {}
 
-    def which_tool(tool: SysTool) -> str | None:
+    def which_tool(tool: Pkg) -> str | None:
         return next(filter(None, (shutil.which(name) for name in tool.value.command_names)), None)
 
-    def check_tool(tool: SysTool) -> bool:
+    def check_tool(tool: Pkg) -> bool:
         return bool(tool.value.check_function and tool.value.check_function())
 
-    for tool in SysTool:
+    for tool in Pkg:
         tools[tool] = which_tool(tool) or check_tool(tool)
 
-    return InstalledSysTools(tools)
-
-
-@dataclass(frozen=True)
-class TerminalInfo:
-    term: str
-    term_program: str
-    wrap_width: int
-    terminal_width: int
-    supports_sixel: bool
-    supports_osc8: bool
-
-    def as_text(self) -> Text:
-        return Text.assemble(
-            f"{self.terminal_width} cols, ",
-            f"{self.wrap_width} wrap, ",
-            format_success_or_failure(
-                self.supports_sixel, true_str="Sixel images", false_str="No Sixel images"
-            ),
-            ", ",
-            format_success_or_failure(
-                self.supports_osc8,
-                true_str=osc8_link_rich(
-                    "https://github.com/Alhadis/OSC8-Adoption", "OSC 8 hyperlinks"
-                ),
-                false_str="No OSC 8 hyperlinks",
-            ),
-        )
-
-    def print_term_info(self):
-        cprint(
-            Text.assemble(
-                f"Terminal is {self.term} ({self.term_program}), ",
-                self.as_text(),
-            )
-        )
-
-
-def terminal_feature_check() -> TerminalInfo:
-    return TerminalInfo(
-        term=os.environ.get("TERM", ""),
-        term_program=os.environ.get("TERM_PROGRAM", ""),
-        supports_sixel=terminal_supports_sixel(),
-        supports_osc8=terminal_supports_osc8(),
-        wrap_width=CONSOLE_WRAP_WIDTH,
-        terminal_width=get_console().width,
-    )
+    return InstalledPkgs(tools)
