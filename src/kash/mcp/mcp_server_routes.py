@@ -30,7 +30,7 @@ _mcp_published_actions: AtomicVar[list[str]] = AtomicVar([])
 def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     """
     Add actions to the list of published MCP tools.
-    By default, all actions are published.
+    By default, all actions marked as MCP tools are published.
     """
     global _mcp_published_actions
     if action_names is None:

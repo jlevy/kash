@@ -1,8 +1,7 @@
 import asyncio
-from enum import Enum
 import logging
 import time
-from typing import Literal
+from enum import Enum
 
 import anyio
 import httpcore
@@ -52,7 +51,7 @@ def run_as_proxy(proxy_to_url: str, timeout_secs: int = 300):
     log.error("Failed to connect. Giving up.")
 
 
-def run_mcp_server(mcp_mode: McpMode, proxy_to: str | None):
+def run_mcp_server(mcp_mode: McpMode, proxy_to: str | None, tool_names: list[str] | None = None):
     """
     Run an MCP server in one of the given modes.
     """
@@ -66,7 +65,7 @@ def run_mcp_server(mcp_mode: McpMode, proxy_to: str | None):
         # dynamic publishing of tools.
         log.warning("Running MCP server standalone, starting up...")
         kash_reload_all()
-        publish_mcp_tools()
+        publish_mcp_tools(tool_names)
         log.warning("Loaded kash, now running MCP server server (%s)", mcp_mode)
         if mcp_mode == McpMode.standalone_stdio:
             run_mcp_server_stdio()
