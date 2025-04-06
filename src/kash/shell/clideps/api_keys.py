@@ -5,6 +5,7 @@ from logging import getLogger
 
 from rich.text import Text
 
+from kash.config.settings import get_system_config_dir
 from kash.shell.clideps.dotenv_utils import env_var_is_set, load_dotenv_paths
 from kash.shell.output.shell_formatting import format_success_or_failure
 from kash.shell.output.shell_output import cprint
@@ -75,13 +76,13 @@ def print_api_key_setup(
     if once and _log_api_setup_done:
         return
 
-    dotenv_paths = load_dotenv_paths()
+    dotenv_paths = load_dotenv_paths(True, True, get_system_config_dir())
 
     cprint(
         Text.assemble(
             format_success_or_failure(
                 value=bool(dotenv_paths),
-                true_str=f"Found .env files: {', '.join(dotenv_paths)}",
+                true_str=f"Found .env files: {', '.join(str(path) for path in dotenv_paths)}",
                 false_str="No .env files found. Set up your API keys in a .env file.",
             ),
         )

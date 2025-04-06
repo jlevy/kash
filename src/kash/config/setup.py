@@ -2,6 +2,8 @@ from enum import Enum
 from functools import cache
 from typing import Any
 
+from kash.config.settings import get_system_config_dir
+
 
 @cache
 def setup(rich_logging: bool):
@@ -19,7 +21,7 @@ def setup(rich_logging: bool):
 
     add_stacktrace_handler()
 
-    load_dotenv_paths()
+    load_dotenv_paths(True, True, get_system_config_dir())
 
 
 def _lib_setup():

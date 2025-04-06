@@ -4,6 +4,7 @@ from flowmark import Wrap
 from prettyfmt import fmt_lines
 from strif import abbrev_str
 
+from kash.config.settings import get_system_config_dir, get_system_env_path
 from kash.shell.clideps.dotenv_utils import (
     env_var_is_set,
     find_dotenv_paths,
@@ -48,8 +49,8 @@ def interactive_update_dotenv(keys: list[str]) -> bool:
     Interactively fill missing values in the active .env file.
     Returns True if the user made changes, False otherwise.
     """
-    dotenv_paths = find_dotenv_paths()
-    dotenv_path = dotenv_paths[0] if dotenv_paths else Path("~/.env.local").expanduser()
+    dotenv_paths = find_dotenv_paths(True, get_system_config_dir())
+    dotenv_path = dotenv_paths[0] if dotenv_paths else get_system_env_path()
 
     if dotenv_paths:
         print_status(f"Found .env file you will update: {dotenv_path}")

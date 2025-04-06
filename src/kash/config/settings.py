@@ -3,10 +3,10 @@ from enum import Enum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
-from typing import overload
 
 from pydantic.dataclasses import dataclass
 
+from kash.config.env_settings import KashEnv
 from kash.utils.common.atomic_var import AtomicVar
 
 APP_NAME = "kash"
@@ -23,59 +23,51 @@ RECOMMENDED_API_KEYS = [
 ]
 
 
-@overload
-def path_from_env(env_name: str, default: None) -> None: ...
-
-
-@overload
-def path_from_env(env_name: str, default: Path) -> Path: ...
-
-
-def path_from_env(env_name: str, default: Path | None) -> Path | None:
-    value = os.environ.get(env_name)
-    if value:
-        return Path(value).expanduser().resolve()
-    else:
-        return default.expanduser().resolve() if default else None
-
-
 def get_ws_root_dir() -> Path:
     """Default root directory for kash workspaces."""
-    return path_from_env("KASH_WS_ROOT", Path("~/Kash").expanduser().resolve())
+    return KashEnv.KASH_WS_ROOT.read_path(Path("~/Kash"))
 
 
 def get_global_ws_dir() -> Path:
     """Default global workspace directory."""
-    kash_ws_dir = path_from_env("KASH_GLOBAL_WS", None)
+    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path(None)
     if kash_ws_dir:
         return kash_ws_dir
     else:
         return get_ws_root_dir() / GLOBAL_WS_NAME
 
 
+def get_system_config_dir() -> Path:
+    return Path("~/.config/kash").expanduser().resolve()
+
+
+def get_rcfile_path() -> Path:
+    return get_system_config_dir() / "kashrc"
+
+
 def get_system_logs_dir() -> Path:
     """Default global and system logs directory (for server logs, etc)."""
-    return path_from_env("KASH_SYSTEM_LOGS_DIR", get_ws_root_dir() / "logs")
+    return KashEnv.KASH_SYSTEM_LOGS_DIR.read_path(get_ws_root_dir() / "logs")
 
 
 def get_system_cache_dir() -> Path:
     """Default global and system cache directory (for global media, content, etc)."""
-    return path_from_env("KASH_SYSTEM_CACHE_DIR", get_ws_root_dir() / "cache")
+    return KashEnv.KASH_SYSTEM_CACHE_DIR.read_path(get_ws_root_dir() / "cache")
+
+
+def get_system_env_path() -> Path:
+    return get_system_config_dir() / "env.local"
 
 
 def get_mcp_ws_dir() -> Path | None:
     """
     Get the directory for the MCP workspace, if set.
     """
-    mcp_dir = os.environ.get("KASH_MCP_WS")
+    mcp_dir = KashEnv.KASH_MCP_WS.read_str()
     if mcp_dir:
         return Path(mcp_dir).expanduser().resolve()
     else:
         return None
-
-
-def get_rcfile_path() -> Path:
-    return Path("~/.kashrc").expanduser().resolve()
 
 
 MEDIA_CACHE_NAME = "media"
@@ -117,7 +109,7 @@ class LogLevel(Enum):
         return self.name
 
 
-DEFAULT_LOG_LEVEL = LogLevel.parse(os.environ.get("KASH_LOG_LEVEL", "warning"))
+DEFAULT_LOG_LEVEL = LogLevel.parse(KashEnv.KASH_LOG_LEVEL.read_str("warning"))
 
 
 def resolve_and_create_dirs(path: Path | str, is_dir: bool = False) -> Path:

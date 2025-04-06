@@ -6,6 +6,7 @@ from httpx import Timeout
 from openai import OpenAI
 
 from kash.config.logger import CustomLogger, get_logger
+from kash.config.settings import get_system_config_dir
 from kash.media_base.timestamp_citations import html_speaker_id_span, html_timestamp_span
 from kash.shell.clideps.dotenv_utils import load_dotenv_paths
 from kash.utils.errors import ContentError
@@ -63,7 +64,7 @@ def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None
         "Transcribing via Deepgram (language %r): %s (size %s)", language, audio_file_path, size
     )
 
-    load_dotenv_paths()
+    load_dotenv_paths(True, True, get_system_config_dir())
     deepgram = DeepgramClient("", ClientOptionsFromEnv())
 
     with open(audio_file_path, "rb") as audio_file:

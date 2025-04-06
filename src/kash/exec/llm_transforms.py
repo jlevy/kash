@@ -5,6 +5,7 @@ from chopdiff.transforms import WindowSettings, accept_all, filtered_transform
 from flowmark import fill_markdown
 
 from kash.config.logger import get_logger
+from kash.config.settings import get_system_config_dir
 from kash.llm_utils import LLMName
 from kash.llm_utils.fuzzy_parsing import strip_markdown_fence
 from kash.llm_utils.llm_completion import llm_template_completion
@@ -47,7 +48,7 @@ def windowed_llm_transform(
 
 
 def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: bool = True) -> str:
-    load_dotenv_paths()
+    load_dotenv_paths(True, True, get_system_config_dir())
 
     if options.windowing and options.windowing.size:
         log.message(

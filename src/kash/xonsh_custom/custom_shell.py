@@ -445,7 +445,7 @@ def start_shell(single_command: str | None = None, ready_event: threading.Event 
 
     # If we want to replicate all the xonsh settings including .xonshrc, we could call
     # start_services(). It may be problematic to support all xonsh enhancements, however,
-    # so let's only load ~/.kashrc files.
+    # so let's only load ~/.config/kash/kashrc files.
     load_rcfiles(execer, ctx)
 
     # Imports are so slow we will need to improve this. Let's time it.

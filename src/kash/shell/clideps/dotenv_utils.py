@@ -9,19 +9,28 @@ from dotenv.parser import parse_stream
 DOTENV_NAMES = [".env", ".env.local"]
 
 
-def find_dotenv_paths() -> list[str]:
+def find_dotenv_paths(include_home: bool = True, *extra_dirs: Path) -> list[Path]:
     """
     Find .env files in the current directory and return a list of paths.
+    If extra_dirs are provided, they will be checked for .env files as well.
     """
     paths = [find_dotenv(filename=path, usecwd=True) for path in DOTENV_NAMES]
-    return [path for path in paths if path]
+    if include_home:
+        paths.append("~")
+    for dir in extra_dirs:
+        for path in DOTENV_NAMES:
+            if (dir / path).expanduser().exists():
+                paths.append(str(dir / path))
+    return [Path(path).expanduser().resolve() for path in paths if path]
 
 
-def load_dotenv_paths(override: bool = True) -> list[str]:
+def load_dotenv_paths(
+    override: bool = True, include_home: bool = True, *extra_dirs: Path
+) -> list[Path]:
     """
     Find and load .env files.
     """
-    dotenv_paths = find_dotenv_paths()
+    dotenv_paths = find_dotenv_paths(include_home, *extra_dirs)
     for dotenv_path in dotenv_paths:
         load_dotenv(dotenv_path, override=override)
     return dotenv_paths
