@@ -1,12 +1,11 @@
+# Additions to standard GitHub .gitignore:
 *.bak
 *.orig
 *.stash.*
-
-# Additions to standard GitHub .gitignore:
 tmp/
 trash/
-.kash/
 attic/
+.kash/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
