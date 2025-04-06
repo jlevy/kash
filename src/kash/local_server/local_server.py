@@ -115,7 +115,7 @@ class LocalServer:
                     LOCAL_SERVER_HOST,
                     port,
                 )
-                log.message("Local server logs: %s", fmt_path(server_log_file_path(port)))
+                log.message("Local server logs: %s", fmt_path(self.log_path))
                 await server.serve()
             finally:
                 self.did_exit.set()
