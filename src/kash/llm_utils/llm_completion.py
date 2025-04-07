@@ -6,9 +6,9 @@ from flowmark import Wrap, fill_text
 from funlog import format_duration, log_calls
 from litellm.types.utils import Choices, ModelResponse
 from litellm.types.utils import Message as LiteLLMMessage
+from prettyfmt import slugify_snake
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
-from slugify import slugify
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_TIMING
@@ -113,7 +113,7 @@ def llm_completion(
         chat_history.messages.append(
             ChatMessage(role=ChatRole.assistant, content=content, metadata=metadata)
         )
-        model_slug = slugify(model.litellm_name, separator="_")
+        model_slug = slugify_snake(model.litellm_name)
         log.save_object(
             "LLM response",
             f"llm.{model_slug}",

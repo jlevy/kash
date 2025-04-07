@@ -12,11 +12,11 @@ from pathlib import Path
 from typing import IO, Any, cast
 
 import rich
+from prettyfmt import slugify_snake
 from rich._null_file import NULL_FILE
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.theme import Theme
-from slugify import slugify
 from strif import atomic_output_file, new_timestamped_uid
 from typing_extensions import override
 
@@ -317,8 +317,7 @@ class CustomLogger(logging.Logger):
         global _log_settings
         prefix = prefix_slug + "." if prefix_slug else ""
         filename = (
-            f"{prefix}{slugify(description, separator='_')}."
-            f"{new_timestamped_uid()}.{file_ext.lstrip('.')}"
+            f"{prefix}{slugify_snake(description)}.{new_timestamped_uid()}.{file_ext.lstrip('.')}"
         )
         path = _log_settings.log_objects_dir / filename
         with atomic_output_file(path, make_parents=True) as tmp_filename:

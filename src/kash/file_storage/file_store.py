@@ -97,10 +97,6 @@ class FileStore(Workspace):
 
         add_to_ignore(self.base_dir / ".gitignore", [".kash/"])
 
-        self.vector_index = None
-        # FIXME: Add vector index support dynamically if available.
-        # self.vector_index = WsVectorIndex(self.base_dir / self.dirs.index_dir)
-
         # Initialize selection with history support.
         self.selections = SelectionHistory.init(self.base_dir / self.dirs.selection_yml)
 

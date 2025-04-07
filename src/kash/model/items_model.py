@@ -9,9 +9,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from frontmatter_format import from_yaml_string, new_yaml
-from prettyfmt import abbrev_obj, abbrev_on_words, abbrev_phrase_in_middle, sanitize_title
+from prettyfmt import (
+    abbrev_obj,
+    abbrev_on_words,
+    abbrev_phrase_in_middle,
+    sanitize_title,
+    slugify_snake,
+)
 from pydantic.dataclasses import dataclass
-from slugify import slugify
 from strif import abbrev_str, format_iso_timestamp
 
 from kash.concepts.concept_formats import canonicalize_concept
@@ -541,7 +546,7 @@ class Item:
         appropriate for this item. May not be unique.
         """
         title = self.abbrev_title(max_len=max_len)
-        slug = slugify(title, max_length=max_len, separator="_")
+        slug = slugify_snake(title)
         return slug
 
     def abbrev_description(self, max_len: int = 1000) -> str:
