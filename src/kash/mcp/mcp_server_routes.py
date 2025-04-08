@@ -44,7 +44,7 @@ def publish_mcp_tools(action_names: list[str] | None = None) -> None:
             "Published %s MCP tools (total now %s): %s",
             len(new_actions),
             len(published_actions),
-            new_actions,
+            ", ".join(new_actions),
         )
 
 
