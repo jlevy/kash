@@ -1,14 +1,20 @@
 from enum import Enum
 from functools import cache
+from pathlib import Path
 from typing import Any
 
-from kash.config.settings import get_system_config_dir
+from kash.config.logger_basic import basic_logging_setup
+from kash.config.settings import LogLevel, get_system_config_dir
 
 
 @cache
-def setup(rich_logging: bool):
+def setup(rich_logging: bool, file_log_path: Path | None = None, level: LogLevel = LogLevel.info):
     """
-    One-time setup of essential keys, directories, and configs. Idempotent.
+    One-time top-level setup of essential logging, keys, directories, and configs.
+    Idempotent.
+
+    If rich_logging is True, then rich logging with warnings only for console use.
+    If rich_logging is False, then use basic logging to a file and stderr.
     """
     from kash.config.logger import reload_rich_logging_setup
     from kash.shell.clideps.dotenv_utils import load_dotenv_paths
@@ -16,6 +22,8 @@ def setup(rich_logging: bool):
 
     if rich_logging:
         reload_rich_logging_setup()
+    else:
+        basic_logging_setup(file_log_path=file_log_path, level=level)
 
     _lib_setup()
 

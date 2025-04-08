@@ -1,27 +1,45 @@
 import logging
 import warnings
 from logging import LogRecord
+from typing import Any
+from warnings import formatwarning
+
+FILTER_PATTERNS = [
+    "deprecated",
+    "Deprecation",
+    "PydanticDeprecatedSince20",
+    "pydantic",
+    # "pydub",
+]
+"""Warning messages to always suppress in console output."""
+
+
+def should_suppress(message: Any):
+    return any(pattern in str(message) for pattern in FILTER_PATTERNS)
 
 
 def filter_warnings():
+    for pattern in FILTER_PATTERNS:
+        warnings.filterwarnings("ignore", message=f".*{pattern}.*")
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    warnings.filterwarnings("ignore", message=".*deprecated.*")
-    warnings.filterwarnings("ignore", message=".*Deprecation.*")
-    warnings.filterwarnings("ignore", message=".*PydanticDeprecatedSince20.*")
-    warnings.filterwarnings("ignore", module="pydub")
-    warnings.filterwarnings("ignore", module="pydantic")
     warnings.filterwarnings("ignore", category=RuntimeWarning, module="xonsh.tools")
+
+    log = logging.getLogger("warnings")
+
+    def custom_showwarning(message, category, filename, lineno, _file=None, line=None):
+        if not should_suppress(message) and not should_suppress(category):
+            log.warning(formatwarning(message, category, filename, lineno, line))
+
+    # Override system default, which writes to stderr.
+    warnings.showwarning = custom_showwarning
 
 
 filter_warnings()
 
 
-# Doing it even more brute force since the approach above often doesn't work.
-def demote_warnings(record: LogRecord):
+# An even more brute force approach if the approach above doesn't work.
+def demote_warnings(record: LogRecord, level: int = logging.INFO):
     if record.levelno == logging.WARNING:
         # Check for any warning patterns that we're filtering in filter_warnings
-        if any(
-            pattern in record.msg
-            for pattern in ["deprecated", "Deprecation", "PydanticDeprecatedSince20"]
-        ) or any(module in str(record.pathname) for module in ["pydub", "pydantic", "xonsh.tools"]):
-            record.levelno = logging.INFO
+        if should_suppress(record.msg) or should_suppress(record.module):
+            record.levelno = level

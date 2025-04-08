@@ -1,12 +1,19 @@
 import logging
 import sys
-from logging import FileHandler, Formatter
+from logging import FileHandler, Formatter, LogRecord
 from pathlib import Path
 
 from kash.config.settings import LogLevel
+from kash.config.suppress_warnings import demote_warnings
 
 # Basic logging setup for non-interactive logging, like on a server.
 # For richer logging, see logger.py.
+
+
+class SuppressedWarningsStreamHandler(logging.StreamHandler):
+    def emit(self, record: LogRecord):
+        demote_warnings(record, level=logging.DEBUG)
+        super().emit(record)
 
 
 def basic_file_handler(path: Path, level: LogLevel) -> logging.FileHandler:
@@ -17,7 +24,7 @@ def basic_file_handler(path: Path, level: LogLevel) -> logging.FileHandler:
 
 
 def basic_stderr_handler(level: LogLevel) -> logging.StreamHandler:
-    handler = logging.StreamHandler(stream=sys.stderr)
+    handler = SuppressedWarningsStreamHandler(stream=sys.stderr)
     handler.setLevel(level.value)
     handler.setFormatter(Formatter("%(asctime)s %(levelname).1s %(name)s - %(message)s"))
     return handler
