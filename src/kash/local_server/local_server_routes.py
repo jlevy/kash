@@ -43,11 +43,11 @@ def format_local_url(route_path: str, **params: str | None) -> str:
     """
     URL to content on the local server.
     """
-    from kash.local_server.local_server import LOCAL_SERVER_HOST
+    from kash.local_server.local_server import UI_SERVER_HOST
 
     settings = global_settings()
     route_path = route_path.strip("/")
-    url = f"http://{LOCAL_SERVER_HOST}:{settings.local_server_port}/{route_path}"
+    url = f"http://{UI_SERVER_HOST}:{settings.local_server_port}/{route_path}"
     if params:
         query_params = {k: v for k, v in params.items() if v is not None}
         if query_params:

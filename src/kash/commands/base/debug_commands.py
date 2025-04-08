@@ -179,7 +179,7 @@ def reload_system() -> None:
     the local the local server. Not perfect! But sometimes useful for development.
     """
     import kash
-    from kash.local_server.local_server import restart_local_server
+    from kash.local_server.local_server import restart_ui_server
     from kash.utils.common.import_utils import recursive_reload
 
     module = kash
@@ -197,7 +197,7 @@ def reload_system() -> None:
     log.info("Reloaded modules: %s", ", ".join(package_names))
     log.message("Reloaded %s modules from %s.", len(package_names), module.__name__)
 
-    restart_local_server()
+    restart_ui_server()
 
     # TODO Re-register commands and actions.
 

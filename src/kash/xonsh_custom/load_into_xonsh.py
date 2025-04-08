@@ -18,7 +18,7 @@ from kash.commands.base.general_commands import self_check
 from kash.commands.help import doc_commands
 from kash.config.logger import get_logger
 from kash.config.settings import check_kerm_code_support
-from kash.local_server.local_server import start_local_server
+from kash.local_server.local_server import start_ui_server
 from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.clideps.pkg_deps import pkg_check
 from kash.shell.output.shell_output import PrintHooks, cprint
@@ -91,7 +91,7 @@ def load_into_xonsh():
         # Currently only Kerm supports our advanced UI with Kerm codes.
         supports_kerm_codes = check_kerm_code_support()
         if supports_kerm_codes:
-            start_local_server()
+            start_ui_server()
             enable_local_urls(True)
         else:
             cprint(

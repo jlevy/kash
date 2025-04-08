@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -56,8 +57,8 @@ def _app_setup() -> FastAPI:
     return app
 
 
-LOCAL_SERVER_NAME = "local_server"
-LOCAL_SERVER_HOST = "127.0.0.1"
+UI_SERVER_NAME = "local_ui_server"
+UI_SERVER_HOST = "127.0.0.1"
 """
 The local hostname to run the local server on.
 
@@ -72,7 +73,7 @@ def _pick_port() -> int:
     """
     settings = global_settings()
     port = find_available_local_port(
-        LOCAL_SERVER_HOST,
+        UI_SERVER_HOST,
         range(
             settings.local_server_ports_start,
             settings.local_server_ports_start + settings.local_server_ports_max,
@@ -86,62 +87,70 @@ def _pick_port() -> int:
 
 
 class LocalServer:
-    def __init__(self):
+    def __init__(self, server_name: str, host: str):
+        self.server_name = server_name
+        self.host = host
         self.server_lock = threading.RLock()
-        self.server_instance: uvicorn.Server | None = None
         self.did_exit = threading.Event()
+        self.server_instance: uvicorn.Server | None = None
+        self.log_path: Path
+        self.port: int
 
     @cached_property
     def app(self) -> FastAPI:
         return _app_setup()
 
-    def _run_server(self):
+    @property
+    def host_port(self) -> str | None:
+        if self.server_instance:
+            return f"{self.server_instance.config.host}:{self.server_instance.config.port}"
+        else:
+            return None
+
+    def _setup_server(self):
         import uvicorn
 
         port = _pick_port()
-        self.log_path = server_log_file_path(LOCAL_SERVER_NAME, port)
+        self.port = port
+        self.log_path = server_log_file_path(self.server_name, port)
 
-        config = create_server_config(
-            self.app, LOCAL_SERVER_HOST, port, LOCAL_SERVER_NAME, self.log_path
-        )
-        with self.server_lock:
-            server = uvicorn.Server(config)
-            self.server_instance = server
+        config = create_server_config(self.app, self.host, port, self.server_name, self.log_path)
 
-        async def serve():
-            try:
-                log.message(
-                    "Starting local server on %s:%s",
-                    LOCAL_SERVER_HOST,
-                    port,
-                )
-                log.message("Local server logs: %s", fmt_path(self.log_path))
-                await server.serve()
-            finally:
-                self.did_exit.set()
+        server = uvicorn.Server(config)
+        self.server_instance = server
 
+    def _run_server_thread(self):
+        assert self.server_instance
         try:
-            asyncio.run(serve())
+            asyncio.run(self.server_instance.serve())
         except Exception as e:
             log.error("Server failed with error: %s", e)
         finally:
-            with self.server_lock:
-                self.server_instance = None
+            self.server_instance = None
+            self.did_exit.set()
 
     def start_server(self):
         with self.server_lock:
             if self.server_instance:
                 log.warning(
-                    "Server already running on %s:%s.",
-                    self.server_instance.config.host,
-                    self.server_instance.config.port,
+                    "Server already running on: %s",
+                    self.host_port,
                 )
                 return
 
             self.did_exit.clear()
-            server_thread = threading.Thread(target=self._run_server, daemon=True)
+
+            self._setup_server()
+
+            server_thread = threading.Thread(target=self._run_server_thread, daemon=True)
             server_thread.start()
             log.info("Created new local server thread: %s", server_thread)
+            log.message(
+                "Started server %s on %s with logs to %s",
+                UI_SERVER_NAME,
+                self.host_port,
+                fmt_path(self.log_path),
+            )
 
     def stop_server(self):
         with self.server_lock:
@@ -159,25 +168,25 @@ class LocalServer:
                     raise InvalidState(f"Server did not shut down within {timeout} seconds")
 
             self.server_instance = None
-            log.warning("Server stopped.")
+            log.warning("Stopped server %s", UI_SERVER_NAME)
 
     def restart_server(self):
         self.stop_server()
         self.start_server()
 
 
-# Singleton instance.
-# Note this is quick to set up (lazy import).
-_local_server = LocalServer()
+# Singleton instance for the UI server.
+# Note this is quick to set up (lazy imports).
+_ui_server = LocalServer(UI_SERVER_NAME, UI_SERVER_HOST)
 
 
-def start_local_server():
-    _local_server.start_server()
+def start_ui_server():
+    _ui_server.start_server()
 
 
-def stop_local_server():
-    _local_server.stop_server()
+def stop_ui_server():
+    _ui_server.stop_server()
 
 
-def restart_local_server():
-    _local_server.restart_server()
+def restart_ui_server():
+    _ui_server.restart_server()

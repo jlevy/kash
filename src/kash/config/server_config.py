@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 def create_server_config(
-    app: Callable[..., Any], host: str, port: int, server_name: str, log_path: Path
+    app: Callable[..., Any], host: str, port: int, _server_name: str, log_path: Path
 ) -> "uvicorn.Config":
     """
     Create a common server configuration for both local and MCP servers.
@@ -43,11 +43,11 @@ def create_server_config(
                 "uvicorn": {"handlers": ["default"], "level": "INFO", "propagate": False},
                 "uvicorn.error": {"handlers": ["default"], "level": "INFO", "propagate": False},
                 "uvicorn.access": {"handlers": ["default"], "level": "INFO", "propagate": False},
-                f"kash.{server_name}": {
-                    "handlers": ["default"],
-                    "level": "INFO",
-                    "propagate": False,
-                },
+                # f"kash.{server_name}": {
+                #     "handlers": ["default"],
+                #     "level": "INFO",
+                #     "propagate": False,
+                # },
             },
         },
     )

@@ -27,6 +27,7 @@ class AtomicVar(Generic[T]):
 
     Often the standard "Pythonic" approach is to use locks directly, but for
     some common use cases, `AtomicVar` may be simpler and more readable.
+    Works on any type, including lists and dicts.
 
     Other options include `threading.Event` (for shared booleans),
     `threading.Queue` (for producer-consumer queues), and `multiprocessing.Value`
@@ -47,11 +48,9 @@ class AtomicVar(Generic[T]):
     if global_flag:  # In any thread.
         print("Flag is set")
 
-    # Works on any type, including lists and dicts.
 
     # For mutable types,consider using `copy` or `deepcopy` to access the value:
     my_list = AtomicVar([1, 2, 3])
-
     my_list_copy = my_list.copy()  # In any thread.
     my_list_deepcopy = my_list.deepcopy()  # In any thread.
 
@@ -62,6 +61,20 @@ class AtomicVar(Generic[T]):
 
     # Or if you prefer, via a function:
     my_list.update(lambda x: x.append(4))  # In any thread.
+
+    # You can also use the var's lock directly. In particular, this encapsulates
+    # locked one-time initialization:
+    initialized = AtomicVar(False)
+    with initialized.lock:
+        if not initialized:  # checks truthiness of underlying value
+            expensive_setup()
+            initialized.set(True)
+
+    # Or:
+    lazy_var: AtomicVar[list[str] | None] = AtomicVar(None)
+    with lazy_var.lock:
+        if not lazy_var:
+            lazy_var.set(expensive_calculation())
     ```
     """
 
@@ -132,7 +145,7 @@ class AtomicVar(Generic[T]):
         Context manager for convenient thread-safe updates. Only applicable to
         mutable types.
 
-        Usage:
+        Example usage:
         ```
         my_list = AtomicVar([1, 2, 3])
         with my_list.updates() as value:
