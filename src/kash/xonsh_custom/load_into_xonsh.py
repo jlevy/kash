@@ -1,5 +1,6 @@
 from kash.config.setup import setup
 from kash.config.text_styles import LOGO_NAME, STYLE_HINT
+from kash.mcp.mcp_server_commands import start_mcp_server
 from kash.xonsh_custom.shell_load_commands import (
     is_interactive,
     log_command_action_info,
@@ -95,9 +96,10 @@ def load_into_xonsh():
             enable_local_urls(True)
         else:
             cprint(
-                "If your terminal supports it, you may use `start_local_server` to enable local links.",
+                "If your terminal supports it, you may use `start_ui_server` to enable local links.",
                 style=STYLE_HINT,
             )
+        start_mcp_server()
 
         cprint()
         log_command_action_info()

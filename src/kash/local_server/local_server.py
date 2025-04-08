@@ -14,7 +14,7 @@ from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
-from kash.config.settings import atomic_global_settings, global_settings, server_log_file_path
+from kash.config.settings import atomic_global_settings, global_settings, local_server_log_path
 from kash.local_server import local_server_routes
 from kash.local_server.port_tools import find_available_local_port
 from kash.utils.errors import InvalidInput, InvalidState
@@ -87,13 +87,13 @@ def _pick_port() -> int:
 
 
 class LocalServer:
-    def __init__(self, server_name: str, host: str):
+    def __init__(self, server_name: str, host: str, log_path: Path):
         self.server_name = server_name
         self.host = host
+        self.log_path = log_path
         self.server_lock = threading.RLock()
         self.did_exit = threading.Event()
         self.server_instance: uvicorn.Server | None = None
-        self.log_path: Path
         self.port: int
 
     @cached_property
@@ -112,8 +112,6 @@ class LocalServer:
 
         port = _pick_port()
         self.port = port
-        self.log_path = server_log_file_path(self.server_name, port)
-
         config = create_server_config(self.app, self.host, port, self.server_name, self.log_path)
 
         server = uvicorn.Server(config)
@@ -177,7 +175,7 @@ class LocalServer:
 
 # Singleton instance for the UI server.
 # Note this is quick to set up (lazy imports).
-_ui_server = LocalServer(UI_SERVER_NAME, UI_SERVER_HOST)
+_ui_server = LocalServer(UI_SERVER_NAME, UI_SERVER_HOST, local_server_log_path())
 
 
 def start_ui_server():

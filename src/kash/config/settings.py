@@ -83,7 +83,12 @@ LOCAL_SERVER_PORT_START = 4470
 LOCAL_SERVER_PORTS_MAX = 30
 
 
-SERVER_LOG_FILE = str(get_system_logs_dir() / "{name}_{port}.log")
+LOCAL_SERVER_LOG_NAME = "local_server"
+
+
+@cache
+def local_server_log_path() -> Path:
+    return resolve_and_create_dirs(get_system_logs_dir() / f"{LOCAL_SERVER_LOG_NAME}.log")
 
 
 class LogLevel(Enum):
@@ -191,12 +196,6 @@ class Settings:
 
     use_nerd_icons: bool
     """If true, use Nerd Icons in file listings. Requires a compatible font."""
-
-
-@cache
-def server_log_file_path(name: str, port: int | str) -> Path:
-    # Use a different log file for each port (server instance).
-    return resolve_and_create_dirs(SERVER_LOG_FILE.format(name=name, port=port))
 
 
 # Initial default settings.

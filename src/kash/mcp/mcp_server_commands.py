@@ -4,12 +4,11 @@ from pathlib import Path
 from kash.config.logger import get_logger
 from kash.config.settings import (
     get_system_logs_dir,
-    global_settings,
-    server_log_file_path,
+    local_server_log_path,
 )
 from kash.exec import kash_command
 from kash.mcp import mcp_server_routes
-from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX, MCP_SERVER_NAME
+from kash.mcp.mcp_cli import MCP_CLI_LOG_PATH
 from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import cprint, print_h2
 from kash.shell.utils.native_utils import tail_file
@@ -65,7 +64,7 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
         log_paths = []
         did_log = False
         while len(log_paths) == 0:
-            log_paths = list(global_log_base.glob(f"{MCP_LOG_PREFIX}*.log"))
+            log_paths = [local_server_log_path(), MCP_CLI_LOG_PATH]
             claude_logs = list(claude_log_base.glob("mcp*.log"))
             if claude_logs:
                 log.message("Found Claude Desktop logs, will also tail them: %s", claude_logs)
@@ -82,7 +81,7 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
                     did_log = True
                 time.sleep(1)
     else:
-        server_log_path = server_log_file_path(MCP_SERVER_NAME, global_settings().mcp_server_port)
+        server_log_path = local_server_log_path()  # MCP logs shared with local server logs.
         if not server_log_path.exists():
             raise InvalidState(
                 f"MCP server log not found (forgot to run `start_mcp_server`?): {server_log_path}"

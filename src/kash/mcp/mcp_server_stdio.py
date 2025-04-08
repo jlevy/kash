@@ -5,17 +5,9 @@ import sys
 from anyio import ClosedResourceError
 from mcp.server.stdio import stdio_server
 
-from kash.config.settings import server_log_file_path
 from kash.mcp import mcp_server_routes
-from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
 
 log = logging.getLogger(__name__)
-
-MCP_SERVER_NAME = f"{MCP_LOG_PREFIX}_server_stdio"
-
-
-def get_log_path():
-    return server_log_file_path(MCP_SERVER_NAME, "stdio")
 
 
 def run_mcp_server_stdio():

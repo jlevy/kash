@@ -10,10 +10,13 @@ import os
 from pathlib import Path
 
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, get_system_logs_dir
+from kash.config.settings import (
+    DEFAULT_MCP_SERVER_PORT,
+    LogLevel,
+    get_system_logs_dir,
+)
 from kash.config.setup import setup
 from kash.mcp.mcp_main import McpMode, run_mcp_server
-from kash.mcp.mcp_server_sse import MCP_LOG_PREFIX
 from kash.shell.utils.argparse_utils import WrappedColorFormatter
 from kash.shell.version import get_version
 from kash.workspaces.workspaces import Workspace, get_ws, global_ws_dir
@@ -22,9 +25,8 @@ __version__ = get_version()
 
 DEFAULT_PROXY_URL = f"http://localhost:{DEFAULT_MCP_SERVER_PORT}/sse"
 
-LOG_PATH = get_system_logs_dir() / f"{MCP_LOG_PREFIX}_cli.log"
+MCP_CLI_LOG_PATH = get_system_logs_dir() / "mcp_cli.log"
 
-basic_logging_setup(LOG_PATH, LogLevel.info)
 
 log = logging.getLogger()
 
@@ -65,7 +67,7 @@ def main():
 
     setup(rich_logging=False)
 
-    log.warning("kash MCP CLI started, logging to: %s", LOG_PATH)
+    log.warning("kash MCP CLI started, logging to: %s", MCP_CLI_LOG_PATH)
     log.warning("Current working directory: %s", Path(".").resolve())
 
     ws: Workspace = get_ws(name_or_path=base_dir, auto_init=True)
@@ -84,4 +86,5 @@ def main():
 
 
 if __name__ == "__main__":
+    basic_logging_setup(MCP_CLI_LOG_PATH, LogLevel.info)
     main()

@@ -1,7 +1,6 @@
 from kash.config.logger import get_logger
-from kash.config.settings import global_settings, server_log_file_path
+from kash.config.settings import local_server_log_path
 from kash.exec import kash_command
-from kash.local_server.local_server import UI_SERVER_NAME
 from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.errors import InvalidState
@@ -45,13 +44,13 @@ def restart_ui_server() -> None:
 
 
 @kash_command
-def ui_server_logs(follow: bool = False) -> None:
+def local_server_logs(follow: bool = False) -> None:
     """
-    Show the logs from the kash local ui server.
+    Show the logs from the kash local (UI and MCP) servers.
 
     :param follow: Follow the file as it grows.
     """
-    log_path = server_log_file_path(UI_SERVER_NAME, global_settings().local_server_port)
+    log_path = local_server_log_path()
     if not log_path.exists():
         raise InvalidState(
             f"Local ui server log not found (forgot to run `start_ui_server`?): {log_path}"
