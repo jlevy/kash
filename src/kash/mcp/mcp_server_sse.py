@@ -83,7 +83,7 @@ class MCPServerSSE:
             find_available_local_port(self.host, [port])
         except RuntimeError:
             log.warning(
-                f"MCP Server port {port} is not available. Server {self.server_name} will not start."
+                f"MCP Server port {port} ({self.server_name}) is in use. Will not start another server."
             )
             return False
 

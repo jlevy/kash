@@ -27,6 +27,13 @@ log = get_logger(__name__)
 _mcp_published_actions: AtomicVar[list[str]] = AtomicVar([])
 
 
+def get_published_mcp_tools() -> list[str]:
+    """
+    Get the list of currently published MCP tools.
+    """
+    return _mcp_published_actions.copy()
+
+
 def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     """
     Add actions to the list of published MCP tools.
@@ -40,12 +47,8 @@ def publish_mcp_tools(action_names: list[str] | None = None) -> None:
     with _mcp_published_actions.updates() as published_actions:
         new_actions = set(action_names).difference(published_actions)
         published_actions.extend(new_actions)
-        log.message(
-            "Published %s MCP tools (total now %s): %s",
-            len(new_actions),
-            len(published_actions),
-            ", ".join(new_actions),
-        )
+        log.message("Adding %s MCP tools (total now %s)", len(new_actions), len(published_actions))
+        log.info("Current MCP tools: %s", ", ".join(published_actions))
 
 
 def unpublish_mcp_tools(action_names: list[str] | None) -> None:

@@ -91,18 +91,26 @@ def print_command_function_help(command: CommandFunction, verbose: bool = True):
     )
 
 
-def print_action_help(action: Action, verbose: bool = True):
-    params = (
-        list(action.params)
-        + list(RUNTIME_ACTION_PARAMS.values())
-        + list(COMMON_SHELL_PARAMS.values())
-    )
+def print_action_help(
+    action: Action,
+    verbose: bool = True,
+    include_options: bool = True,
+    include_precondition: bool = True,
+):
+    if include_options:
+        params = (
+            list(action.params)
+            + list(RUNTIME_ACTION_PARAMS.values())
+            + list(COMMON_SHELL_PARAMS.values())
+        )
+    else:
+        params = None
 
     _print_command_help(
         action.name,
         action.description,
         param_info=params,
-        precondition=action.precondition,
+        precondition=action.precondition if include_precondition else None,
         verbose=verbose,
         is_action=True,
         extra_note="(kash action)",
