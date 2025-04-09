@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_lines, fmt_path
 from strif import atomic_output_file
 
 from kash.config.logger import get_logger
@@ -48,12 +48,12 @@ class MediaCache(DirStore):
         with atomic_output_file(transcript_path) as temp_output:
             with open(temp_output, "w") as f:
                 f.write(content)
-        log.message("Transcript saved to cache: %s", fmt_loc(transcript_path))
+        log.message("Transcript saved to cache: %s", fmt_path(transcript_path))
 
     def _read_transcript(self, url: Url) -> str | None:
         transcript_file = self.find(url, suffix=SUFFIX_TRANSCRIPT)
         if transcript_file:
-            log.message("Video transcript already in cache: %s: %s", url, fmt_loc(transcript_file))
+            log.message("Video transcript already in cache: %s: %s", url, fmt_path(transcript_file))
             with open(transcript_file) as f:
                 return f.read()
         return None
@@ -67,8 +67,8 @@ class MediaCache(DirStore):
             downsampled_audio_file = self.path_for(url, suffix=SUFFIX_16KMP3)
             log.message(
                 "Downsampling audio: %s -> %s",
-                fmt_loc(full_audio_file),
-                fmt_loc(downsampled_audio_file),
+                fmt_path(full_audio_file),
+                fmt_path(downsampled_audio_file),
             )
             downsample_to_16khz(full_audio_file, downsampled_audio_file)
         return downsampled_audio_file
@@ -81,7 +81,7 @@ class MediaCache(DirStore):
         log.message(
             "Transcribing audio: %s: %s",
             url,
-            fmt_loc(downsampled_audio_file),
+            fmt_path(downsampled_audio_file),
         )
         transcript = transcribe_audio(downsampled_audio_file, language=language)
         self._write_transcript(url, transcript)
@@ -104,12 +104,12 @@ class MediaCache(DirStore):
             if MediaType.audio in media_types:
                 audio_file = self.find(url, suffix=SUFFIX_MP3)
                 if audio_file:
-                    log.message("Audio already in cache: %s: %s", url, fmt_loc(audio_file))
+                    log.message("Audio already in cache: %s: %s", url, fmt_path(audio_file))
                     cached_paths[MediaType.audio] = audio_file
             if MediaType.video in media_types:
                 video_file = self.find(url, suffix=SUFFIX_MP4)
                 if video_file:
-                    log.message("Video already in cache: %s: %s", url, fmt_loc(video_file))
+                    log.message("Video already in cache: %s: %s", url, fmt_path(video_file))
                     cached_paths[MediaType.video] = video_file
             if set(media_types).issubset(cached_paths.keys()):
                 return cached_paths
@@ -133,7 +133,7 @@ class MediaCache(DirStore):
 
         log.message(
             "Downloaded media and saved to cache:\n%s",
-            fmt_lines([f"{t.name}: {fmt_loc(p)}" for (t, p) in cached_paths.items()]),
+            fmt_lines([f"{t.name}: {fmt_path(p)}" for (t, p) in cached_paths.items()]),
         )
 
         self._downsample_audio(url)
@@ -169,7 +169,7 @@ class MediaCache(DirStore):
                 raise FileNotFound(f"File not found: {fmt_loc(url_or_path)}")
             url = as_file_url(url_or_path)
         else:
-            raise InvalidInput(f"Not a media URL or path: {url_or_path}")
+            raise InvalidInput(f"Not a media URL or path: {fmt_loc(url_or_path)}")
 
         # Now do the transcription.
         transcript = self._do_transcription(url, language=language)
