@@ -1,9 +1,10 @@
 from collections.abc import Sequence
+from typing import Any, TypeAlias
 
 import numpy as np
 
 # Type aliases for clarity
-ArrayLike = Sequence[float] | np.ndarray
+ArrayLike: TypeAlias = Sequence[float] | np.ndarray[Any, Any]
 
 
 def cosine(u: ArrayLike, v: ArrayLike) -> float:

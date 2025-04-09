@@ -1,3 +1,5 @@
+from flowmark import Wrap
+
 from kash.commands.base.model_commands import list_apis, list_models
 from kash.commands.workspace.workspace_commands import list_params
 from kash.config.logger import get_logger
@@ -197,7 +199,9 @@ def kits() -> None:
     else:
         cprint("Currently imported kits:")
         for kit in get_loaded_kits().values():
-            cprint(format_name_and_value(f"{kit.name} kit", str(kit.path or "")))
+            cprint(
+                format_name_and_value(f"{kit.name} kit", str(kit.path or ""), text_wrap=Wrap.NONE)
+            )
 
 
 @kash_command
@@ -210,5 +214,5 @@ def settings() -> None:
     settings = global_settings()
     print_h2("Global Settings")
     for field, value in settings.__dict__.items():
-        cprint(format_name_and_value(field, str(value)))
+        cprint(format_name_and_value(field, str(value), text_wrap=Wrap.NONE))
     PrintHooks.spacer()
