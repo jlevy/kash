@@ -24,7 +24,6 @@ class FileExt(Enum):
     log = "log"
     py = "py"
     sh = "sh"
-    ksh = "ksh"
     xsh = "xsh"
     pdf = "pdf"
     docx = "docx"
@@ -49,7 +48,6 @@ class FileExt(Enum):
             self.json,
             self.py,
             self.sh,
-            self.ksh,
             self.xsh,
         ]
 

@@ -1,5 +1,5 @@
 
-# Additional snippets not already in tldr_standard_commands.ksh
+# Additional snippets not already in tldr_standard_commands.sh
 
 # Show all current processes running `python`
 procs python

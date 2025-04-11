@@ -17,7 +17,7 @@ from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.common.format_utils import fmt_count_items, fmt_loc
 from kash.utils.file_formats.chat_format import ChatHistory
-from kash.utils.file_utils.dir_size import get_dir_size
+from kash.utils.file_utils.dir_size import get_dir_info
 from kash.utils.file_utils.file_formats_model import file_format_info
 from kash.workspaces import Selection, current_ws
 
@@ -67,13 +67,20 @@ def post_shell_result(res: ShellResult) -> None:
             suggest_actions()
 
 
-def print_dir_info(path: Path, text_wrap: Wrap = Wrap.NONE):
-    dir_info = get_dir_size(path)
+def print_dir_info(path: Path, tally_formats: bool = False, text_wrap: Wrap = Wrap.NONE):
+    dir_info = get_dir_info(path, tally_formats)
 
     cprint(format_name_and_value("total files", f"{dir_info.file_count}"), text_wrap=text_wrap)
     cprint(
         format_name_and_value("total size", fmt_size_dual(dir_info.total_size)), text_wrap=text_wrap
     )
+
+    if tally_formats and dir_info.format_tallies:
+        for format, count in dir_info.format_tallies.items():
+            cprint(
+                format_name_and_value(f"format: {format}", f"{count}"),
+                text_wrap=text_wrap,
+            )
 
 
 def print_file_info(
@@ -83,7 +90,7 @@ def print_file_info(
     text_wrap: Wrap = Wrap.NONE,
 ):
     if input_path.is_dir():
-        print_dir_info(input_path, text_wrap)
+        print_dir_info(input_path, tally_formats=True, text_wrap=text_wrap)
         return
 
     # Format info.

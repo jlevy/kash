@@ -44,8 +44,9 @@ class Format(Enum):
     yaml = "yaml"
     diff = "diff"
     python = "python"
-    kash_script = "kash_script"
-    """Our own format for kash scripts."""
+    sh = "sh"
+    """Leaving as just `sh` for now but we perhaps should distinguish sh/bash/other shells."""
+    xonsh = "xonsh"
     json = "json"
     csv = "csv"
     npz = "npz"
@@ -85,7 +86,8 @@ class Format(Enum):
             self.diff,
             self.python,
             self.json,
-            self.kash_script,
+            self.sh,
+            self.xonsh,
             self.csv,
             self.log,
         ]
@@ -114,7 +116,7 @@ class Format(Enum):
 
     @property
     def is_code(self) -> bool:
-        return self in [self.python, self.kash_script, self.json, self.yaml]
+        return self in [self.python, self.sh, self.xonsh, self.json, self.yaml]
 
     @property
     def is_data(self) -> bool:
@@ -141,7 +143,8 @@ class Format(Enum):
             self.yaml,
             self.diff,
             self.python,
-            self.kash_script,
+            self.sh,
+            self.xonsh,
             self.csv,
             self.log,
         ]
@@ -157,7 +160,8 @@ class Format(Enum):
             Format.yaml: MediaType.text,
             Format.diff: MediaType.text,
             Format.python: MediaType.text,
-            Format.kash_script: MediaType.text,
+            Format.sh: MediaType.text,
+            Format.xonsh: MediaType.text,
             Format.json: MediaType.text,
             Format.csv: MediaType.text,
             Format.log: MediaType.text,
@@ -189,7 +193,8 @@ class Format(Enum):
             FileExt.npz.value: Format.npz,
             FileExt.log.value: Format.log,
             FileExt.py.value: Format.python,
-            FileExt.ksh.value: Format.kash_script,
+            FileExt.sh.value: Format.sh,
+            FileExt.xsh.value: Format.xonsh,
             FileExt.pdf.value: Format.pdf,
             FileExt.docx.value: Format.docx,
             FileExt.jpg.value: Format.jpeg,
@@ -219,6 +224,8 @@ class Format(Enum):
             Format.npz: FileExt.npz,
             Format.log: FileExt.log,
             Format.python: FileExt.py,
+            Format.sh: FileExt.sh,
+            Format.xonsh: FileExt.xsh,
             Format.pdf: FileExt.pdf,
             Format.docx: FileExt.docx,
             Format.jpeg: FileExt.jpg,
@@ -244,6 +251,8 @@ class Format(Enum):
             "application/yaml": Format.yaml,
             "application/x-yaml": Format.yaml,
             "text/x-python": Format.python,
+            "text/x-sh": Format.sh,
+            "text/x-xonsh": Format.xonsh,
             "application/json": Format.json,
             "text/csv": Format.csv,
             "application/x-npz": Format.npz,
@@ -334,7 +343,7 @@ class FileFormatInfo:
         elif self.mime_type:
             return self.mime_type
         else:
-            return "unrecognized"
+            return "unrecognized format"
 
     def __str__(self) -> str:
         return self.as_str()
@@ -357,13 +366,17 @@ def guess_format_by_name(path: str | Path) -> Format | None:
     return Format.guess_by_file_ext(file_ext) if file_ext else None
 
 
-def file_format_info(path: str | Path) -> FileFormatInfo:
+def file_format_info(path: str | Path, fast: bool = False) -> FileFormatInfo:
     """
     Full info on the file format path and content (file extension and file content).
+    If `fast` is True, we don't look at the file content if we recognize the file extension.
     """
     path = Path(path)
     file_ext = parse_file_ext(path)
-    mime_type = detect_mime_type(path)
+    if not fast or not file_ext:
+        mime_type = detect_mime_type(path)
+    else:
+        mime_type = None
     format = _guess_format(file_ext, mime_type)
     final_mime_type = format.mime_type if format else mime_type
     return FileFormatInfo(file_ext, format, final_mime_type)

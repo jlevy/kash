@@ -8,7 +8,7 @@ from kash.help.help_types import RecipeScript, RecipeSnippet
 
 log = get_logger(__name__)
 
-RECIPE_EXT = ".ksh"
+RECIPE_EXT = ".sh"
 
 RECIPES_DIR = Path(__file__).parent / "recipes"
 

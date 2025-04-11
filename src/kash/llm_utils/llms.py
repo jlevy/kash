@@ -35,15 +35,6 @@ class LLM(LLMName, Enum):
     # https://docs.x.ai/docs/models
     xai_grok_2 = LLMName("xai/grok-2-latest")
 
-    # https://docs.mistral.ai/getting-started/models/models_overview/
-    mistral_small = LLMName("mistral/mistral-small-latest")
-    mistral_large = LLMName("mistral/mistral-large-latest")
-    mistral_codestral = LLMName("mistral/mistral-codestral-latest")
-
-    # https://docs.perplexity.ai/guides/model-cards
-    sonar = LLMName("perplexity/sonar")
-    sonar_pro = LLMName("perplexity/sonar-pro")
-
     # https://api-docs.deepseek.com/quick_start/pricing
     deepseek_chat = LLMName("deepseek/deepseek-chat")
     deepseek_coder = LLMName("deepseek/deepseek-coder")
@@ -54,6 +45,15 @@ class LLM(LLMName, Enum):
     groq_llama_3_3_70b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")
     groq_deepseek_r1_distill_qwen_32b = LLMName("groq/deepseek-r1-distill-qwen-32b")
+
+    # https://docs.perplexity.ai/guides/model-cards
+    sonar = LLMName("perplexity/sonar")
+    sonar_pro = LLMName("perplexity/sonar-pro")
+
+    # https://docs.mistral.ai/getting-started/models/models_overview/
+    mistral_small = LLMName("mistral/mistral-small-latest")
+    mistral_large = LLMName("mistral/mistral-large-latest")
+    mistral_codestral = LLMName("mistral/mistral-codestral-latest")
 
     # Allows use of "default_standard" etc as model names and have the
     # model be looked up from workspace parameter settings.

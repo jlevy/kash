@@ -82,7 +82,6 @@ class ItemType(Enum):
             Format.yaml: ItemType.doc,
             Format.diff: ItemType.doc,
             Format.python: ItemType.extension,
-            Format.kash_script: ItemType.extension,
             Format.json: ItemType.doc,
             Format.csv: ItemType.doc,
             Format.log: ItemType.log,
@@ -589,8 +588,8 @@ class Item:
             # Python files cannot have more than one . in them.
             return f"{FileExt.py.value}"
         elif self.type == ItemType.script:
-            # Same for kash scripts.
-            return f"{self.type.value}.{FileExt.ksh.value}"
+            # Same for kash/xonsh scripts.
+            return f"{self.type.value}.{FileExt.xsh.value}"
         else:
             return f"{self.type.value}.{self.get_file_ext().value}"
 

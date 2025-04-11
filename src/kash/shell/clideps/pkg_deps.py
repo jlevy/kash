@@ -47,7 +47,8 @@ def check_libmagic():
 
 class Pkg(Enum):
     """
-    External (usually non-Python) system tools that we like to use.
+    Specific external packages (like libraries and system tools) that are
+    often useful, especially from within Python or a shell.
     """
 
     # These are usually pre-installed on all platforms:

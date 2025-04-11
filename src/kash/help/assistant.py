@@ -318,7 +318,7 @@ def shell_context_assistance(
                 type=ItemType.script,
                 title=f"Assistant Answer: {capitalize_cms(input)}",
                 description=response_text,
-                format=Format.kash_script,
+                format=Format.sh,
                 body=script.script_str,
             )
             ws = current_ws()
