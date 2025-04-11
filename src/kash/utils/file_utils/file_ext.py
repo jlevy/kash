@@ -29,6 +29,7 @@ class FileExt(Enum):
     docx = "docx"
     jpg = "jpg"
     png = "png"
+    gif = "gif"
     svg = "svg"
     mp3 = "mp3"
     m4a = "m4a"
@@ -53,7 +54,7 @@ class FileExt(Enum):
 
     @property
     def is_image(self) -> bool:
-        return self in [self.jpg, self.png]
+        return self in [self.jpg, self.png, self.gif, self.svg]
 
     @classmethod
     def parse(cls, ext_str: str) -> FileExt | None:

@@ -49,13 +49,18 @@ def get_dir_info(path: Path, tally_formats: bool = False) -> DirInfo:
         else:
             other_count += 1
 
+    if format_tallies:
+        sorted_format_tallies = {k: format_tallies[k] for k in sorted(format_tallies)}
+    else:
+        sorted_format_tallies = None
+
     return DirInfo(
         total_size,
         file_count,
         dir_count,
         symlink_count,
         other_count,
-        format_tallies or None,
+        sorted_format_tallies,
     )
 
 

@@ -88,6 +88,8 @@ class ItemType(Enum):
             Format.pdf: ItemType.resource,
             Format.jpeg: ItemType.asset,
             Format.png: ItemType.asset,
+            Format.gif: ItemType.asset,
+            Format.svg: ItemType.asset,
             Format.docx: ItemType.resource,
             Format.mp3: ItemType.resource,
             Format.m4a: ItemType.resource,

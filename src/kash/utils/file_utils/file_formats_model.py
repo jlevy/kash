@@ -49,8 +49,8 @@ class Format(Enum):
     yaml = "yaml"
     diff = "diff"
     python = "python"
-    sh = "sh"
-    """Leaving as just `sh` for now but we perhaps should distinguish sh/bash/other shells."""
+    shellscript = "shellscript"
+    """Covers sh, bash, and similar shell scripts."""
     xonsh = "xonsh"
     json = "json"
     csv = "csv"
@@ -62,6 +62,7 @@ class Format(Enum):
     docx = "docx"
     jpeg = "jpeg"
     png = "png"
+    gif = "gif"
     svg = "svg"
     mp3 = "mp3"
     m4a = "m4a"
@@ -91,7 +92,7 @@ class Format(Enum):
             self.diff,
             self.python,
             self.json,
-            self.sh,
+            self.shellscript,
             self.xonsh,
             self.csv,
             self.log,
@@ -109,7 +110,7 @@ class Format(Enum):
 
     @property
     def is_image(self) -> bool:
-        return self in [self.jpeg, self.png, self.svg]
+        return self in [self.jpeg, self.png, self.gif, self.svg]
 
     @property
     def is_audio(self) -> bool:
@@ -121,7 +122,7 @@ class Format(Enum):
 
     @property
     def is_code(self) -> bool:
-        return self in [self.python, self.sh, self.xonsh, self.json, self.yaml]
+        return self in [self.python, self.shellscript, self.xonsh, self.json, self.yaml]
 
     @property
     def is_data(self) -> bool:
@@ -148,7 +149,7 @@ class Format(Enum):
             self.yaml,
             self.diff,
             self.python,
-            self.sh,
+            self.shellscript,
             self.xonsh,
             self.csv,
             self.log,
@@ -165,7 +166,7 @@ class Format(Enum):
             Format.yaml: MediaType.text,
             Format.diff: MediaType.text,
             Format.python: MediaType.text,
-            Format.sh: MediaType.text,
+            Format.shellscript: MediaType.text,
             Format.xonsh: MediaType.text,
             Format.json: MediaType.text,
             Format.csv: MediaType.text,
@@ -173,6 +174,7 @@ class Format(Enum):
             Format.pdf: MediaType.text,
             Format.jpeg: MediaType.image,
             Format.png: MediaType.image,
+            Format.gif: MediaType.image,
             Format.svg: MediaType.image,
             Format.docx: MediaType.text,
             Format.mp3: MediaType.audio,
@@ -198,12 +200,13 @@ class Format(Enum):
             FileExt.npz.value: Format.npz,
             FileExt.log.value: Format.log,
             FileExt.py.value: Format.python,
-            FileExt.sh.value: Format.sh,
+            FileExt.sh.value: Format.shellscript,
             FileExt.xsh.value: Format.xonsh,
             FileExt.pdf.value: Format.pdf,
             FileExt.docx.value: Format.docx,
             FileExt.jpg.value: Format.jpeg,
             FileExt.png.value: Format.png,
+            FileExt.gif.value: Format.gif,
             FileExt.svg.value: Format.svg,
             FileExt.mp3.value: Format.mp3,
             FileExt.m4a.value: Format.m4a,
@@ -229,12 +232,13 @@ class Format(Enum):
             Format.npz: FileExt.npz,
             Format.log: FileExt.log,
             Format.python: FileExt.py,
-            Format.sh: FileExt.sh,
+            Format.shellscript: FileExt.sh,
             Format.xonsh: FileExt.xsh,
             Format.pdf: FileExt.pdf,
             Format.docx: FileExt.docx,
             Format.jpeg: FileExt.jpg,
             Format.png: FileExt.png,
+            Format.gif: FileExt.gif,
             Format.svg: FileExt.svg,
             Format.mp3: FileExt.mp3,
             Format.m4a: FileExt.m4a,
@@ -256,7 +260,9 @@ class Format(Enum):
             "application/yaml": Format.yaml,
             "application/x-yaml": Format.yaml,
             "text/x-python": Format.python,
-            "text/x-sh": Format.sh,
+            "text/x-script.python": Format.python,
+            "text/x-sh": Format.shellscript,
+            "text/x-shellscript": Format.shellscript,
             "text/x-xonsh": Format.xonsh,
             "application/json": Format.json,
             "text/csv": Format.csv,
@@ -265,6 +271,7 @@ class Format(Enum):
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Format.docx,
             "image/jpeg": Format.jpeg,
             "image/png": Format.png,
+            "image/gif": Format.gif,
             "image/svg+xml": Format.svg,
             "audio/mpeg": Format.mp3,
             "audio/mp3": Format.mp3,
@@ -340,10 +347,8 @@ class FileFormatInfo:
             and self.mime_type.startswith("image")
         )
 
-    def as_str(self) -> str:
-        if self.format and self.mime_type:
-            return f"{self.format.value} ({self.mime_type})"
-        elif self.format:
+    def as_str(self, mime_only: bool = False) -> str:
+        if self.format and not mime_only:
             return self.format.value
         elif self.mime_type == MIME_EMPTY:
             return "empty"
