@@ -1,4 +1,5 @@
 import re
+import tempfile
 from pathlib import Path
 from typing import NewType
 
@@ -77,6 +78,8 @@ def read_partial_text(
 
 MimeType = NewType("MimeType", str)
 
+MIME_EMPTY = MimeType("inode/x-empty")
+
 
 def detect_mime_type(filename: str | Path) -> MimeType | None:
     """
@@ -132,3 +135,26 @@ def mime_type_is_text(mime_type: MimeType) -> bool:
             "application/rtf",
         }
     )
+
+
+## Tests
+
+
+def test_detect_mime_type():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = Path(tmpdir)
+
+        empty_file = tmpdir_path / "empty.txt"
+        empty_file.touch()
+
+        html_file = tmpdir_path / "example.html"
+        with open(html_file, "w") as f:
+            f.write("<!DOCTYPE html>\n<html><body><h1>Test</h1></body></html>")
+
+        text_file = tmpdir_path / "example.txt"
+        with open(text_file, "w") as f:
+            f.write("This is a simple text file with some content.")
+
+        assert detect_mime_type(empty_file) == MIME_EMPTY
+        assert detect_mime_type(html_file) == "text/html"
+        assert detect_mime_type(text_file) == "text/plain"

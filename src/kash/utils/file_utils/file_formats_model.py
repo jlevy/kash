@@ -6,7 +6,12 @@ from pathlib import Path
 
 from kash.utils.common.url import Url, is_file_url, parse_file_url
 from kash.utils.file_utils.file_ext import FileExt
-from kash.utils.file_utils.file_formats import MimeType, detect_mime_type, mime_type_is_text
+from kash.utils.file_utils.file_formats import (
+    MIME_EMPTY,
+    MimeType,
+    detect_mime_type,
+    mime_type_is_text,
+)
 from kash.utils.file_utils.filename_parsing import parse_file_ext
 
 
@@ -340,6 +345,8 @@ class FileFormatInfo:
             return f"{self.format.value} ({self.mime_type})"
         elif self.format:
             return self.format.value
+        elif self.mime_type == MIME_EMPTY:
+            return "empty"
         elif self.mime_type:
             return self.mime_type
         else:
@@ -366,19 +373,22 @@ def guess_format_by_name(path: str | Path) -> Format | None:
     return Format.guess_by_file_ext(file_ext) if file_ext else None
 
 
-def file_format_info(path: str | Path, fast: bool = False) -> FileFormatInfo:
+def file_format_info(path: str | Path, always_check_content: bool = False) -> FileFormatInfo:
     """
-    Full info on the file format path and content (file extension and file content).
-    If `fast` is True, we don't look at the file content if we recognize the file extension.
+    Get info on the file format path and content (file extension and file content).
+    Looks at the file extension first and then the file content if needed.
+    If `always_check_content` is True, look at the file content even if we
+    recognize the file extension.
     """
     path = Path(path)
     file_ext = parse_file_ext(path)
-    if not fast or not file_ext:
-        mime_type = detect_mime_type(path)
+    if always_check_content or not file_ext:
+        # Look at the file content.
+        detected_mime_type = detect_mime_type(path)
     else:
-        mime_type = None
-    format = _guess_format(file_ext, mime_type)
-    final_mime_type = format.mime_type if format else mime_type
+        detected_mime_type = None
+    format = _guess_format(file_ext, detected_mime_type)
+    final_mime_type = format.mime_type if format else detected_mime_type
     return FileFormatInfo(file_ext, format, final_mime_type)
 
 

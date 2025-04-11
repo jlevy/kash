@@ -54,7 +54,7 @@ from kash.utils.common.type_utils import not_none
 from kash.utils.common.url import Url, is_url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
-from kash.utils.file_utils.dir_size import is_nonempty_dir
+from kash.utils.file_utils.dir_info import is_nonempty_dir
 from kash.utils.lang_utils.inflection import plural
 from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import (

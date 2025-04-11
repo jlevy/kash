@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from kash.config.logger import get_logger
-from kash.utils.common.url import Url
+from kash.utils.common.url import Url, check_if_url
 from kash.utils.errors import InvalidFilename
 from kash.utils.file_utils.file_ext import FileExt, canonicalize_file_ext
 
@@ -48,11 +48,17 @@ def join_filename(dirname: str | Path, name: str, item_type: str | None, ext: st
 
 def parse_file_ext(url_or_path: str | Url | Path) -> FileExt | None:
     """
-    Parse a known, canonical file extension from a path, a URL, or even just a
-    raw file extension (like "csv" or ".csv").
+    Parse a known, canonical file extension from a path or URL. Also accepts
+    raw file extensions (like "csv" or ".csv").
     """
-    front, ext = os.path.splitext(str(url_or_path).split("/")[-1])
+    parsed_url = check_if_url(url_or_path)
+    if parsed_url:
+        path = parsed_url.path
+    else:
+        path = str(url_or_path)
+    front, ext = os.path.splitext(path.split("/")[-1])
     if not ext:
+        # Handle bare file extensions too.
         ext = front
     return FileExt.parse(canonicalize_file_ext(ext))
 

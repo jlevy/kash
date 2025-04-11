@@ -40,7 +40,7 @@ def get_dir_info(path: Path, tally_formats: bool = False) -> DirInfo:
             file_count += 1
             total_size += file_path.stat().st_size
             if tally_formats:
-                file_info = file_format_info(file_path, fast=True)
+                file_info = file_format_info(file_path)
                 format_tallies[file_info.as_str()] += 1
         elif file_path.is_dir():
             dir_count += 1
