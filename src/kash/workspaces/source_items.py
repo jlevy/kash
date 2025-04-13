@@ -59,7 +59,10 @@ def find_upstream_item(
 
     log.message("Looking for upstream item that matches precondition: %s", precondition)
     for source_item in source_items:
-        source_path = not_none(source_item.store_path)
+        source_path = source_item.store_path
+        if not source_path:
+            log.error("Source item has no store path: %s", source_item)
+            continue
         if precondition(source_item):
             log.message(
                 "Found source item that matches requirements: %s",
