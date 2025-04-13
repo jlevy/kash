@@ -113,7 +113,7 @@ dev = [
 
 [project.scripts]
 kash = "kash.shell.shell_main:main"
-kash_mcp = "kash.mcp.mcp_cli:main"
+kash-mcp = "kash.mcp.mcp_cli:main"
 
 
 # ---- Build system ----
