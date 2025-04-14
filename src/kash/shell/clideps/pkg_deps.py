@@ -30,8 +30,10 @@ class PkgDep:
 
     brew_pkg: str | None = None
     apt_pkg: str | None = None
+    pixi_pkg: str | None = None
     pip_pkg: str | None = None
     winget_pkg: str | None = None
+    chocolatey_pkg: str | None = None
 
 
 def check_libmagic():
@@ -57,8 +59,9 @@ class Pkg(Enum):
 
     bat = PkgDep(
         ("batcat", "bat"),  # batcat for Debian/Ubuntu), bat for macOS
+        comment="Not available on ubuntu, but in pixi",
         brew_pkg="bat",
-        apt_pkg="bat",
+        pixi_pkg="bat",
         winget_pkg="sharkdp.bat",
         warn_if_missing=True,
     )
@@ -108,8 +111,14 @@ class Pkg(Enum):
         pip_pkg="python-magic-bin",
         warn_if_missing=True,
     )
+    libgl1 = PkgDep(
+        command_names=(),
+        comment="Needed on ubuntu along with ffmpeg",
+        apt_pkg="libgl1",
+    )
     ffmpeg = PkgDep(
         ("ffmpeg",),
+        comment="Needed by yt-dlp and other essential tools",
         brew_pkg="ffmpeg",
         apt_pkg="ffmpeg",
         winget_pkg="Gyan.FFmpeg",
@@ -121,6 +130,21 @@ class Pkg(Enum):
         apt_pkg="imagemagick",
         winget_pkg="ImageMagick.ImageMagick",
         warn_if_missing=True,
+    )
+    dust = PkgDep(
+        ("dust",),
+        comment="Not available on ubuntu, but in pixi",
+        brew_pkg="dust",
+        pixi_pkg="dust",
+        winget_pkg="bootandy.dust",
+        warn_if_missing=True,
+    )
+    duf = PkgDep(
+        ("duf",),
+        comment="Not in winget. Only in unstable on ubuntu, but in pixi.",
+        brew_pkg="duf",
+        pixi_pkg="duf",
+        chocolatey_pkg="duf",
     )
 
     @property
