@@ -12,7 +12,7 @@ from pydantic_core.core_schema import (
 )
 from rich.text import Text
 
-from kash.config.text_styles import format_success_emoji
+from kash.shell.output.shell_formatting import format_success_emoji
 from kash.utils.common.type_utils import not_none
 
 

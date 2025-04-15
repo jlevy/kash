@@ -7,7 +7,6 @@ from kash.model.items_model import Item
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.format_utils import fmt_loc
-from kash.utils.common.type_utils import not_none
 from kash.utils.errors import NoMatch
 from kash.workspaces import current_ws
 

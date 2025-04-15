@@ -8,10 +8,7 @@ from flowmark import Wrap, fill_text
 from rich.console import Group
 from rich.text import Text
 
-from kash.config.text_styles import (
-    STYLE_HINT,
-    format_success_emoji,
-)
+from kash.config.text_styles import COLOR_FAILURE, COLOR_SUCCESS, STYLE_HINT
 from kash.shell.output.kmarkdown import KMarkdown
 
 
@@ -82,6 +79,19 @@ def format_paragraphs(*paragraphs: str | Text | Group) -> Group:
         text.append(paragraph)
 
     return Group(*text)
+
+
+EMOJI_TRUE = "✔︎"
+
+EMOJI_FALSE = "✘"
+
+
+def success_emoji(value: bool, success_only: bool = False) -> str:
+    return EMOJI_TRUE if value else " " if success_only else EMOJI_FALSE
+
+
+def format_success_emoji(value: bool, success_only: bool = False) -> Text:
+    return Text(success_emoji(value, success_only), style=COLOR_SUCCESS if value else COLOR_FAILURE)
 
 
 def format_success(message: str | Text) -> Text:

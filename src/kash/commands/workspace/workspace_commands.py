@@ -15,7 +15,6 @@ from kash.config.text_styles import (
     EMOJI_WARN,
     STYLE_EMPH,
     STYLE_HINT,
-    format_success_emoji,
 )
 from kash.exec import (
     assemble_path_args,
@@ -36,7 +35,11 @@ from kash.model.items_model import Item, ItemType
 from kash.model.params_model import GLOBAL_PARAMS
 from kash.model.paths_model import StorePath, fmt_store_path
 from kash.shell.input.param_inputs import input_param_name, input_param_value
-from kash.shell.output.shell_formatting import format_name_and_description, format_name_and_value
+from kash.shell.output.shell_formatting import (
+    format_name_and_description,
+    format_name_and_value,
+    format_success_emoji,
+)
 from kash.shell.output.shell_output import (
     PrintHooks,
     Wrap,
