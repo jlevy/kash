@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from clideps.utils.atomic_var import AtomicVar
+
 from kash.config.logger import get_logger
 from kash.config.settings import APP_NAME
 from kash.exec import import_action_subdirs
-from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.import_utils import import_namespace_modules
 
 log = get_logger(__name__)

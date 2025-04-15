@@ -4,10 +4,10 @@ from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
 
+from clideps.utils.atomic_var import AtomicVar
 from pydantic.dataclasses import dataclass
 
 from kash.config.env_settings import KashEnv
-from kash.utils.common.atomic_var import AtomicVar
 
 APP_NAME = "kash"
 
@@ -20,6 +20,30 @@ RECOMMENDED_API_KEYS = [
     "ANTHROPIC_API_KEY",
     "DEEPGRAM_API_KEY",
     "GROQ_API_KEY",
+]
+
+
+def get_all_common_api_env_vars() -> list[str]:
+    """
+    Get all the common environment variables that are recommended to be set.
+    """
+    from clideps.env_vars.env_names import get_all_common_env_names
+
+    return list(set(get_all_common_env_names() + RECOMMENDED_API_KEYS))
+
+
+RECOMMENDED_PKGS = [
+    "less",
+    "eza",
+    "ripgrep",
+    "bat",
+    "zoxide",
+    "dust",
+    "duf",
+    "pygmentize",
+    "hexyl",
+    "ffmpeg",
+    "imagemagick",
 ]
 
 

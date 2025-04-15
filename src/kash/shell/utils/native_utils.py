@@ -11,15 +11,15 @@ import webbrowser
 from enum import Enum
 from pathlib import Path
 
+from clideps.pkgs.pkg_check import pkg_check
+from clideps.pkgs.platform_checks import Platform, get_platform
+from clideps.terminal.terminal_images import terminal_show_image
 from flowmark import Wrap
 from funlog import log_calls
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
-from kash.shell.clideps.pkg_deps import Pkg, pkg_check
-from kash.shell.clideps.platforms import PLATFORM, Platform
 from kash.shell.output.shell_output import cprint
-from kash.shell.utils.terminal_images import terminal_show_image
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import as_file_url, is_file_url, is_url
 from kash.utils.errors import FileNotFound, SetupError
@@ -49,11 +49,11 @@ def file_size_check(
 def native_open(filename: str | Path):
     filename = str(filename)
     log.message("Opening file: %s", filename)
-    if PLATFORM == Platform.Darwin:
+    if get_platform() == Platform.Darwin:
         subprocess.run(["open", filename])
-    elif PLATFORM == Platform.Linux:
+    elif get_platform() == Platform.Linux:
         subprocess.run(["xdg-open", filename])
-    elif PLATFORM == Platform.Windows:
+    elif get_platform() == Platform.Windows:
         subprocess.run(["start", shlex.quote(filename)], shell=True)
     else:
         raise NotImplementedError("Unsupported platform")
@@ -187,11 +187,11 @@ def tail_file(
     if follow:
         max_lines = follow_max_lines
 
-    pkg_check().require(Pkg.tail)
-    pkg_check().warn_if_missing(Pkg.bat)
+    pkg_check().require("tail")
+    pkg_check().warn_if_missing("bat")
 
     if follow:
-        if pkg_check().has(Pkg.bat):
+        if pkg_check().is_found("bat"):
             # Follow the file in real-time.
             command = (
                 f"tail -{max_lines} -f {all_paths_str} | "
@@ -202,8 +202,8 @@ def tail_file(
             command = f"tail -f {all_paths_str}"
         cprint("Following file: `%s`", command, text_wrap=Wrap.NONE)
     else:
-        pkg_check().require(Pkg.less)
-        if pkg_check().has(Pkg.bat, Pkg.less):
+        pkg_check().require("less")
+        if pkg_check().is_found("bat"):
             command = (
                 f"tail -{max_lines} {all_paths_str} | "
                 f"bat --paging=never --color=always --style=plain --theme={BAT_THEME} -l log | "
@@ -227,17 +227,17 @@ def view_file_console(filename: str | Path, use_pager: bool = True):
 
     is_text = file_format_info(filename).is_text
     if is_text:
-        pkg_check().require(Pkg.less)
-        if pkg_check().has(Pkg.bat):
+        pkg_check().require("less")
+        if pkg_check().is_found("bat"):
             pager_str = "--pager=always --pager=less " if use_pager else ""
             command = f"bat {pager_str}--color=always --style={BAT_STYLE} --theme={BAT_THEME} {quoted_filename}"
         else:
-            pkg_check().require(Pkg.pygmentize)
+            pkg_check().require("pygmentize")
             command = f"pygmentize -g {quoted_filename}"
             if use_pager:
                 command = f"{command} | less -R"
     else:
-        pkg_check().require(Pkg.hexyl)
+        pkg_check().require("hexyl")
         command = f"hexyl {quoted_filename}"
         if use_pager:
             command = f"{command} | less -R"

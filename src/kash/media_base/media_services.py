@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
 
+from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
 
 from kash.media_base.services.local_file_media import LocalFileMedia
 from kash.model.media_model import MediaMetadata, MediaService
-from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.url import Url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import MediaType

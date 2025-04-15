@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from chopdiff.docs import DiffFilter, TextDoc
 from chopdiff.transforms import WindowSettings, accept_all, filtered_transform
+from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from flowmark import fill_markdown
 
 from kash.config.logger import get_logger
@@ -12,7 +13,6 @@ from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
 from kash.model.items_model import Item, ItemType
-from kash.shell.clideps.dotenv_utils import load_dotenv_paths
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 

@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import NewType
 
 import regex
+from clideps.pkgs.pkg_check import pkg_check
 
 from kash.config.logger import get_logger
-from kash.shell.clideps.pkg_deps import Pkg, pkg_check
 
 log = get_logger(__name__)
 
@@ -86,7 +86,7 @@ def detect_mime_type(filename: str | Path) -> MimeType | None:
     Get the mime type of a file using libmagic heuristics plus more careful
     detection of HTML, Markdown, and multipart YAML.
     """
-    pkg_check().require(Pkg.libmagic)
+    pkg_check().require("libmagic")
     import magic
 
     mime = magic.Magic(mime=True)

@@ -4,6 +4,7 @@ import asyncio
 import pprint
 from dataclasses import dataclass
 
+from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
 from mcp.server.lowlevel import Server
 from mcp.types import Prompt, Resource, TextContent, Tool
@@ -17,7 +18,6 @@ from kash.exec.action_registry import get_all_actions_defaults, look_up_action_c
 from kash.model.actions_model import Action, ActionResult, ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
-from kash.utils.common.atomic_var import AtomicVar
 from kash.workspaces.workspaces import current_ws, get_ws
 
 log = get_logger(__name__)

@@ -1,10 +1,10 @@
+from clideps.env_vars.dotenv_utils import env_var_is_set
 from flowmark import Wrap
 from rich.text import Text
 
+from kash.config.settings import get_all_common_api_env_vars
 from kash.exec.command_registry import kash_command
 from kash.llm_utils import LLM, api_for_model
-from kash.shell.clideps.api_keys import ApiEnvKey
-from kash.shell.clideps.dotenv_utils import env_var_is_set
 from kash.shell.output.shell_formatting import (
     format_failure,
     format_name_and_value,
@@ -48,11 +48,11 @@ def list_apis() -> None:
     List and check configuration for all APIs.
     """
     print_h2("API keys")
-    for api in ApiEnvKey:
-        emoji = format_success_emoji(env_var_is_set(api.value))
+    for env_var in get_all_common_api_env_vars():
+        emoji = format_success_emoji(env_var_is_set(env_var))
         message = (
-            f"API key {api.value} found"
-            if env_var_is_set(api.value)
-            else f"API key {api.value} not found"
+            f"API key {env_var} found"
+            if env_var_is_set(env_var)
+            else f"API key {env_var} not found"
         )
-        cprint(Text.assemble(emoji, format_name_and_value(api.name, message)))
+        cprint(Text.assemble(emoji, format_name_and_value(env_var, message)))

@@ -1,9 +1,10 @@
 from collections.abc import Callable
 
+from clideps.utils.atomic_var import AtomicVar
+
 from kash.config.logger import get_logger
 from kash.model.items_model import Item
 from kash.model.preconditions_model import Precondition
-from kash.utils.common.atomic_var import AtomicVar
 
 log = get_logger(__name__)
 

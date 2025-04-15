@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import litellm
+from clideps.env_vars.dotenv_utils import env_var_is_set
+from clideps.env_vars.env_names import EnvName
 from litellm.litellm_core_utils.get_llm_provider_logic import get_llm_provider
 
 from kash.llm_utils.llm_names import LLMName
 from kash.llm_utils.llms import LLM
-from kash.shell.clideps.api_keys import ApiEnvKey
-from kash.shell.clideps.dotenv_utils import env_var_is_set
 
 
-def api_for_model(model: LLMName) -> ApiEnvKey | None:
+def api_for_model(model: LLMName) -> EnvName | None:
     """
     Get the API key name for a model or None if not found.
     """
@@ -18,7 +18,7 @@ def api_for_model(model: LLMName) -> ApiEnvKey | None:
     except litellm.exceptions.BadRequestError:
         return None
 
-    return ApiEnvKey.for_provider(custom_llm_provider)
+    return EnvName.api_env_name(custom_llm_provider)
 
 
 def have_key_for_model(model: LLMName) -> bool:

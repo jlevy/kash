@@ -1,31 +1,31 @@
 from kash.config.setup import setup
-from kash.config.text_styles import LOGO_NAME, STYLE_HINT
-from kash.mcp.mcp_server_commands import start_mcp_server
-from kash.xonsh_custom.shell_load_commands import (
-    is_interactive,
-    log_command_action_info,
-    reload_shell_commands_and_actions,
-    set_env,
-)
 
 setup(rich_logging=True)  # Set up logging first.
 
 import time
 
+from clideps.pkgs.pkg_check import pkg_check
 from xonsh.built_ins import XSH
 from xonsh.prompt.base import PromptFields
 
 from kash.commands.base.general_commands import self_check
 from kash.commands.help import doc_commands
 from kash.config.logger import get_logger
-from kash.config.settings import check_kerm_code_support
+from kash.config.settings import RECOMMENDED_PKGS, check_kerm_code_support
+from kash.config.text_styles import LOGO_NAME, STYLE_HINT
 from kash.local_server.local_server import start_ui_server
 from kash.local_server.local_url_formatters import enable_local_urls
-from kash.shell.clideps.pkg_deps import pkg_check
+from kash.mcp.mcp_server_commands import start_mcp_server
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.version import get_version_tag
 from kash.workspaces import current_ws
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
+from kash.xonsh_custom.shell_load_commands import (
+    is_interactive,
+    log_command_action_info,
+    reload_shell_commands_and_actions,
+    set_env,
+)
 from kash.xonsh_custom.xonsh_completers import load_completers
 from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
 
@@ -106,7 +106,7 @@ def load_into_xonsh():
 
         current_ws()  # Validates and logs info for user.
 
-        pkg_check().warn_if_missing()
+        pkg_check().warn_if_missing(*RECOMMENDED_PKGS)
 
     else:
         reload_shell_commands_and_actions()

@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, cast
 
+from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
 from prompt_toolkit import search
 from prompt_toolkit.application import get_app
@@ -35,7 +36,6 @@ from kash.shell.completions.shell_completions import (
     trace_completions,
 )
 from kash.shell.ui.shell_syntax import assist_request_str
-from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.errors import ApiResultError, InvalidState
 from kash.xonsh_custom.command_nl_utils import as_nl_words, looks_like_nl
 from kash.xonsh_custom.shell_which import is_valid_command

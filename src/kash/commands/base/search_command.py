@@ -1,9 +1,10 @@
 from pathlib import Path
 
+from clideps.pkgs.pkg_check import pkg_check
+
 from kash.config.logger import get_logger
 from kash.exec import assemble_path_args, kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.shell.clideps.pkg_deps import Pkg, pkg_check
 from kash.shell.output.shell_output import cprint
 from kash.utils.common.parse_shell_args import shell_quote
 from kash.utils.errors import InvalidState
@@ -33,7 +34,7 @@ def search(
     :param ignore_case: Ignore case when searching.
     :param verbose: Also print the ripgrep command line.
     """
-    pkg_check().require(Pkg.ripgrep)
+    pkg_check().require("ripgrep")
     from ripgrepy import RipGrepNotFound, Ripgrepy
 
     resolved_paths = assemble_path_args(*paths)

@@ -1,10 +1,10 @@
 import subprocess
 
+from clideps.pkgs.pkg_check import pkg_check
 from xonsh.built_ins import XSH
 from xonsh.xontribs import xontribs_load
 
 from kash.config.settings import global_settings
-from kash.shell.clideps.pkg_deps import Pkg, pkg_check
 
 
 def modernize_shell() -> None:
@@ -25,7 +25,7 @@ def add_fnm() -> None:
 def enable_zoxide() -> None:
     installed_tools = pkg_check()
 
-    if installed_tools.has(Pkg.zoxide):
+    if installed_tools.is_found("zoxide"):
         assert XSH.builtins
         zoxide_init = subprocess.check_output(["zoxide", "init", "xonsh"]).decode()
         XSH.builtins.execx(zoxide_init, "exec", XSH.ctx, filename="zoxide")
@@ -35,7 +35,7 @@ def add_aliases() -> None:
     installed_tools = pkg_check()
 
     assert XSH.aliases
-    if installed_tools.has(Pkg.eza):
+    if installed_tools.is_found("eza"):
         if global_settings().use_nerd_icons:
             icons = ["--icons"]
         else:

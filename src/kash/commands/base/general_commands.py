@@ -1,3 +1,9 @@
+from clideps.env_vars.dotenv_setup import interactive_dotenv_setup
+from clideps.env_vars.dotenv_utils import load_dotenv_paths
+from clideps.env_vars.env_check import print_env_check
+from clideps.env_vars.env_names import get_all_common_env_names
+from clideps.pkgs.pkg_check import pkg_check
+from clideps.terminal.terminal_features import terminal_check
 from flowmark import Wrap
 
 from kash.commands.base.model_commands import list_apis, list_models
@@ -14,14 +20,6 @@ from kash.model.params_model import (
     DEFAULT_STANDARD_LLM,
     DEFAULT_STRUCTURED_LLM,
 )
-from kash.shell.clideps.api_keys import (
-    ApiEnvKey,
-    load_dotenv_paths,
-    print_api_key_setup,
-)
-from kash.shell.clideps.dotenv_setup import interactive_dotenv_setup
-from kash.shell.clideps.pkg_deps import pkg_check
-from kash.shell.clideps.terminal_features import terminal_check
 from kash.shell.input.input_prompts import input_choice
 from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import (
@@ -50,8 +48,8 @@ def self_check(brief: bool = False) -> None:
     Self-check kash setup, including termal settings, tools, and API keys.
     """
     if brief:
-        terminal_check().print_term_info()
-        print_api_key_setup(recommended_keys=RECOMMENDED_API_KEYS, once=False)
+        cprint(terminal_check().formatted())
+        print_env_check(recommended_keys=RECOMMENDED_API_KEYS, once=False)
         check_system_tools(brief=brief)
         tldr_refresh_cache()
         try:
@@ -63,7 +61,7 @@ def self_check(brief: bool = False) -> None:
     else:
         version()
         cprint()
-        terminal_check().print_term_info()
+        cprint(terminal_check().formatted())
         cprint()
         list_apis()
         cprint()
@@ -90,7 +88,7 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     """
 
     if all:
-        api_keys = [key.value for key in ApiEnvKey]
+        api_keys = list(set(get_all_common_env_names() + RECOMMENDED_API_KEYS))
     else:
         api_keys = RECOMMENDED_API_KEYS
     # Show APIs before starting.
@@ -180,7 +178,7 @@ def reload_env() -> None:
     env_paths = load_dotenv_paths(True, True, get_system_config_dir())
     if env_paths:
         cprint("Reloaded environment variables")
-        print_api_key_setup(RECOMMENDED_API_KEYS)
+        print_env_check(RECOMMENDED_API_KEYS)
     else:
         raise InvalidState("No .env file found")
 

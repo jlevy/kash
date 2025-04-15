@@ -72,12 +72,11 @@ from html import escape
 from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import parse_qs, quote, urlencode, urlparse
 
+from clideps.terminal.osc_utils import OscStr, osc8_link, osc8_link_codes, osc8_link_rich, osc_code
 from prompt_toolkit.formatted_text import FormattedText
 from pydantic import BaseModel, Field, TypeAdapter, model_validator
 from rich.style import Style
 from rich.text import Text
-
-from kash.shell.utils.osc_utils import OscStr, osc8_link, osc8_link_codes, osc8_link_rich, osc_code
 
 KC_VERSION = 0
 """Version of the Kerm codes format. Update when we make breaking changes."""

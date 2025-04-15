@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from cachetools import Cache, cached
+from clideps.utils.atomic_var import AtomicVar
 from prettyfmt import fmt_lines, fmt_path
 
 from kash.config.logger import get_logger
 from kash.model.actions_model import Action
-from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.common.import_utils import Tallies, import_subdirs
 from kash.utils.errors import InvalidInput
 

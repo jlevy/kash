@@ -3,6 +3,8 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
+from clideps.env_vars.dotenv_utils import load_dotenv_paths
+
 from kash.config.logger_basic import basic_logging_setup
 from kash.config.settings import LogLevel, get_system_config_dir
 
@@ -17,7 +19,6 @@ def setup(rich_logging: bool, file_log_path: Path | None = None, level: LogLevel
     If rich_logging is False, then use basic logging to a file and stderr.
     """
     from kash.config.logger import reload_rich_logging_setup
-    from kash.shell.clideps.dotenv_utils import load_dotenv_paths
     from kash.utils.common.stack_traces import add_stacktrace_handler
 
     if rich_logging:

@@ -1,9 +1,10 @@
 from collections.abc import Callable
 from typing import overload
 
+from clideps.utils.atomic_var import AtomicVar
+
 from kash.config.logger import get_logger
 from kash.exec_model.shell_model import ShellResult
-from kash.utils.common.atomic_var import AtomicVar
 from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)

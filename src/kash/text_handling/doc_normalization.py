@@ -52,7 +52,7 @@ def normalize_text_file(
 
 
 def test_osc8_link():
-    from kash.shell.utils.osc_utils import osc8_link
+    from clideps.terminal.osc_utils import osc8_link
 
     link = osc8_link("https://example.com/" + "x" * 50, "Example")
     assert ansi_cell_len(link) == 7
