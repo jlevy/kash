@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -29,8 +30,10 @@ class PromptInfo:
     workspace_details: str
     is_global_ws: bool
     cwd_str: str
+    cwd_short_str: str
     cwd_details: str
     cwd_in_workspace: bool
+    cwd_in_home: bool
 
 
 def get_prompt_info() -> PromptInfo:
@@ -42,28 +45,39 @@ def get_prompt_info() -> PromptInfo:
     workspace_details = f"Workspace at {ws.base_dir}"
 
     cwd = Path(".").resolve()
-    if cwd.is_relative_to(ws.base_dir):
-        cwd_in_workspace = True
+    cwd_in_home = cwd.is_relative_to(Path.home())
+    cwd_in_workspace = cwd.is_relative_to(ws.base_dir)
+    if cwd_in_workspace:
         rel_cwd = cwd.relative_to(ws.base_dir)
         if rel_cwd != Path("."):
             cwd_str = str(rel_cwd)
         else:
             cwd_str = ""
-    elif cwd.is_relative_to(Path.home()):
-        cwd_in_workspace = False
+        cwd_short_str = cwd_str
+    elif cwd_in_home:
         rel_to_home = cwd.relative_to(Path.home())
-        if rel_to_home != Path("."):
-            cwd_str = "~/" + rel_to_home.as_posix()
+        if cwd == Path.home():
+            cwd_str = cwd_short_str = "~"
+        elif cwd.parent == Path.home():
+            cwd_str = cwd_short_str = os.path.join("~", cwd.name)
         else:
-            cwd_str = "~"
+            cwd_str = "~/" + str(rel_to_home)
+            # Show only last two levels of dirs when inside home.
+            cwd_short_str = os.path.join(cwd.parent.name, cwd.name)
     else:
-        cwd_in_workspace = False
-        cwd_str = cwd.as_posix()
+        cwd_str = cwd_short_str = str(cwd)
 
     cwd_details = f"Current directory at {cwd}"
 
     return PromptInfo(
-        ws_name, workspace_details, is_global_ws, cwd_str, cwd_details, cwd_in_workspace
+        ws_name,
+        workspace_details,
+        is_global_ws,
+        cwd_str,
+        cwd_short_str,
+        cwd_details,
+        cwd_in_workspace,
+        cwd_in_home,
     )
 
 
@@ -167,17 +181,21 @@ def kash_xonsh_prompt() -> FormattedText:
     ).as_ptk_tokens(style=workspace_color)
 
     cwd_style = settings.ptk_style_bright if info.cwd_in_workspace else settings.ptk_style_normal
-    # Use two-line prompt if cwd is outside workspace, one-line prompt otherwise.
-    if info.cwd_str and not info.cwd_in_workspace:
+    # Separator could be "\n" if you like a 2-line prompt.
+    # separator = "\n" + settings.prompt_prefix
+    separator = ""
+    # Using shorter cwd str.
+    cwd_str = info.cwd_short_str
+    # If outside the workspace, show both workspace and cwd.
+    if info.cwd_short_str and not info.cwd_in_workspace:
         cwd_tokens = (
-            [(settings.ptk_style_dim, "\n" + settings.prompt_prefix)]
-            + text_with_tooltip(info.cwd_str, hover_text=info.cwd_details).as_ptk_tokens(
-                style=cwd_style
-            )
+            [(settings.ptk_style_dim, separator)]
+            + text_with_tooltip(cwd_str, hover_text=info.cwd_details).as_ptk_tokens(style=cwd_style)
             + [(settings.ptk_style_dim, " ")]
         )
-    elif info.cwd_str:
-        cwd_tokens = text_with_tooltip(info.cwd_str, hover_text=info.cwd_details).as_ptk_tokens(
+    elif cwd_str:
+        # If inside the workspace, show just cwd.
+        cwd_tokens = text_with_tooltip(cwd_str, hover_text=info.cwd_details).as_ptk_tokens(
             style=cwd_style
         )
     else:
@@ -187,9 +205,9 @@ def kash_xonsh_prompt() -> FormattedText:
     ptk_tokens = (
         settings.hrule
         + [(settings.ptk_style_dim, settings.prompt_prefix)]
-        + [
-            (settings.ptk_style_dim, "workspace: "),
-        ]
+        # + [
+        #     (settings.ptk_style_dim, "ws: "),
+        # ]
         + workspace_tokens
         + [
             (settings.ptk_style_dim, " "),
