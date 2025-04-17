@@ -1,8 +1,8 @@
 import logging
 from pathlib import Path
 
-from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
+from strif import AtomicVar
 
 from kash.media_base.services.local_file_media import LocalFileMedia
 from kash.model.media_model import MediaMetadata, MediaService

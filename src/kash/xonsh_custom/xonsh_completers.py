@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, cast
 
-from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
+from strif import AtomicVar
 from xonsh.built_ins import XSH
 from xonsh.completers.completer import add_one_completer
 from xonsh.completers.tools import (

@@ -10,8 +10,7 @@ from pydantic_core.core_schema import (
     str_schema,
     to_string_ser_schema,
 )
-
-from kash.utils.common.string_template import StringTemplate
+from strif import StringTemplate
 
 
 class Message(str):

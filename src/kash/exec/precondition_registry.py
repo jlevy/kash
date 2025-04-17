@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from clideps.utils.atomic_var import AtomicVar
+from strif import AtomicVar
 
 from kash.config.logger import get_logger
 from kash.model.items_model import Item

@@ -4,8 +4,8 @@ from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
 
-from clideps.utils.atomic_var import AtomicVar
 from pydantic.dataclasses import dataclass
+from strif import AtomicVar
 
 from kash.config.env_settings import KashEnv
 

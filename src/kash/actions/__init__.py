@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from clideps.utils.atomic_var import AtomicVar
+from strif import AtomicVar
 
 from kash.config.logger import get_logger
 from kash.config.settings import APP_NAME

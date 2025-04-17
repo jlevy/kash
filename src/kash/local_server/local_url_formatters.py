@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
 
-from clideps.utils.atomic_var import AtomicVar
 from rich.style import Style
 from rich.text import Text
+from strif import AtomicVar
 from typing_extensions import override
 
 from kash.config.logger import get_logger

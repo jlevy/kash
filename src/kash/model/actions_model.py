@@ -15,6 +15,7 @@ from flowmark import fill_text
 from prettyfmt import abbrev_obj, fmt_lines
 from pydantic.dataclasses import dataclass, rebuild_dataclass
 from pydantic.json_schema import JsonSchemaValue
+from strif import StringTemplate
 from typing_extensions import override
 
 from kash.config.logger import get_logger
@@ -33,7 +34,6 @@ from kash.model.params_model import (
 from kash.model.paths_model import StorePath
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
-from kash.utils.common.string_template import StringTemplate
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidDefinition, InvalidInput
 from kash.workspaces.workspaces import get_ws

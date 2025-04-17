@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from cachetools import Cache, cached
-from clideps.utils.atomic_var import AtomicVar
 from prettyfmt import fmt_lines, fmt_path
+from strif import AtomicVar
 
 from kash.config.logger import get_logger
 from kash.model.actions_model import Action

@@ -4,11 +4,11 @@ import asyncio
 import pprint
 from dataclasses import dataclass
 
-from clideps.utils.atomic_var import AtomicVar
 from funlog import log_calls
 from mcp.server.lowlevel import Server
 from mcp.types import Prompt, Resource, TextContent, Tool
 from prettyfmt import fmt_path
+from strif import AtomicVar
 
 from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger

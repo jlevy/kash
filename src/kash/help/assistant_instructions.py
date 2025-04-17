@@ -1,10 +1,11 @@
 from functools import cache
 from textwrap import dedent
 
+from strif import StringTemplate
+
 from kash.config.logger import get_logger
 from kash.docs.all_docs import all_docs
 from kash.docs.load_help_topics import load_help_src
-from kash.utils.common.string_template import StringTemplate
 
 log = get_logger(__name__)
 

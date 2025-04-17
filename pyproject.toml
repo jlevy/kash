@@ -42,7 +42,7 @@ dependencies = [
     "pydantic>=2.10.6",
     "typing-extensions>=4.12.2",
     # My tools:
-    "strif>=2.1.0",
+    "strif>=3.0.0-rc.1",
     "funlog>=0.2.0",
     "prettyfmt>=0.3.0",
     "flowmark>=0.3.1",
