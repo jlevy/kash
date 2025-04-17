@@ -27,6 +27,7 @@ from kash.xonsh_custom.shell_load_commands import (
     set_env,
 )
 from kash.xonsh_custom.xonsh_completers import load_completers
+from kash.xonsh_custom.xonsh_keybindings import add_key_bindings
 from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
 
 log = get_logger(__name__)
@@ -37,8 +38,6 @@ def _kash_workspace_str() -> str:
 
 
 def _shell_interactive_setup():
-    from kash.xonsh_custom.xonsh_completers import add_key_bindings
-
     # Set up a prompt field for the workspace string.
     fields = PromptFields(XSH)
     fields["workspace_str"] = _kash_workspace_str
