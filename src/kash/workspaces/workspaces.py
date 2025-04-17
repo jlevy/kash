@@ -5,13 +5,11 @@ from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar
 
-from clideps.env_vars.env_check import print_env_check
 from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger, reset_log_root
 from kash.config.settings import (
     GLOBAL_WS_NAME,
-    RECOMMENDED_API_KEYS,
     get_global_ws_dir,
     get_ws_root_dir,
     global_settings,
@@ -237,8 +235,6 @@ def current_ws(silent: bool = False) -> "FileStore":
     ws = switch_to_ws(base_dir)
 
     if not silent:
-        # Delayed, once-only logging of any setup warnings.
-        print_env_check(RECOMMENDED_API_KEYS, once=True)
         ws.log_workspace_info(once=True)
 
     return ws

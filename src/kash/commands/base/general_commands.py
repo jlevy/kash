@@ -1,10 +1,11 @@
 from clideps.env_vars.dotenv_setup import interactive_dotenv_setup
 from clideps.env_vars.dotenv_utils import load_dotenv_paths
-from clideps.env_vars.env_check import print_env_check
+from clideps.env_vars.env_check import format_dotenv_check, format_env_var_check, print_env_check
 from clideps.env_vars.env_names import get_all_common_env_names
 from clideps.pkgs.pkg_check import pkg_check
 from clideps.terminal.terminal_features import terminal_check
 from flowmark import Wrap
+from rich.text import Text
 
 from kash.commands.base.model_commands import list_apis, list_models
 from kash.commands.workspace.workspace_commands import list_params
@@ -49,7 +50,12 @@ def self_check(brief: bool = False) -> None:
     """
     if brief:
         cprint(terminal_check().formatted())
-        print_env_check(recommended_keys=RECOMMENDED_API_KEYS, once=False)
+        cprint(Text.assemble("Dotenv files: ", format_dotenv_check()))
+        cprint(
+            Text.assemble(
+                "Env vars: ", format_env_var_check(env_vars=RECOMMENDED_API_KEYS, one_line=True)
+            )
+        )
         check_system_tools(brief=brief)
         tldr_refresh_cache()
         try:
@@ -178,6 +184,7 @@ def reload_env() -> None:
     env_paths = load_dotenv_paths(True, True, get_system_config_dir())
     if env_paths:
         cprint("Reloaded environment variables")
+
         print_env_check(RECOMMENDED_API_KEYS)
     else:
         raise InvalidState("No .env file found")
