@@ -33,19 +33,17 @@ from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
 log = get_logger(__name__)
 
 
-def _kash_workspace_str() -> str:
-    return get_prompt_info().workspace_name
-
-
 def _shell_interactive_setup():
     # Set up a prompt field for the workspace string.
     fields = PromptFields(XSH)
-    fields["workspace_str"] = _kash_workspace_str
+    prompt_info = get_prompt_info()
+    fields["workspace_str"] = prompt_info.workspace_name
+    fields["cwd_short_str"] = prompt_info.cwd_short_str
     set_env("PROMPT_FIELDS", fields)
 
     # Set up the prompt and title template.
     set_env("PROMPT", kash_xonsh_prompt)
-    set_env("TITLE", LOGO_NAME + " - {workspace_str}")
+    set_env("TITLE", LOGO_NAME + " - {workspace_str} - {cwd_short_str}")
 
     add_key_bindings()
 

@@ -323,7 +323,9 @@ def customize_xonsh_settings(is_interactive: bool):
         # Disable suggest for command not found errors (we handle this ourselves).
         "SUGGEST_COMMANDS": False,
         # TODO: Consider enabling and adapting auto-suggestions.
-        "AUTO_SUGGEST": False,
+        "AUTO_SUGGEST": True,
+        # Show auto-suggestions in the completion menu.
+        "AUTO_SUGGEST_IN_COMPLETIONS": False,
         # Completions can be "none", "single", "multi", or "readline".
         # "single" lets us have rich completions with descriptions alongside.
         # https://xon.sh/envvars.html#completions-display
