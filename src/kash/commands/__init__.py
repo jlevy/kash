@@ -15,6 +15,7 @@ import kash.commands.extras.utils_commands  # noqa: F401
 import kash.commands.help.assistant_commands  # noqa: F401  # noqa: F401
 import kash.commands.help.doc_commands  # noqa: F401
 import kash.commands.help.help_commands  # noqa: F401
+import kash.commands.help.welcome  # noqa: F401
 import kash.commands.workspace.selection_commands  # noqa: F401
 import kash.commands.workspace.workspace_commands  # noqa: F401
 import kash.local_server.local_server_commands  # noqa: F401

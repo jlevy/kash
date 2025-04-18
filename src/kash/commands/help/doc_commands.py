@@ -1,40 +1,11 @@
-from rich.box import SQUARE
-from rich.console import Group
-from rich.panel import Panel
-
-from kash.commands.help.logo import branded_box
+from kash.commands.help.welcome import welcome
 from kash.config.logger import get_logger
-from kash.config.text_styles import (
-    COLOR_HINT,
-)
 from kash.docs.all_docs import DocSelection, all_docs
 from kash.exec import kash_command
 from kash.help.help_pages import print_see_also
-from kash.shell.output.shell_output import PrintHooks, console_pager, cprint, print_markdown
-from kash.shell.version import get_full_version_name
-from kash.utils.rich_custom.rich_markdown_fork import Markdown
+from kash.shell.output.shell_output import console_pager, print_markdown
 
 log = get_logger(__name__)
-
-
-@kash_command
-def welcome() -> None:
-    """
-    Print a welcome message.
-    """
-
-    help_topics = all_docs.help_topics
-    version = get_full_version_name()
-    # Create header with logo and right-justified version
-
-    PrintHooks.before_welcome()
-    cprint(
-        branded_box(
-            Group(Markdown(help_topics.welcome)),
-            version,
-        )
-    )
-    cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=COLOR_HINT))
 
 
 @kash_command

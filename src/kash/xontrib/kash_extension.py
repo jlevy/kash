@@ -9,15 +9,10 @@ Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 """
 
 # Using absolute imports to avoid polluting the user's shell namespace.
-import kash.actions
 import kash.exec.command_registry
-import kash.shell.output.shell_output
-import kash.utils.common.format_utils
 import kash.xonsh_custom.load_into_xonsh
-import kash.xonsh_custom.shell_load_commands
 import kash.xonsh_custom.xonsh_env
 from kash.config.logger import get_logger
-from kash.exec.action_registry import reload_all_action_classes
 
 
 # We add action loading here directly in the xontrib so we expose `load` and
@@ -33,6 +28,10 @@ def load(*paths: str) -> None:
     import runpy
 
     from prettyfmt import fmt_path
+
+    import kash.shell.output.shell_output
+    import kash.xonsh_custom.shell_load_commands
+    from kash.exec.action_registry import reload_all_action_classes
 
     for path in paths:
         if os.path.isfile(path) and path.endswith(".py"):

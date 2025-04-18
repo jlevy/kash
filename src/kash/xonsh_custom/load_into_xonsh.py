@@ -9,7 +9,7 @@ from xonsh.built_ins import XSH
 from xonsh.prompt.base import PromptFields
 
 from kash.commands.base.general_commands import self_check
-from kash.commands.help import doc_commands
+from kash.commands.help.welcome import welcome
 from kash.config.logger import get_logger
 from kash.config.settings import RECOMMENDED_PKGS, check_kerm_code_support
 from kash.config.text_styles import LOGO_NAME, STYLE_HINT
@@ -56,11 +56,11 @@ def load_into_xonsh():
     """
 
     if is_interactive():
+        # Do welcome first since init could take a few seconds.
+        welcome()
+
         # Do first so in case there is an error, the shell prompt etc works as expected.
         _shell_interactive_setup()
-
-        # Then do welcome first since init could take a few seconds.
-        doc_commands.welcome()
 
         def load():
             load_start_time = time.time()
