@@ -1,15 +1,16 @@
 import os
-import sys
+import signal
 import threading
 import time
 from collections.abc import Callable
 from os.path import expanduser
+from subprocess import CalledProcessError
 from typing import cast
 
 import xonsh.tools as xt
 from prompt_toolkit.formatted_text import FormattedText
 from pygments.token import Token
-from strif import abbrev_str
+from strif import abbrev_str, quote_if_needed
 from typing_extensions import override
 from xonsh.built_ins import XSH
 from xonsh.environ import xonshrc_context
@@ -108,6 +109,24 @@ class CustomPTKPromptFormatter(PTKPromptFormatter):
         return super().__call__(template=cast(str, template), **kwargs)
 
 
+def exit_code_str(e: CalledProcessError) -> str:
+    """
+    Prettier version of `CalledProcessError.__str__()`.
+    """
+    if isinstance(e.cmd, list):
+        cmd = "`" + " ".join(quote_if_needed(c) for c in e.cmd) + "`"
+    else:
+        cmd = str(e.cmd)
+    if e.returncode and e.returncode < 0:
+        try:
+            signal_name = signal.Signals(-e.returncode).name
+            return f"Command died with {signal_name} ({e.returncode}): {cmd}"
+        except ValueError:
+            return f"Command died with unknown signal {e.returncode}: {cmd}"
+    else:
+        return f"Command returned non-zero exit status {e.returncode}: {cmd}"
+
+
 # Base shell can be ReadlineShell or PromptToolkitShell.
 # Completer can be RankingCompleter or the standard Completer.
 # from xonsh.completer import Completer
@@ -193,9 +212,12 @@ class CustomAssistantShell(PromptToolkitShell):
             if hist is not None and hist.last_cmd_rtn is None:
                 hist.last_cmd_rtn = 0  # returncode for success
             log.info("Shell code completed successfully: %s", src)
+        except CalledProcessError as e:
+            log.warning("%s", exit_code_str(e))
+            # print(e.args[0], file=sys.stderr)
         except xt.XonshError as e:
             log.info("Shell exception details: %s", e, exc_info=True)
-            print(e.args[0], file=sys.stderr)
+            # print(e.args[0], file=sys.stderr)
             if hist is not None and hist.last_cmd_rtn is None:  # pyright: ignore
                 hist.last_cmd_rtn = 1  # return code for failure
         except (SystemExit, KeyboardInterrupt) as err:
