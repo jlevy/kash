@@ -56,8 +56,8 @@ class Loadable:
 
     key: str
     """
-    The unique identifier for the item. If it ends in a recognized file extension,
-    both the key and the extension will be used when creating unique cache filenames.
+    The unique identifier for the item. Used when creating unique cache filenames,
+    as is or with added suffixes.
     """
 
     save: Callable[[Path], None]
@@ -68,7 +68,9 @@ class Loadable:
 
 
 Cacheable = Url | Path | Loadable
-"""An item that can be cached as a file."""
+"""
+An item that can be cached as a file.
+"""
 
 
 def _suffix_for(cacheable: Cacheable) -> str | None:

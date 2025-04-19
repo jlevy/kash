@@ -139,6 +139,12 @@ class FileFormatError(ContentError):
     pass
 
 
+class ApiError(KashRuntimeError):
+    """Raised when an API call returns something unexpected."""
+
+    pass
+
+
 def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
     exceptions: list[type[Exception]] = [SelfExplanatoryError, FileNotFoundError, IOError]
     try:

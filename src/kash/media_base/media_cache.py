@@ -11,7 +11,7 @@ from kash.media_base.media_services import (
     download_media_by_service,
     get_media_services,
 )
-from kash.media_base.speech_transcription import deepgram_transcribe_audio
+from kash.media_base.transcription_deepgram import deepgram_transcribe_audio
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, as_file_url, is_url
 from kash.utils.errors import FileNotFound, InvalidInput, UnexpectedError
