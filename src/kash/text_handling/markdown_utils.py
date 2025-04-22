@@ -1,3 +1,4 @@
+import re
 from textwrap import dedent
 from typing import Any
 
@@ -128,6 +129,48 @@ def _type_from_heading(heading: Heading) -> str:
         raise ValueError(f"Unsupported heading: {heading}: level {heading.level}")
 
 
+def _last_unescaped_bracket(text: str, index: int) -> str | None:
+    escaped = False
+    for i in range(index - 1, -1, -1):
+        ch = text[i]
+        if ch == "\\":
+            escaped = not escaped  # Toggle escaping chain
+            continue
+        if ch in "[]":
+            if not escaped:
+                return ch
+        # Reset escape status after any non‑backslash char
+        escaped = False
+    return None
+
+
+def find_markdown_text(
+    pattern: re.Pattern[str],
+    text: str,
+    *,
+    start_pos: int = 0,  # noqa: F821
+) -> re.Match[str] | None:
+    """
+    Return first regex `pattern` match in `text` not inside an existing link.
+
+    A match is considered inside a link when the most recent unescaped square
+    bracket preceding the match start is an opening bracket "[".
+    """
+
+    pos = start_pos
+    while True:
+        match = pattern.search(text, pos)
+        if match is None:
+            return None
+
+        last_bracket = _last_unescaped_bracket(text, match.start())
+        if last_bracket != "[":
+            return match
+
+        # Skip this match and continue searching
+        pos = match.end()
+
+
 ## Tests
 
 
@@ -174,3 +217,25 @@ def test_markdown_to_html():
     )
 
     assert markdown_to_html(markdown).strip() == expected_html.strip()
+
+
+def test_find_markdown_text() -> None:  # pragma: no cover
+    # Match is returned when the term is not inside a link.
+    text = "Foo bar baz"
+    pattern = re.compile("Foo Bar", re.IGNORECASE)
+    match = find_markdown_text(pattern, text)
+    assert match is not None and match.group(0) == "Foo bar"
+
+    # Skips occurrence inside link and returns the first one outside.
+    text = "[Foo](http://example.com) something Foo"
+    pattern = re.compile("Foo", re.IGNORECASE)
+    match = find_markdown_text(pattern, text)
+    assert match is not None
+    assert match.start() > text.index(") ")
+    assert text[match.start() : match.end()] == "Foo"
+
+    # Returns None when the only occurrences are inside links.
+    text = "prefix [bar](http://example.com) suffix"
+    pattern = re.compile("bar", re.IGNORECASE)
+    match = find_markdown_text(pattern, text)
+    assert match is None

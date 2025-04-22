@@ -63,7 +63,7 @@ class Loadable:
     save: Callable[[Path], None]
     """
     Method that saves the item to the given path. Caller will handle path selection
-    and atomicity of file creation.
+    and atomicity of file creation. Raise an exception if the item cannot be saved.
     """
 
 
@@ -175,7 +175,10 @@ class LocalFileCache(DirStore):
             ) as tmp_path:
                 source.save(tmp_path)
             if not cache_path.exists():
-                raise InvalidCacheState(f"Failed to save to cache: {source}: {cache_path}")
+                # The source should have raised an exception if it failed to save.
+                raise InvalidCacheState(
+                    f"Loadable source failed to save to cache: {source}: {cache_path}"
+                )
         else:
             raise ValueError(f"Invalid source: {source}")
 

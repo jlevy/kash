@@ -1,6 +1,6 @@
 from kash.llm_utils import Message, MessageTemplate, llm_template_completion
 from kash.llm_utils.llms import LLM
-from kash.text_handling.markdown_util import as_bullet_points
+from kash.text_handling.markdown_utils import as_bullet_points
 
 # TODO: Enforce that the edits below doesn't contain anything extraneous.
 

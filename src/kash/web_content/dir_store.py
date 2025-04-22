@@ -87,8 +87,7 @@ class DirStore:
         self, keys: list[str | Path], folder: str | None = None, suffix: str | None = None
     ) -> dict[str | Path, Path | None]:
         """
-        Look up all existing cached results for the set of keys. This should work fine but could
-        be optimized for large batches.
+        Look up all existing cached results for the set of keys.
         """
         return {key: self.find(key, folder=folder, suffix=suffix) for key in keys}
 

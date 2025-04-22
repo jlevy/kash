@@ -24,7 +24,7 @@ from kash.config.logger import get_logger
 from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
 from kash.model.paths_model import StorePath, fmt_store_path
-from kash.text_handling.markdown_util import markdown_to_html
+from kash.text_handling.markdown_utils import markdown_to_html
 from kash.utils.common.format_utils import fmt_loc, html_to_plaintext, plaintext_to_html
 from kash.utils.common.url import Locator, Url
 from kash.utils.errors import FileFormatError
