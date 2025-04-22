@@ -1,4 +1,7 @@
+import json
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from prettyfmt import fmt_lines, fmt_path
 
@@ -44,6 +47,18 @@ def cache_file(source: Url | Path | Loadable, global_cache: bool = False) -> tup
     cache = _global_content_cache if global_cache else _content_cache
     path, was_cached = cache.cache(source)
     return path, was_cached
+
+
+def cache_api_response(
+    url: Url, global_cache: bool = False, parser: Callable[[str], Any] = json.loads
+) -> tuple[Any, bool]:
+    """
+    Cache an API response. By default parse the response as JSON.
+    """
+    cache = _global_content_cache if global_cache else _content_cache
+    path, was_cached = cache.cache(url)
+    result = parser(path.read_text())
+    return result, was_cached
 
 
 def cache_resource(item: Item) -> dict[MediaType, Path]:
