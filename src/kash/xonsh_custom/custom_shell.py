@@ -28,7 +28,7 @@ from kash.config import colors
 from kash.config.lazy_imports import import_start_time  # usort:skip
 from kash.config.logger import get_console, get_log_settings, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
-from kash.config.text_styles import SPINNER, STYLE_ASSISTANCE
+from kash.config.text_styles import SPINNER, STYLE_ASSISTANCE, STYLE_HINT
 from kash.help.assistant import AssistanceType
 from kash.shell.output.shell_output import cprint
 from kash.shell.ui.shell_syntax import is_assist_request_str
@@ -206,14 +206,16 @@ class CustomAssistantShell(PromptToolkitShell):
         try:
             log.info("Running shell code: %r", src)
             exc_info = run_compiled_code(code, self.ctx, None, "single")
+            log.info("Completed shell code: %r", src)
             if exc_info != (None, None, None):
+                log.debug("Exception info: %s", exc_info)
                 raise exc_info[1]  # pyright: ignore
             ts1 = time.time()
             if hist is not None and hist.last_cmd_rtn is None:
                 hist.last_cmd_rtn = 0  # returncode for success
-            log.info("Shell code completed successfully: %s", src)
         except CalledProcessError as e:
             log.warning("%s", exit_code_str(e))
+            cprint("See `logs` for more details.", style=STYLE_HINT)
             # print(e.args[0], file=sys.stderr)
         except xt.XonshError as e:
             log.info("Shell exception details: %s", e, exc_info=True)

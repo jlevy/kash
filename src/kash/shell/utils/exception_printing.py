@@ -46,5 +46,11 @@ def wrap_with_exception_printing(func: Callable[..., R]) -> Callable[[list[str]]
             log.error(f"[{COLOR_ERROR}]Command error:[/{COLOR_ERROR}] %s", summarize_traceback(e))
             log.info("Command error details: %s", e, exc_info=True)
             return None
+        except Exception as e:
+            # Note xonsh can log exceptions but it will be in the xonsh call stack, which is
+            # useless for the user. Better to log all unexpected exception call stack
+            # here to our logs.
+            log.info("Command error details: %s", e, exc_info=True)
+            raise
 
     return command

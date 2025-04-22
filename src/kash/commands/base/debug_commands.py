@@ -213,3 +213,16 @@ def reload_commands_and_actions() -> None:
 
     reload_shell_commands_and_actions()
     log_command_action_info()
+
+
+@kash_command
+def debug_exception() -> None:
+    """
+    Useful to debug exception handling/printing in xonsh.
+    """
+
+    def raise_exception():
+        cprint("Raising an unexpected exception to test the exception handler.")
+        raise Exception("This is a test exception.")
+
+    raise_exception()
