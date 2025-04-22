@@ -7,6 +7,7 @@ from marko.block import Heading, HTMLBlock, ListItem
 from marko.inline import Link
 
 from kash.config.logger import get_logger
+from kash.utils.common.url import Url
 
 log = get_logger(__name__)
 
@@ -36,6 +37,14 @@ class CustomHTMLRenderer(marko.HTMLRenderer):
 standard_markdown = marko.Markdown()
 
 custom_markdown = marko.Markdown(renderer=CustomHTMLRenderer)
+
+
+def markdown_link(text: str, url: str | Url) -> str:
+    """
+    Create a Markdown link.
+    """
+    text = text.replace("[", "\\[").replace("]", "\\]")
+    return f"[{text}]({url})"
 
 
 def markdown_to_html(markdown: str, converter: marko.Markdown = custom_markdown) -> str:

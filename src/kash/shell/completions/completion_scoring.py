@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
+import rich
 from strif import abbrev_str
 from thefuzz import fuzz
 
@@ -22,7 +23,7 @@ log = get_logger(__name__)
 T = TypeVar("T")
 
 # Scores less than this can be dropped early.
-MIN_CUTOFF = Score(60)
+MIN_CUTOFF = Score(70)
 
 
 def linear_boost(score: Score, min_score: Score) -> Score:
@@ -171,10 +172,29 @@ def score_phrase(prefix: str, text: str) -> Score:
     Could experiment with this more but it's a rough attempt to balance
     full matches and prefix matches.
     """
-    return Score(
-        0.4 * fuzz.token_set_ratio(prefix, text)
-        + 0.4 * fuzz.partial_ratio(prefix, text)
-        + 0.2 * fuzz.token_sort_ratio(prefix, text)
+    if len(prefix) > 5:
+        return Score(
+            0.4 * fuzz.ratio(prefix, text)
+            + 0.3 * fuzz.token_set_ratio(prefix, text)
+            + 0.3 * fuzz.partial_ratio(prefix, text),
+        )
+    else:
+        return Score(0.6 * fuzz.ratio(prefix, text) + 0.4 * fuzz.token_set_ratio(prefix, text))
+
+
+def print_all_scores(prefix: str, text: str):
+    rich.inspect(
+        {
+            "ratio": fuzz.ratio(prefix, text),
+            "partial_ratio": fuzz.partial_ratio(prefix, text),
+            "token_sort_ratio": fuzz.token_sort_ratio(prefix, text),
+            "token_set_ratio": fuzz.token_set_ratio(prefix, text),
+            "partial_token_set_ratio": fuzz.partial_token_set_ratio(prefix, text),
+            "final": score_phrase(prefix, text),
+        },
+        methods=False,
+        docs=False,
+        sort=False,
     )
 
 
@@ -281,3 +301,15 @@ def score_snippet(query: str, snippet: CommentedCommand) -> Score:
     )
     # Bias a little toward command matches.
     return Score(max(command_score, 0.7 * comment_score))
+
+
+## Tests
+
+
+def test_score_phrase():
+    assert score_phrase("hello world", "hello world") == Score(100)
+    assert Score(90) >= score_phrase("hello world", "hello there world") >= Score(80)
+    assert Score(70) >= score_phrase("hello world", "hello there there") >= Score(60)
+    assert Score(85) >= score_phrase("duf", "df") >= Score(75)
+    assert Score(70) >= score_phrase("wik", "awk") >= Score(60)
+    assert Score(60) >= score_phrase("wiki", "awk") >= Score(50)
