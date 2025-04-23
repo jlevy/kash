@@ -15,21 +15,30 @@ Tallies: TypeAlias = dict[str, int]
 def import_subdirs(
     parent_package_name: str,
     parent_dir: Path,
-    subdir_names: list[str],
+    subdir_names: list[str] | None = None,
     tallies: Tallies | None = None,
 ):
     """
     Import all files in the given subdirectories of a single parent directory.
+    Wraps `pkgutil.iter_modules` to iterate over all modules in the subdirectories.
+    If `subdir_names` is `None`, will import all subdirectories.
     """
     if tallies is None:
         tallies = {}
+    if not subdir_names:
+        subdir_names = ["."]
 
     for subdir_name in subdir_names:
-        full_path = parent_dir / subdir_name
+        if subdir_name == ".":
+            full_path = parent_dir
+            package_name = parent_package_name
+        else:
+            full_path = parent_dir / subdir_name
+            package_name = f"{parent_package_name}.{subdir_name}"
+
         if not full_path.is_dir():
             raise FileNotFoundError(f"Subdirectory not found: {full_path}")
 
-        package_name = f"{parent_package_name}.{subdir_name}"
         for _module_finder, module_name, _is_pkg in pkgutil.iter_modules(path=[str(full_path)]):
             importlib.import_module(f"{package_name}.{module_name}")  # Propagate import errors
             tallies[package_name] = tallies.get(package_name, 0) + 1

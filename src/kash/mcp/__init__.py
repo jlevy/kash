@@ -1,2 +1,5 @@
-# Ensure commands are registered.
-import kash.mcp.mcp_server_commands  # noqa: F401
+from pathlib import Path
+
+from kash.exec.importing import import_and_register
+
+import_and_register(__package__, Path(__file__).parent, ["."])

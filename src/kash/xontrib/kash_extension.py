@@ -31,7 +31,7 @@ def load(*paths: str) -> None:
 
     import kash.shell.output.shell_output
     import kash.xonsh_custom.shell_load_commands
-    from kash.exec.action_registry import reload_all_action_classes
+    from kash.exec.action_registry import refresh_action_classes
 
     for path in paths:
         if os.path.isfile(path) and path.endswith(".py"):
@@ -40,7 +40,7 @@ def load(*paths: str) -> None:
             importlib.import_module(path)
 
     # Now reload all actions into the environment so the new action is visible.
-    actions = reload_all_action_classes()
+    actions = refresh_action_classes()
     kash.xonsh_custom.shell_load_commands._register_actions_in_shell(actions)
 
     kash.shell.output.shell_output.cprint(

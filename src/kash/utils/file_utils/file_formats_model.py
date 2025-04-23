@@ -146,6 +146,7 @@ class Format(Enum):
             self.markdown,
             self.md_html,
             self.html,
+            self.json,  # Not strictly true but we encourage use of comments.
             self.yaml,
             self.diff,
             self.python,

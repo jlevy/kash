@@ -41,8 +41,8 @@ def reset_content_cache_dir(path: Path):
 def cache_file(source: Url | Path | Loadable, global_cache: bool = False) -> tuple[Path, bool]:
     """
     Return a local cached copy of the item. If it is an URL, content is fetched.
-    Raises requests.HTTPError if the URL is not reachable. If it is a Path or
-    a Loadable, a cached copy is returned.
+    If it is a Path or a Loadable, a cached copy is returned.
+    LocalFileCache uses httpx so httpx.HTTPError is raised for non-2xx responses.
     """
     cache = _global_content_cache if global_cache else _content_cache
     path, was_cached = cache.cache(source)

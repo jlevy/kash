@@ -207,6 +207,7 @@ ignore = [
 include = ["src", "tests", "devtools"]
 reportUnusedParameter = "warning"
 # These likely worth revisiting and re-enabling:
+reportUntypedFunctionDecorator = false
 reportImplicitOverride = false
 reportImportCycles = false
 reportUnknownMemberType = false
