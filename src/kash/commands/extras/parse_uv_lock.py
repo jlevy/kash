@@ -1,9 +1,8 @@
+import subprocess
 import tomllib
-from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
-from packaging.requirements import Requirement
 from packaging.tags import Tag, sys_tags
 from packaging.utils import parse_wheel_filename
 from prettyfmt import fmt_size_dual
@@ -92,29 +91,42 @@ def parse_uv_lock(lock_path: Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def read_pyproject_dependencies(pyproject_path: Path) -> dict[str, set[str]]:
+def uv_runtime_packages(
+    project_dir: str | Path = ".", no_dev: bool = False, uv_executable: str = "uv"
+) -> list[str]:
     """
-    Parse pyproject.toml and return dict mapping group name to dependency names.
-    Reads [project.dependencies] (as 'main') and [dependency-groups].
-    Assumes pyproject_path exists and is valid TOML.
+    Return the *runtime* (non-dev) package names that would be installed for the
+    given project, as resolved by uv.
     """
-    parsed_groups: dict[str, set[str]] = defaultdict(set)
-    with open(pyproject_path, "rb") as f:
-        data = tomllib.load(f)
+    cmd = [
+        uv_executable,
+        "export",
+        "--format",
+        "requirements-txt",
+        "--no-header",
+        "--no-annotate",
+        "--no-hashes",
+    ]
+    if no_dev:
+        cmd.append("--no-dev")
 
-    # Main dependencies
-    main_deps_list = data.get("project", {}).get("dependencies", [])
-    if main_deps_list:
-        # Add parsed names to the 'main' set in parsed_groups
-        parsed_groups["main"] = {Requirement(dep).name for dep in main_deps_list}
+    result = subprocess.run(
+        cmd,
+        cwd=Path(project_dir),
+        check=True,
+        text=True,
+        capture_output=True,
+    )
 
-    # Dependency groups
-    raw_dep_groups = data.get("dependency-groups", {})
-    for group_name, deps_list in raw_dep_groups.items():
-        parsed_groups[group_name].update({Requirement(dep).name for dep in deps_list})
+    packages: list[str] = []
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if "==" not in line:  # skip “-e .” and blank lines
+            continue
+        pkg_name, _ = line.split("==", maxsplit=1)
+        packages.append(pkg_name.strip())
 
-    # Return the processed groups, filtering out any empty sets
-    return {k: v for k, v in parsed_groups.items() if v}
+    return packages
 
 
 @kash_command
@@ -132,13 +144,11 @@ def uv_dep_info(
     uv_lock_path = Path(uv_lock)
     pyproject_path = Path(pyproject)
 
-    main_deps: set[str] | None = None
+    main_deps: list[str] | None = None
     if pyproject_path.exists():
-        cprint(f"Reading main dependencies from: {pyproject_path}", style=COLOR_STATUS)
-        dependency_groups = read_pyproject_dependencies(pyproject_path)
-        main_deps = dependency_groups.get("main")
-        if not main_deps:
-            log.warning("No [project.dependencies] found: %s", pyproject_path)
+        cprint("Reading main dependencies from with uv", style=COLOR_STATUS)
+        main_deps = uv_runtime_packages(no_dev=True)
+        all_deps = uv_runtime_packages(no_dev=False)
     else:
         log.warning("pyproject.toml not found: %s", pyproject_path)
 
@@ -149,10 +159,10 @@ def uv_dep_info(
 
     if main_deps:
         cprint(
-            f"Filtering lock file entries to include only {len(main_deps)} dependencies.",
+            f"Filtering lock file entries to include only {len(main_deps)} of {len(all_deps)} dependencies.",
             style=COLOR_STATUS,
         )
-        df = df[df["name"].isin(list(main_deps))]
+        df = df[df["name"].isin(main_deps)]
     else:
         cprint("Showing all packages from lock file.", style=COLOR_STATUS)
     cprint()
