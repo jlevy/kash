@@ -8,18 +8,23 @@ from kash.llm_utils.llm_names import LLMName
 class LLM(LLMName, Enum):
     """
     Convenience names for common LLMs. This isn't exhaustive, but just common
-    ones for autocomplete, docs, etc. Values are all LiteLLM names.
+    ones for autocomplete, docs, etc. Values are all LiteLLM names. See:
+    https://github.com/BerriAI/litellm/blob/main/litellm/model_prices_and_context_window_backup.json
     """
 
     # https://platform.openai.com/docs/models
-    o3_mini = LLMName("o3-mini")
     o1_mini = LLMName("o1-mini")
     o1 = LLMName("o1")
+    o3 = LLMName("o3")
+    o3_mini = LLMName("o3-mini")
+    o4_mini = LLMName("o4-mini")
     o1_preview = LLMName("o1-preview")
     gpt_4o_mini = LLMName("gpt-4o-mini")
     gpt_4o = LLMName("gpt-4o")
     gpt_4 = LLMName("gpt-4")
-    gpt_3_5_turbo = LLMName("gpt-3.5-turbo")
+    gpt_4_1 = LLMName("gpt-4.1")
+    gpt_4_1_mini = LLMName("gpt-4.1-mini")
+    gpt_4_1_nano = LLMName("gpt-4.1-nano")
 
     # https://docs.anthropic.com/en/docs/about-claude/models/all-models
     claude_3_7_sonnet = LLMName("claude-3-7-sonnet-latest")
