@@ -19,8 +19,8 @@ from prettyfmt import (
 from pydantic.dataclasses import dataclass
 from strif import abbrev_str, format_iso_timestamp
 
-from kash.concepts.concept_formats import canonicalize_concept
 from kash.config.logger import get_logger
+from kash.model.concept_model import canonicalize_concept
 from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
 from kash.model.paths_model import StorePath, fmt_store_path

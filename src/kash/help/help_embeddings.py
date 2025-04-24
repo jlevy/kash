@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from kash.concepts.embeddings import Embeddings
-from kash.concepts.text_similarity import rank_by_relatedness
 from kash.config.logger import get_logger
+from kash.embeddings.embeddings import Embeddings
+from kash.embeddings.text_similarity import rank_by_relatedness
 from kash.help.help_types import HelpDoc, HelpDocType
 from kash.web_content.local_file_cache import Loadable
 

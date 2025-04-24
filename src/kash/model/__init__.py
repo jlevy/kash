@@ -31,7 +31,12 @@ from kash.model.actions_model import (
     PerItemAction,
     TitleTemplate,
 )
-from kash.model.compound_actions_model import ComboAction, SequenceAction, look_up_actions
+from kash.model.compound_actions_model import (
+    ComboAction,
+    SequenceAction,
+    look_up_actions,
+)
+from kash.model.concept_model import Concept, canonicalize_concept, normalize_concepts
 from kash.model.graph_model import GraphData, Link, Node
 from kash.model.items_model import (
     SLUG_MAX_LEN,

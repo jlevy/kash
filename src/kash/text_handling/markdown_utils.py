@@ -12,12 +12,33 @@ from kash.utils.common.url import Url
 
 log = get_logger(__name__)
 
+# Characters that commonly need escaping in Markdown inline text.
+MARKDOWN_ESCAPE_CHARS = r"([\\`*_{}\[\]()#+.!-])"
+MARKDOWN_ESCAPE_RE = re.compile(MARKDOWN_ESCAPE_CHARS)
 
-def as_bullet_points(values: list[str]) -> str:
+
+def escape_markdown(text: str) -> str:
     """
-    Convert a list of strings to a Markdown bullet-point list.
+    Escape characters with special meaning in Markdown.
     """
-    return "\n\n".join([f"- {point}" for point in values])
+    return MARKDOWN_ESCAPE_RE.sub(r"\\\1", text)
+
+
+def as_bullet_points(values: list[Any]) -> str:
+    """
+    Convert a list of values to a Markdown bullet-point list. If a value is a string,
+    it is treated like Markdown. If it's something else it's converted to a string
+    and also escaped for Markdown.
+    """
+    points: list[str] = []
+    for value in values:
+        value = value.replace("\n", " ").strip()
+        if isinstance(value, str):
+            points.append(value)
+        else:
+            points.append(escape_markdown(str(value)))
+
+    return "\n\n".join(f"- {point}" for point in points)
 
 
 class CustomHTMLRenderer(marko.HTMLRenderer):
@@ -172,6 +193,24 @@ def find_markdown_text(
 
 
 ## Tests
+
+
+def test_escape_markdown() -> None:
+    assert escape_markdown("") == ""
+    assert escape_markdown("Hello world") == "Hello world"
+    assert escape_markdown("`code`") == "\\`code\\`"
+    assert escape_markdown("*italic*") == "\\*italic\\*"
+    assert escape_markdown("_bold_") == "\\_bold\\_"
+    assert escape_markdown("{braces}") == "\\{braces\\}"
+    assert escape_markdown("# header") == "\\# header"
+    assert escape_markdown("1. item") == "1\\. item"
+    assert escape_markdown("line+break") == "line\\+break"
+    assert escape_markdown("dash-") == "dash\\-"
+    assert escape_markdown("!bang") == "\\!bang"
+    assert escape_markdown("backslash\\") == "backslash\\\\"
+    assert escape_markdown("Multiple *special* chars [here](#anchor).") == (
+        "Multiple \\*special\\* chars \\[here\\]\\(\\#anchor\\)\\."
+    )
 
 
 def test_markdown_to_html():

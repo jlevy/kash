@@ -5,9 +5,9 @@ from funlog import log_calls
 from litellm import embedding
 from litellm.types.utils import EmbeddingResponse
 
-from kash.concepts.cosine import ArrayLike, cosine
-from kash.concepts.embeddings import Embeddings
 from kash.config.logger import get_logger
+from kash.embeddings.cosine import ArrayLike, cosine
+from kash.embeddings.embeddings import Embeddings
 from kash.llm_utils.llms import DEFAULT_EMBEDDING_MODEL, EmbeddingModel
 from kash.utils.errors import ApiResultError
 
