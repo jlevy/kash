@@ -541,6 +541,13 @@ class Item:
 
         return body_text[:max_len]
 
+    @property
+    def has_body(self) -> bool:
+        """
+        True if the item has a non-empty body.
+        """
+        return bool(self.body and self.body.strip())
+
     def slug_name(self, max_len: int = SLUG_MAX_LEN) -> str:
         """
         Get a readable slugified version of the title or filename or content

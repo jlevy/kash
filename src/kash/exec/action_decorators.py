@@ -333,8 +333,11 @@ def kash_action(
                     else:
                         kw_args[fp.name] = self.get_param(fp.name)
 
-                log.info("Action function param declarations:\n%s", fmt_lines(self.params))
-                log.info("Action function param values:\n%s", self.param_value_summary_str())
+                if self.params:
+                    log.info("Action function param declarations:\n%s", fmt_lines(self.params))
+                    log.info("Action function param values:\n%s", self.param_value_summary_str())
+                else:
+                    log.info("Action function has no declared params")
 
                 log.message(
                     "Action function call:\n%s",

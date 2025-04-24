@@ -28,6 +28,9 @@ class KashEnv(str, Enum):
     KASH_MCP_WS = "KASH_MCP_WS"
     """The directory for the workspace for MCP servers."""
 
+    KASH_SHOW_TRACEBACK = "KASH_SHOW_TRACEBACK"
+    """Whether to show tracebacks on actions and commands in the shell."""
+
     @overload
     def read_str(self) -> str | None: ...
 
@@ -57,3 +60,10 @@ class KashEnv(str, Enum):
             return Path(value).expanduser().resolve()
         else:
             return default.expanduser().resolve() if default else None
+
+    def read_bool(self, default: bool = False) -> bool:
+        """
+        Get the value of the environment variable as a boolean.
+        """
+        value = str(os.environ.get(self.value, default) or "").lower()
+        return bool(value and value != "0" and value != "false" and value != "no")

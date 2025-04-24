@@ -1,5 +1,6 @@
 from funlog import log_tallies
 
+from kash.config.env_settings import KashEnv
 from kash.config.logger import get_console, get_logger
 from kash.config.text_styles import COLOR_ERROR, SPINNER
 from kash.exec.action_exec import run_action_with_shell_context
@@ -66,6 +67,10 @@ class ShellCallableAction:
             log.error(f"[{COLOR_ERROR}]Action error:[/{COLOR_ERROR}] %s", summarize_traceback(e))
             log.info("Action error details: %s", e, exc_info=True)
             return ShellResult(exception=e)
+        except Exception as e:
+            # Log here while we are in the true call stack (not inside the xonsh call stack).
+            log.error("Action error: %s", e, exc_info=KashEnv.KASH_SHOW_TRACEBACK.read_bool(True))
+            raise
         finally:
             log_tallies(level="warning", if_slower_than=10.0)
             # output_separator()
