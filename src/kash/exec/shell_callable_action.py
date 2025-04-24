@@ -32,25 +32,27 @@ class ShellCallableAction:
     def __call__(self, args: list[str]) -> ShellResult | None:
         from kash.commands.help import help_commands
 
-        action_cls = self.action_cls
-        PrintHooks.before_shell_action_run()
+        log.debug("ShellCallableAction: %s: %s", self.action_cls.name, args)
 
-        shell_args = parse_shell_args(args)
-
-        # We will instantiate the action later but we create an unconfigured
-        # instance for help/info.
-        action = action_cls.create(None)
-        if shell_args.show_help:
-            print_action_help(action, verbose=True)
-            return ShellResult()
-        elif shell_args.options.get("show_source", False):
-            return help_commands.source_code(action_cls.name)
-
-        # Handle --rerun option at action invocation time.
-        rerun = bool(shell_args.options.get("rerun", False))
-
-        log.info("Action shell args: %s", shell_args)
         try:
+            action_cls = self.action_cls
+            PrintHooks.before_shell_action_run()
+
+            shell_args = parse_shell_args(args)
+
+            # We will instantiate the action later but we create an unconfigured
+            # instance for help/info.
+            action = action_cls.create(None)
+            if shell_args.show_help:
+                print_action_help(action, verbose=True)
+                return ShellResult()
+            elif shell_args.options.get("show_source", False):
+                return help_commands.source_code(action_cls.name)
+
+            # Handle --rerun option at action invocation time.
+            rerun = bool(shell_args.options.get("rerun", False))
+
+            log.info("Action shell args: %s", shell_args)
             explicit_values = RawParamValues(shell_args.options)
             if not action.interactive_input:
                 with get_console().status(f"Running action {action.name}…", spinner=SPINNER):

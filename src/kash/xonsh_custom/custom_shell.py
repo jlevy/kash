@@ -5,7 +5,8 @@ import time
 from collections.abc import Callable
 from os.path import expanduser
 from subprocess import CalledProcessError
-from typing import cast
+from types import TracebackType
+from typing import TypeAlias, cast
 
 import xonsh.tools as xt
 from prompt_toolkit.formatted_text import FormattedText
@@ -133,6 +134,9 @@ def exit_code_str(e: CalledProcessError) -> str:
 # from xonsh.shells.readline_shell import ReadlineShell
 from xonsh.shells.ptk_shell import PromptToolkitShell
 
+ExcInfo: TypeAlias = tuple[type[BaseException], BaseException, TracebackType]
+OptExcInfo: TypeAlias = ExcInfo | tuple[None, None, None]
+
 
 class CustomAssistantShell(PromptToolkitShell):
     """
@@ -141,7 +145,6 @@ class CustomAssistantShell(PromptToolkitShell):
     We're trying to reuse code where possible but need to change some of xonsh's
     behavior. Note event hooks in xonsh do let you customize handling but don't
     let you disable xonsh's processing, so it seems like this is necessary.
-    so it seems like this is necessary.
     """
 
     def __init__(self, **kwargs):
@@ -205,15 +208,18 @@ class CustomAssistantShell(PromptToolkitShell):
         exc_info = (None, None, None)
         try:
             log.info("Running shell code: %r", src)
-            exc_info = run_compiled_code(code, self.ctx, None, "single")
-            log.info("Completed shell code: %r", src)
-            if exc_info != (None, None, None):
-                log.debug("Exception info: %s", exc_info)
-                raise exc_info[1]  # pyright: ignore
+            exc_info: OptExcInfo = run_compiled_code(code, self.ctx, None, "single")  # pyright: ignore
+            log.debug("Completed shell code: %r", src)
+            _type, exc, _traceback = exc_info
+            if exc:
+                log.info("Shell exception info: %s", exc)
+                raise exc
             ts1 = time.time()
             if hist is not None and hist.last_cmd_rtn is None:
                 hist.last_cmd_rtn = 0  # returncode for success
         except CalledProcessError as e:
+            # No point in logging stack trace here as it is only the shell stack,
+            # not the original code.
             log.warning("%s", exit_code_str(e))
             cprint("See `logs` for more details.", style=STYLE_HINT)
             # print(e.args[0], file=sys.stderr)
