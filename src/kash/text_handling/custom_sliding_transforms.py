@@ -1,10 +1,17 @@
 from collections.abc import Callable
 from math import ceil
 
-from chopdiff.docs import DiffFilter, Paragraph, TextDoc, TextUnit, diff_docs, join_wordtoks
+from chopdiff.docs import (
+    DIFF_FILTER_NONE,
+    DiffFilter,
+    Paragraph,
+    TextDoc,
+    TextUnit,
+    diff_docs,
+    join_wordtoks,
+)
 from chopdiff.transforms import (
     WindowSettings,
-    accept_all,
     remove_window_br,
     sliding_para_window,
     sliding_window_transform,
@@ -31,7 +38,7 @@ def filtered_transform(
     doc: TextDoc,
     transform_func: TextDocTransform,
     windowing: WindowSettings | None,
-    diff_filter: DiffFilter = accept_all,
+    diff_filter: DiffFilter | None = None,
 ) -> TextDoc:
     """
     Apply a transform with sliding window across the input doc, enforcing the changes it's
@@ -39,7 +46,7 @@ def filtered_transform(
 
     If windowing is None, apply the transform to the entire document at once.
     """
-    has_filter = diff_filter != accept_all
+    has_filter = bool(diff_filter and diff_filter != DIFF_FILTER_NONE)
 
     if not windowing or not windowing.size:
         transformed_doc = transform_func(doc)
@@ -52,6 +59,7 @@ def filtered_transform(
             transformed_doc = transform_func(input_doc)
 
             if has_filter:
+                assert diff_filter
                 # Check the transform did what it should have.
                 diff = diff_docs(input_doc, transformed_doc)
                 accepted_diff, rejected_diff = diff.filter(diff_filter)

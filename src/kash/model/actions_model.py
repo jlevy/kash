@@ -9,7 +9,6 @@ from textwrap import dedent
 from typing import Any, TypeVar, cast
 
 from chopdiff.docs import DiffFilter
-from chopdiff.docs.token_diffs import DIFF_FILTER_NONE
 from chopdiff.transforms import WINDOW_NONE, WindowSettings
 from flowmark import fill_text
 from prettyfmt import abbrev_obj, fmt_lines
@@ -175,7 +174,7 @@ class LLMOptions:
     system_message: Message = Message("")
     body_template: MessageTemplate = MessageTemplate("{body}")
     windowing: WindowSettings = WINDOW_NONE
-    diff_filter: DiffFilter = DIFF_FILTER_NONE
+    diff_filter: DiffFilter | None = None
 
     def updated_with(self, param_name: str, value: Any) -> LLMOptions:
         """Update option from an action parameter."""

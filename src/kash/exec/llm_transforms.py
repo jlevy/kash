@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from chopdiff.docs import DiffFilter, TextDoc
-from chopdiff.transforms import WindowSettings, accept_all, filtered_transform
+from chopdiff.transforms import WindowSettings, filtered_transform
 from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from flowmark import fill_markdown
 
@@ -25,7 +25,7 @@ def windowed_llm_transform(
     template: MessageTemplate,
     input: str,
     windowing: WindowSettings | None,
-    diff_filter: DiffFilter,
+    diff_filter: DiffFilter | None = None,
     check_no_results: bool = True,
 ) -> TextDoc:
     def doc_transform(input_doc: TextDoc) -> TextDoc:
@@ -57,7 +57,6 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
             options.op_name,
             options.windowing,
         )
-        diff_filter = options.diff_filter or accept_all
 
         result_str = windowed_llm_transform(
             options.model,
@@ -65,7 +64,7 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
             options.body_template,
             input_str,
             options.windowing,
-            diff_filter,
+            diff_filter=options.diff_filter,
         ).reassemble()
     else:
         log.message(
