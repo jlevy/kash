@@ -145,6 +145,7 @@ def uv_dep_info(
     pyproject_path = Path(pyproject)
 
     main_deps: list[str] | None = None
+    all_deps: list[str] = []
     if pyproject_path.exists():
         cprint("Reading main dependencies from with uv", style=COLOR_STATUS)
         main_deps = uv_runtime_packages(no_dev=True)
