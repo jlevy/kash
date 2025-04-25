@@ -17,6 +17,11 @@ def is_resource(item: Item) -> bool:
 
 
 @kash_precondition
+def is_doc_resource(item: Item) -> bool:
+    return bool(is_resource(item) and item.format and item.format.is_doc)
+
+
+@kash_precondition
 def is_concept(item: Item) -> bool:
     return item.type == ItemType.concept
 

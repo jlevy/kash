@@ -273,7 +273,7 @@ class FileStore(Workspace):
         elif item_id in self.id_map:
             # If this item has an identity and we've saved under that id before, use the same store path.
             store_path = self.id_map[item_id]
-            log.info(
+            log.warning(
                 "Found existing item with same id:\n%s",
                 fmt_lines([fmt_loc(store_path), item_id]),
             )
@@ -326,6 +326,8 @@ class FileStore(Workspace):
         else:
             # Otherwise it's still in memory or in a file outside the workspace and we need to save it.
             store_path, found, old_store_path = self.store_path_for(item, as_tmp=as_tmp)
+
+            log.warning("Getting store path for %s: %s", item, store_path)
 
             if not overwrite and found:
                 log.message("Skipping save of item already saved: %s", fmt_loc(store_path))

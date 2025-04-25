@@ -688,6 +688,10 @@ class Item:
         updates = other_updates.copy()
         updates["type"] = type
 
+        # If format was specified and user didn't specify file_ext, then infer it.
+        if "file_ext" not in other_updates and "format" in other_updates:
+            updates["file_ext"] = other_updates["format"].file_ext
+
         # External resource paths only make sense for resources, so clear them out if new item
         # is not a resource.
         new_type = updates.get("type") or self.type
@@ -698,15 +702,19 @@ class Item:
         if derived_from:
             new_item.update_relations(derived_from=derived_from)
 
-        # Fall back to action title template if we have it and it wasn't explicitly set.
+        # Fall back to action title template if we have it and title wasn't explicitly set.
         if "title" not in other_updates:
+            prev_title = self.title or (Path(self.store_path).stem if self.store_path else UNTITLED)
             if self.context:
                 action = self.context.action
                 new_item.title = action.title_template.format(
-                    title=self.title or UNTITLED, action_name=action.name
+                    title=prev_title, action_name=action.name
                 )
             else:
-                log.warning("Deriving an item without action context, will omit title: %s", self)
+                log.warning(
+                    "Deriving an item without action context so keeping previous title: %s", self
+                )
+                new_item.title = f"{prev_title} (derived copy)"
 
         return new_item
 
