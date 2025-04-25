@@ -13,9 +13,7 @@ from kash.workspaces import current_ws
 log = get_logger(__name__)
 
 
-def fetch_url_metadata(
-    locator: Url | StorePath, use_cache: bool = True, refetch: bool = False
-) -> Item:
+def fetch_url_metadata(locator: Url | StorePath, refetch: bool = False) -> Item:
     ws = current_ws()
     if is_url(locator):
         # Import or find URL as a resource in the current workspace.
@@ -28,10 +26,10 @@ def fetch_url_metadata(
     else:
         raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
 
-    return fetch_url_item_metadata(item, use_cache=use_cache, refetch=refetch)
+    return fetch_url_item_metadata(item, refetch=refetch)
 
 
-def fetch_url_item_metadata(item: Item, use_cache: bool = True, refetch: bool = False) -> Item:
+def fetch_url_item_metadata(item: Item, refetch: bool = False) -> Item:
     """
     Fetch metadata for a URL using a media service if we recognize the URL,
     and otherwise fetching and extracting it from the web page HTML.
@@ -56,7 +54,7 @@ def fetch_url_item_metadata(item: Item, use_cache: bool = True, refetch: bool = 
         fetched_item = Item.from_media_metadata(media_metadata)
         fetched_item = item.merged_copy(fetched_item)
     else:
-        page_data = fetch_extract(url, use_cache=use_cache)
+        page_data = fetch_extract(url, refetch=refetch)
         fetched_item = item.new_copy_with(
             title=page_data.title or item.title,
             description=page_data.description or item.description,

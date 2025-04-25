@@ -54,7 +54,7 @@ def get_ws_root_dir() -> Path:
 
 def get_global_ws_dir() -> Path:
     """Default global workspace directory."""
-    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path(None)
+    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path()
     if kash_ws_dir:
         return kash_ws_dir
     else:

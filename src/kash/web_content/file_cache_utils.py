@@ -38,30 +38,40 @@ def reset_content_cache_dir(path: Path):
             log.info("Using web cache: %s", fmt_path(path))
 
 
-def cache_file(source: Url | Path | Loadable, global_cache: bool = False) -> tuple[Path, bool]:
+def cache_file(
+    source: Url | Path | Loadable, global_cache: bool = False, expiration_sec: float | None = None
+) -> tuple[Path, bool]:
     """
     Return a local cached copy of the item. If it is an URL, content is fetched.
     If it is a Path or a Loadable, a cached copy is returned.
     LocalFileCache uses httpx so httpx.HTTPError is raised for non-2xx responses.
+
+    Uses the current content cache unless there is no current cache or `global_cache` is True,
+    in which case the global cache is used.
     """
     cache = _global_content_cache if global_cache else _content_cache
-    path, was_cached = cache.cache(source)
+    path, was_cached = cache.cache(source, expiration_sec)
     return path, was_cached
 
 
 def cache_api_response(
-    url: Url, global_cache: bool = False, parser: Callable[[str], Any] = json.loads
+    url: Url,
+    global_cache: bool = False,
+    expiration_sec: float | None = None,
+    parser: Callable[[str], Any] = json.loads,
 ) -> tuple[Any, bool]:
     """
     Cache an API response. By default parse the response as JSON.
     """
     cache = _global_content_cache if global_cache else _content_cache
-    path, was_cached = cache.cache(url)
+    path, was_cached = cache.cache(url, expiration_sec)
     result = parser(path.read_text())
     return result, was_cached
 
 
-def cache_resource(item: Item) -> dict[MediaType, Path]:
+def cache_resource(
+    item: Item, global_cache: bool = False, expiration_sec: float | None = None
+) -> dict[MediaType, Path]:
     """
     Cache a resource item for an external local path or a URL, fetching or
     copying as needed. For media this may yield more than one format.
@@ -79,17 +89,17 @@ def cache_resource(item: Item) -> dict[MediaType, Path]:
         if is_media_url(item.url):
             result = cache_media(item.url)
         else:
-            path, _was_cached = cache_file(item.url)
+            path, _was_cached = cache_file(item.url, global_cache, expiration_sec)
     elif item.external_path:
         path = Path(item.external_path)
         if not path.is_file():
             raise FileNotFound(f"External path not found: {path}")
-        path, _was_cached = cache_file(path)
+        path, _was_cached = cache_file(path, global_cache, expiration_sec)
     elif item.original_filename:
         path = Path(item.original_filename)
         if not path.is_file():
             raise FileNotFound(f"Original filename not found: {path}")
-        path, _was_cached = cache_file(path)
+        path, _was_cached = cache_file(path, global_cache, expiration_sec)
     else:
         raise ValueError(f"Item has no URL or external path: {item}")
 
@@ -109,7 +119,9 @@ def cache_resource(item: Item) -> dict[MediaType, Path]:
     return result
 
 
-def get_url_html(item: Item) -> tuple[Url, str]:
+def get_url_html(
+    item: Item, global_cache: bool = False, expiration_sec: float | None = None
+) -> tuple[Url, str]:
     """
     Returns the HTML content of an URL item, using the content cache,
     or the body of the item if it has a URL and HTML body.
@@ -121,7 +133,7 @@ def get_url_html(item: Item) -> tuple[Url, str]:
     url = Url(canonicalize_url(item.url))
 
     if is_url_item(item):
-        path, _was_cached = cache_file(url)
+        path, _was_cached = cache_file(url, global_cache, expiration_sec)
         with open(path) as file:
             html_content = file.read()
     else:

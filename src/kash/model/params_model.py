@@ -305,6 +305,12 @@ RUNTIME_ACTION_PARAMS: dict[str, Param] = {
         "it produces an output item that already exists.",
         type=bool,
     ),
+    "refetch": Param(
+        "refetch",
+        "Forcing re-fetching of any content, not using media or content caches.",
+        type=bool,
+        default_value=False,
+    ),
 }
 
 

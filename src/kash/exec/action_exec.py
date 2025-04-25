@@ -32,7 +32,7 @@ from kash.workspaces.workspace_importing import import_and_load
 log = get_logger(__name__)
 
 
-def prepare_action_input(*input_args: CommandArg) -> ActionInput:
+def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> ActionInput:
     """
     Prepare input args, which may be URLs or paths, into items that correspond to
     URL or file resources, either finding them in the workspace or importing them.
@@ -50,7 +50,8 @@ def prepare_action_input(*input_args: CommandArg) -> ActionInput:
     if input_items:
         log.message("Assembling metadata for input items:\n%s", fmt_lines(input_items))
         input_items = [
-            fetch_url_item_metadata(item) if is_url_item(item) else item for item in input_items
+            fetch_url_item_metadata(item, refetch=refetch) if is_url_item(item) else item
+            for item in input_items
         ]
 
     return ActionInput(input_items)
@@ -371,9 +372,10 @@ def run_action_with_shell_context(
     action_spec: str | type[Action],
     explicit_param_values: RawParamValues,
     *provided_args: str,
-    rerun=False,
+    rerun: bool = False,
+    refetch: bool = False,
     override_state: State | None = None,
-    internal_call=False,
+    internal_call: bool = False,
 ) -> ActionResult:
     """
     Main function to run an action from the shell. Wraps `run_action_if_needed` to
@@ -422,7 +424,7 @@ def run_action_with_shell_context(
         )
 
     # Get items for each input arg.
-    input = prepare_action_input(*args)
+    input = prepare_action_input(*args, refetch=refetch)
 
     # Finally, run the action.
     result, result_store_paths, archived_store_paths = run_action_with_caching(context, input)

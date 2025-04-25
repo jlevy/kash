@@ -7,17 +7,22 @@ import httpx
 from strif import atomic_output_file, copyfile_atomic
 from tqdm import tqdm
 
+from kash.config.env_settings import KashEnv
 from kash.utils.common.url import Url
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = "Mozilla/5.0 (Compatible)"
 
 DEFAULT_TIMEOUT = 30
 
 
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0"
+)
+
+
 def default_headers() -> dict[str, str]:
-    return {"User-Agent": USER_AGENT}
+    return {"User-Agent": KashEnv.KASH_USER_AGENT.read_str(default=DEFAULT_USER_AGENT)}
 
 
 def fetch_url(
@@ -36,6 +41,7 @@ def fetch_url(
         auth=auth,
         headers=headers or default_headers(),
     ) as client:
+        log.debug("fetch_url: using headers: %s", client.headers)
         response = client.get(url)
         log.info("Fetched: %s (%s bytes): %s", response.status_code, len(response.content), url)
         response.raise_for_status()
@@ -52,7 +58,7 @@ def download_url(
     headers: dict[str, str] | None = None,
 ) -> None:
     """
-    Download given file, optionally with progress bar.
+    Download given file, optionally with progress bar, streaming to a target file.
     Also handles file:// and s3:// URLs. Output file is created atomically.
     Raise httpx.HTTPError for non-2xx responses.
     """
@@ -73,13 +79,15 @@ def download_url(
         client = session or httpx.Client(follow_redirects=True, timeout=timeout)
         response: httpx.Response | None = None
         try:
+            headers = headers or default_headers()
+            log.debug("download_url: using headers: %s", headers)
             with client.stream(
                 "GET",
                 url,
                 follow_redirects=True,
                 timeout=timeout,
                 auth=auth,
-                headers=headers or default_headers(),
+                headers=headers,
             ) as response:
                 response.raise_for_status()
                 total_size = int(response.headers.get("content-length", "0"))

@@ -28,20 +28,20 @@ def reset_media_cache_dir(path: Path):
 
 
 def cache_and_transcribe(
-    url_or_path: Url | Path, no_cache=False, language: str | None = None
+    url_or_path: Url | Path, refetch=False, language: str | None = None
 ) -> str:
     """
-    Download and transcribe audio or video, saving in cache. If no_cache is
+    Download and transcribe audio or video, saving in cache. If `refetch` is
     True, force fresh download.
     """
-    return _media_cache.transcribe(url_or_path, no_cache=no_cache, language=language)
+    return _media_cache.transcribe(url_or_path, refetch=refetch, language=language)
 
 
 def cache_media(
-    url: Url, no_cache=False, media_types: list[MediaType] | None = None
+    url: Url, refetch=False, media_types: list[MediaType] | None = None
 ) -> dict[MediaType, Path]:
     """
-    Download audio and video (if available), saving in cache. If no_cache is
+    Download audio and video (if available), saving in cache. If refetch is
     True, force fresh download.
     """
-    return _media_cache.cache(url, no_cache, media_types)
+    return _media_cache.cache(url, refetch, media_types)

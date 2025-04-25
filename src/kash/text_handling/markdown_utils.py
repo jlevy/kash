@@ -166,10 +166,7 @@ def _last_unescaped_bracket(text: str, index: int) -> str | None:
 
 
 def find_markdown_text(
-    pattern: re.Pattern[str],
-    text: str,
-    *,
-    start_pos: int = 0,  # noqa: F821
+    pattern: re.Pattern[str], text: str, *, start_pos: int = 0
 ) -> re.Match[str] | None:
     """
     Return first regex `pattern` match in `text` not inside an existing link.

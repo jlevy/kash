@@ -173,14 +173,15 @@ def cache_media(*urls: str) -> None:
 
 
 @kash_command
-def cache_content(*urls_or_paths: str) -> None:
+def cache_content(*urls_or_paths: str, refetch: bool = False) -> None:
     """
     Cache the given file in the content cache. Downloads any URL or copies a local file.
     """
+    expiration_sec = 0 if refetch else None
     PrintHooks.spacer()
     for url_or_path in urls_or_paths:
         locator = resolve_locator_arg(url_or_path)
-        cache_path, was_cached = cache_file(locator)
+        cache_path, was_cached = cache_file(locator, expiration_sec=expiration_sec)
         cache_str = " (already cached)" if was_cached else ""
         cprint(f"{fmt_loc(url_or_path)}{cache_str}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
         cprint(f"{cache_path}", text_wrap=Wrap.INDENT_ONLY)
@@ -188,10 +189,13 @@ def cache_content(*urls_or_paths: str) -> None:
 
 
 @kash_command
-def download(*urls_or_paths: str) -> None:
+def download(*urls_or_paths: str, refetch: bool = False) -> None:
     """
-    Download a URL or resource. Inputs can be URLs or paths to URL resources.
+    Download a URL or resource. Uses cached content if available, unless `refetch` is true.
+    Inputs can be URLs or paths to URL resources.
     """
+    expiration_sec = 0 if refetch else None
+
     # TODO: Add option to include frontmatter metadata for text files.
     ws = current_ws()
     for url_or_path in urls_or_paths:
@@ -214,7 +218,7 @@ def download(*urls_or_paths: str) -> None:
             media_tools.cache_media(url)
         else:
             log.message("Will cache file and save to workspace: %s", fmt_loc(url))
-            cache_path, _was_cached = cache_file(url)
+            cache_path, _was_cached = cache_file(url, expiration_sec=expiration_sec)
             item = Item.from_external_path(cache_path, item_type=ItemType.resource)
             store_path = ws.save(item)
 
@@ -464,9 +468,7 @@ def import_item(
 
 
 @kash_command
-def fetch_metadata(
-    *files_or_urls: str, no_cache: bool = False, refetch: bool = False
-) -> ShellResult:
+def fetch_metadata(*files_or_urls: str, refetch: bool = False) -> ShellResult:
     """
     Fetch metadata for the given URLs or resources. Imports new URLs and saves back
     the fetched metadata for existing resources.
@@ -486,7 +488,7 @@ def fetch_metadata(
         try:
             if isinstance(locator, Path):
                 raise InvalidInput()
-            fetched_item = fetch_url_metadata(locator, use_cache=not no_cache, refetch=refetch)
+            fetched_item = fetch_url_metadata(locator, refetch=refetch)
             store_paths.append(fetched_item.store_path)
         except InvalidInput:
             log.warning("Not a URL or URL resource, will not fetch metadata: %s", fmt_loc(locator))

@@ -10,14 +10,19 @@ from kash.web_content.web_page_model import PageExtractor, WebPageData
 
 @log_calls(level="message")
 def fetch_extract(
-    url: Url, use_cache: bool = True, extractor: PageExtractor = extract_text_justext
+    url: Url,
+    refetch: bool = False,
+    use_cache: bool = True,
+    extractor: PageExtractor = extract_text_justext,
 ) -> WebPageData:
     """
     Fetches a URL and extracts the title, description, and content.
+    By default, uses the content cache if available. Can force re-fetching and
+    updating the cache by setting `refetch` to true.
     """
-
+    expiration_sec = 0 if refetch else None
     if use_cache:
-        path, _was_cached = cache_file(url)
+        path, _was_cached = cache_file(url, expiration_sec=expiration_sec)
         with open(path, "rb") as file:
             content = file.read()
         page_data = extractor(url, content)

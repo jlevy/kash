@@ -31,6 +31,9 @@ class KashEnv(str, Enum):
     KASH_SHOW_TRACEBACK = "KASH_SHOW_TRACEBACK"
     """Whether to show tracebacks on actions and commands in the shell."""
 
+    KASH_USER_AGENT = "KASH_USER_AGENT"
+    """The user agent to use for HTTP requests."""
+
     @overload
     def read_str(self) -> str | None: ...
 
@@ -45,7 +48,7 @@ class KashEnv(str, Enum):
         return os.environ.get(self.value, default)
 
     @overload
-    def read_path(self, default: None) -> None: ...
+    def read_path(self) -> Path | None: ...
 
     @overload
     def read_path(self, default: Path) -> Path: ...

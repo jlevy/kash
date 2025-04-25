@@ -88,19 +88,19 @@ class MediaCache(DirStore):
         return transcript
 
     def cache(
-        self, url: Url, no_cache=False, media_types: list[MediaType] | None = None
+        self, url: Url, refetch=False, media_types: list[MediaType] | None = None
     ) -> dict[MediaType, Path]:
         """
         Cache the media files for the given media URL. Returns paths to cached copies
         for each media type (video or audio). Returns cached copies if available,
-        unless `no_cache` is True.
+        unless `refetch` is True.
         """
         cached_paths: dict[MediaType, Path] = {}
 
         if not media_types:
             media_types = [MediaType.audio, MediaType.video]
 
-        if not no_cache:
+        if not refetch:
             if MediaType.audio in media_types:
                 audio_file = self.find(url, suffix=SUFFIX_MP3)
                 if audio_file:
@@ -141,11 +141,11 @@ class MediaCache(DirStore):
         return cached_paths
 
     def transcribe(
-        self, url_or_path: Url | Path, no_cache=False, language: str | None = None
+        self, url_or_path: Url | Path, refetch=False, language: str | None = None
     ) -> str:
         """
         Transcribe the audio file, caching audio, downsampled audio, and the transcription.
-        Return the cached transcript if available, unless `no_cache` is True.
+        Return the cached transcript if available, unless `refetch` is True.
         """
         if not isinstance(url_or_path, Path) and is_url(url_or_path):
             # If it is a URL, cache it locally.
@@ -156,12 +156,12 @@ class MediaCache(DirStore):
                 raise InvalidInput(
                     "Unrecognized media URL (is this media service configured?): %s" % url_or_path
                 )
-            if not no_cache:
+            if not refetch:
                 transcript = self._read_transcript(url)
                 if transcript:
                     return transcript
             # Cache all formats since we usually will want them.
-            self.cache(url, no_cache)
+            self.cache(url, refetch)
         elif isinstance(url_or_path, Path):
             # Treat local media files as file:// URLs.
             # Don't need to cache originals but we still will cache audio and transcriptions.

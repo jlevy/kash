@@ -49,19 +49,20 @@ class ShellCallableAction:
             elif shell_args.options.get("show_source", False):
                 return help_commands.source_code(action_cls.name)
 
-            # Handle --rerun option at action invocation time.
+            # Handle --rerun and --refetch options at action invocation time.
             rerun = bool(shell_args.options.get("rerun", False))
+            refetch = bool(shell_args.options.get("refetch", False))
 
             log.info("Action shell args: %s", shell_args)
             explicit_values = RawParamValues(shell_args.options)
             if not action.interactive_input:
                 with get_console().status(f"Running action {action.name}…", spinner=SPINNER):
                     result = run_action_with_shell_context(
-                        action_cls, explicit_values, *shell_args.args, rerun=rerun
+                        action_cls, explicit_values, *shell_args.args, rerun=rerun, refetch=refetch
                     )
             else:
                 result = run_action_with_shell_context(
-                    action_cls, explicit_values, *shell_args.args, rerun=rerun
+                    action_cls, explicit_values, *shell_args.args, rerun=rerun, refetch=refetch
                 )
             # We don't return the result to keep the xonsh shell output clean.
         except NONFATAL_EXCEPTIONS as e:
