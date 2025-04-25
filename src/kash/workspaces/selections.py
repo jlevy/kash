@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable, Sequence
 from functools import wraps
 from pathlib import Path
@@ -78,6 +80,12 @@ class Selection(BaseModel):
                 if current_path == old_path:
                     self.paths[idx] = new_path
 
+    def refresh(self, base_dir: Path) -> None:
+        """
+        Refresh the selection paths, dropping any that no longer exist.
+        """
+        self.paths[:] = [p for p in self.paths if (base_dir / p).exists()]
+
     def as_str(self, max_lines: int = SELECTION_DISPLAY_MAX) -> str:
         lines = [
             f"{fmt_count_items(len(self.paths), 'item')}:",
@@ -113,7 +121,7 @@ class SelectionHistory(BaseModel):
     }
 
     @classmethod
-    def init(cls, save_path: Path, max_history: int = SELECTION_HISTORY_MAX) -> "SelectionHistory":
+    def init(cls, save_path: Path, max_history: int = SELECTION_HISTORY_MAX) -> SelectionHistory:
         """
         Initialize selection history, loading from save_path if it exists.
         """
@@ -144,9 +152,9 @@ class SelectionHistory(BaseModel):
         yaml_util.write_yaml_file(data, str(self._save_path))
 
     @persist_after(_save)
-    def clear(self) -> None:
+    def clear_all(self) -> None:
         """
-        Clear the history.
+        Clear the entire selection history.
         """
         self.history.clear()
         self.current_index = 0
@@ -305,6 +313,13 @@ class SelectionHistory(BaseModel):
         """
         for selection in self.history:
             selection.replace_values(replacements)
+
+    @persist_after(_save)
+    def refresh_current(self, base_dir: Path) -> None:
+        """
+        Refresh the current selection to drop any paths that no longer exist.
+        """
+        self.current.refresh(base_dir)
 
     def previous_n(self, n: int, expected_size: int | None = None) -> list[Selection]:
         """

@@ -27,8 +27,9 @@ def select(
     previous: bool = False,
     next: bool = False,
     pop: bool = False,
-    clear: bool = False,
+    clear_all: bool = False,
     clear_future: bool = False,
+    refresh: bool = False,
 ) -> ShellResult:
     """
     Set or show the current selection.
@@ -47,12 +48,13 @@ def select(
     :param previous: Move back in the selection history to the previous selection.
     :param next: Move forward in the selection history to the next selection.
     :param pop: Pop the current selection from the history.
-    :param clear: Clear the full selection history.
+    :param clear_all: Clear the full selection history.
     :param clear_future: Clear all selections from history after the current one.
+    :param refresh: Refresh the current selection to drop any paths that no longer exist.
     """
     ws = current_ws()
 
-    # TODO: It would be nice to be able to read stdin from a pipe but this isn't working rn.
+    # FIXME: It would be nice to be able to read stdin from a pipe but this isn't working rn.
     # You could then run `... | select --stdin` to select the piped input.
     # Globally we have THREAD_SUBPROCS=False to avoid hard-to-interrupt subprocesses.
     # But xonsh seems to hang with stdin unless we modify the spec to be threadable?
@@ -61,7 +63,7 @@ def select(
     # if stdin:
     #     paths = tuple(sys.stdin.read().splitlines())
 
-    exclusive_flags = [history, last, back, forward, previous, next, pop, clear, clear_future]
+    exclusive_flags = [history, last, back, forward, previous, next, pop, clear_all, clear_future]
     if sum(bool(f) for f in exclusive_flags) > 1:
         raise InvalidInput("Cannot combine multiple flags")
     if paths and any(exclusive_flags):
@@ -96,11 +98,14 @@ def select(
     elif pop:
         ws.selections.pop()
         return ShellResult(show_selection=True)
-    elif clear:
-        ws.selections.clear()
+    elif clear_all:
+        ws.selections.clear_all()
         return ShellResult(show_selection=True)
     elif clear_future:
         ws.selections.clear_future()
+        return ShellResult(show_selection=True)
+    elif refresh:
+        ws.selections.refresh_current(ws.base_dir)
         return ShellResult(show_selection=True)
     else:
         return ShellResult(show_selection=True)

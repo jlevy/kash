@@ -7,6 +7,7 @@ from strif import copyfile_atomic
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_EMPH
 from kash.exec import assemble_path_args, kash_command, resolve_path_arg
+from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import (
     PadStyle,
     PrintHooks,
@@ -21,6 +22,7 @@ from kash.utils.common.format_utils import fmt_loc
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import detect_file_format
 from kash.workspaces.workspace_output import print_file_info
+from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -149,7 +151,20 @@ def trash(*paths: str) -> None:
     """
 
     resolved_paths = assemble_path_args(*paths)
+
+    ws = current_ws()
+    affected_store_paths = [
+        p for p in resolved_paths if isinstance(p, StorePath) and (ws.base_dir / p).exists()
+    ]
+
     native_trash(*resolved_paths)
+
+    if affected_store_paths:
+        log.info(
+            "Refreshing current selection due to deleted store paths: %s", affected_store_paths
+        )
+        ws.selections.refresh_current(ws.base_dir)
+
     print_status(f"Deleted (check trash or recycling bin to recover):\n{fmt_lines(resolved_paths)}")
 
 
