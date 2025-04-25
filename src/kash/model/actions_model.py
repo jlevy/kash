@@ -64,7 +64,8 @@ class ActionInput:
 @dataclass(frozen=True)
 class ExecContext:
     """
-    An action and its context for execution.
+    An action and its context for execution. This is a good place for settings
+    that apply to any action and are bothersome to pass as parameters.
     """
 
     action: Action
@@ -76,8 +77,17 @@ class ExecContext:
     rerun: bool = False
     """If True, always run actions, even cacheable ones that have results."""
 
+    refetch: bool = False
+    """If True, will refetch items even if they are already in the content caches."""
+
     override_state: State | None = None
     """If specified, override the state of result items. Useful to mark items as transient."""
+
+    tmp_output: bool = False
+    """If True, will save output items to a temporary file."""
+
+    normalize: bool = True
+    """If True, will normalize the output item's body text formatting (for Markdown)."""
 
     @property
     def workspace(self) -> FileStore:

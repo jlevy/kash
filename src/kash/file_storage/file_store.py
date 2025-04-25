@@ -309,10 +309,16 @@ class FileStore(Workspace):
         )
 
     @log_calls()
-    def save(self, item: Item, as_tmp: bool = False, overwrite: bool = True) -> StorePath:
+    def save(
+        self, item: Item, *, overwrite: bool = True, as_tmp: bool = False, normalize: bool = True
+    ) -> StorePath:
         """
-        Save the item. Uses the store_path if it's already set or generates a new one.
-        Updates item.store_path.
+        Save the item. Uses the `store_path` if it's already set or generates a new one.
+        Updates `item.store_path`.
+
+        If `as_tmp` is true, will save the item to a temporary file.
+        If `overwrite` is false, will skip saving if the item already exists.
+        If `normalize` is true, will normalize body text formatting (for Markdown).
         """
         # If external file already exists within the workspace, the file is already saved (without metadata).
         external_path = item.external_path and Path(item.external_path).resolve()
@@ -350,7 +356,7 @@ class FileStore(Workspace):
                 if item.external_path:
                     copyfile_atomic(item.external_path, full_path)
                 else:
-                    write_item(item, full_path)
+                    write_item(item, full_path, normalize=normalize)
             except OSError as e:
                 log.error("Error saving item: %s", e)
                 try:
@@ -400,6 +406,7 @@ class FileStore(Workspace):
     def import_item(
         self,
         locator: Locator,
+        *,
         as_type: ItemType | None = None,
         reimport: bool = False,
     ) -> StorePath:
@@ -498,7 +505,9 @@ class FileStore(Workspace):
         as_type: ItemType | None = None,
         reimport: bool = False,
     ) -> list[StorePath]:
-        return [self.import_item(locator, as_type, reimport) for locator in locators]
+        return [
+            self.import_item(locator, as_type=as_type, reimport=reimport) for locator in locators
+        ]
 
     def _filter_selection_paths(self):
         """
@@ -539,7 +548,7 @@ class FileStore(Workspace):
         # TODO: Update metadata of all relations that point to this path too.
 
     def archive(
-        self, store_path: StorePath, missing_ok: bool = False, quiet: bool = False
+        self, store_path: StorePath, *, missing_ok: bool = False, quiet: bool = False
     ) -> StorePath:
         """
         Archive the item by moving it into the archive directory.
@@ -574,7 +583,7 @@ class FileStore(Workspace):
         move_file(full_input_path, original_path)
         return StorePath(store_path)
 
-    def log_workspace_info(self, once: bool = False):
+    def log_workspace_info(self, *, once: bool = False):
         """
         Log helpful information about the workspace.
         """
@@ -617,6 +626,7 @@ class FileStore(Workspace):
     def walk_items(
         self,
         store_path: StorePath | None = None,
+        *,
         use_ignore: bool = True,
     ) -> Generator[StorePath, None, None]:
         """

@@ -94,10 +94,7 @@ def log_action(action: Action, action_input: ActionInput, operation: Operation):
 
 
 def check_for_existing_result(
-    context: ExecContext,
-    action_input: ActionInput,
-    operation: Operation,
-    rerun: bool = False,
+    context: ExecContext, action_input: ActionInput, operation: Operation
 ) -> ActionResult | None:
     """
     Check if we already have the results for this operation (same action and inputs)
@@ -106,7 +103,7 @@ def check_for_existing_result(
     """
     action = context.action
     ws = context.workspace
-    rerun = context.rerun or rerun
+    rerun = context.rerun
 
     existing_result = None
 
@@ -262,7 +259,12 @@ def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult
 
 
 def save_action_result(
-    ws: FileStore, result: ActionResult, action_input: ActionInput
+    ws: FileStore,
+    result: ActionResult,
+    action_input: ActionInput,
+    *,
+    as_tmp: bool = False,
+    normalize: bool = True,
 ) -> tuple[list[StorePath], list[StorePath]]:
     """
     Save the result of an action to the workspace. Handles skipping duplicates and
@@ -278,7 +280,7 @@ def save_action_result(
                 skipped_paths.append(store_path)
                 continue
 
-        ws.save(item)
+        ws.save(item, as_tmp=as_tmp, normalize=normalize)
 
     if skipped_paths:
         log.message(
@@ -309,9 +311,7 @@ def save_action_result(
 
 
 def run_action_with_caching(
-    context: ExecContext,
-    action_input: ActionInput,
-    rerun: bool = False,
+    context: ExecContext, action_input: ActionInput
 ) -> tuple[ActionResult, list[StorePath], list[StorePath]]:
     """
     Run an action, including validation, only rerunning if `rerun` requested or
@@ -335,9 +335,9 @@ def run_action_with_caching(
     log_action(action, action_input, operation)
 
     # Check if a previous run already produced the result.
-    existing_result = check_for_existing_result(context, action_input, operation, rerun=rerun)
+    existing_result = check_for_existing_result(context, action_input, operation)
 
-    if existing_result and not rerun:
+    if existing_result and not context.rerun:
         # Use the cached result.
         result = existing_result
         result_store_paths = [StorePath(not_none(item.store_path)) for item in result.items]
@@ -354,7 +354,9 @@ def run_action_with_caching(
     else:
         # Run it!
         result = run_action_operation(context, action_input, operation)
-        result_store_paths, archived_store_paths = save_action_result(ws, result, action_input)
+        result_store_paths, archived_store_paths = save_action_result(
+            ws, result, action_input, as_tmp=context.tmp_output, normalize=context.normalize
+        )
 
         PrintHooks.before_done_message()
         log.message(
@@ -375,6 +377,8 @@ def run_action_with_shell_context(
     rerun: bool = False,
     refetch: bool = False,
     override_state: State | None = None,
+    tmp_output: bool = False,
+    normalize: bool = True,
     internal_call: bool = False,
 ) -> ActionResult:
     """
@@ -406,8 +410,16 @@ def run_action_with_shell_context(
     action = action_cls.create(explicit_parsed, ws_parsed)
     action_name = action.name
 
-    # Execution context.
-    context = ExecContext(action, ws.base_dir, rerun, override_state)
+    # Execution context. This is fixed for the duration of the action.
+    context = ExecContext(
+        action=action,
+        workspace_dir=ws.base_dir,
+        rerun=rerun,
+        refetch=refetch,
+        override_state=override_state,
+        tmp_output=tmp_output,
+        normalize=normalize,
+    )
 
     # Collect args from the provided args or otherwise the current selection.
     args, from_selection = assemble_action_args(*provided_args, use_selection=action.uses_selection)

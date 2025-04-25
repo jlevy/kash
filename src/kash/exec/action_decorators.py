@@ -210,7 +210,12 @@ def kash_action(
     title_template: TitleTemplate = TitleTemplate("{title}"),
     llm_options: LLMOptions = LLMOptions(),
     override_state: State | None = None,
+    # Including these for completeness but usually don't want to set them globally
+    # in the decorator:
     rerun: bool = False,
+    refetch: bool = False,
+    tmp_output: bool = False,
+    normalize: bool = True,
 ) -> Callable[[AF], AF]:
     """
     A function decorator to create and register an action. The annotated function must
@@ -382,11 +387,17 @@ def kash_action(
                 context = provided_context
             else:
                 context = ExecContext(
-                    action, current_ws().base_dir, rerun=rerun, override_state=override_state
+                    action,
+                    current_ws().base_dir,
+                    rerun=rerun,
+                    refetch=refetch,
+                    override_state=override_state,
+                    tmp_output=tmp_output,
+                    normalize=normalize,
                 )
 
             # Run the action.
-            result, _, _ = run_action_with_caching(context, action_input, rerun=rerun)
+            result, _, _ = run_action_with_caching(context, action_input)
 
             return result
 

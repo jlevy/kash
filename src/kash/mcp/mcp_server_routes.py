@@ -231,8 +231,8 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 context = ExecContext(
                     action=action,
                     workspace_dir=ws.base_dir,
-                    # Enabling rerun always for now, seems good for tools.
-                    rerun=True,
+                    rerun=True,  # Enabling rerun always for now, seems good for tools.
+                    refetch=False,  # Using the file caches.
                     # Keeping all transient files for now, but maybe make transient?
                     override_state=None,
                 )

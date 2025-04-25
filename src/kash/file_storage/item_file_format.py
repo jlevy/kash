@@ -22,7 +22,7 @@ _item_cache = MtimeCache[Item](max_size=2000, name="Item")
 
 
 @tally_calls()
-def write_item(item: Item, path: Path):
+def write_item(item: Item, path: Path, normalize: bool = True):
     """
     Write a text item to a file with standard frontmatter format YAML.
     Also normalizes formatting of the body text.
@@ -36,7 +36,10 @@ def write_item(item: Item, path: Path):
     # Clear cache before writing.
     _item_cache.delete(path)
 
-    body = normalize_formatting_ansi(item.body_text(), item.format)
+    if normalize:
+        body = normalize_formatting_ansi(item.body_text(), item.format)
+    else:
+        body = item.body_text()
 
     # Special case for YAML files to avoid a possible duplicate `---` divider in the body.
     if body and item.format == Format.yaml:
