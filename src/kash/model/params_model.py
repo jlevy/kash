@@ -311,6 +311,12 @@ RUNTIME_ACTION_PARAMS: dict[str, Param] = {
         type=bool,
         default_value=False,
     ),
+    "no_format": Param(
+        "no_format",
+        "Do not auto-format (normalize) Markdown outputs.",
+        type=bool,
+        default_value=False,
+    ),
 }
 
 

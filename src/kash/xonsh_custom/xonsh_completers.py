@@ -342,7 +342,7 @@ def _params_for_command(command_name: str) -> list[Param[Any]] | None:
     if command:
         return annotate_param_info(command)
     elif action:
-        return list(action.params)
+        return action.shell_params
     else:
         return None
 

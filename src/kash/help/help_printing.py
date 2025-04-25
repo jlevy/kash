@@ -10,7 +10,7 @@ from kash.help.tldr_help import tldr_help
 from kash.llm_utils import LLM
 from kash.llm_utils.llm_messages import Message
 from kash.model.actions_model import Action
-from kash.model.params_model import COMMON_SHELL_PARAMS, RUNTIME_ACTION_PARAMS, Param
+from kash.model.params_model import COMMON_SHELL_PARAMS, Param
 from kash.model.preconditions_model import Precondition
 from kash.shell.output.shell_formatting import format_name_and_description, format_name_and_value
 from kash.shell.output.shell_output import (
@@ -97,14 +97,7 @@ def print_action_help(
     include_options: bool = True,
     include_precondition: bool = True,
 ):
-    if include_options:
-        params = (
-            list(action.params)
-            + list(RUNTIME_ACTION_PARAMS.values())
-            + list(COMMON_SHELL_PARAMS.values())
-        )
-    else:
-        params = None
+    params = action.shell_params if include_options else None
 
     _print_command_help(
         action.name,

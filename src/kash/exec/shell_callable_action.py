@@ -52,13 +52,19 @@ class ShellCallableAction:
             # Handle --rerun and --refetch options at action invocation time.
             rerun = bool(shell_args.options.get("rerun", False))
             refetch = bool(shell_args.options.get("refetch", False))
+            no_format = bool(shell_args.options.get("no_format", False))
 
             log.info("Action shell args: %s", shell_args)
             explicit_values = RawParamValues(shell_args.options)
             if not action.interactive_input:
                 with get_console().status(f"Running action {action.name}…", spinner=SPINNER):
                     result = run_action_with_shell_context(
-                        action_cls, explicit_values, *shell_args.args, rerun=rerun, refetch=refetch
+                        action_cls,
+                        explicit_values,
+                        *shell_args.args,
+                        rerun=rerun,
+                        refetch=refetch,
+                        normalize=not no_format,
                     )
             else:
                 result = run_action_with_shell_context(

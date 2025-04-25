@@ -27,6 +27,9 @@ from kash.model.items_model import UNTITLED, Item, ItemType, State
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import (
     ALL_COMMON_PARAMS,
+    COMMON_SHELL_PARAMS,
+    RUNTIME_ACTION_PARAMS,
+    Param,
     ParamDeclarations,
     TypedParamValues,
 )
@@ -417,6 +420,17 @@ class Action(ABC):
         self.param_source[param_name] = source
         # Update corresponding LLM option if appropriate.
         self.llm_options = self.llm_options.updated_with(param_name, value)
+
+    @property
+    def shell_params(self) -> list[Param]:
+        """
+        List of parameters that are relevant to shell usage.
+        """
+        return (
+            list(self.params)
+            + list(RUNTIME_ACTION_PARAMS.values())
+            + list(COMMON_SHELL_PARAMS.values())
+        )
 
     def param_value_summary(self) -> dict[str, str]:
         """
