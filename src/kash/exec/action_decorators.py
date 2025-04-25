@@ -215,7 +215,7 @@ def kash_action(
     rerun: bool = False,
     refetch: bool = False,
     tmp_output: bool = False,
-    normalize: bool = True,
+    no_format: bool = False,
 ) -> Callable[[AF], AF]:
     """
     A function decorator to create and register an action. The annotated function must
@@ -393,7 +393,7 @@ def kash_action(
                     refetch=refetch,
                     override_state=override_state,
                     tmp_output=tmp_output,
-                    normalize=normalize,
+                    no_format=no_format,
                 )
 
             # Run the action.

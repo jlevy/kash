@@ -270,7 +270,7 @@ class FileStore(Workspace):
             return self._tmp_path_for(item), False, None
         elif item.store_path:
             return StorePath(item.store_path), True, None
-        elif item_id in self.id_map:
+        elif item_id in self.id_map and self.exists(self.id_map[item_id]):
             # If this item has an identity and we've saved under that id before, use the same store path.
             store_path = self.id_map[item_id]
             log.warning(
@@ -310,7 +310,7 @@ class FileStore(Workspace):
 
     @log_calls()
     def save(
-        self, item: Item, *, overwrite: bool = True, as_tmp: bool = False, normalize: bool = True
+        self, item: Item, *, overwrite: bool = True, as_tmp: bool = False, no_format: bool = False
     ) -> StorePath:
         """
         Save the item. Uses the `store_path` if it's already set or generates a new one.
@@ -318,7 +318,7 @@ class FileStore(Workspace):
 
         If `as_tmp` is true, will save the item to a temporary file.
         If `overwrite` is false, will skip saving if the item already exists.
-        If `normalize` is true, will normalize body text formatting (for Markdown).
+        If `no_format` is true, will not normalize body text formatting (for Markdown).
         """
         # If external file already exists within the workspace, the file is already saved (without metadata).
         external_path = item.external_path and Path(item.external_path).resolve()
@@ -356,7 +356,7 @@ class FileStore(Workspace):
                 if item.external_path:
                     copyfile_atomic(item.external_path, full_path)
                 else:
-                    write_item(item, full_path, normalize=normalize)
+                    write_item(item, full_path, normalize=not no_format)
             except OSError as e:
                 log.error("Error saving item: %s", e)
                 try:

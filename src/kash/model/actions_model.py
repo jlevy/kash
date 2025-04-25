@@ -89,12 +89,23 @@ class ExecContext:
     tmp_output: bool = False
     """If True, will save output items to a temporary file."""
 
-    normalize: bool = True
-    """If True, will normalize the output item's body text formatting (for Markdown)."""
+    no_format: bool = False
+    """If True, will not normalize the output item's body text formatting (for Markdown)."""
 
     @property
     def workspace(self) -> FileStore:
         return get_ws(self.workspace_dir)
+
+    @property
+    def runtime_options(self) -> dict[str, str]:
+        """Return non-default runtime options."""
+        opts: dict[str, str] = {}
+        # Only these two settings directly affect the output:
+        if self.no_format:
+            opts["no_format"] = "true"
+        if self.override_state:
+            opts["override_state"] = self.override_state.name
+        return opts
 
     def __repr__(self):
         return abbrev_obj(self, field_max_len=80)

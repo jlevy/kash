@@ -64,7 +64,7 @@ class ShellCallableAction:
                         *shell_args.args,
                         rerun=rerun,
                         refetch=refetch,
-                        normalize=not no_format,
+                        no_format=no_format,
                     )
             else:
                 result = run_action_with_shell_context(

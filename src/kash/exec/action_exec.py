@@ -57,7 +57,9 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     return ActionInput(input_items)
 
 
-def validate_action_input(ws: FileStore, action: Action, action_input: ActionInput) -> Operation:
+def validate_action_input(
+    context: ExecContext, ws: FileStore, action: Action, action_input: ActionInput
+) -> Operation:
     """
     Validate an action input, ensuring the right number of args, all explicit params are filled,
     and the precondition holds and return an `Operation` that describes what will happen.
@@ -75,7 +77,9 @@ def validate_action_input(ws: FileStore, action: Action, action_input: ActionInp
     # If the inputs are paths, record the input paths, including hashes.
     store_paths = [StorePath(not_none(item.store_path)) for item in input_items if item.store_path]
     inputs = [Input(store_path, ws.hash(store_path)) for store_path in store_paths]
-    operation = Operation(action.name, inputs, action.param_value_summary())
+    # Add any non-default runtime options into the options summary.
+    options = {**action.param_value_summary(), **context.runtime_options}
+    operation = Operation(action.name, inputs, options)
 
     return operation
 
@@ -264,7 +268,7 @@ def save_action_result(
     action_input: ActionInput,
     *,
     as_tmp: bool = False,
-    normalize: bool = True,
+    no_format: bool = False,
 ) -> tuple[list[StorePath], list[StorePath]]:
     """
     Save the result of an action to the workspace. Handles skipping duplicates and
@@ -280,7 +284,7 @@ def save_action_result(
                 skipped_paths.append(store_path)
                 continue
 
-        ws.save(item, as_tmp=as_tmp, normalize=normalize)
+        ws.save(item, as_tmp=as_tmp, no_format=no_format)
 
     if skipped_paths:
         log.message(
@@ -329,7 +333,7 @@ def run_action_with_caching(
         item.context = context
 
     # Assemble the operation and validate the action input.
-    operation = validate_action_input(ws, action, action_input)
+    operation = validate_action_input(context, ws, action, action_input)
 
     # Log what we're about to run.
     log_action(action, action_input, operation)
@@ -355,7 +359,7 @@ def run_action_with_caching(
         # Run it!
         result = run_action_operation(context, action_input, operation)
         result_store_paths, archived_store_paths = save_action_result(
-            ws, result, action_input, as_tmp=context.tmp_output, normalize=context.normalize
+            ws, result, action_input, as_tmp=context.tmp_output, no_format=context.no_format
         )
 
         PrintHooks.before_done_message()
@@ -378,7 +382,7 @@ def run_action_with_shell_context(
     refetch: bool = False,
     override_state: State | None = None,
     tmp_output: bool = False,
-    normalize: bool = True,
+    no_format: bool = False,
     internal_call: bool = False,
 ) -> ActionResult:
     """
@@ -418,7 +422,7 @@ def run_action_with_shell_context(
         refetch=refetch,
         override_state=override_state,
         tmp_output=tmp_output,
-        normalize=normalize,
+        no_format=no_format,
     )
 
     # Collect args from the provided args or otherwise the current selection.
