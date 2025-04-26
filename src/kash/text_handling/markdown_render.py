@@ -13,12 +13,16 @@ class CustomHTMLBlockMixin:
     div_pattern = regex.compile(r"^\s*<div\b", regex.IGNORECASE)
 
     def render_html_block(self, element: HTMLBlock) -> str:
-        stripped_body = element.body.strip()
-        if self.div_pattern.match(stripped_body):
-            return f"\n{stripped_body}\n"
+        # Apply GFM filtering first via the next renderer in the MRO.
+        filtered_body = super().render_html_block(element)  # pyright: ignore
+
+        # Check if the original block was a div.
+        if self.div_pattern.match(element.body.strip()):
+            # If it was a div, wrap the *filtered* result in newlines.
+            return f"\n{filtered_body.strip()}\n"
         else:
-            # marko attaches this to the superclass dynamically.
-            return super().render_html_block(element)  # pyright: ignore
+            # Otherwise, return the GFM-filtered body directly.
+            return filtered_body
 
 
 # GFM first, adding our custom override as an extension to handle divs our way.
@@ -28,7 +32,13 @@ MARKO_GFM = marko.Markdown(extensions=[GFM, MarkoExtension(renderer_mixins=[Cust
 
 def markdown_to_html(markdown: str, converter: marko.Markdown = MARKO_GFM) -> str:
     """
-    Convert Markdown to HTML. Markdown may contain embedded HTML.
+    Convert Markdown to HTML.
+
+    Wraps div blocks with newlines for better Markdown compatibility.
+
+    Output passes through raw HTML! Note per GFM, unsafe script tags etc
+    are [allowed in some cases](https://github.github.com/gfm/#example-140) so
+    additional sanitization is needed if input isn't trusted.
     """
     return converter.convert(markdown)
 
@@ -54,7 +64,12 @@ def test_markdown_to_html():
 
         <div class="div1">This is a div.</div>
 
-        <div class="div2">This is a second div.</div>
+        <div class="div2">This is a second div.
+        <iframe src="https://example.com">Inline iframe, note this is sanitized</iframe>
+        </div>
+
+        <!-- Script tag in a block, note this isn't sanitized -->
+        <script>console.log("Javascript block!");</script>
         """
     )
     print(markdown_to_html(markdown))
@@ -74,7 +89,11 @@ def test_markdown_to_html():
 
         <div class="div1">This is a div.</div>
 
-        <div class="div2">This is a second div.</div>
+        <div class="div2">This is a second div.
+        &lt;iframe src="https://example.com">Inline iframe, note this is sanitized</iframe>
+        </div>
+        <!-- Script tag in a block, note this isn't sanitized -->
+        <script>console.log("Javascript block!");</script>
         """
     )
 
