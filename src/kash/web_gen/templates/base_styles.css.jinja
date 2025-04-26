@@ -67,10 +67,22 @@ body {
   padding: 0;  /* No padding so we can have full width elements. */
   margin: auto;
   background-color: var(--color-bg);
+  overflow-wrap: break-word;  /* Don't let long words/URLs break layout. */
 }
 
 p {
   margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+  transition: all 0.15s ease-in-out;
 }
 
 h1,
@@ -194,28 +206,31 @@ pre {
 table {
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
-  width: 100%;
+  width: auto;
+  max-width: none;
   border-collapse: collapse;
-  margin-bottom: 1rem;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border-hint);
+  border-bottom: 1px solid var(--color-border-hint);
+  word-break: break-word; /* long words/URLs wrap instead of inflating the column    */
 }
 
 th {
   text-transform: uppercase;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-hint);
 }
 
 th, td {
-  padding: 0.5rem 0;
+  padding: 0.3rem 0.3rem;
+  max-width: 40rem;
+  min-width: 6rem;
 }
 
 th {
-  background-color: var(--color-bg-alt);
+  background-color: var(--color-bg-alt-solid);
 }
 
 tbody tr:nth-child(even) {
-  background-color: var(--color-bg-alt); 
+  background-color: var(--color-bg-alt-solid); 
 }
 
 nav {
@@ -226,4 +241,18 @@ nav {
   /* Center the content */
   gap: 1rem;
   /* Add some space between the buttons */
+}
+
+/* Container for wide tables to allow tables to break out of parent width. */
+.table-container {
+  width: calc(100vw - 8rem);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  background-color: var(--color-bg-solid);
+  padding: 0.5rem 0;
+  margin: 0 2rem 1rem 2rem;
+  border: 1px solid var(--color-border-hint);
 }
