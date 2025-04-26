@@ -409,12 +409,10 @@ def set_params(*key_vals: str) -> None:
 
 
 @kash_command
-def list_params(full: bool = False) -> None:
+def params(full: bool = False) -> None:
     """
-    Show or set currently set of workspace parameters, which are settings that may be used
+    List currently set workspace parameters, which are settings that may be used
     by commands and actions or to override default parameters.
-
-    Run with no args to interactively set parameters.
     """
     ws: Workspace = current_ws()
     settable_params = GLOBAL_PARAMS

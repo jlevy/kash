@@ -1,5 +1,8 @@
+from typing import Any
+
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
+from kash.docs.all_docs import DocSelection
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
 from kash.help.assistant import assist_preamble, assistance_unstructured
@@ -32,7 +35,7 @@ GENERAL_HELP = (
 def _print_command_help(
     name: str,
     description: str | None = None,
-    param_info: list[Param] | None = None,
+    param_info: list[Param[Any]] | None = None,
     precondition: Precondition | None = None,
     verbose: bool = True,
     is_action: bool = False,  # pyright: ignore[reportUnusedParameter]
@@ -169,7 +172,7 @@ def print_explain_command(text: str, assistant_model: LLM | None = None):
         # Give the LLM full context on kash APIs.
         # But we do this here lazily to prevent circular dependencies.
         system_message = Message(
-            assist_preamble(is_structured=False, skip_api_docs=False, base_actions_only=False)
+            assist_preamble(is_structured=False, doc_selection=DocSelection.full)
         )
         chat_history.extend(
             [

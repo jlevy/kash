@@ -8,7 +8,6 @@ from flowmark import Wrap
 from rich.text import Text
 
 from kash.commands.base.model_commands import list_apis, list_models
-from kash.commands.workspace.workspace_commands import list_params
 from kash.config.logger import get_logger
 from kash.config.settings import RECOMMENDED_API_KEYS, get_system_config_dir
 from kash.docs.all_docs import all_docs
@@ -92,6 +91,7 @@ def self_configure(all: bool = False, update: bool = False) -> None:
     """
     Interactively configure API keys and preferred models.
     """
+    from kash.commands.workspace.workspace_commands import params as list_params
 
     if all:
         api_keys = list(set(get_all_common_env_names() + RECOMMENDED_API_KEYS))
