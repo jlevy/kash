@@ -63,7 +63,7 @@
 body {
   font-family: var(--font-serif);
   color: var(--color-text);
-  line-height: 1.3;
+  line-height: 1.4;
   padding: 0;  /* No padding so we can have full width elements. */
   margin: auto;
   background-color: var(--color-bg);
@@ -93,14 +93,14 @@ h2 {
 }
 
 h3 {
-  font-size: 1.15rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.08rem;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
 }
 
 h4 {
   margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 /* Long text stylings, for nicely formatting blog post length or longer texts. */
@@ -120,6 +120,7 @@ h4 {
   font-family: var(--font-sans);
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .long-text h4 {
@@ -141,22 +142,31 @@ ul {
 }
 
 li {
-  margin-top: 0.5rem;
+  margin-top: 0.7rem;
   margin-bottom: 0;
   position: relative;
 }
 
-ul>li::before {
+li > p {
+  margin-bottom: 0;
+}
+
+ul > li::before {
   content: "▪︎";
   position: absolute;
-  left: -1rem;
-  font-size: 0.9rem;
+  left: -.85rem;
+  top: .25rem;
+  font-size: 0.62rem;
 }
 
 ol {
+  margin-bottom: 0.7rem;
   list-style-type: decimal;
   margin-left: 2rem;
-  margin-bottom: 1rem;
+}
+
+ol > li {
+  padding-left: 0.25rem;
 }
 
 blockquote {

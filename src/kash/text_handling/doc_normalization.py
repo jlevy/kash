@@ -21,7 +21,11 @@ def normalize_formatting_ansi(text: str, format: Format | None, width=DEFAULT_WR
             text, width=width, word_splitter=simple_word_splitter, len_fn=ansi_cell_len
         )
     elif format == Format.markdown or format == Format.md_html:
-        return fill_markdown(text, line_wrapper=line_wrap_by_sentence(len_fn=ansi_cell_len))
+        return fill_markdown(
+            text,
+            line_wrapper=line_wrap_by_sentence(len_fn=ansi_cell_len),
+            cleanups=True,  # Safe cleanups like unbolding section headers.
+        )
     elif format == Format.html:
         # We don't currently auto-format HTML as we sometimes use HTML with specifically chosen line breaks.
         return text
