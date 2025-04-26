@@ -181,6 +181,33 @@ pre {
   {# overflow-x: auto; #}
 }
 
+table {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+th {
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+}
+
+th, td {
+  padding: 0.5rem 0;
+}
+
+th {
+  background-color: var(--color-bg-alt);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--color-bg-alt); 
+}
+
 nav {
   display: flex;
   flex-wrap: wrap;
