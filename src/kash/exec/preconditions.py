@@ -22,6 +22,16 @@ def is_doc_resource(item: Item) -> bool:
 
 
 @kash_precondition
+def is_html_resource(item: Item) -> bool:
+    return bool(is_resource(item) and item.format and item.format == Format.html)
+
+
+@kash_precondition
+def is_docx_resource(item: Item) -> bool:
+    return bool(is_resource(item) and item.format and item.format == Format.docx)
+
+
+@kash_precondition
 def is_concept(item: Item) -> bool:
     return item.type == ItemType.concept
 

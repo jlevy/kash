@@ -207,11 +207,11 @@ table {
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
   width: auto;
-  max-width: none;
+  margin-left: auto;
+  margin-right: auto;
   border-collapse: collapse;
-  border-top: 1px solid var(--color-border-hint);
-  border-bottom: 1px solid var(--color-border-hint);
   word-break: break-word; /* long words/URLs wrap instead of inflating the column    */
+  border: 1px solid var(--color-border-hint);
 }
 
 th {
@@ -245,14 +245,29 @@ nav {
 
 /* Container for wide tables to allow tables to break out of parent width. */
 .table-container {
-  width: calc(100vw - 8rem);
+  {# max-width: calc(100vw - 6rem); #}
   position: relative;
   left: 50%;
   transform: translateX(-50%);
   box-sizing: border-box;
   margin-bottom: 1rem;
   background-color: var(--color-bg-solid);
-  padding: 0.5rem 0;
-  margin: 0 2rem 1rem 2rem;
-  border: 1px solid var(--color-border-hint);
+
+}
+
+/* Bleed wide on larger screens. */
+/* TODO: Don't make so wide if table itself isn't large? */
+@media (min-width: 768px) {
+  table {
+    width: calc(100vw - 6rem);
+  }
+  .table-container {
+    width: calc(100vw - 6rem);
+  }
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: var(--font-size-smaller);
+  }
 }

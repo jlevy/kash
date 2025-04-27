@@ -36,6 +36,8 @@ class Format(Enum):
     it is the format of the resource (url, media, etc.).
     """
 
+    # TODO: Be more thorough, pulling in relevant extensions and types from the `mimetypes` module.
+
     # Formats with no body (content is in frontmatter).
     url = "url"
 

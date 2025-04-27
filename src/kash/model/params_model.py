@@ -294,6 +294,18 @@ COMMON_ACTION_PARAMS: dict[str, Param] = {
         type=DocSelection,
         default_value=DocSelection.full,
     ),
+    "s3_bucket": Param(
+        "s3_bucket",
+        "The S3 bucket to upload to.",
+        type=str,
+        default_value=None,
+    ),
+    "s3_prefix": Param(
+        "s3_prefix",
+        "The S3 prefix to upload to (with or without a trailing slash).",
+        type=str,
+        default_value=None,
+    ),
 }
 
 # Extra parameters that are available when an action is invoked from the shell.

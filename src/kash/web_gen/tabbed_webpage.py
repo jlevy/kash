@@ -2,6 +2,7 @@ import os
 from dataclasses import asdict, dataclass
 
 from frontmatter_format import read_yaml_file, to_yaml_string, write_yaml_file
+from prettyfmt import sanitize_title
 
 from kash.config.logger import get_logger
 from kash.exec.preconditions import has_thumbnail_url
@@ -41,7 +42,7 @@ def _fill_in_ids(tabs: list[TabInfo]):
             tab.id = f"tab_{i}"
 
 
-def webpage_config(items: list[Item]) -> Item:
+def webpage_config(items: list[Item], clean_headings: bool = False) -> Item:
     """
     Get an item with the config for a tabbed web page.
     """
@@ -57,9 +58,11 @@ def webpage_config(items: list[Item]) -> Item:
             log.warning("Item has no thumbnail URL: %s", item)
             return None
 
+    clean = clean_heading if clean_headings else sanitize_title
+
     tabs = [
         TabInfo(
-            label=clean_heading(item.abbrev_title()),
+            label=clean(item.abbrev_title()),
             store_path=item.store_path,
             thumbnail_url=get_thumbnail_url(item),
         )
