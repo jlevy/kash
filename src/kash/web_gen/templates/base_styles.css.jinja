@@ -1,8 +1,9 @@
 :root {
   font-size: 16px;
-  {# Adding Hack Nerd Font to all fonts for icon support, if it is installed. #}
-  --font-sans: "Varta", sans-serif, "Hack Nerd Font";
+  /* Adding Hack Nerd Font to all fonts for icon support, if it is installed. */
+  --font-sans: "Source Sans 3 Variable", sans-serif, "Hack Nerd Font";
   --font-serif: "PT Serif", serif, "Hack Nerd Font";
+  --font-weight-sans-bold: 625;  /* Source Sans 3 Variable better at this weight. */
   --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
 
   --font-size-large: 1.2rem;
@@ -74,6 +75,10 @@ p {
   margin-bottom: 1rem;
 }
 
+b, strong {
+  font-weight: var(--font-weight-sans-bold);
+}
+
 a {
   color: var(--color-primary);
   text-decoration: none;
@@ -100,19 +105,19 @@ h1 {
 
 h2 {
   font-size: 1.4rem;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   margin-bottom: 1rem;
 }
 
 h3 {
-  font-size: 1.08rem;
-  margin-top: 2rem;
-  margin-bottom: 0.6rem;
+  font-size: 1.09rem;
+  margin-top: 1.7rem;
+  margin-bottom: 0.7rem;
 }
 
 h4 {
   margin-top: 1rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
 }
 
 /* Long text stylings, for nicely formatting blog post length or longer texts. */
@@ -130,7 +135,7 @@ h4 {
 
 .long-text h3 {
   font-family: var(--font-sans);
-  font-weight: 700;
+  font-weight: var(--font-weight-sans-bold);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -220,7 +225,7 @@ th {
 }
 
 th, td {
-  padding: 0.3rem 0.3rem;
+  padding: 0.3rem 0.6rem;
   max-width: 40rem;
   min-width: 6rem;
 }
