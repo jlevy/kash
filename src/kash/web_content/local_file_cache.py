@@ -11,7 +11,7 @@ from prettyfmt import fmt_path
 from strif import atomic_output_file, copyfile_atomic
 
 from kash.utils.common.url import Url, is_file_url, is_url, normalize_url, parse_file_url
-from kash.utils.errors import FileNotFound, InvalidInput
+from kash.utils.errors import FileNotFound
 from kash.utils.file_utils.file_formats_model import choose_file_ext
 from kash.web_content.dir_store import DirStore
 from kash.web_content.web_fetch import download_url

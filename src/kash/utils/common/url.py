@@ -131,9 +131,7 @@ def normalize_url(
 
     # urlsplit is too forgiving.
     if check_schemes and scheme not in check_schemes:
-        raise ValueError(
-            f"Scheme {scheme!r} not in allowed schemes: {check_schemes!r}: {url}"
-        )
+        raise ValueError(f"Scheme {scheme!r} not in allowed schemes: {check_schemes!r}: {url}")
 
     if drop_fragment:
         fragment = None
@@ -176,9 +174,7 @@ def test_normalize_url():
     assert normalize_url(Url("http://www.example.com/")) == "http://www.example.com"
     assert normalize_url(Url("https://example.com")) == "https://example.com"
     assert (
-        normalize_url(
-            Url("https://example.com/foo/bar.html#fragment"), drop_fragment=True
-        )
+        normalize_url(Url("https://example.com/foo/bar.html#fragment"), drop_fragment=True)
         == "https://example.com/foo/bar.html"
     )
     assert (
@@ -199,10 +195,7 @@ def test_normalize_url():
         normalize_url(url=Url("/not/a/URL"))
         raise AssertionError()
     except ValueError as e:
-        assert (
-            str(e)
-            == "Scheme '' not in allowed schemes: ['http', 'https', 'file']: /not/a/URL"
-        )
+        assert str(e) == "Scheme '' not in allowed schemes: ['http', 'https', 'file']: /not/a/URL"
 
     try:
         normalize_url(Url("ftp://example.com"))
