@@ -153,9 +153,7 @@ class LocalFileCache(DirStore):
             if isinstance(url_or_path, Path):
                 file_path = url_or_path
             else:
-                parsed = parse_file_url(url_or_path)
-                if not parsed:
-                    raise InvalidInput(f"Not a file URL: {url_or_path}")
+                parsed = parse_file_url(url_or_path)  # Raises ValueError if not a file URL.
                 file_path = parsed
             if not file_path.exists():
                 raise FileNotFound(f"File not found: {file_path}")

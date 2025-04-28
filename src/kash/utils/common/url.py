@@ -67,15 +67,39 @@ def is_file_url(url: str | Url) -> bool:
     return url.startswith("file://")
 
 
-def parse_file_url(url: str | Url) -> Path | None:
+def parse_http_url(url: str | Url) -> ParseResult:
     """
-    Parse a file URL and return the path, or None if not a file URL.
+    Parse an http/https URL and return the parsed result, raising ValueError if
+    not an http/https URL.
+    """
+    parsed_url = urlparse(url)
+    if parsed_url.scheme in ("http", "https"):
+        return parsed_url
+    else:
+        raise ValueError(f"Not an http/https URL: {url}")
+
+
+def parse_file_url(url: str | Url) -> Path:
+    """
+    Parse a file URL and return the path, raising ValueError if not a file URL.
     """
     parsed_url = urlparse(url)
     if parsed_url.scheme == "file":
         return Path(parsed_url.path)
     else:
-        return None
+        raise ValueError(f"Not a file URL: {url}")
+
+
+def parse_s3_url(url: str | Url) -> tuple[str, str]:
+    """
+    Parse an S3 URL and return the bucket and key, raising ValueError if not an
+    S3 URL.
+    """
+    parsed_url = urlparse(url)
+    if parsed_url.scheme == "s3":
+        return parsed_url.netloc, parsed_url.path.lstrip("/")
+    else:
+        raise ValueError(f"Not an S3 URL: {url}")
 
 
 def as_file_url(path: str | Path) -> Url:
@@ -107,7 +131,9 @@ def normalize_url(
 
     # urlsplit is too forgiving.
     if check_schemes and scheme not in check_schemes:
-        raise ValueError(f"Scheme {scheme!r} not in allowed schemes: {check_schemes!r}: {url}")
+        raise ValueError(
+            f"Scheme {scheme!r} not in allowed schemes: {check_schemes!r}: {url}"
+        )
 
     if drop_fragment:
         fragment = None
@@ -150,7 +176,9 @@ def test_normalize_url():
     assert normalize_url(Url("http://www.example.com/")) == "http://www.example.com"
     assert normalize_url(Url("https://example.com")) == "https://example.com"
     assert (
-        normalize_url(Url("https://example.com/foo/bar.html#fragment"), drop_fragment=True)
+        normalize_url(
+            Url("https://example.com/foo/bar.html#fragment"), drop_fragment=True
+        )
         == "https://example.com/foo/bar.html"
     )
     assert (
@@ -171,7 +199,10 @@ def test_normalize_url():
         normalize_url(url=Url("/not/a/URL"))
         raise AssertionError()
     except ValueError as e:
-        assert str(e) == "Scheme '' not in allowed schemes: ['http', 'https', 'file']: /not/a/URL"
+        assert (
+            str(e)
+            == "Scheme '' not in allowed schemes: ['http', 'https', 'file']: /not/a/URL"
+        )
 
     try:
         normalize_url(Url("ftp://example.com"))
