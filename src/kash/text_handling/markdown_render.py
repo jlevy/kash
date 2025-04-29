@@ -27,7 +27,17 @@ class CustomHTMLBlockMixin:
 
 # GFM first, adding our custom override as an extension to handle divs our way.
 # Extensions later in this list are earlier in MRO.
-MARKO_GFM = marko.Markdown(extensions=[GFM, MarkoExtension(renderer_mixins=[CustomHTMLBlockMixin])])
+MARKO_GFM = marko.Markdown(
+    extensions=["footnote", GFM, MarkoExtension(renderer_mixins=[CustomHTMLBlockMixin])]
+)
+
+
+def html_postprocess(html: str) -> str:
+    """
+    Final tweaks to the HTML.
+    """
+    html = html.replace("""class="footnote">&#8617;</a>""", """class="footnote">🡡</a>""")
+    return html
 
 
 def markdown_to_html(markdown: str, converter: marko.Markdown = MARKO_GFM) -> str:
@@ -40,7 +50,9 @@ def markdown_to_html(markdown: str, converter: marko.Markdown = MARKO_GFM) -> st
     are [allowed in some cases](https://github.github.com/gfm/#example-140) so
     additional sanitization is needed if input isn't trusted.
     """
-    return converter.convert(markdown)
+    html = converter.convert(markdown)
+    return html_postprocess(html)
+    return html
 
 
 ## Tests
