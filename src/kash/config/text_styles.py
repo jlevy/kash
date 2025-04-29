@@ -46,7 +46,9 @@ SPINNER = "dots12"
 
 BAT_THEME = "Coldark-Dark"
 
-BAT_STYLE = "header-filename,header-filesize,grid,changes"
+BAT_STYLE = "header-filename,header-filesize,grid,numbers,changes"
+
+BAT_STYLE_PLAIN = "plain"
 
 
 ## Colors

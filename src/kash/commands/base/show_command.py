@@ -18,6 +18,7 @@ def show(
     native: bool = False,
     thumbnail: bool = False,
     browser: bool = False,
+    plain: bool = False,
 ) -> None:
     """
     Show the contents of a file if one is given, or the first file if multiple files
@@ -31,10 +32,11 @@ def show(
     :param native: Force display with a native app (depending on your system configuration).
     :param thumbnail: If there is a thumbnail image, show it too.
     :param browser: Force display with your default web browser.
+    :param plain: Use plain view in the console (this is `bat`'s `plain` style).
     """
     view_mode = (
         ViewMode.console
-        if console
+        if console or plain
         else ViewMode.browser
         if browser
         else ViewMode.native
@@ -58,9 +60,9 @@ def show(
                         log.info("Had trouble showing thumbnail image (will skip): %s", e)
                         cprint(f"[Image: {item.thumbnail_url}]", style=STYLE_HINT)
 
-            view_file_native(ws.base_dir / input_path, view_mode=view_mode)
+            view_file_native(ws.base_dir / input_path, view_mode=view_mode, plain=plain)
         else:
-            view_file_native(input_path, view_mode=view_mode)
+            view_file_native(input_path, view_mode=view_mode, plain=plain)
     except (InvalidInput, InvalidState):
         if path:
             # If path is absolute or we couldbn't get a selection, just show the file.

@@ -18,7 +18,7 @@ from flowmark import Wrap
 from funlog import log_calls
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import BAT_STYLE, BAT_THEME, COLOR_ERROR
+from kash.config.text_styles import BAT_STYLE, BAT_STYLE_PLAIN, BAT_THEME, COLOR_ERROR
 from kash.shell.output.shell_output import cprint
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import as_file_url, is_file_url, is_url
@@ -110,12 +110,14 @@ def _detect_view_mode(file_or_url: str) -> ViewMode:
 def view_file_native(
     file_or_url: str | Path,
     view_mode: ViewMode = ViewMode.auto,
+    plain: bool = False,
 ):
     """
     Open a file or URL in the console or a native app. If `view_mode` is auto,
     automatically determine whether to use console, web browser, or the user's
     preferred native application. For images, also tries terminal-based image
-    display.
+    display. The `--plain` flag will disable line numbers, grid, etc. in `bat`
+    and force `ViewMode.console`.
     """
     file_or_url = str(file_or_url)
     path = None
@@ -123,6 +125,9 @@ def view_file_native(
         path = Path(file_or_url)
         if not path.exists():
             raise FileNotFound(fmt_loc(path))
+
+    if plain:
+        view_mode = ViewMode.console
 
     if view_mode == ViewMode.auto:
         view_mode = _detect_view_mode(file_or_url)
@@ -133,7 +138,7 @@ def view_file_native(
         webbrowser.open(url)
     elif view_mode == ViewMode.console and path:
         file_size, min_lines = file_size_check(path)
-        view_file_console(path, use_pager=min_lines > 40 or file_size > 20 * 1024)
+        view_file_console(path, use_pager=min_lines > 40 or file_size > 20 * 1024, plain=plain)
     elif view_mode == ViewMode.terminal_image and path:
         try:
             terminal_show_image(path)
@@ -216,7 +221,7 @@ def tail_file(
     subprocess.run(command, shell=True, check=True)
 
 
-def view_file_console(filename: str | Path, use_pager: bool = True):
+def view_file_console(filename: str | Path, use_pager: bool = True, plain: bool = False):
     """
     Displays a file in the console with pagination and syntax highlighting.
     """
@@ -226,11 +231,12 @@ def view_file_console(filename: str | Path, use_pager: bool = True):
     # TODO: Visualize YAML frontmatter with different syntax/style than Markdown content.
 
     is_text = file_format_info(filename).is_text
+    bat_style = BAT_STYLE_PLAIN if plain else BAT_STYLE
     if is_text:
         pkg_check().require("less")
         if pkg_check().is_found("bat"):
             pager_str = "--pager=always --pager=less " if use_pager else ""
-            command = f"bat {pager_str}--color=always --style={BAT_STYLE} --theme={BAT_THEME} {quoted_filename}"
+            command = f"bat {pager_str}--color=always --style={bat_style} --theme={BAT_THEME} {quoted_filename}"
         else:
             pkg_check().require("pygmentize")
             command = f"pygmentize -g {quoted_filename}"
