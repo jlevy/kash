@@ -33,6 +33,7 @@ from kash.utils.file_utils.file_formats_model import FileExt, Format
 
 if TYPE_CHECKING:
     from kash.model.actions_model import ExecContext
+    from kash.workspaces import Workspace
 
 log = get_logger(__name__)
 
@@ -310,7 +311,11 @@ class Item:
             key: value for key, value in item_dict.items() if key not in all_fields
         }
         if unexpected_metadata:
-            log.info("Skipping unexpected metadata on item: %s%s", info_prefix, unexpected_metadata)
+            log.info(
+                "Skipping unexpected metadata on item: %s%s",
+                info_prefix,
+                unexpected_metadata,
+            )
 
         result = cls(
             type=type_,
@@ -328,7 +333,10 @@ class Item:
 
     @classmethod
     def from_external_path(
-        cls, path: Path | str, item_type: ItemType | None = None, title: str | None = None
+        cls,
+        path: Path | str,
+        item_type: ItemType | None = None,
+        title: str | None = None,
     ) -> Item:
         """
         Create a resource Item for a file with a format inferred from the file extension
@@ -399,6 +407,19 @@ class Item:
             raise ValueError(f"Item has no format: {self}")
         if self.type.expects_body and self.format.has_body and not self.body:
             raise ValueError(f"Item type `{self.type.value}` is text but has no body: {self}")
+
+    def absolute_path(self, ws: "Workspace | None" = None) -> Path:  # noqa: UP037
+        """
+        Get the absolute path to the item. Throws `ValueError` if the item has no
+        store path. If no workspace is provided, uses the current workspace.
+        """
+        from kash.workspaces import current_ws
+
+        if not self.store_path:
+            raise ValueError("Item has no store path")
+        if not ws:
+            ws = current_ws()
+        return ws.base_dir / self.store_path
 
     @property
     def is_binary(self) -> bool:
@@ -712,7 +733,8 @@ class Item:
                 )
             else:
                 log.warning(
-                    "Deriving an item without action context so keeping previous title: %s", self
+                    "Deriving an item without action context so keeping previous title: %s",
+                    self,
                 )
                 new_item.title = f"{prev_title} (derived copy)"
 
