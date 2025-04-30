@@ -32,11 +32,16 @@ MARKO_GFM = marko.Markdown(
 )
 
 
+FOOTNOTE_UP_ARROW = "&nbsp;↑&nbsp;"
+
+
 def html_postprocess(html: str) -> str:
     """
     Final tweaks to the HTML.
     """
-    html = html.replace("""class="footnote">&#8617;</a>""", """class="footnote">🡡</a>""")
+    html = html.replace(
+        """class="footnote">&#8617;</a>""", f"""class="footnote">{FOOTNOTE_UP_ARROW}</a>"""
+    )
     return html
 
 
