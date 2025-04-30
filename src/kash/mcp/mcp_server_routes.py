@@ -12,7 +12,7 @@ from strif import AtomicVar
 
 from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger
-from kash.config.settings import get_mcp_ws_dir
+from kash.config.settings import global_settings
 from kash.exec.action_exec import prepare_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
 from kash.model.actions_model import Action, ActionResult, ExecContext
@@ -213,7 +213,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
             # XXX For now, unless the user has overridden the MCP workspace, we use the
             # current workspace, which could be changed by the user by changing working
             # directories. Maybe confusing?
-            explicit_mcp_ws = get_mcp_ws_dir()
+            explicit_mcp_ws = global_settings().mcp_ws_dir
             ws = get_ws(explicit_mcp_ws) if explicit_mcp_ws else current_ws()
 
             with ws:

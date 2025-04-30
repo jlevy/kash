@@ -9,7 +9,7 @@ from rich.text import Text
 
 from kash.commands.base.model_commands import list_apis, list_models
 from kash.config.logger import get_logger
-from kash.config.settings import RECOMMENDED_API_KEYS, get_system_config_dir
+from kash.config.settings import RECOMMENDED_API_KEYS, global_settings
 from kash.docs.all_docs import all_docs
 from kash.exec import kash_command
 from kash.help.tldr_help import tldr_refresh_cache
@@ -181,7 +181,7 @@ def reload_env() -> None:
     Reload the environment variables from the .env file.
     """
 
-    env_paths = load_dotenv_paths(True, True, get_system_config_dir())
+    env_paths = load_dotenv_paths(True, True, global_settings().system_config_dir)
     if env_paths:
         cprint("Reloaded environment variables")
 

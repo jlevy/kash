@@ -1,8 +1,8 @@
 from kash.actions import get_loaded_kits
-from kash.config.setup import setup
+from kash.config.setup import kash_setup
 from kash.config.text_styles import COLOR_VALUE, STYLE_HINT
 
-setup(rich_logging=True)  # Set up logging first.
+kash_setup(rich_logging=True)  # Set up logging first.
 
 from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar

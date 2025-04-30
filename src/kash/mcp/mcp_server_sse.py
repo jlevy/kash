@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
-from kash.config.settings import global_settings, local_server_log_path
+from kash.config.settings import global_settings
 from kash.local_server.port_tools import find_available_local_port
 from kash.mcp import mcp_server_routes
 from kash.utils.errors import InvalidState
@@ -154,7 +154,9 @@ class MCPServerSSE:
 
 
 # Singleton instance
-_mcp_sse_server = MCPServerSSE(MCP_SERVER_NAME, MCP_SERVER_HOST, local_server_log_path())
+_mcp_sse_server = MCPServerSSE(
+    MCP_SERVER_NAME, MCP_SERVER_HOST, global_settings().local_server_log_path
+)
 
 
 def start_mcp_server_sse():

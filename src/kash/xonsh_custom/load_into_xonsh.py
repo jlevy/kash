@@ -1,6 +1,6 @@
-from kash.config.setup import setup
+from kash.config.setup import kash_setup
 
-setup(rich_logging=True)  # Set up logging first.
+kash_setup(rich_logging=True)  # Set up logging first.
 
 import time
 

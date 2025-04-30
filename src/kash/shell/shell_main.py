@@ -16,12 +16,12 @@ import threading
 import xonsh.main
 from strif import quote_if_needed
 
-from kash.config.setup import setup
+from kash.config.setup import kash_setup
 from kash.shell.utils.argparse_utils import WrappedColorFormatter
 from kash.shell.version import get_full_version_name, get_version
 from kash.xonsh_custom.custom_shell import install_to_xonshrc, start_shell
 
-setup(rich_logging=True)  # Set up logging first.
+kash_setup(rich_logging=True)  # Set up logging first.
 
 
 __version__ = get_version()

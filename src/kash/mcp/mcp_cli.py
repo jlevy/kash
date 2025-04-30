@@ -9,8 +9,8 @@ import logging
 import os
 from pathlib import Path
 
-from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, get_system_logs_dir
-from kash.config.setup import setup
+from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, global_settings
+from kash.config.setup import kash_setup
 from kash.shell.utils.argparse_utils import WrappedColorFormatter
 from kash.shell.version import get_version
 
@@ -18,7 +18,7 @@ __version__ = get_version()
 
 DEFAULT_PROXY_URL = f"http://localhost:{DEFAULT_MCP_SERVER_PORT}/sse"
 
-MCP_CLI_LOG_PATH = get_system_logs_dir() / "mcp_cli.log"
+MCP_CLI_LOG_PATH = global_settings().system_logs_dir / "mcp_cli.log"
 
 
 log = logging.getLogger()
@@ -113,10 +113,10 @@ def main():
     args = build_parser().parse_args()
 
     if args.list_tools or args.tool_help:
-        setup(rich_logging=True, level=LogLevel.warning)
+        kash_setup(rich_logging=True, level=LogLevel.warning)
         show_tool_info(args.tool_help)
     else:
-        setup(rich_logging=False, level=LogLevel.info)
+        kash_setup(rich_logging=False, level=LogLevel.info)
         run_server(args)
 
 

@@ -14,7 +14,10 @@ from prettyfmt import fmt_path
 
 from kash.config.logger import get_logger
 from kash.config.server_config import create_server_config
-from kash.config.settings import atomic_global_settings, global_settings, local_server_log_path
+from kash.config.settings import (
+    atomic_global_settings,
+    global_settings,
+)
 from kash.local_server import local_server_routes
 from kash.local_server.port_tools import find_available_local_port
 from kash.utils.errors import InvalidInput, InvalidState
@@ -175,7 +178,7 @@ class LocalServer:
 
 # Singleton instance for the UI server.
 # Note this is quick to set up (lazy imports).
-_ui_server = LocalServer(UI_SERVER_NAME, UI_SERVER_HOST, local_server_log_path())
+_ui_server = LocalServer(UI_SERVER_NAME, UI_SERVER_HOST, global_settings().local_server_log_path)
 
 
 def start_ui_server():

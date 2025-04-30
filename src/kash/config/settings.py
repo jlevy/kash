@@ -47,53 +47,6 @@ RECOMMENDED_PKGS = [
 ]
 
 
-def get_ws_root_dir() -> Path:
-    """Default root directory for kash workspaces."""
-    return KashEnv.KASH_WS_ROOT.read_path(Path("~/Kash"))
-
-
-def get_global_ws_dir() -> Path:
-    """Default global workspace directory."""
-    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path()
-    if kash_ws_dir:
-        return kash_ws_dir
-    else:
-        return get_ws_root_dir() / GLOBAL_WS_NAME
-
-
-def get_system_config_dir() -> Path:
-    return Path("~/.config/kash").expanduser().resolve()
-
-
-def get_rcfile_path() -> Path:
-    return get_system_config_dir() / "kashrc"
-
-
-def get_system_logs_dir() -> Path:
-    """Default global and system logs directory (for server logs, etc)."""
-    return KashEnv.KASH_SYSTEM_LOGS_DIR.read_path(get_ws_root_dir() / "logs")
-
-
-def get_system_cache_dir() -> Path:
-    """Default global and system cache directory (for global media, content, etc)."""
-    return KashEnv.KASH_SYSTEM_CACHE_DIR.read_path(get_ws_root_dir() / "cache")
-
-
-def get_system_env_path() -> Path:
-    return get_system_config_dir() / "env.local"
-
-
-def get_mcp_ws_dir() -> Path | None:
-    """
-    Get the directory for the MCP workspace, if set.
-    """
-    mcp_dir = KashEnv.KASH_MCP_WS.read_str()
-    if mcp_dir:
-        return Path(mcp_dir).expanduser().resolve()
-    else:
-        return None
-
-
 MEDIA_CACHE_NAME = "media"
 CONTENT_CACHE_NAME = "content"
 
@@ -108,11 +61,6 @@ LOCAL_SERVER_PORTS_MAX = 30
 
 
 LOCAL_SERVER_LOG_NAME = "local_server"
-
-
-@cache
-def local_server_log_path() -> Path:
-    return resolve_and_create_dirs(get_system_logs_dir() / f"{LOCAL_SERVER_LOG_NAME}.log")
 
 
 class LogLevel(Enum):
@@ -170,11 +118,15 @@ def find_in_cwd_or_parents(filename: Path | str) -> Path | None:
     return None
 
 
+def _get_rcfile_path() -> Path:
+    return _get_system_config_dir() / "kashrc"
+
+
 def find_rcfiles() -> list[Path]:
     """
     Find active rcfiles. Currently only supports one.
     """
-    rcfile_path = get_rcfile_path()
+    rcfile_path = _get_rcfile_path()
     if rcfile_path.exists():
         return [rcfile_path]
     else:
@@ -183,8 +135,29 @@ def find_rcfiles() -> list[Path]:
 
 @dataclass
 class Settings:
+    ws_root_dir: Path
+    """A default root directory for kash workspaces (typically `~/Kash`)."""
+
+    global_ws_dir: Path
+    """The directory for the "global" workspace."""
+
+    system_config_dir: Path
+    """The directory for system-wide configuration files."""
+
     media_cache_dir: Path
     """The workspace media cache directory, for caching audio, video, and transcripts."""
+
+    system_logs_dir: Path
+    """Default global and system logs directory (for server logs, etc)."""
+
+    system_cache_dir: Path
+    """Default global and system cache directory (for global media, content, etc)."""
+
+    mcp_ws_dir: Path | None
+    """The directory for the MCP workspace, if set."""
+
+    local_server_log_path: Path
+    """The path to the local server log."""
 
     content_cache_dir: Path
     """The workspace content cache directory, for caching web or local files."""
@@ -222,12 +195,60 @@ class Settings:
     """If true, use Nerd Icons in file listings. Requires a compatible font."""
 
 
-# Initial default settings.
-_settings = AtomicVar(
-    Settings(
+ws_root_dir = Path("~/Kash").expanduser()
+
+
+def _get_ws_root_dir() -> Path:
+    """Default root directory for kash workspaces."""
+    return KashEnv.KASH_WS_ROOT.read_path(default=ws_root_dir)
+
+
+def _get_global_ws_dir() -> Path:
+    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path()
+    if kash_ws_dir:
+        return kash_ws_dir
+    else:
+        return _get_ws_root_dir() / GLOBAL_WS_NAME
+
+
+def get_system_logs_dir() -> Path:
+    return KashEnv.KASH_SYSTEM_LOGS_DIR.read_path(default=_get_ws_root_dir() / "logs")
+
+
+def _get_system_config_dir() -> Path:
+    return Path("~/.config/kash").expanduser().resolve()
+
+
+def _get_system_cache_dir() -> Path:
+    return KashEnv.KASH_SYSTEM_CACHE_DIR.read_path(default=_get_ws_root_dir() / "cache")
+
+
+def _get_mcp_ws_dir() -> Path | None:
+    mcp_dir = KashEnv.KASH_MCP_WS.read_str()
+    if mcp_dir:
+        return Path(mcp_dir).expanduser().resolve()
+    else:
+        return None
+
+
+@cache
+def _get_local_server_log_path() -> Path:
+    return resolve_and_create_dirs(get_system_logs_dir() / f"{LOCAL_SERVER_LOG_NAME}.log")
+
+
+def _read_settings():
+    return Settings(
+        # Essential system settings for logs, workspaces, and configs:
+        ws_root_dir=_get_ws_root_dir(),
+        global_ws_dir=_get_global_ws_dir(),
+        system_config_dir=_get_system_config_dir(),
+        system_logs_dir=get_system_logs_dir(),
+        system_cache_dir=_get_system_cache_dir(),
+        mcp_ws_dir=_get_mcp_ws_dir(),
+        local_server_log_path=_get_local_server_log_path(),
         # These default to the global but can be overridden by workspace settings.
-        media_cache_dir=get_system_cache_dir() / MEDIA_CACHE_NAME,
-        content_cache_dir=get_system_cache_dir() / CONTENT_CACHE_NAME,
+        media_cache_dir=_get_system_cache_dir() / MEDIA_CACHE_NAME,
+        content_cache_dir=_get_system_cache_dir() / CONTENT_CACHE_NAME,
         debug_assistant=True,
         default_editor="nano",
         file_log_level=LogLevel.info,
@@ -239,7 +260,20 @@ _settings = AtomicVar(
         use_kerm_codes=False,
         use_nerd_icons=True,
     )
-)
+
+
+# Initial default settings.
+_settings = AtomicVar(_read_settings())
+
+
+def configure_ws_root(root_dir: Path):
+    """
+    Reset and reload all settings, deriving all paths from the new workspace
+    root. Good if embedding kash in another app.
+    """
+    global ws_root_dir
+    ws_root_dir = root_dir
+    _settings.set(_read_settings())
 
 
 def atomic_global_settings() -> AtomicVar[Settings]:

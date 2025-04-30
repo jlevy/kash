@@ -98,18 +98,6 @@ def get_log_settings() -> LogSettings:
     return _log_settings
 
 
-def reset_log_root(log_root: Path | None = None, log_name: str | None = None):
-    """
-    Reset the logging root or log name, if it has changed. None means no change
-    and global default values.
-    """
-    global _log_lock, _log_base, _log_name
-    with _log_lock:
-        _log_base = log_root or get_system_logs_dir()
-        _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
-        reload_rich_logging_setup()
-
-
 console_context_var: contextvars.ContextVar[Console | None] = contextvars.ContextVar(
     "console", default=None
 )
@@ -169,6 +157,28 @@ _file_handler: logging.FileHandler
 _console_handler: logging.Handler
 
 
+def reset_rich_logging(
+    log_root: Path | None = None, log_name: str | None = None, log_path: Path | None = None
+):
+    """
+    Set or reset the logging root or log name, if it has changed. None means no change
+    and global default values. `log_name` is the name of the log, excluding
+    the `.log` extension. If `log_path` is provided, it will be used to infer
+    the log root and name.
+    """
+    if log_path:
+        if not log_path.parent.exists():
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_root = log_path.parent
+        log_name = log_path.name
+
+    global _log_lock, _log_base, _log_name
+    with _log_lock:
+        _log_base = log_root or get_system_logs_dir()
+        _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
+        reload_rich_logging_setup()
+
+
 def reload_rich_logging_setup():
     """
     Set up or reset logging setup. This is for rich/formatted console logging and
@@ -188,6 +198,15 @@ def reload_rich_logging_setup():
             #     f"Log file ({_log_settings.log_file_level.name}): "
             #     f"{fmt_path(_log_settings.log_file_path.absolute(), resolve=False)}"
             # )
+
+
+@cache
+def _init_rich_logging():
+    rich.reconfigure(theme=get_theme(), highlighter=get_highlighter())
+
+    logging.setLoggerClass(CustomLogger)
+
+    reload_rich_logging_setup()
 
 
 def _do_logging_setup(log_settings: LogSettings):
@@ -346,7 +365,7 @@ def get_logger(name: str) -> CustomLogger:
     Get a logger that's compatible with system logging but has our additional custom
     methods.
     """
-    init_rich_logging()
+    _init_rich_logging()
     logger = logging.getLogger(name)
     # print("Logger is", logger)
     return cast(CustomLogger, logger)
@@ -354,12 +373,3 @@ def get_logger(name: str) -> CustomLogger:
 
 def get_log_file_stream():
     return _file_handler.stream
-
-
-@cache
-def init_rich_logging():
-    rich.reconfigure(theme=get_theme(), highlighter=get_highlighter())
-
-    logging.setLoggerClass(CustomLogger)
-
-    reload_rich_logging_setup()

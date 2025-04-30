@@ -6,7 +6,7 @@ from deepgram import ListenRESTClient, PrerecordedResponse
 from httpx import Timeout
 
 from kash.config.logger import CustomLogger, get_logger
-from kash.config.settings import get_system_config_dir
+from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
 from kash.utils.errors import ApiError, ContentError
 
@@ -26,7 +26,7 @@ def deepgram_transcribe_raw(
         "Transcribing via Deepgram (language %r): %s (size %s)", language, audio_file_path, size
     )
 
-    load_dotenv_paths(True, True, get_system_config_dir())
+    load_dotenv_paths(True, True, global_settings().system_config_dir)
     deepgram = DeepgramClient("", ClientOptionsFromEnv())
 
     with open(audio_file_path, "rb") as audio_file:

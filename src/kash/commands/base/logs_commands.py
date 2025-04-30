@@ -7,7 +7,7 @@ from kash.config.logger import get_log_settings, get_logger, reload_rich_logging
 from kash.config.settings import (
     LogLevel,
     atomic_global_settings,
-    local_server_log_path,
+    global_settings,
 )
 from kash.exec import kash_command
 from kash.shell.output.shell_formatting import format_name_and_value
@@ -85,4 +85,6 @@ def log_settings() -> None:
     cprint(format_name_and_value("log_objects_dir", str(settings.log_objects_dir)))
     cprint(format_name_and_value("log_file_level", settings.log_file_level.name))
     cprint(format_name_and_value("log_console_level", settings.log_console_level.name))
-    cprint(format_name_and_value("server_log_file_path", str(local_server_log_path())))
+    cprint(
+        format_name_and_value("server_log_file_path", str(global_settings().local_server_log_path))
+    )

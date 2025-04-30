@@ -3,8 +3,7 @@ from pathlib import Path
 
 from kash.config.logger import get_logger
 from kash.config.settings import (
-    get_system_logs_dir,
-    local_server_log_path,
+    global_settings,
 )
 from kash.exec import kash_command
 from kash.mcp import mcp_server_routes
@@ -58,13 +57,14 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
     :param follow: Follow the file as it grows.
     :param all: Show all logs, not just the server logs, including Claude Desktop logs if found.
     """
+    settings = global_settings()
     if all:
-        global_log_base = get_system_logs_dir()
+        global_log_base = settings.system_logs_dir
         claude_log_base = Path("~/Library/Logs/Claude").expanduser()
         log_paths = []
         did_log = False
         while len(log_paths) == 0:
-            log_paths = [local_server_log_path(), MCP_CLI_LOG_PATH]
+            log_paths = [settings.local_server_log_path, MCP_CLI_LOG_PATH]
             claude_logs = list(claude_log_base.glob("mcp*.log"))
             if claude_logs:
                 log.message("Found Claude Desktop logs, will also tail them: %s", claude_logs)
@@ -81,7 +81,7 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
                     did_log = True
                 time.sleep(1)
     else:
-        server_log_path = local_server_log_path()  # MCP logs shared with local server logs.
+        server_log_path = settings.local_server_log_path  # MCP logs shared with local server logs.
         if not server_log_path.exists():
             raise InvalidState(
                 f"MCP server log not found (forgot to run `start_mcp_server`?): {server_log_path}"

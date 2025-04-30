@@ -7,11 +7,9 @@ from typing import TYPE_CHECKING, TypeVar
 
 from prettyfmt import fmt_path
 
-from kash.config.logger import get_logger, reset_log_root
+from kash.config.logger import get_logger, reset_rich_logging
 from kash.config.settings import (
     GLOBAL_WS_NAME,
-    get_global_ws_dir,
-    get_ws_root_dir,
     global_settings,
     resolve_and_create_dirs,
 )
@@ -126,7 +124,7 @@ def resolve_ws(name: str | Path) -> WorkspaceInfo:
             resolved = name
             parent_dir = resolved.parent
         else:
-            parent_dir = get_ws_root_dir()
+            parent_dir = global_settings().ws_root_dir
             resolved = parent_dir / name
     elif name_str.startswith(".") or name_str.startswith("/"):
         # Explicit paths respected otherwise use workspace root.
@@ -134,7 +132,7 @@ def resolve_ws(name: str | Path) -> WorkspaceInfo:
         parent_dir = resolved.parent
         name = resolved.name
     else:
-        parent_dir = get_ws_root_dir()
+        parent_dir = global_settings().ws_root_dir
         resolved = parent_dir / Path(name_str)
 
     ws_name = check_strict_workspace_name(resolved.name)
@@ -159,7 +157,7 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":
 
 @cache
 def global_ws_dir() -> Path:
-    kb_path = resolve_and_create_dirs(get_global_ws_dir(), is_dir=True)
+    kb_path = resolve_and_create_dirs(global_settings().global_ws_dir, is_dir=True)
     log.debug("Global workspace path: %s", kb_path)
     return kb_path
 
@@ -188,7 +186,7 @@ def switch_to_ws(base_dir: Path) -> "FileStore":
     ws_dirs = MetadataDirs(base_dir=info.base_dir, is_global_ws=info.is_global_ws)
 
     # Use the global log root for the global_ws, and the workspace log root otherwise.
-    reset_log_root(None, info.name if not info.is_global_ws else None)
+    reset_rich_logging(None, info.name if not info.is_global_ws else None)
 
     if info.is_global_ws:
         # If not in a workspace, use the global cache locations.

@@ -1,5 +1,5 @@
 from kash.config.logger import get_logger
-from kash.config.settings import local_server_log_path
+from kash.config.settings import global_settings
 from kash.exec import kash_command
 from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.utils.native_utils import tail_file
@@ -50,7 +50,7 @@ def local_server_logs(follow: bool = False) -> None:
 
     :param follow: Follow the file as it grows.
     """
-    log_path = local_server_log_path()
+    log_path = global_settings().local_server_log_path
     if not log_path.exists():
         raise InvalidState(
             f"Local ui server log not found (forgot to run `start_ui_server`?): {log_path}"
