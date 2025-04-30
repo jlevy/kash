@@ -333,8 +333,6 @@ class FileStore(Workspace):
             # Otherwise it's still in memory or in a file outside the workspace and we need to save it.
             store_path, found, old_store_path = self.store_path_for(item, as_tmp=as_tmp)
 
-            log.warning("Getting store path for %s: %s", item, store_path)
-
             if not overwrite and found:
                 log.message("Skipping save of item already saved: %s", fmt_loc(store_path))
                 item.store_path = str(store_path)
@@ -563,6 +561,9 @@ class FileStore(Workspace):
         archive_path = self.dirs.archive_dir / store_path
         if missing_ok and not orig_path.exists():
             log.message("Item to archive not found so moving on: %s", fmt_loc(orig_path))
+            return store_path
+        if not orig_path.exists():
+            log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
         move_file(orig_path, archive_path)
         self._remove_references([store_path])

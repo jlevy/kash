@@ -27,6 +27,10 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js" defer></script>
 
+  {% if extra_head %}
+  {{ extra_head|safe }}
+  {% endif %}
+
   <style>
     /* https://fontsource.org/fonts/pt-serif/cdn */
     /* pt-serif-latin-400-normal */
@@ -152,6 +156,10 @@
       }, '*');
     }
   });
+
+  {% if extra_footer_js %}
+  {{ extra_footer_js|safe }}
+  {% endif %}
 </script>
 
 </html>

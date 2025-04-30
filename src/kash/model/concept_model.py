@@ -8,9 +8,13 @@ Concept = NewType("Concept", str)
 def canonicalize_concept(concept: str, capitalize: bool = True) -> Concept:
     """
     Convert a concept string (general name, person, etc.) to a canonical form.
-    Drop any extraneous Markdown bullets.
+    Drop any extraneous Markdown bullets. Drop any quoted phrases (e.g. book titles etc)
+    for consistency.
     """
     concept = concept.strip("-* ")
+    for quote in ['"', "'"]:
+        if concept.startswith(quote) and concept.endswith(quote):
+            concept = concept[1:-1]
     if capitalize:
         return Concept(capitalize_cms(concept))
     else:
