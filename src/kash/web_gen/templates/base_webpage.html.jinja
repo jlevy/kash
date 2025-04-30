@@ -102,19 +102,17 @@
 </head>
 
 <body>
-  {{ content|safe }}
-</body>
+{{ content|safe }}
 
 <script>
-  // Some messages are sent to the parent window, in case we are in a viewport like a
-  // tooltip that supports it.
-
-  // Request a resize of the parent viewport (e.g. tooltip).
   document.addEventListener('DOMContentLoaded', () => {
+    // Send messages to the parent window, in case we are in a viewport where that matters
+    // (e.g. an iframe tooltip).
+    // Request a resize of the parent viewport. This iframe size message format isn't
+    // standardized by ResizeObserver, but is common. It is supported by Kerm.
     const content = document.body;
     console.log("Suggesting resize to parent:", content.offsetWidth, content.offsetHeight);
-    // This iframe size message format isn't standardized by ResizeObserver, but is common.
-    // It is supported by Kerm.
+
     window.parent.postMessage({
       type: 'resize',
       width: Math.max(content.offsetWidth, 600),
@@ -122,17 +120,23 @@
     }, '*');
 
     // Wrap tables within the main content area for horizontal scrolling.
-    const contentContainers = document.querySelectorAll('.long-text .tab-pane, .long-text:not(:has(.tab-pane))'); 
-    contentContainers.forEach(container => {
-      const tables = container.querySelectorAll(':scope > table'); // Select only direct child tables
-      tables.forEach(table => {
-        // Check if table is already wrapped (idempotency)
+    const containers = [];
+    document.querySelectorAll('.long-text').forEach(el => {
+      const pane = el.querySelector('.tab-pane');
+      containers.push(pane || el);
+    });
+    containers.forEach(container => {
+      // Grab all tables, then only wrap the ones whose parent is this container.
+      container.querySelectorAll('table').forEach(table => {
+        if (table.parentElement !== container) {
+          return; // Only direct children.
+        }
         if (table.parentNode.classList.contains('table-container')) {
-          return;
+          return; // Already wrapped.
         }
         const wrapper = document.createElement('div');
-        wrapper.classList.add('table-container');
-        table.parentNode.insertBefore(wrapper, table);
+        wrapper.className = 'table-container';
+        container.insertBefore(wrapper, table);
         wrapper.appendChild(table);
       });
     });
@@ -161,5 +165,7 @@
   {{ extra_footer_js|safe }}
   {% endif %}
 </script>
+
+</body>
 
 </html>
