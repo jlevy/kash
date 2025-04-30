@@ -2,7 +2,6 @@ import contextvars
 import logging
 import os
 import re
-import threading
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -17,7 +16,7 @@ from rich._null_file import NULL_FILE
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.theme import Theme
-from strif import atomic_output_file, new_timestamped_uid
+from strif import AtomicVar, atomic_output_file, new_timestamped_uid
 from typing_extensions import override
 
 import kash.config.suppress_warnings  # noqa: F401
@@ -38,55 +37,41 @@ from kash.utils.common.stack_traces import current_stack_traces
 from kash.utils.common.task_stack import task_stack_prefix_str
 
 
-@dataclass(frozen=True)
+@dataclass
 class LogSettings:
     log_console_level: LogLevel
     log_file_level: LogLevel
-    # Always the same global log directory.
+
     global_log_dir: Path
+    """Global directory for log files."""
 
     # These directories can change based on the current workspace:
     log_dir: Path
+    """Parent of the "logs" directory. Initially the global kash workspace."""
+
+    log_name: str
+    """Name of the log file. Typically the workspace name or "global" if for the global workspace."""
+
     log_objects_dir: Path
     log_file_path: Path
 
 
-_log_dir = get_system_logs_dir()
-"""
-Parent of the "logs" directory. Initially the global kash workspace.
-"""
-
-
 LOG_NAME_GLOBAL = "global"
-
-_log_name = LOG_NAME_GLOBAL
-"""
-Name of the log file. By default the workspace name or "global" if
-for the global workspace.
-"""
-
-_log_lock = threading.RLock()
-
-
-def make_valid_log_name(name: str) -> str:
-    name = str(name).strip().rstrip("/").removesuffix(".log")
-    name = re.sub(r"[^\w-]", "_", name)
-    return name
 
 
 def _read_log_settings() -> LogSettings:
-    global _log_dir, _log_name
     return LogSettings(
         log_console_level=global_settings().console_log_level,
         log_file_level=global_settings().file_log_level,
         global_log_dir=get_system_logs_dir(),
-        log_dir=_log_dir,
-        log_objects_dir=_log_dir / "objects" / _log_name,
-        log_file_path=_log_dir / f"{_log_name}.log",
+        log_dir=get_system_logs_dir(),
+        log_name=LOG_NAME_GLOBAL,
+        log_objects_dir=get_system_logs_dir() / "objects" / LOG_NAME_GLOBAL,
+        log_file_path=get_system_logs_dir() / f"{LOG_NAME_GLOBAL}.log",
     )
 
 
-_log_settings: LogSettings = _read_log_settings()
+_log_settings: AtomicVar[LogSettings] = AtomicVar(_read_log_settings())
 
 _setup_done = False
 
@@ -95,7 +80,13 @@ def get_log_settings() -> LogSettings:
     """
     Currently active log settings.
     """
-    return _log_settings
+    return _log_settings.copy()
+
+
+def make_valid_log_name(name: str) -> str:
+    name = str(name).strip().rstrip("/").removesuffix(".log")
+    name = re.sub(r"[^\w-]", "_", name)
+    return name
 
 
 console_context_var: contextvars.ContextVar[Console | None] = contextvars.ContextVar(
@@ -158,7 +149,9 @@ _console_handler: logging.Handler
 
 
 def reset_rich_logging(
-    log_root: Path | None = None, log_name: str | None = None, log_path: Path | None = None
+    log_root: Path | None = None,
+    log_name: str | None = None,
+    log_path: Path | None = None,
 ):
     """
     Set or reset the logging root or log name, if it has changed. None means no change
@@ -172,10 +165,10 @@ def reset_rich_logging(
         log_root = log_path.parent
         log_name = log_path.name
 
-    global _log_lock, _log_base, _log_name
-    with _log_lock:
-        _log_base = log_root or get_system_logs_dir()
-        _log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
+    global _log_settings
+    with _log_settings.updates() as settings:
+        settings.log_dir = log_root or get_system_logs_dir()
+        settings.log_name = make_valid_log_name(log_name or LOG_NAME_GLOBAL)
         reload_rich_logging_setup()
 
 
@@ -186,12 +179,12 @@ def reload_rich_logging_setup():
     Call at initial run and again if log directory changes. Replaces all previous
     loggers and handlers. Can be called to reset with different settings.
     """
-    global _log_lock, _log_settings, _setup_done
-    with _log_lock:
+    global _setup_done, _log_settings
+    with _log_settings.lock:
         new_log_settings = _read_log_settings()
-        if not _setup_done or new_log_settings != _log_settings:
+        if not _setup_done or new_log_settings != _log_settings.value:
             _do_logging_setup(new_log_settings)
-            _log_settings = new_log_settings
+            _log_settings.set(new_log_settings)
             _setup_done = True
 
             # get_console().print(
@@ -338,7 +331,7 @@ class CustomLogger(logging.Logger):
         filename = (
             f"{prefix}{slugify_snake(description)}.{new_timestamped_uid()}.{file_ext.lstrip('.')}"
         )
-        path = _log_settings.log_objects_dir / filename
+        path = _log_settings.copy().log_objects_dir / filename
         with atomic_output_file(path, make_parents=True) as tmp_filename:
             if isinstance(obj, bytes):
                 with open(tmp_filename, "wb") as f:

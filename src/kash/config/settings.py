@@ -266,7 +266,7 @@ def _read_settings():
 _settings = AtomicVar(_read_settings())
 
 
-def configure_ws_root(root_dir: Path):
+def configure_ws_and_settings(root_dir: Path):
     """
     Reset and reload all settings, deriving all paths from the new workspace
     root. Good if embedding kash in another app.

@@ -7,7 +7,7 @@ from clideps.env_vars.dotenv_utils import load_dotenv_paths
 
 from kash.config.logger import reset_rich_logging
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import LogLevel, configure_ws_root, global_settings
+from kash.config.settings import LogLevel, configure_ws_and_settings, global_settings
 
 
 @cache
@@ -30,19 +30,22 @@ def kash_setup(
     """
     from kash.utils.common.stack_traces import add_stacktrace_handler
 
+    add_stacktrace_handler()
+
+    # Settings may depend on environment variables, so load them first.
+    load_dotenv_paths(True, True, global_settings().system_config_dir)
+
+    # Then configure the workspace and settings before finalizing logging.
+    if kash_ws_root:
+        configure_ws_and_settings(kash_ws_root)
+
+    # Now set up logging, as it might depend on workspace root.
     if rich_logging:
         reset_rich_logging(log_path=log_path)
     else:
         basic_logging_setup(log_path=log_path, level=level)
 
     _lib_setup()
-
-    add_stacktrace_handler()
-
-    load_dotenv_paths(True, True, global_settings().system_config_dir)
-
-    if kash_ws_root:
-        configure_ws_root(kash_ws_root)
 
 
 def _lib_setup():
