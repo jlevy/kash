@@ -110,7 +110,7 @@ def assist_current_state() -> Message:
         ws_info = f"Based on the current directory, the current workspace is: {ws_base_dir.name} at {fmt_loc(ws_base_dir)}"
     else:
         if is_global_ws:
-            about_ws = "You are currently using the `global` workspace."
+            about_ws = "You are currently using the default global workspace."
         else:
             about_ws = "The current directory is not a workspace."
         ws_info = (

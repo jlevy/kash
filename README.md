@@ -519,8 +519,9 @@ A few of the most important commands for managing files and work are these:
   browser to view it.
 
 - `workspace` shows or selects or creates a new workspace.
-  Initially you work in the `global` workspace but for more real work you'll want to
-  create a workspace, which is a directory to hold the files you are working with.
+  Initially you work in the default global workspace (typically at `~/Kash/workspace`)
+  but for more real work you'll want to create a workspace, which is a directory to hold
+  the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will
   run on, within the current workspace.

@@ -50,13 +50,13 @@ class LogSettings:
     """Parent of the "logs" directory. Initially the global kash workspace."""
 
     log_name: str
-    """Name of the log file. Typically the workspace name or "global" if for the global workspace."""
+    """Name of the log file. Typically the workspace name or "workspace" if for the global workspace."""
 
     log_objects_dir: Path
     log_file_path: Path
 
 
-LOG_NAME_GLOBAL = "global"
+LOG_NAME_GLOBAL = "workspace"
 
 
 def _read_log_settings() -> LogSettings:

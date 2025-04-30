@@ -13,7 +13,8 @@ APP_NAME = "kash"
 
 DOT_DIR = ".kash"
 
-GLOBAL_WS_NAME = "global"
+GLOBAL_WS_NAME = "workspace"
+"""Name of the global workspace."""
 
 RECOMMENDED_API_KEYS = [
     "OPENAI_API_KEY",
@@ -139,7 +140,7 @@ class Settings:
     """A default root directory for kash workspaces (typically `~/Kash`)."""
 
     global_ws_dir: Path
-    """The directory for the "global" workspace."""
+    """The directory for the default global workspace."""
 
     system_config_dir: Path
     """The directory for system-wide configuration files."""
