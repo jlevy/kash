@@ -10,8 +10,8 @@ from kash.model import ActionInput, ActionResult
 )
 def render_as_html(input: ActionInput) -> ActionResult:
     """
-    Convert text, Markdown, or HTML to pretty, formatted HTML using the kash default
-    page template.
+    Convert text, Markdown, or HTML to pretty, formatted HTML using a clean
+    and simple page template. Supports GFM-flavored Markdown tables and footnotes.
     """
     config_result = webpage_config(input)
     result = webpage_generate(ActionInput(items=config_result.items))

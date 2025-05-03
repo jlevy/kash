@@ -83,6 +83,19 @@ def extract_links(file_path: str, include_internal=False) -> list[str]:
         return _tree_links(document, include_internal)
 
 
+def extract_first_header(content: str) -> str | None:
+    """
+    Extract the first header from markdown content if present.
+    Also drops any formatting, so the result can be used as a document title.
+    """
+    document = marko.parse(content)
+
+    if document.children and isinstance(document.children[0], Heading):
+        return _extract_text(document.children[0]).strip()
+
+    return None
+
+
 def _extract_text(element: Any) -> str:
     if isinstance(element, str):
         return element
@@ -179,6 +192,15 @@ def test_escape_markdown() -> None:
     assert escape_markdown("backslash\\") == "backslash\\\\"
     assert escape_markdown("Multiple *special* chars [here](#anchor).") == (
         "Multiple \\*special\\* chars \\[here\\]\\(\\#anchor\\)\\."
+    )
+
+
+def test_extract_first_header() -> None:
+    assert extract_first_header("# Header 1") == "Header 1"
+    assert extract_first_header("Not a header\n# Header later") is None
+    assert extract_first_header("") is None
+    assert (
+        extract_first_header("## *Formatted* _Header_ [link](#anchor)") == "Formatted Header link"
     )
 
 

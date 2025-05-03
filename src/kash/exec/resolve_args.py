@@ -105,6 +105,10 @@ def assemble_action_args(
 
 
 def resolvable_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
+    """
+    Return which of the given StorePaths are resolvable (exist) in the
+    current workspace.
+    """
     ws = current_ws()
     resolvable = list(filter(None, (ws.resolve_path(p) for p in paths)))
     return resolvable
