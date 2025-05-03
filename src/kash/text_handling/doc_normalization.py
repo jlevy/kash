@@ -23,7 +23,7 @@ def normalize_formatting_ansi(text: str, format: Format | None, width=DEFAULT_WR
     elif format == Format.markdown or format == Format.md_html:
         return fill_markdown(
             text,
-            line_wrapper=line_wrap_by_sentence(len_fn=ansi_cell_len),
+            line_wrapper=line_wrap_by_sentence(len_fn=ansi_cell_len, is_markdown=True),
             cleanups=True,  # Safe cleanups like unbolding section headers.
         )
     elif format == Format.html:
