@@ -285,7 +285,7 @@ def init_workspace(path: str | None = None) -> None:
 @kash_command
 def workspace(workspace_name: str | None = None) -> None:
     """
-    If no args are given, change directory to the current workspace.
+    If no args are given, show current workspace info.
     If a workspace name is given, change to that workspace, creating it if it doesn't exist.
     """
     if workspace_name:
@@ -302,7 +302,6 @@ def workspace(workspace_name: str | None = None) -> None:
         ws.log_workspace_info()
     else:
         ws = current_ws(silent=True)
-        os.chdir(ws.base_dir)
         ws.log_workspace_info()
 
 

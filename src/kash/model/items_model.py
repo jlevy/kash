@@ -764,7 +764,8 @@ class Item:
 
     def content_equals(self, other: Item) -> bool:
         """
-        Check if two items have identical content, ignoring timestamps and store path.
+        Check if two items have identical content, ignoring timestamps, store path,
+        and any trailing newlines or whitespace.
         """
         # Check relevant metadata fields.
         self_fields = self.__dict__.copy()

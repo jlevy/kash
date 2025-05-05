@@ -450,19 +450,11 @@ class FileStore(Workspace):
             if not path.exists():
                 raise FileNotFound(f"File not found: {fmt_loc(path)}")
 
-            # It's a path outside the store, so copy it in.
-            _name, filename_item_type, format, _file_ext = parse_item_filename(path)
+            # First treat it as an external file to analyze file type and format.
+            item = Item.from_external_path(path)
 
-            # Best guesses on item types if not specified.
-            item_type = as_type
-            if not item_type and filename_item_type:
-                item_type = filename_item_type
-            if not item_type and format:
-                item_type = ItemType.for_format(format)
-            if not item_type:
-                item_type = ItemType.resource
-
-            if format and format.supports_frontmatter:
+            # If it's a text/frontmatter-friendly, read it fully.
+            if item.format and item.format.supports_frontmatter:
                 log.message("Importing text file: %s", fmt_loc(path))
                 # This will read the file with or without frontmatter.
                 # We are importing so we want to drop the external path so we save the body.
@@ -486,15 +478,25 @@ class FileStore(Workspace):
                 log.message("Importing non-text file: %s", fmt_loc(path))
                 # Binary or other files we just copy over as-is, preserving the name.
                 # We know the extension is recognized.
-                item = Item.from_external_path(path)
-                store_path, _found, _prev = self.store_path_for(item)
+                store_path, _found, old_store_path = self.store_path_for(item)
                 if self.exists(store_path):
                     raise FileExists(f"Resource already in store: {fmt_loc(store_path)}")
 
-                item.type = item_type
-
-                log.message("Importing resource: %s -> %s", fmt_loc(path), fmt_loc(store_path))
+                log.message("Importing resource: %s", fmt_loc(path))
                 copyfile_atomic(path, self.base_dir / store_path, make_parents=True)
+
+                # Optimization: Don't import an identical file twice.
+                if old_store_path:
+                    old_hash = self.hash(old_store_path)
+                    new_hash = self.hash(store_path)
+                    if old_hash == new_hash:
+                        log.message(
+                            "Imported resource is identical to the previous import: %s",
+                            fmt_loc(old_store_path),
+                        )
+                        os.unlink(self.base_dir / store_path)
+                        store_path = old_store_path
+                log.message("Imported resource: %s", fmt_loc(store_path))
             return store_path
 
     def import_items(
