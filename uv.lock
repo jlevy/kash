@@ -434,7 +434,7 @@ wheels = [
 
 [[package]]
 name = "deepgram-sdk"
-version = "3.11.0"
+version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aenum" },
@@ -446,9 +446,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/e8/7eb68bfd1b18ec9141d13cf448c257d601a12139f4afe11e4e24553ade49/deepgram_sdk-3.11.0.tar.gz", hash = "sha256:d929149ae7ded113e5736e87a5102523bae6e88203d5bfc308ebb01e78a2a032", size = 93007, upload-time = "2025-04-14T16:08:56.031Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/30/fe/add9e4c5f805d17dedd396ecb186d10ee0bcf8444ee98bf5f79ea2fe10ea/deepgram_sdk-4.0.0.tar.gz", hash = "sha256:f23a59a052348acc1af593894989f666b1e864417a0ce13992c5a337e7e53ef5", size = 93265, upload-time = "2025-05-05T21:15:54.215Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/17/277a46505d320dfdf3069e21af98463cded0b593321b33e3ea4a05675cb9/deepgram_sdk-3.11.0-py3-none-any.whl", hash = "sha256:b3bd83f3b7485643fc86761773d9d408a1f861698d228d0b7afa5a7054528a14", size = 153071, upload-time = "2025-04-14T16:08:54.815Z" },
+    { url = "https://files.pythonhosted.org/packages/62/2a/f38261f473874b951d70a676d0f49e3ac45e48f16aadd937f76c211df689/deepgram_sdk-4.0.0-py3-none-any.whl", hash = "sha256:8fc6ce350df439244cb044519d987a9f50f9e413d9d77966942eeac57564df3e", size = 153221, upload-time = "2025-05-05T21:15:52.983Z" },
 ]
 
 [[package]]
@@ -520,7 +520,7 @@ wheels = [
 
 [[package]]
 name = "flowmark"
-version = "0.4.4"
+version = "0.4.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "marko" },
@@ -528,9 +528,9 @@ dependencies = [
     { name = "strif" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/1f/e04f91af9d71364fdb669ba569dc886913f350a2f960a0ac49174670c959/flowmark-0.4.4.tar.gz", hash = "sha256:9906e0f04ec7b44684facdea8d7b8a10e4003c1ec8f19cde4b24485b53a4adc0", size = 124457, upload-time = "2025-05-02T17:59:33.412Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/c4/44c17846a1b81edaaaacba63e42e67511eda707512b2834dc8fc159cf22e/flowmark-0.4.5.tar.gz", hash = "sha256:20e753b0fbc70770a582d555375201b7208e0c937c60ff2ed1197f5b9c4b3e6e", size = 125372, upload-time = "2025-05-03T20:48:34.26Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/3a/272fe590ea4a506d4a795116dc5860a50f8d43a670ca09c53afc0843f67e/flowmark-0.4.4-py3-none-any.whl", hash = "sha256:2f2173af669c63df91dd7e7d432d0a28589dc38440291264019582f18b8336d1", size = 23487, upload-time = "2025-05-02T17:59:31.578Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/03/e852e56eb7f681664b97407cd7b673f6771459928c2ecfd35e174db9474b/flowmark-0.4.5-py3-none-any.whl", hash = "sha256:ce56aa6f6f4d662d9b4fdbb595341f6d3f0ef1e9b968c1a9161c85c738437d3f", size = 23477, upload-time = "2025-05-03T20:48:32.418Z" },
 ]
 
 [[package]]
@@ -988,7 +988,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "patch-ng", specifier = ">=1.18.1" },
     { name = "pathspec", specifier = ">=0.12.1" },
-    { name = "prettyfmt", specifier = ">=0.3.0" },
+    { name = "prettyfmt", specifier = ">=0.3.1" },
     { name = "prompt-toolkit", specifier = ">=3.0.50" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pydub", specifier = ">=0.25.1" },
@@ -1032,7 +1032,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/b3/15/c9f68c4f477fbaa9f
 
 [[package]]
 name = "litellm"
-version = "1.67.6"
+version = "1.68.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1047,9 +1047,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/26/a07aa0c7a622e89b34dd26ae4c17fda398e1664fefa71379015656744546/litellm-1.67.6.tar.gz", hash = "sha256:8cd23db10463a02bb5a64fb69b243d97879ecf4075fe38740f8c4b93f3f770a6", size = 7308919, upload-time = "2025-05-02T19:26:07.058Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/22/138545b646303ca3f4841b69613c697b9d696322a1386083bb70bcbba60b/litellm-1.68.0.tar.gz", hash = "sha256:9fb24643db84dfda339b64bafca505a2eef857477afbc6e98fb56512c24dbbfa", size = 7314051, upload-time = "2025-05-04T05:41:48.081Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d5/bf/27fe677b5c6631d40d14620983e521239e7e1360cb7c8ab4111f35971f56/litellm-1.67.6-py3-none-any.whl", hash = "sha256:3c3fb31e9e6e51d8d0eb2da4df1538a3924c2d8e1201775358678f79b1625966", size = 7677070, upload-time = "2025-05-02T19:26:04.005Z" },
+    { url = "https://files.pythonhosted.org/packages/10/af/1e344bc8aee41445272e677d802b774b1f8b34bdc3bb5697ba30f0fb5d52/litellm-1.68.0-py3-none-any.whl", hash = "sha256:3bca38848b1a5236b11aa6b70afa4393b60880198c939e582273f51a542d4759", size = 7684460, upload-time = "2025-05-04T05:41:44.78Z" },
 ]
 
 [[package]]
@@ -1527,16 +1527,16 @@ wheels = [
 
 [[package]]
 name = "prettyfmt"
-version = "0.3.0"
+version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "humanize" },
     { name = "strif" },
     { name = "text-unidecode" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/fe/76a6ef2598d0d3978e9989f1f9b023f76ab27be700e6c439c968f6be007e/prettyfmt-0.3.0.tar.gz", hash = "sha256:3ea3f32cbfd0ff450b9e139cf3836d050137a06b7b836ad44eec8e4bfa8878df", size = 29555, upload-time = "2025-04-07T19:29:35.129Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/65/0ebfd438dc6290801027e31c9c79ebd71dac2c303c1fd263ab679f6e4c5f/prettyfmt-0.3.1.tar.gz", hash = "sha256:8b6a15cadf444c32f40dc1eb3708efebd85ea303796ca95d451398fac8348060", size = 30172, upload-time = "2025-05-05T22:38:22.658Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/5e/85874a4c725f444a09aca4d7fc237c9691ea48c8fd61c93888e681a006f6/prettyfmt-0.3.0-py3-none-any.whl", hash = "sha256:28ecbd8f9000e17652f37e4aad4f8c72101db3b8594180de43f1b98db9cc7caa", size = 10626, upload-time = "2025-04-07T19:29:33.855Z" },
+    { url = "https://files.pythonhosted.org/packages/68/00/bc487add0ee801ed86a3679d8a6d25b4a7a25d3358accab855ee6b7f875e/prettyfmt-0.3.1-py3-none-any.whl", hash = "sha256:b282913753909b08257c2c6f7e684fc0073373e35ca89e4d527419d6b56244de", size = 10646, upload-time = "2025-05-05T22:38:20.915Z" },
 ]
 
 [[package]]
@@ -2303,15 +2303,15 @@ wheels = [
 
 [[package]]
 name = "sse-starlette"
-version = "2.3.3"
+version = "2.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "starlette" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/35/7d8d94eb0474352d55f60f80ebc30f7e59441a29e18886a6425f0bccd0d3/sse_starlette-2.3.3.tar.gz", hash = "sha256:fdd47c254aad42907cfd5c5b83e2282be15be6c51197bf1a9b70b8e990522072", size = 17499, upload-time = "2025-04-23T19:28:25.558Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/be/7e776a29b5f712b5bd13c571256a2470fcf345c562c7b2359f2ee15d9355/sse_starlette-2.3.4.tar.gz", hash = "sha256:0ffd6bed217cdbb74a84816437c609278003998b4991cd2e6872d0b35130e4d5", size = 17522, upload-time = "2025-05-04T19:28:51.44Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/20/52fdb5ebb158294b0adb5662235dd396fc7e47aa31c293978d8d8942095a/sse_starlette-2.3.3-py3-none-any.whl", hash = "sha256:8b0a0ced04a329ff7341b01007580dd8cf71331cc21c0ccea677d500618da1e0", size = 10235, upload-time = "2025-04-23T19:28:24.115Z" },
+    { url = "https://files.pythonhosted.org/packages/43/a4/ee4a20f0b5ff34c391f3685eff7cdba1178a487766e31b04efb51bbddd87/sse_starlette-2.3.4-py3-none-any.whl", hash = "sha256:b8100694f3f892b133d0f7483acb7aacfcf6ed60f863b31947664b6dc74e529f", size = 10232, upload-time = "2025-05-04T19:28:50.199Z" },
 ]
 
 [[package]]
@@ -2328,11 +2328,11 @@ wheels = [
 
 [[package]]
 name = "strif"
-version = "3.0.0"
+version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ee/71/6ae5175dd1166e74c2bd2f368420da55bd11adba6c6c3b0b91286303bcd2/strif-3.0.0.tar.gz", hash = "sha256:627231381a52900442d1d18ba65e1628fe057578042e98b8bf70f09192f59f70", size = 33486, upload-time = "2025-04-23T18:22:48.54Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/63/bf90e5632aea866c1bbd2567f04a7026191728c648ecf44ff489829898a3/strif-3.0.1.tar.gz", hash = "sha256:a312ea9540062ccd386132ac2eece93c0c4adaeb25a5f5da11eed7867b1ff31e", size = 33981, upload-time = "2025-05-04T18:40:27.713Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/94/167260a85c125aa98c4dd0c34c13b63ae12af9733fc09b6750874ee86903/strif-3.0.0-py3-none-any.whl", hash = "sha256:c0345f31c714aa08045088086e760383740d9710a06b8169968c7a2fbcb3dac8", size = 17993, upload-time = "2025-04-23T18:22:46.859Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/fd/94ebfa518f46b473d238a8ad5837ce75cfe4ea0ce5a91544a88198d8a8d3/strif-3.0.1-py3-none-any.whl", hash = "sha256:5dca44af3ff2f8a947a0398b619d138014f4d29a5aaf6c7e73fe7bec5f5973da", size = 18446, upload-time = "2025-05-04T18:40:26.07Z" },
 ]
 
 [[package]]
