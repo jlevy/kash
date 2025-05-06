@@ -507,17 +507,16 @@ class Item:
             return abbrev_str(self.url, max_len)
 
         # Special case for filenames with no title.
-        path_stem = (
-            (self.store_path and Path(self.store_path).stem)
-            or (self.external_path and Path(self.external_path).stem)
-            or (self.original_filename and Path(self.original_filename).stem)
+        path_name = (
+            (self.store_path and Path(self.store_path).name)
+            or (self.external_path and Path(self.external_path).name)
+            or (self.original_filename and Path(self.original_filename).name)
         )
-        if not self.title and path_stem:
-            return abbrev_str(path_stem, max_len)
 
-        # Otherwise, use the title, description, or body text.
+        # Use the title or the path if possible, falling back to description or even body text.
         title_raw_text = (
             self.title
+            or path_name
             or self.description
             or (not self.is_binary and self.abbrev_body(max_len))
             or UNTITLED
@@ -613,7 +612,6 @@ class Item:
         """
         Get the full file extension suffix (e.g. "note.md") for this item.
         """
-
         if self.type == ItemType.extension:
             # Python files cannot have more than one . in them.
             return f"{FileExt.py.value}"
