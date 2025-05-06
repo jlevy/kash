@@ -13,6 +13,7 @@ from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
 from kash.model.items_model import Item, ItemType
+from kash.text_handling.doc_normalization import normalize_formatting_ansi
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 
@@ -90,6 +91,7 @@ def llm_transform_item(
     normalize: bool = True,
     strip_fence: bool = True,
     check_no_results: bool = True,
+    format: Format | None = None,
 ) -> Item:
     """
     Main function for running an LLM action on an item.
@@ -110,12 +112,13 @@ def llm_transform_item(
     log.message("LLM transform from action `%s` on item: %s", action.name, item)
     log.message("LLM options: %s", action.llm_options)
 
-    result_item = item.derived_copy(type=ItemType.doc, body=None, format=Format.markdown)
+    format = format or item.format or Format.markdown
+    result_item = item.derived_copy(type=ItemType.doc, body=None, format=format)
     result_str = llm_transform_str(llm_options, item.body, check_no_results=check_no_results)
     if strip_fence:
         result_str = strip_markdown_fence(result_str)
     if normalize:
-        result_str = fill_markdown(result_str)
+        result_str = normalize_formatting_ansi(result_str, format=format)
 
     result_item.body = result_str
     return result_item
