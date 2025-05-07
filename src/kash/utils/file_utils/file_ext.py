@@ -20,6 +20,7 @@ class FileExt(Enum):
     diff = "diff"
     json = "json"
     csv = "csv"
+    xlsx = "xlsx"
     npz = "npz"
     log = "log"
     py = "py"
@@ -34,6 +35,8 @@ class FileExt(Enum):
     mp3 = "mp3"
     m4a = "m4a"
     mp4 = "mp4"
+    pptx = "pptx"
+    epub = "epub"
 
     @property
     def dot_ext(self) -> str:
@@ -50,6 +53,7 @@ class FileExt(Enum):
             self.py,
             self.sh,
             self.xsh,
+            self.epub,
         ]
 
     @property

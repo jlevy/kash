@@ -48,6 +48,7 @@ class Format(Enum):
     """`md_html` is Markdown with HTML, used for example when we structure Markdown with divs."""
     html = "html"
     """`markdown` should be simple and clean Markdown that we can use with LLMs."""
+    epub = "epub"
     yaml = "yaml"
     diff = "diff"
     python = "python"
@@ -56,12 +57,14 @@ class Format(Enum):
     xonsh = "xonsh"
     json = "json"
     csv = "csv"
+    xlsx = "xlsx"
     npz = "npz"
     log = "log"
 
     # Media formats.
     pdf = "pdf"
     docx = "docx"
+    pptx = "pptx"
     jpeg = "jpeg"
     png = "png"
     gif = "gif"
@@ -108,6 +111,7 @@ class Format(Enum):
             self.html,
             self.pdf,
             self.docx,
+            self.pptx,
         ]
 
     @property
@@ -128,7 +132,7 @@ class Format(Enum):
 
     @property
     def is_data(self) -> bool:
-        return self in [self.csv, self.npz]
+        return self in [self.csv, self.xlsx, self.npz]
 
     @property
     def is_binary(self) -> bool:
@@ -166,6 +170,7 @@ class Format(Enum):
             Format.markdown: MediaType.text,
             Format.md_html: MediaType.text,
             Format.html: MediaType.webpage,
+            Format.epub: MediaType.text,
             Format.yaml: MediaType.text,
             Format.diff: MediaType.text,
             Format.python: MediaType.text,
@@ -175,11 +180,13 @@ class Format(Enum):
             Format.csv: MediaType.text,
             Format.log: MediaType.text,
             Format.pdf: MediaType.text,
+            Format.xlsx: MediaType.text,
             Format.jpeg: MediaType.image,
             Format.png: MediaType.image,
             Format.gif: MediaType.image,
             Format.svg: MediaType.image,
             Format.docx: MediaType.text,
+            Format.pptx: MediaType.text,
             Format.mp3: MediaType.audio,
             Format.m4a: MediaType.audio,
             Format.mp4: MediaType.video,
@@ -200,6 +207,7 @@ class Format(Enum):
             FileExt.diff.value: Format.diff,
             FileExt.json.value: Format.json,
             FileExt.csv.value: Format.csv,
+            FileExt.xlsx.value: Format.xlsx,
             FileExt.npz.value: Format.npz,
             FileExt.log.value: Format.log,
             FileExt.py.value: Format.python,
@@ -207,6 +215,7 @@ class Format(Enum):
             FileExt.xsh.value: Format.xonsh,
             FileExt.pdf.value: Format.pdf,
             FileExt.docx.value: Format.docx,
+            FileExt.pptx.value: Format.pptx,
             FileExt.jpg.value: Format.jpeg,
             FileExt.png.value: Format.png,
             FileExt.gif.value: Format.gif,
@@ -214,6 +223,7 @@ class Format(Enum):
             FileExt.mp3.value: Format.mp3,
             FileExt.m4a.value: Format.m4a,
             FileExt.mp4.value: Format.mp4,
+            FileExt.epub.value: Format.epub,
         }
         return ext_to_format.get(file_ext.value, None)
 
@@ -228,10 +238,12 @@ class Format(Enum):
             Format.md_html: FileExt.md,
             Format.html: FileExt.html,
             Format.plaintext: FileExt.txt,
+            Format.epub: FileExt.epub,
             Format.yaml: FileExt.yml,
             Format.diff: FileExt.diff,
             Format.json: FileExt.json,
             Format.csv: FileExt.csv,
+            Format.xlsx: FileExt.xlsx,
             Format.npz: FileExt.npz,
             Format.log: FileExt.log,
             Format.python: FileExt.py,
@@ -239,6 +251,7 @@ class Format(Enum):
             Format.xonsh: FileExt.xsh,
             Format.pdf: FileExt.pdf,
             Format.docx: FileExt.docx,
+            Format.pptx: FileExt.pptx,
             Format.jpeg: FileExt.jpg,
             Format.png: FileExt.png,
             Format.gif: FileExt.gif,
@@ -260,6 +273,7 @@ class Format(Enum):
             "text/html": Format.html,
             "text/diff": Format.diff,
             "text/x-diff": Format.diff,
+            "application/epub+zip": Format.epub,
             "application/yaml": Format.yaml,
             "application/x-yaml": Format.yaml,
             "text/x-python": Format.python,
@@ -269,9 +283,11 @@ class Format(Enum):
             "text/x-xonsh": Format.xonsh,
             "application/json": Format.json,
             "text/csv": Format.csv,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": Format.xlsx,
             "application/x-npz": Format.npz,
             "application/pdf": Format.pdf,
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": Format.docx,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation": Format.pptx,
             "image/jpeg": Format.jpeg,
             "image/png": Format.png,
             "image/gif": Format.gif,

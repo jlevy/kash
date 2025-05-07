@@ -83,7 +83,7 @@ dependencies = [
     "litellm>=1.63.11",
     # Basic text handling and web scraping:
     "readabilipy>=0.3.0",
-    "markdownify>=0.14.1",
+    "markdownify>=0.13.1",
     "justext>=3.0.2",
     "cssselect>=1.2.0",
     # Minimal media handling:

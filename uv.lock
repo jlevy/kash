@@ -981,7 +981,7 @@ requires-dist = [
     { name = "justext", specifier = ">=3.0.2" },
     { name = "lazyasd", specifier = ">=0.1.4" },
     { name = "litellm", specifier = ">=1.63.11" },
-    { name = "markdownify", specifier = ">=0.14.1" },
+    { name = "markdownify", specifier = ">=0.13.1" },
     { name = "mcp", specifier = ">=1.6.0" },
     { name = "mcp-proxy", specifier = ">=0.5.0" },
     { name = "openai", specifier = ">=1.66.3" },
