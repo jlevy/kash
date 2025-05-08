@@ -3,7 +3,7 @@ from kash.actions.core.webpage_generate import webpage_generate
 from kash.commands.base.show_command import show
 from kash.config.logger import get_logger
 from kash.exec import kash_action
-from kash.exec.preconditions import has_text_body, is_html
+from kash.exec.preconditions import has_full_html_page_body, has_text_body, is_html
 from kash.exec_model.commands_model import Command
 from kash.exec_model.shell_model import ShellResult
 from kash.model import ActionInput, ActionResult
@@ -12,11 +12,13 @@ log = get_logger(__name__)
 
 
 @kash_action(
-    precondition=is_html | has_text_body,
+    precondition=(is_html | has_text_body) & ~has_full_html_page_body,
 )
 def show_webpage(input: ActionInput) -> ActionResult:
     """
     Show text, Markdown, or HTML as a nicely formatted webpage.
+    This formats the page as a full HTML page, adding header, footer, etc.
+    so shouldn't be used on a complete HTML page.
     """
     config_result = webpage_config(input)
 

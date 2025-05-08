@@ -8,6 +8,7 @@ from chopdiff.html import has_timestamp
 from kash.exec.precondition_registry import kash_precondition
 from kash.model.items_model import Item, ItemType
 from kash.text_handling.markdown_utils import extract_bullet_points
+from kash.utils.file_utils.file_formats import is_full_html_page
 from kash.utils.file_utils.file_formats_model import Format
 
 
@@ -91,6 +92,11 @@ def has_text_body(item: Item) -> bool:
 @kash_precondition
 def has_html_body(item: Item) -> bool:
     return has_body(item) and item.format in (Format.html, Format.md_html)
+
+
+@kash_precondition
+def has_full_html_page_body(item: Item) -> bool:
+    return bool(has_html_body(item) and item.body and is_full_html_page(item.body))
 
 
 @kash_precondition
