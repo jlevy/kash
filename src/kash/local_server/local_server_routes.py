@@ -18,7 +18,6 @@ from kash.shell.file_icons.nerd_icons import icon_for_file
 from kash.shell.output.shell_output import Wrap
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import FileNotFound, InvalidFilename
-from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template
 from kash.workspaces.workspace_output import print_file_info
 
@@ -140,14 +139,11 @@ def explain(text: str):
 
     return HTMLResponse(
         render_web_template(
-            base_templates_dir,
             "base_webpage.html.jinja",
             {
                 "title": f"Help: {text}",
                 "content": render_web_template(
-                    base_templates_dir,
-                    "explain_view.html.jinja",
-                    {"help_html": help_html, "page_url": page_url},
+                    "explain_view.html.jinja", {"help_html": help_html, "page_url": page_url}
                 ),
             },
         )
@@ -270,12 +266,10 @@ def _serve_item(
 
         return HTMLResponse(
             render_web_template(
-                base_templates_dir,
                 "base_webpage.html.jinja",
                 {
                     "title": display_title,
                     "content": render_web_template(
-                        base_templates_dir,
                         "item_view.html.jinja",
                         {
                             "item": item,

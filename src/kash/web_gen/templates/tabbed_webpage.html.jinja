@@ -1,7 +1,7 @@
 {% extends "simple_webpage.html.jinja" %}
 
+<!-- tabbed_webpage begin page_content block -->
 {% block page_content %}
-  <!-- tabbed_webpage page_content block -->
   {% block tab_navigation %}
   <!-- tab_navigation block -->
   {% if show_tabs %}
@@ -38,9 +38,10 @@
   </div>
   {% endblock tab_content_container %}
 {% endblock page_content %}
+<!-- tabbed_webpage end page_content block -->
 
+<!-- tabbed_webpage begin scripts_extra block -->
 {% block scripts_extra %}
-  /* tabbed_webpage scripts_extra block */
   function showTab(tabId, element) {
     document.querySelectorAll(".tab-pane").forEach((tab) => {
       tab.classList.add("hidden");
@@ -54,3 +55,4 @@
     element.classList.remove("tab-button-inactive");
   }
 {% endblock scripts_extra %}
+<!-- tabbed_webpage end scripts_extra block -->

@@ -1,17 +1,15 @@
 from kash.model.items_model import Item
 from kash.utils.file_utils.file_formats_model import Format
-from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template
 
 
-def simple_webpage_render(item: Item) -> str:
+def simple_webpage_render(item: Item, page_template: str = "simple_webpage.html.jinja") -> str:
     """
     Generate a simple web page from a single item.
     """
     return render_web_template(
-        base_templates_dir,
-        "simple_webpage.html.jinja",
-        {
+        template_filename=page_template,
+        data={
             "title": item.title,
             "content_html": item.body_as_html(),
             "thumbnail_url": item.thumbnail_url,

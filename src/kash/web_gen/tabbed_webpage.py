@@ -12,7 +12,6 @@ from kash.model.paths_model import StorePath
 from kash.utils.common.type_utils import as_dataclass, not_none
 from kash.utils.errors import NoMatch
 from kash.utils.file_utils.file_formats_model import Format
-from kash.web_gen import base_templates_dir
 from kash.web_gen.template_render import render_web_template
 from kash.workspaces import current_ws
 from kash.workspaces.source_items import find_upstream_item
@@ -91,7 +90,9 @@ def _load_tab_content(config: TabbedWebpage):
         tab.content_html = html
 
 
-def tabbed_webpage_generate(config_item: Item) -> str:
+def tabbed_webpage_generate(
+    config_item: Item, page_template: str = "base_webpage.html.jinja"
+) -> str:
     """
     Generate a web page using the supplied config.
     """
@@ -101,16 +102,12 @@ def tabbed_webpage_generate(config_item: Item) -> str:
     _load_tab_content(tabbed_webpage)
 
     content = render_web_template(
-        base_templates_dir, "tabbed_webpage.html.jinja", asdict(tabbed_webpage)
+        template_filename="tabbed_webpage.html.jinja",
+        data=asdict(tabbed_webpage),
     )
 
     return render_web_template(
-        base_templates_dir,
-        "base_webpage.html.jinja",
-        {
-            "title": tabbed_webpage.title,
-            "content": content,
-        },
+        page_template, data={"title": tabbed_webpage.title, "content": content}
     )
 
 
@@ -138,11 +135,7 @@ def test_render():
     new_config = as_dataclass(read_yaml_file("tmp/webpage_config.yaml"), TabbedWebpage)
     assert new_config == config
 
-    html = render_web_template(
-        base_templates_dir,
-        "tabbed_webpage.html.jinja",
-        asdict(config),
-    )
+    html = render_web_template(template_filename="tabbed_webpage.html.jinja", data=asdict(config))
     with open("tmp/webpage.html", "w") as f:
         f.write(html)
     print("Rendered tabbed webpage to tmp/webpage.html")
