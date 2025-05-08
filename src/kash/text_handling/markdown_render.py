@@ -39,6 +39,7 @@ def html_postprocess(html: str) -> str:
     """
     Final tweaks to the HTML.
     """
+    # TODO: Improve rendering of footnote defs to put the up arrow next to the number instead?
     html = html.replace(
         """class="footnote">&#8617;</a>""", f"""class="footnote">{FOOTNOTE_UP_ARROW}</a>"""
     )

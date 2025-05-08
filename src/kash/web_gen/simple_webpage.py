@@ -3,14 +3,20 @@ from kash.utils.file_utils.file_formats_model import Format
 from kash.web_gen.template_render import render_web_template
 
 
-def simple_webpage_render(item: Item, page_template: str = "simple_webpage.html.jinja") -> str:
+def simple_webpage_render(
+    item: Item,
+    page_template: str = "simple_webpage.html.jinja",
+    add_title_h1: bool = True,
+) -> str:
     """
     Generate a simple web page from a single item.
+    If `add_title_h1` is True, the title will be inserted as an h1 heading above the body.
     """
     return render_web_template(
         template_filename=page_template,
         data={
             "title": item.title,
+            "add_title_h1": add_title_h1,
             "content_html": item.body_as_html(),
             "thumbnail_url": item.thumbnail_url,
         },

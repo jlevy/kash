@@ -2,7 +2,7 @@ import os
 from dataclasses import asdict, dataclass
 
 from frontmatter_format import read_yaml_file, to_yaml_string, write_yaml_file
-from prettyfmt import sanitize_title
+from prettyfmt import abbrev_on_words, sanitize_title
 
 from kash.config.logger import get_logger
 from kash.exec.preconditions import has_thumbnail_url
@@ -33,6 +33,7 @@ class TabbedWebpage:
     title: str
     tabs: list[TabInfo]
     show_tabs: bool = True
+    add_title_h1: bool = True
 
 
 def _fill_in_ids(tabs: list[TabInfo]):
@@ -41,7 +42,9 @@ def _fill_in_ids(tabs: list[TabInfo]):
             tab.id = f"tab_{i}"
 
 
-def tabbed_webpage_config(items: list[Item], clean_headings: bool = False) -> Item:
+def tabbed_webpage_config(
+    items: list[Item], clean_headings: bool = False, add_title_h1: bool = True
+) -> Item:
     """
     Get an item with the config for a tabbed web page.
     """
@@ -57,11 +60,15 @@ def tabbed_webpage_config(items: list[Item], clean_headings: bool = False) -> It
             log.warning("Item has no thumbnail URL: %s", item)
             return None
 
-    clean = clean_heading if clean_headings else sanitize_title
+    def clean_label(label: str) -> str:
+        if clean_headings:
+            return clean_heading(label)
+        else:
+            return abbrev_on_words(sanitize_title(label), max_len=40)
 
     tabs = [
         TabInfo(
-            label=clean(item.abbrev_title()),
+            label=clean_label(item.abbrev_title()),
             store_path=item.store_path,
             thumbnail_url=get_thumbnail_url(item),
         )
@@ -69,7 +76,9 @@ def tabbed_webpage_config(items: list[Item], clean_headings: bool = False) -> It
     ]
     _fill_in_ids(tabs)
     title = summary_heading([item.abbrev_title() for item in items])
-    config = TabbedWebpage(title=title, tabs=tabs, show_tabs=len(tabs) > 1)
+    config = TabbedWebpage(
+        title=title, tabs=tabs, show_tabs=len(tabs) > 1, add_title_h1=add_title_h1
+    )
 
     config_item = Item(
         title=f"{title} (config)",
@@ -91,7 +100,7 @@ def _load_tab_content(config: TabbedWebpage):
 
 
 def tabbed_webpage_generate(
-    config_item: Item, page_template: str = "base_webpage.html.jinja"
+    config_item: Item, page_template: str = "base_webpage.html.jinja", add_title_h1: bool = True
 ) -> str:
     """
     Generate a web page using the supplied config.
@@ -107,7 +116,12 @@ def tabbed_webpage_generate(
     )
 
     return render_web_template(
-        page_template, data={"title": tabbed_webpage.title, "content": content}
+        page_template,
+        data={
+            "title": tabbed_webpage.title,
+            "add_title_h1": add_title_h1,
+            "content": content,
+        },
     )
 
 
