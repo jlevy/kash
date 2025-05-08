@@ -174,7 +174,7 @@ def _merge_param_declarations(
             merged_params[fp.name] = Param(
                 name=fp.name,
                 description=None,
-                type=fp.type or str,
+                type=fp.effective_type or str,
                 default_value=fp.default if fp.has_default else None,
                 is_explicit=not fp.has_default,
             )
@@ -248,13 +248,13 @@ def kash_action(
 
         # Inspect and sanity check the formal params.
         func_params = inspect_function_params(orig_func)
-        if len(func_params) == 0 or func_params[0].type not in (ActionInput, Item):
+        if len(func_params) == 0 or func_params[0].effective_type not in (ActionInput, Item):
             raise InvalidDefinition(
                 f"Decorator `@kash_action` requires exactly one positional parameter, "
                 f"`input` of type `ActionInput` or `Item` on function `{orig_func.__name__}` but "
                 f"got params: {func_params}"
             )
-        if any(fp.is_positional for fp in func_params[1:]):
+        if any(fp.is_pure_positional for fp in func_params[1:]):
             raise InvalidDefinition(
                 "Decorator `@kash_action` requires all parameters after the first positional "
                 f"parameter to be keyword parameters on function `{orig_func.__name__}` but "
@@ -265,7 +265,7 @@ def kash_action(
         context_param = next((fp for fp in func_params if fp.name == "context"), None)
         if context_param:
             func_params.remove(context_param)
-        if context_param and context_param.is_positional:
+        if context_param and context_param.is_pure_positional:
             raise InvalidDefinition(
                 "Decorator `@kash_action` requires the `context` parameter to be a keyword "
                 "parameter, not positional, on function `{func.__name__}`"
@@ -273,7 +273,7 @@ def kash_action(
 
         # If the original function is a simple action function (processes a single item),
         # wrap it to convert to an ActionFunction.
-        is_simple_func = func_params[0].type == Item
+        is_simple_func = func_params[0].effective_type == Item
         action_func: ActionFunction
         if is_simple_func:
             simple_func = cast(SimpleActionFunction, orig_func)
@@ -333,7 +333,7 @@ def kash_action(
                 if context_param:
                     kw_args["context"] = context
                 for fp in func_params[1:]:
-                    if fp.is_positional:
+                    if fp.is_pure_positional:
                         pos_args.append(self.get_param(fp.name))
                     else:
                         kw_args[fp.name] = self.get_param(fp.name)

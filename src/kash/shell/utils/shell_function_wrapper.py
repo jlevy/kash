@@ -27,7 +27,7 @@ def _map_positional(
     keywords_consumed = 0
 
     for param in pos_params:
-        param_type = param.type or str
+        param_type = param.effective_type or str
         if param.is_varargs:
             pos_values.extend([param_type(arg) for arg in pos_args[i:]])
             return pos_values, 0  # All remaining args are consumed, so we can return early.
@@ -39,7 +39,7 @@ def _map_positional(
 
     # If there are remaining positional arguments, they will go toward keyword arguments.
     for param in kw_params:
-        param_type = param.type or str
+        param_type = param.effective_type or str
         if not param.is_varargs and i < len(pos_args):
             pos_values.append(param_type(pos_args[i]))
             i += 1
@@ -70,30 +70,30 @@ def _map_keyword(kw_args: Mapping[str, str | bool], kw_params: list[FuncParam]) 
     for key, value in kw_args.items():
         matching_param = next((param for param in kw_params if param.name == key), None)
         if matching_param:
-            matching_param_type = matching_param.type or str
+            param_type = matching_param.effective_type or str
 
             # Handle UnionType (str | None) specially
-            if hasattr(types, "UnionType") and isinstance(matching_param_type, types.UnionType):
-                args = get_args(matching_param_type)
+            if hasattr(types, "UnionType") and isinstance(param_type, types.UnionType):
+                args = get_args(param_type)
                 non_none_args = [arg for arg in args if arg is not type(None)]
                 if len(non_none_args) == 1 and isinstance(non_none_args[0], type):
-                    matching_param_type = non_none_args[0]
+                    param_type = non_none_args[0]
 
-            if isinstance(value, bool) and not issubclass(matching_param_type, bool):
+            if isinstance(value, bool) and not issubclass(param_type, bool):
                 raise InvalidCommand(f"Option `--{key}` expects a value")
-            if not isinstance(value, bool) and issubclass(matching_param_type, bool):
+            if not isinstance(value, bool) and issubclass(param_type, bool):
                 raise InvalidCommand(f"Option `--{key}` is boolean and does not take a value")
 
             try:
-                kw_values[key] = instantiate_as_type(
-                    value, matching_param_type, accept_enum_names=True
-                )
+                kw_values[key] = instantiate_as_type(value, param_type, accept_enum_names=True)
             except Exception as e:
                 valid_values = ""
-                if isinstance(matching_param.type, type) and issubclass(matching_param.type, Enum):
-                    valid_values = f" (valid values are: {', '.join('`' + v.name + '`' for v in matching_param.type)})"
+                if isinstance(param_type, type) and issubclass(param_type, Enum):
+                    valid_values = (
+                        f" (valid values are: {', '.join('`' + v.name + '`' for v in param_type)})"
+                    )
                 raise InvalidCommand(
-                    f"Invalid value for parameter `{key}` of type {matching_param.type}: {value!r}{valid_values}"
+                    f"Invalid value for parameter `{key}` of type {param_type}: {value!r}{valid_values}"
                 ) from e
         elif var_kw_param:
             var_kw_values[key] = value
@@ -117,7 +117,7 @@ def wrap_for_shell_args(func: Callable[..., R]) -> Callable[[list[str]], R | Non
     from kash.commands.help import help_commands
 
     params = inspect_function_params(func)
-    pos_params = [p for p in params if p.is_positional]
+    pos_params = [p for p in params if p.is_pure_positional]
     kw_params = [p for p in params if p not in pos_params]
 
     @wraps(func)

@@ -12,7 +12,7 @@ def _look_up_param_docs(func: Callable[..., Any], kw_params: list[FuncParam]) ->
         name = func_param.name
         param = ALL_COMMON_PARAMS.get(name)
         if not param:
-            param = Param(name, description=None, type=func_param.type or str)
+            param = Param(name, description=None, type=func_param.effective_type or str)
 
         # Also check the docstring for a description of this parameter.
         docstring = parse_docstring(func.__doc__ or "")
