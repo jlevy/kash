@@ -1,6 +1,11 @@
+{% block tab_content %}
 <div class="long-text container max-w-3xl mx-auto bg-white py-8 px-6 md:px-16 md:shadow-lg">
+  {% block page_title %}
   <h1 class="text-center text-4xl mt-6 mb-6">{{ title }}</h1>
+  {% endblock page_title %}
+  
   <div>
+    {% block tab_navigation %}
     <!-- Navigation Tabs -->
     {% if show_tabs %}
     <nav>
@@ -14,6 +19,9 @@
       {% endfor %}
     </nav>
     {% endif %}
+    {% endblock tab_navigation %}
+    
+    {% block tab_content_container %}
     <div class="tab-content mt-8">
       <!-- Tab Content -->
       {% for tab in tabs %}
@@ -29,9 +37,12 @@
       </div>
       {% endfor %}
     </div>
+    {% endblock tab_content_container %}
   </div>
 </div>
+{% endblock tab_content %}
 
+{% block tab_scripts %}
 <script>
   function showTab(tabId, element) {
     document.querySelectorAll(".tab-pane").forEach((tab) => {
@@ -46,3 +57,4 @@
     element.classList.remove("tab-button-inactive");
   }
 </script>
+{% endblock tab_scripts %}

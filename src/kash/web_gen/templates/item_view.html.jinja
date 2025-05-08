@@ -1,3 +1,4 @@
+{% block item_styles %}
 <style>
 .item-view {
   font-family: var(--font-sans);
@@ -176,9 +177,11 @@ h1.item-title {
   gap: 0.25rem;
 }
 </style>
+{% endblock item_styles %}
 
+{% block item_view %}
 <div class="item-view">
-
+  {% block item_path %}
   <div class="item-path">
     <div class="path-group">
       <div class="path-icon">
@@ -202,48 +205,52 @@ h1.item-title {
       {% endif %}
     </div>
   </div>
+  {% endblock item_path %}
 
-    <div class="item-header">
-      {% if not brief_header %}
-        <div class="item-meta">
-          {% if item.type %}
-            <span class="item-type">{{ item.type.value }}</span>
-          {% endif %}
-          {% if item.format %}
-            <span class="item-label">Format:</span> <span class="item-format">{{ item.format.value }}</span>
-          {% endif %}
-          {% if item.state %}
-            <span class="item-label">State:</span> <span class="item-state">{{ item.state.value }}</span>
-          {% endif %}
+  {% block item_header %}
+  <div class="item-header">
+    {% if not brief_header %}
+      <div class="item-meta">
+        {% if item.type %}
+          <span class="item-type">{{ item.type.value }}</span>
+        {% endif %}
+        {% if item.format %}
+          <span class="item-label">Format:</span> <span class="item-format">{{ item.format.value }}</span>
+        {% endif %}
+        {% if item.state %}
+          <span class="item-label">State:</span> <span class="item-state">{{ item.state.value }}</span>
+        {% endif %}
+      </div>
+
+      {% if item.title %}
+        <h1 class="item-title">{{ item.title }}</h1>
+      {% endif %}
+
+      {% if item.url %}
+        <div class="item-url">
+          <div class="url-container">
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.url }}</a>
+            <i data-feather="copy" class="action-icon" onclick="copyDataValue(this.parentElement)" title="Copy URL"></i>
+          </div>
         </div>
-
-        {% if item.title %}
-          <h1 class="item-title">{{ item.title }}</h1>
-        {% endif %}
-
-        {% if item.url %}
-          <div class="item-url">
-            <div class="url-container">
-              <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.url }}</a>
-              <i data-feather="copy" class="action-icon" onclick="copyDataValue(this.parentElement)" title="Copy URL"></i>
-            </div>
-          </div>
-        {% endif %}
       {% endif %}
+    {% endif %}
 
-      {% if file_info_html %}
-        <div class="item-file-info">{{ file_info_html | safe }}</div>
+    {% if file_info_html %}
+      <div class="item-file-info">{{ file_info_html | safe }}</div>
+    {% endif %}
+
+    {% if not brief_header %}
+      {% if item.description %}
+        <div class="item-description">
+          {{ item.description }}
+        </div>
       {% endif %}
+    {% endif %}
+  </div>
+  {% endblock item_header %}
 
-      {% if not brief_header %}
-        {% if item.description %}
-          <div class="item-description">
-            {{ item.description }}
-          </div>
-        {% endif %}
-      {% endif %}
-    </div>
-
+  {% block item_content %}
   <div class="item-content">
     {% if body_text %}
       <div class="item-body">{{ body_text }}</div>
@@ -261,9 +268,11 @@ h1.item-title {
       {% endif %}
     {% endif %}
   </div>
-
+  {% endblock item_content %}
 </div>
+{% endblock item_view %}
 
+{% block item_scripts %}
 <script>
 function copyText(element, text) {
   navigator.clipboard.writeText(text).then(() => {
@@ -292,3 +301,4 @@ document.addEventListener('DOMContentLoaded', () => {
   feather.replace();
 });
 </script>
+{% endblock item_scripts %}

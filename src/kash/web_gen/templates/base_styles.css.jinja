@@ -1,4 +1,5 @@
 :root {
+  {% block root_variables %}
   font-size: 16px;
   /* Adding Hack Nerd Font to all fonts for icon support, if it is installed. */
   --font-sans: "Source Sans 3 Variable", sans-serif, "Hack Nerd Font";
@@ -16,14 +17,17 @@
 
   --console-char-width: 88;
   --console-width: calc(var(--console-char-width) + 2rem);
+  {% endblock root_variables %}
 }
 
 {{ color_defs|safe }}
 
+{% block selection_styles %}
 ::selection {
   background-color: var(--color-selection);
   color: inherit;
 }
+{% endblock selection_styles %}
 
 {# TODO: Fix PDF issues and re-enable for prettier emoji. #}
 {# @font-face {
@@ -39,6 +43,7 @@
     U+1F900-1F9FF;  /* Supplemental Symbols and Pictographs */ 
 } #}
 
+{% block scrollbar_styles %}
 /* Scrollbar coloring. */
 /* For Webkit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
@@ -60,7 +65,9 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar) var(--color-bg);
 }
+{% endblock scrollbar_styles %}
 
+{% block body_styles %}
 body {
   font-family: var(--font-serif);
   color: var(--color-text);
@@ -70,7 +77,9 @@ body {
   background-color: var(--color-bg);
   overflow-wrap: break-word;  /* Don't let long words/URLs break layout. */
 }
+{% endblock body_styles %}
 
+{% block typography %}
 p {
   margin-bottom: 1rem;
 }
@@ -118,37 +127,6 @@ h3 {
 h4 {
   margin-top: 1rem;
   margin-bottom: 0.7rem;
-}
-
-/* Long text stylings, for nicely formatting blog post length or longer texts. */
-
-.long-text h1 {
-  font-family: var(--font-serif);
-  font-weight: 400;
-}
-
-.long-text h2 {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-style: italic;
-}
-
-.long-text h3 {
-  font-family: var(--font-sans);
-  font-weight: var(--font-weight-sans-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.long-text h4 {
-  font-family: var(--font-serif);
-  font-weight: 700;
-}
-
-.subtitle {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1rem;
 }
 
 ul {
@@ -207,7 +185,42 @@ pre {
   letter-spacing: -0.025em;
   {# overflow-x: auto; #}
 }
+{% endblock typography %}
 
+{% block long_text_styles %}
+/* Long text stylings, for nicely formatting blog post length or longer texts. */
+
+.long-text h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.long-text h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.long-text h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-sans-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.long-text h4 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+}
+{% endblock long_text_styles %}
+
+{% block table_styles %}
 table {
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
@@ -239,16 +252,6 @@ tbody tr:nth-child(even) {
   background-color: var(--color-bg-alt-solid); 
 }
 
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  /* Allow wrapping */
-  justify-content: center;
-  /* Center the content */
-  gap: 1rem;
-  /* Add some space between the buttons */
-}
-
 /* Container for wide tables to allow tables to break out of parent width. */
 .table-container {
   {# max-width: calc(100vw - 6rem); #}
@@ -258,26 +261,24 @@ nav {
   box-sizing: border-box;
   margin-bottom: 1rem;
   background-color: var(--color-bg-solid);
-
 }
+{% endblock table_styles %}
 
-/* Bleed wide on larger screens. */
-/* TODO: Don't make so wide if table itself isn't large? */
-@media (min-width: 768px) {
-  table {
-    width: calc(100vw - 6rem);
-  }
-  .table-container {
-    width: calc(100vw - 6rem);
-  }
+{% block nav_styles %}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  /* Allow wrapping */
+  justify-content: center;
+  /* Center the content */
+  gap: 1rem;
+  /* Add some space between the buttons */
 }
+{% endblock nav_styles %}
 
-@media (max-width: 768px) {
-  table {
-    font-size: var(--font-size-smaller);
-  }
-}
 
+
+{% block footnote_styles %}
 /* Footnotes. */
 sup {
   font-size: 80%;
@@ -295,4 +296,23 @@ sup {
   color: var(--color-primary-light);
   text-decoration: none;
 }
+{% endblock footnote_styles %}
 
+{% block responsive_styles %}
+/* Bleed wide on larger screens. */
+/* TODO: Don't make so wide if table itself isn't large? */
+@media (min-width: 768px) {
+  table {
+    width: calc(100vw - 6rem);
+  }
+  .table-container {
+    width: calc(100vw - 6rem);
+  }
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: var(--font-size-smaller);
+  }
+}
+{% endblock responsive_styles %}
