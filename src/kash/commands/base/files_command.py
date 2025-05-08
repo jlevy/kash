@@ -75,6 +75,9 @@ def _print_listing_tallies(
         cprint("(use --no_max to remove cutoff)", style=STYLE_HINT)
 
 
+DEFAULT_MAX_PG = 100
+
+
 @kash_command
 def files(
     *paths: str,
@@ -108,9 +111,11 @@ def files(
     and grouping.
 
     :param overview: Recurse a couple levels and show files, but not too many.
-        Same as `--groupby=parent --depth=2 --max_per_group=10 --omit_dirs`.
+        Same as `--groupby=parent --depth=2 --max_per_group=100 --omit_dirs`
+        except also scales down `max_per_group` to 25 or 50 if there are many files.
     :param recent: Only shows the most recently modified files in each directory.
-        Same as `--sort=modified --reverse --groupby=parent --max_per_group=10`.
+        Same as `--sort=modified --reverse --groupby=parent --max_per_group=100`
+        except also scales down `max_per_group` to 25 or 50 if there are many files.
     :param recursive: List all files recursively. Same as `--depth=-1`.
     :param flat: Show files in a flat list, rather than grouped by parent directory.
         Same as `--groupby=flat`.
@@ -179,16 +184,17 @@ def files(
         # Within workspaces, we show more files by default since they are always in
         # subdirectories.
         overview = True  # Handled next.
+    cap_per_group = False
     if overview:
-        max_per_group = 10 if max_per_group <= 0 else max_per_group
         groupby = GroupByOption.parent if groupby is None else groupby
         depth = 2 if depth is None else depth
+        cap_per_group = True
         omit_dirs = True
     if recent:
-        max_per_group = 10 if max_per_group <= 0 else max_per_group
         groupby = GroupByOption.parent if groupby is None else groupby
         depth = 2 if depth is None else depth
         sort = SortOption.modified if sort is None else sort
+        cap_per_group = True
         reverse = True
     if flat:
         groupby = GroupByOption.flat
@@ -291,6 +297,18 @@ def files(
 
         return ShellResult(show_selection=True)
 
+    # Unless max_per_group is explicit, use heuristics to limit per group if
+    # there are lots of groups and lots of files per group.
+    # Default is max 100 per group but if we have 4 * 100 items, cut to 25.
+    # If we have 2 * 100 items, cut to 50.
+    final_max_pg = DEFAULT_MAX_PG if cap_per_group else max_per_group
+    max_pg_explicit = max_per_group > 0
+    if not max_pg_explicit:
+        group_lens = [len(group_df) for group_df in grouped]
+        for ratio in [2, 4]:
+            if sum(group_lens) > ratio * DEFAULT_MAX_PG:
+                final_max_pg = int(DEFAULT_MAX_PG / ratio)
+
     total_displayed = 0
     total_displayed_size = 0
     now = datetime.now(UTC)
@@ -312,8 +330,8 @@ def files(
                         text_wrap=Wrap.NONE,
                     )
 
-                if max_per_group > 0:
-                    display_df = group_df.head(max_per_group)
+                if final_max_pg > 0:
+                    display_df = group_df.head(final_max_pg)
                 else:
                     display_df = group_df
 
@@ -378,9 +396,9 @@ def files(
                     total_displayed_size += row.size
 
                 # Indicate if items are omitted.
-                if groupby and max_per_group > 0 and len(group_df) > max_per_group:
+                if groupby and final_max_pg > 0 and len(group_df) > final_max_pg:
                     cprint(
-                        f"{indent}… and {len(group_df) - max_per_group} more files",
+                        f"{indent}… and {len(group_df) - final_max_pg} more files",
                         style=COLOR_EXTRA,
                         text_wrap=Wrap.NONE,
                     )
@@ -388,9 +406,9 @@ def files(
                 if group_name:
                     PrintHooks.spacer()
 
-            if not groupby and max_per_group > 0 and items_matching > max_per_group:
+            if not groupby and final_max_pg > 0 and items_matching > final_max_pg:
                 cprint(
-                    f"{indent}… and {items_matching - max_per_group} more files",
+                    f"{indent}… and {items_matching - final_max_pg} more files",
                     style=COLOR_EXTRA,
                     text_wrap=Wrap.NONE,
                 )
