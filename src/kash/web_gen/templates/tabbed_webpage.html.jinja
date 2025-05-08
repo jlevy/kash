@@ -1,49 +1,46 @@
-{% block tab_content %}
-<div class="long-text container max-w-3xl mx-auto bg-white py-8 px-6 md:px-16 md:shadow-lg">
-  {% block page_title %}
-  <h1 class="text-center text-4xl mt-6 mb-6">{{ title }}</h1>
-  {% endblock page_title %}
-  
-  <div>
-    {% block tab_navigation %}
-    <!-- Navigation Tabs -->
-    {% if show_tabs %}
-    <nav>
-      {% for tab in tabs %}
-      <button
-        class="tab-button {% if loop.first %}tab-button-active{% else %}tab-button-inactive{% endif %}"
-        onclick="showTab('{{ tab.id }}', this)"
-      >
-        {{ tab.label }}
-      </button>
-      {% endfor %}
-    </nav>
-    {% endif %}
-    {% endblock tab_navigation %}
-    
-    {% block tab_content_container %}
-    <div class="tab-content mt-8">
-      <!-- Tab Content -->
-      {% for tab in tabs %}
-      <div
-        id="{{ tab.id }}"
-        class="tab-pane {% if not loop.first %}hidden{% endif %}"
-      >
-        {% if tab.thumbnail_url %}
-        <img class="thumbnail" src="{{ tab.thumbnail_url }}" alt="{{ tab.label }}" />
-        {% endif %}
-        {% if show_tabs %} <h2 class="text-2xl">{{ tab.label }}</h2> {% endif %}
-        <p>{{ tab.content_html | safe }}</p>
-      </div>
-      {% endfor %}
-    </div>
-    {% endblock tab_content_container %}
-  </div>
-</div>
-{% endblock tab_content %}
+{% extends "simple_webpage.html.jinja" %}
 
-{% block tab_scripts %}
-<script>
+{% block page_content %}
+  <!-- tabbed_webpage page_content block -->
+  {% block tab_navigation %}
+  <!-- tab_navigation block -->
+  {% if show_tabs %}
+  <nav>
+    {% for tab in tabs %}
+    <button
+      class="tab-button {% if loop.first %}tab-button-active{% else %}tab-button-inactive{% endif %}"
+      onclick="showTab('{{ tab.id }}', this)"
+    >
+      {{ tab.label }}
+    </button>
+    {% endfor %}
+  </nav>
+  {% endif %}
+  {% endblock tab_navigation %}
+  
+  {% block tab_content_container %}
+  <!-- tab_content_container block -->
+  <div class="tab-content mt-8">
+    {% for tab in tabs %}
+    <div
+      id="{{ tab.id }}"
+      class="tab-pane {% if not loop.first %}hidden{% endif %}"
+    >
+      {% if tab.thumbnail_url %}
+      <img class="thumbnail" src="{{ tab.thumbnail_url }}" alt="{{ tab.label }}" />
+      {% endif %}
+      {% if show_tabs %} <h2 class="text-2xl">{{ tab.label }}</h2> {% endif %}
+      <div class="content">
+        {{ tab.content_html | safe }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endblock tab_content_container %}
+{% endblock page_content %}
+
+{% block scripts_extra %}
+  /* tabbed_webpage scripts_extra block */
   function showTab(tabId, element) {
     document.querySelectorAll(".tab-pane").forEach((tab) => {
       tab.classList.add("hidden");
@@ -56,5 +53,4 @@
     element.classList.add("tab-button-active");
     element.classList.remove("tab-button-inactive");
   }
-</script>
-{% endblock tab_scripts %}
+{% endblock scripts_extra %}

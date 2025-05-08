@@ -11,12 +11,12 @@ log = get_logger(__name__)
     expected_args=ONE_ARG,
     precondition=is_config,
 )
-def webpage_generate(input: ActionInput) -> ActionResult:
+def tabbed_webpage_generate(input: ActionInput) -> ActionResult:
     """
-    Generate a web page from a configured web page item.
+    Generate a tabbed web page from a config item for the tabbed template.
     """
     config_item = input.items[0]
-    html = tabbed_webpage.webpage_generate(config_item)
+    html = tabbed_webpage.tabbed_webpage_generate(config_item)
 
     webpage_item = Item(
         title=config_item.title,

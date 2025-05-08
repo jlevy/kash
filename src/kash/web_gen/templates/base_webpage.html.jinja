@@ -139,21 +139,26 @@
         containers.push(pane || el);
       });
       containers.forEach(container => {
-        // Grab all tables, then only wrap the ones whose parent is this container.
-        container.querySelectorAll('table').forEach(table => {
-          if (table.parentElement !== container) {
-            return; // Only direct children.
-          }
+        // Find all tables within the container.
+        const tables = Array.from(container.querySelectorAll('table'));
+        tables.forEach(table => {
+          // Skip tables already in table-container divs
           if (table.parentNode.classList.contains('table-container')) {
-            return; // Already wrapped.
+            return;
           }
-          const wrapper = document.createElement('div');
-          wrapper.className = 'table-container';
-          container.insertBefore(wrapper, table);
-          wrapper.appendChild(table);
+          try {
+            // Create the wrapper.
+            const wrapper = document.createElement('div');
+            wrapper.className = 'table-container';
+            // Get the parent and insert the wrapper where the table is, then move the table into the wrapper.
+            const parent = table.parentNode;
+            parent.insertBefore(wrapper, table);
+            wrapper.appendChild(table);
+          } catch (e) {
+            console.error("Error wrapping table:", e);
+          }
         });
       });
-
     });
 
     // Double-click to expand (e.g. expand tooltip to popover).
