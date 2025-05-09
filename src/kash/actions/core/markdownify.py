@@ -1,7 +1,7 @@
 from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.preconditions import has_html_body, is_url_item
-from kash.model import Format, Item, ItemType
+from kash.model import Format, Item
 from kash.model.params_model import common_params
 from kash.web_content.file_cache_utils import get_url_html
 from kash.web_content.web_extract_readabilipy import extract_text_readabilipy
@@ -26,7 +26,5 @@ def markdownify(item: Item, refetch: bool = False) -> Item:
     page_data = extract_text_readabilipy(url, html_content)
     markdown_content = markdownify_convert(page_data.clean_html)
 
-    output_item = item.derived_copy(
-        type=ItemType.doc, format=Format.markdown, body=markdown_content
-    )
+    output_item = item.derived_copy(format=Format.markdown, body=markdown_content)
     return output_item

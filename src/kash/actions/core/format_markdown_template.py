@@ -4,7 +4,7 @@ from pathlib import Path
 from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec.preconditions import is_markdown
-from kash.model import ONE_OR_MORE_ARGS, ActionInput, ActionResult, ItemType, Param
+from kash.model import ONE_OR_MORE_ARGS, ActionInput, ActionResult, Param
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidInput
 
@@ -84,9 +84,6 @@ def format_markdown_template(
     # Format the body using the mapped items.
     body = template.format(**item_map)
 
-    result_item = items[0].derived_copy(
-        type=ItemType.doc,
-        body=body,
-    )
+    result_item = items[0].derived_copy(body=body)
 
     return ActionResult([result_item])

@@ -12,7 +12,7 @@ from kash.llm_utils.fuzzy_parsing import strip_markdown_fence
 from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
-from kash.model.items_model import Item, ItemType
+from kash.model.items_model import Item
 from kash.text_handling.doc_normalization import normalize_formatting_ansi
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
@@ -113,7 +113,7 @@ def llm_transform_item(
     log.message("LLM options: %s", action.llm_options)
 
     format = format or item.format or Format.markdown
-    result_item = item.derived_copy(type=ItemType.doc, body=None, format=format)
+    result_item = item.derived_copy(body=None, format=format)
     result_str = llm_transform_str(llm_options, item.body, check_no_results=check_no_results)
     if strip_fence:
         result_str = strip_markdown_fence(result_str)
