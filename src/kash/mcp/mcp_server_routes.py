@@ -13,7 +13,7 @@ from strif import AtomicVar
 from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
-from kash.exec import runtime_settings
+from kash.exec import kash_runtime
 from kash.exec.action_exec import prepare_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
 from kash.model.actions_model import Action, ActionResult
@@ -216,7 +216,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
             # directories. Maybe confusing?
             explicit_mcp_ws = global_settings().mcp_ws_dir
 
-            with runtime_settings(
+            with kash_runtime(
                 workspace_dir=explicit_mcp_ws,
                 rerun=True,  # Enabling rerun always for now, seems good for tools.
                 refetch=False,  # Using the file caches.

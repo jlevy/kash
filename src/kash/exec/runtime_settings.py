@@ -94,7 +94,7 @@ class RuntimeSettingsManager:
         log.info("Exiting runtime context: %s", self.settings)
 
 
-def runtime_settings(
+def kash_runtime(
     workspace_dir: Path | None,
     *,
     rerun: bool = False,
@@ -110,6 +110,13 @@ def runtime_settings(
 
     If `workspace_dir` is not provided, the current workspace will be inferred
     from the working directory or fall back to the global workspace.
+
+    Example usage:
+    ```
+    with kash_runtime(ws_path, rerun=args.rerun) as runtime:
+        runtime.workspace.log_workspace_info()
+        # Perform actions.
+    ```
     """
     from kash.workspaces.workspaces import current_ws
 

@@ -62,9 +62,7 @@ def kash_setup(
             LogLevel.parse(console_log_level) if console_log_level else LogLevel.warning
         )
         console_quiet = (
-            console_quiet
-            if console_quiet is not None
-            else console_log_level >= LogLevel.error
+            console_quiet if console_quiet is not None else console_log_level >= LogLevel.error
         )
 
         with atomic_global_settings().updates() as settings:
