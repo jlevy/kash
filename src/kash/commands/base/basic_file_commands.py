@@ -2,7 +2,7 @@ import os
 
 from frontmatter_format import fmf_read_raw, fmf_strip_frontmatter
 from prettyfmt import fmt_lines
-from strif import copyfile_atomic
+from strif import atomic_output_file, copyfile_atomic
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_EMPH
@@ -28,10 +28,10 @@ log = get_logger(__name__)
 
 
 @kash_command
-def cbcopy(path: str | None = None, raw: bool = False) -> None:
+def clipboard_copy(path: str | None = None, raw: bool = False) -> None:
     """
     Copy the contents of a file (or the first file in the selection) to the OS-native
-    clipboard.
+    clipboard. Similar to `pbcopy` on macOS.
 
     :param raw: Copy the full exact contents of the file. Otherwise frontmatter is omitted.
     """
@@ -39,6 +39,8 @@ def cbcopy(path: str | None = None, raw: bool = False) -> None:
     import pyperclip
 
     input_paths = assemble_path_args(path)
+    if not input_paths:
+        raise InvalidInput("No path provided")
     input_path = input_paths[0]
 
     format = detect_file_format(input_path)
@@ -67,6 +69,21 @@ def cbcopy(path: str | None = None, raw: bool = False) -> None:
             skip_msg,
             fmt_lines([fmt_loc(input_path)]),
         )
+
+
+@kash_command
+def clipboard_paste(path: str = "untitled_paste.txt") -> None:
+    """
+    Paste the contents of the OS-native clipboard into a new file.
+    """
+    # TODO: Get this to work for images!
+    import pyperclip
+
+    contents = pyperclip.paste()
+    with atomic_output_file(path, backup_suffix=".{timestamp}.bak") as f:
+        f.write_text(contents)
+
+    print_status("Pasted clipboard contents to:\n%s", fmt_lines([fmt_loc(path)]))
 
 
 @kash_command
