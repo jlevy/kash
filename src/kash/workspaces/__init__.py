@@ -7,12 +7,12 @@ from kash.workspaces.workspace_dirs import (
 )
 from kash.workspaces.workspaces import (
     Workspace,
+    _switch_ws_settings,
     current_ignore,
     current_ws,
     get_global_ws,
     get_ws,
     resolve_ws,
-    _switch_ws_settings,
     ws_param_value,
 )
 

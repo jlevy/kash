@@ -48,7 +48,7 @@ dependencies = [
     "flowmark>=0.4.6",
     "frontmatter-format>=0.2.1",
     "chopdiff>=0.2.1",
-    "clideps>=0.1.1",
+    "clideps>=0.1.2",
     # Shell and file essentials:
     # python-magic is most current and works with libmagic on macOS and Linux.
     # on Windows, python-magic-bin seems like the best option.

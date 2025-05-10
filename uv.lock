@@ -305,7 +305,7 @@ wheels = [
 
 [[package]]
 name = "clideps"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -319,9 +319,9 @@ dependencies = [
     { name = "rich-argparse" },
     { name = "strif" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/30/5e85ef172ad446aa55bdd42a170adefc6a90993a4d4cc031e72dbc0569fc/clideps-0.1.1.tar.gz", hash = "sha256:a418b01427175486a25946aaecb3d117c0175f440acd6735ffb1e612466bbb1e", size = 55447, upload-time = "2025-04-17T00:49:34.996Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/62/fddbc599f6f874fb059ad34b91d23ed73b9615acd6ce8afcf34f1281ef92/clideps-0.1.2.tar.gz", hash = "sha256:b897092e846be1ab7674518066e5146ff1097c3169afe9b03b061c8ec62806d0", size = 55633, upload-time = "2025-05-10T19:08:20.387Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/97/6f/6df30c925000b927109b14e47fc8ad0e4a5c03eedc1497e81b7741bd1bd0/clideps-0.1.1-py3-none-any.whl", hash = "sha256:3eff016323a438d3e86a08cbdb841767fda1136e9b4ea1651981674baaa56427", size = 36509, upload-time = "2025-04-17T00:49:33.297Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/d0/05176af2bb07f94d4379abe743853d73257080fc20b03cec63838fc2ce40/clideps-0.1.2-py3-none-any.whl", hash = "sha256:79da29659ab2c86356f4247dc23a3e67368e6ff2256d11b750eb264679bb9e0a", size = 34533, upload-time = "2025-05-10T19:08:18.749Z" },
 ]
 
 [[package]]
@@ -981,7 +981,7 @@ requires-dist = [
     { name = "audioop-lts", marker = "python_full_version >= '3.13'", specifier = ">=0.2.1" },
     { name = "cachetools", specifier = ">=5.5.2" },
     { name = "chopdiff", specifier = ">=0.2.1" },
-    { name = "clideps", specifier = ">=0.1.1" },
+    { name = "clideps", specifier = ">=0.1.2" },
     { name = "colour", specifier = ">=0.1.5" },
     { name = "cssselect", specifier = ">=1.2.0" },
     { name = "deepgram-sdk", specifier = ">=3.10.1" },
