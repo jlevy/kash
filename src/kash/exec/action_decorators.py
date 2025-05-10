@@ -26,11 +26,11 @@ from kash.model.actions_model import (
     Action,
     ActionInput,
     ActionResult,
-    ExecContext,
     LLMOptions,
     ParamSource,
     TitleTemplate,
 )
+from kash.model.exec_model import ExecContext
 from kash.model.items_model import Item, ItemType, State
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition

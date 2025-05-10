@@ -15,7 +15,8 @@ from kash.config.logger import get_logger
 from kash.config.settings import global_settings
 from kash.exec.action_exec import prepare_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
-from kash.model.actions_model import Action, ActionResult, ExecContext
+from kash.model.actions_model import Action, ActionResult
+from kash.model.exec_model import ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
 from kash.workspaces.workspaces import current_ws, get_ws

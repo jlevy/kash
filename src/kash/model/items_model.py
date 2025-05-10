@@ -32,7 +32,7 @@ from kash.utils.file_formats.chat_format import ChatHistory
 from kash.utils.file_utils.file_formats_model import FileExt, Format
 
 if TYPE_CHECKING:
-    from kash.model.actions_model import ExecContext
+    from kash.model.exec_model import ExecContext
     from kash.workspaces import Workspace
 
 log = get_logger(__name__)

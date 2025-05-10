@@ -20,7 +20,6 @@ from kash.model.actions_model import (
     Action,
     ActionInput,
     ActionResult,
-    ExecContext,
     LLMOptions,
     PathOp,
     PathOpType,
@@ -33,6 +32,7 @@ from kash.model.compound_actions_model import (
     look_up_actions,
 )
 from kash.model.concept_model import Concept, canonicalize_concept, normalize_concepts
+from kash.model.exec_model import ExecContext
 from kash.model.graph_model import GraphData, Link, Node
 from kash.model.items_model import (
     SLUG_MAX_LEN,

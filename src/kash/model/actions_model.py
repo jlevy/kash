@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import Field as DataclassField
 from dataclasses import field, replace
 from enum import Enum
-from pathlib import Path
 from textwrap import dedent
 from typing import Any, TypeVar, cast
 
@@ -20,10 +19,10 @@ from typing_extensions import override
 from kash.config.logger import get_logger
 from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Signature
 from kash.exec_model.shell_model import ShellResult
-from kash.file_storage.file_store import FileStore
 from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
-from kash.model.items_model import UNTITLED, Item, ItemType, State
+from kash.model.exec_model import ExecContext
+from kash.model.items_model import UNTITLED, Item, ItemType
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import (
     ALL_COMMON_PARAMS,
@@ -38,7 +37,6 @@ from kash.model.preconditions_model import Precondition
 from kash.utils.common.parse_key_vals import format_key_value
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidDefinition, InvalidInput
-from kash.workspaces.workspaces import get_ws
 
 log = get_logger(__name__)
 
@@ -62,53 +60,6 @@ class ActionInput:
     def empty() -> ActionInput:
         """An empty input, for when an action processes no items."""
         return ActionInput(items=[])
-
-
-@dataclass(frozen=True)
-class ExecContext:
-    """
-    An action and its context for execution. This is a good place for settings
-    that apply to any action and are bothersome to pass as parameters.
-    """
-
-    action: Action
-    """The action being executed."""
-
-    workspace_dir: Path
-    """The workspace directory in which the action is being executed."""
-
-    rerun: bool = False
-    """If True, always run actions, even cacheable ones that have results."""
-
-    refetch: bool = False
-    """If True, will refetch items even if they are already in the content caches."""
-
-    override_state: State | None = None
-    """If specified, override the state of result items. Useful to mark items as transient."""
-
-    tmp_output: bool = False
-    """If True, will save output items to a temporary file."""
-
-    no_format: bool = False
-    """If True, will not normalize the output item's body text formatting (for Markdown)."""
-
-    @property
-    def workspace(self) -> FileStore:
-        return get_ws(self.workspace_dir)
-
-    @property
-    def runtime_options(self) -> dict[str, str]:
-        """Return non-default runtime options."""
-        opts: dict[str, str] = {}
-        # Only these two settings directly affect the output:
-        if self.no_format:
-            opts["no_format"] = "true"
-        if self.override_state:
-            opts["override_state"] = self.override_state.name
-        return opts
-
-    def __repr__(self):
-        return abbrev_obj(self, field_max_len=80)
 
 
 class PathOpType(Enum):
