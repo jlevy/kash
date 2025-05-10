@@ -7,7 +7,13 @@ from clideps.env_vars.dotenv_utils import load_dotenv_paths
 
 from kash.config.logger import reset_rich_logging
 from kash.config.logger_basic import basic_logging_setup
-from kash.config.settings import LogLevel, configure_ws_and_settings, global_settings
+from kash.config.settings import (
+    LogLevel,
+    LogLevelStr,
+    atomic_global_settings,
+    configure_ws_and_settings,
+    global_settings,
+)
 
 
 @cache
@@ -16,7 +22,7 @@ def kash_setup(
     rich_logging: bool,
     kash_ws_root: Path | None = None,
     log_path: Path | None = None,
-    level: LogLevel = LogLevel.info,
+    log_level: LogLevel | LogLevelStr | None = None,
 ):
     """
     One-time top-level setup of essential logging, keys, directories, and configs.
@@ -25,7 +31,7 @@ def kash_setup(
     Can call this if embedding kash in another app.
     Can be used to set the global default workspace and logs directory
     and/or the default log file.
-    If `rich_logging` is True, then rich logging with warnings only for console use.
+    If `rich_logging` is True, then rich logging for console use and file logging as well.
     If `rich_logging` is False, then use basic logging to a file and stderr.
     """
     from kash.utils.common.stack_traces import add_stacktrace_handler
@@ -41,9 +47,20 @@ def kash_setup(
 
     # Now set up logging, as it might depend on workspace root.
     if rich_logging:
+        if not log_level:
+            log_level = LogLevel.warning
+        else:
+            log_level = LogLevel.parse(log_level)
+        with atomic_global_settings().updates() as settings:
+            settings.console_log_level = log_level
+            # Keep default "info" for file logging unless new level is more verbose.
+            if settings.file_log_level > log_level:
+                settings.file_log_level = log_level
         reset_rich_logging(log_path=log_path)
     else:
-        basic_logging_setup(log_path=log_path, level=level)
+        if not log_level:
+            log_level = LogLevel.info
+        basic_logging_setup(log_path=log_path, level=log_level)
 
     _lib_setup()
 

@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import os
-from enum import Enum
+from enum import IntEnum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
+from typing import Literal
 
 from pydantic.dataclasses import dataclass
 from strif import AtomicVar
@@ -64,7 +67,14 @@ LOCAL_SERVER_PORTS_MAX = 30
 LOCAL_SERVER_LOG_NAME = "local_server"
 
 
-class LogLevel(Enum):
+LogLevelStr = Literal["debug", "info", "message", "warning", "error"]
+
+
+class LogLevel(IntEnum):
+    """
+    Convenience enum for log levels with parsing and ordering.
+    """
+
     debug = DEBUG
     info = INFO
     warning = WARNING
@@ -72,7 +82,9 @@ class LogLevel(Enum):
     error = ERROR
 
     @classmethod
-    def parse(cls, level_str: str):
+    def parse(cls, level_str: str | LogLevelStr | LogLevel) -> LogLevel:
+        if isinstance(level_str, LogLevel):
+            return level_str
         canon_name = level_str.strip().lower()
         if canon_name == "warn":
             canon_name = "warning"
