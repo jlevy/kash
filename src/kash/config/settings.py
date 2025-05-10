@@ -186,6 +186,9 @@ class Settings:
     console_log_level: LogLevel
     """The log level for console-based logging."""
 
+    console_quiet: bool
+    """If true, suppress non-logging console output."""
+
     file_log_level: LogLevel
     """The log level for file-based logging."""
 
@@ -266,6 +269,7 @@ def _read_settings():
         default_editor="nano",
         file_log_level=LogLevel.info,
         console_log_level=DEFAULT_LOG_LEVEL,
+        console_quiet=False,
         local_server_ports_start=LOCAL_SERVER_PORT_START,
         local_server_ports_max=LOCAL_SERVER_PORTS_MAX,
         local_server_port=0,

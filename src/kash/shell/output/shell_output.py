@@ -16,7 +16,7 @@ from rich.rule import Rule
 from rich.style import Style
 from rich.text import Text
 
-from kash.config.logger import get_console
+from kash.config.logger import get_console, is_console_quiet
 from kash.config.text_styles import (
     COLOR_HINT_DIM,
     COLOR_RESPONSE,
@@ -30,9 +30,6 @@ from kash.config.text_styles import (
 from kash.shell.output.kmarkdown import KMarkdown
 from kash.utils.rich_custom.rich_indent import Indent
 from kash.utils.rich_custom.rich_markdown_fork import Markdown
-
-console = get_console()
-
 
 print_context_var: contextvars.ContextVar[str] = contextvars.ContextVar("print_prefix", default="")
 """
@@ -99,7 +96,12 @@ def rich_print(
     Print to the Rich console, either the global console or a thread-local
     override, if one is active. With `raw` true, we bypass rich formatting
     entirely and simply write to the console stream.
+
+    Output is suppressed by the global `console_quiet` setting.
     """
+    if is_console_quiet():
+        return
+
     console = get_console()
     if raw:
         # TODO: Indent not supported in raw mode.
@@ -136,7 +138,7 @@ def cprint(
     raw: bool = False,
 ):
     """
-    Main way to print to the shell. Wraps `rprint` with our additional
+    Main way to print to the shell. Wraps `rich_print` with our additional
     formatting options for text fill and prefix.
     """
     empty_indent = extra_indent.strip()

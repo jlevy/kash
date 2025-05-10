@@ -55,6 +55,10 @@ class LogSettings:
     log_objects_dir: Path
     log_file_path: Path
 
+    @property
+    def is_quiet(self) -> bool:
+        return self.log_console_level >= LogLevel.error
+
 
 LOG_NAME_GLOBAL = "workspace"
 
@@ -81,6 +85,13 @@ def get_log_settings() -> LogSettings:
     Currently active log settings.
     """
     return _log_settings.copy()
+
+
+def is_console_quiet() -> bool:
+    """
+    Whether to suppress non-logging console output.
+    """
+    return global_settings().console_quiet
 
 
 def make_valid_log_name(name: str) -> str:
