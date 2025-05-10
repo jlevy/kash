@@ -640,6 +640,9 @@ class Item:
         elif self.type == ItemType.script:
             # Same for kash/xonsh scripts.
             return f"{self.type.value}.{FileExt.xsh.value}"
+        elif self.type == ItemType.export:
+            # For exports, skip the item type to keep it maximally compatible for external tools.
+            return f"{self.get_file_ext().value}"
         else:
             return f"{self.type.value}.{self.get_file_ext().value}"
 

@@ -301,7 +301,7 @@ EMOJI_BREADCRUMB_SEP = "›"
 
 ## Special headings
 
-TASK_STACK_HEADER = "Task stack:"
+TASK_STACK_HEADER = "Task stack"
 
 
 ## Rich setup
