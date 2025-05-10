@@ -25,27 +25,46 @@ class OperationSummary:
 class Input:
     """
     An input to an operation, which may include a hash fingerprint.
+    Typically an input is a StorePath, but it could be something else like an in-memory
+    item that hasn't been saved yet.
     """
 
-    # TODO: May want to support Locators or other inputs besides StorePaths.
-    path: StorePath
+    path: StorePath | None
     hash: str | None = None
+    source_info: str | None = None
 
     @classmethod
     def parse(cls, input_str: str) -> Input:
         """
-        Parse an Input string in the format `some/path/filename.ext@sha1:hash` or
-        `@some/path/filename.ext@sha1:hash`, with a store path and a hash.
+        Parse an Input string in the format printed by `Input.parseable_str()`.
         """
-        parts = input_str.rsplit("@", 1)
-        if len(parts) == 2:
-            path, hash = parts
-            return cls(path=StorePath(path), hash=hash)
+        if input_str.startswith("[") and input_str.endswith("]"):
+            return cls(path=None, hash=None, source_info=input_str[1:-1])
         else:
-            return cls(path=StorePath(input_str), hash=None)
+            parts = input_str.rsplit("@", 1)
+            if len(parts) == 2:
+                path, hash = parts
+                return cls(path=StorePath(path), hash=hash)
+            else:
+                return cls(path=StorePath(input_str), hash=None)
 
-    def path_and_hash(self):
-        return f"{fmt_loc(self.path)}@{self.hash}"
+    def parseable_str(self):
+        """
+        A readable and parseable string describing the input, typically a hash and a path but
+        could be a path without a hash or another info in brackets. Paths may have an `@` at the
+        front.
+
+        some/path.txt@sha1:1234567890
+        @some/path.txt@sha1:1234567890
+        some/path.txt
+        [unsaved]
+        """
+        if self.path and self.hash:
+            return f"{fmt_loc(self.path)}@{self.hash}"
+        elif self.source_info:
+            return f"[{self.source_info}]"
+        else:
+            return "[input info missing]"
 
     # Inputs are equal if the hashes match (even if the paths have changed).
 
@@ -53,6 +72,10 @@ class Input:
         return hash(self.hash) if self.hash else object.__hash__(self)
 
     def __eq__(self, other: Any) -> bool:
+        """
+        Inputs are equal if the hashes match (even if the paths have changed) or if the paths
+        are the same. They are *not* equal otherwise, even if the source_info is the same.
+        """
         if not isinstance(other, Input):
             return NotImplemented
         if self.hash and other.hash:
@@ -62,7 +85,7 @@ class Input:
         return False
 
     def __str__(self):
-        return self.path_and_hash()
+        return self.parseable_str()
 
 
 @dataclass(frozen=True)
@@ -88,7 +111,7 @@ class Operation:
         }
 
         if self.arguments:
-            d["arguments"] = [arg.path_and_hash() for arg in self.arguments]
+            d["arguments"] = [arg.parseable_str() for arg in self.arguments]
         if self.options:
             d["options"] = self.options
 
@@ -101,7 +124,7 @@ class Operation:
         return [shell_quote(str(arg.path)) for arg in self.arguments]
 
     def hashed_args(self):
-        return [arg.path_and_hash() for arg in self.arguments]
+        return [arg.parseable_str() for arg in self.arguments]
 
     def quoted_options(self):
         return [f"--{k}={shell_quote(str(v))}" for k, v in self.options.items()]

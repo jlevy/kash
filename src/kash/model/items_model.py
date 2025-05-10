@@ -716,7 +716,7 @@ class Item:
             if self.relations.derived_from:
                 log.message(
                     "Deriving from an item that has not been saved so using "
-                    "its derived_from relation: %s on %s",
+                    "upstream derived_from relation: %s on %s",
                     self.relations.derived_from,
                     self,
                 )

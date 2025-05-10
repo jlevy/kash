@@ -63,6 +63,7 @@ def validate_action_input(
     """
     Validate an action input, ensuring the right number of args, all explicit params are filled,
     and the precondition holds and return an `Operation` that describes what will happen.
+    For flexibility, we don't require the items to be saved (have a store path).
     """
     input_items = action_input.items
     # Validations:
@@ -75,8 +76,14 @@ def validate_action_input(
 
     # Now make a note of the the operation we will perform.
     # If the inputs are paths, record the input paths, including hashes.
-    store_paths = [StorePath(not_none(item.store_path)) for item in input_items if item.store_path]
-    inputs = [Input(store_path, ws.hash(store_path)) for store_path in store_paths]
+    def input_for(item: Item) -> Input:
+        if item.store_path:
+            return Input(StorePath(item.store_path), ws.hash(StorePath(item.store_path)))
+        else:
+            return Input(path=None, source_info="unsaved")
+
+    inputs = [input_for(item) for item in input_items]
+
     # Add any non-default runtime options into the options summary.
     options = {**action.param_value_summary(), **context.runtime_options}
     operation = Operation(action.name, inputs, options)
@@ -293,14 +300,18 @@ def save_action_result(
             fmt_lines(skipped_paths),
         )
 
-    input_store_paths = [StorePath(not_none(item.store_path)) for item in input_items]
+    unsaved_items = [item for item in input_items if not item.store_path]
+    input_store_paths = [StorePath(item.store_path) for item in input_items if item.store_path]
     result_store_paths = [StorePath(item.store_path) for item in result.items if item.store_path]
     old_inputs = sorted(set(input_store_paths) - set(result_store_paths))
+    if unsaved_items:
+        log.info("unsaved_items:\n%s", fmt_lines(unsaved_items))
     log.info("result_store_paths:\n%s", fmt_lines(result_store_paths))
-    log.info("old_inputs:\n%s", fmt_lines(old_inputs))
+    if old_inputs:
+        log.info("old_inputs:\n%s", fmt_lines(old_inputs))
 
     # If there is a hint that the action replaces the input, archive any inputs that are not in the result.
-    archived_store_paths = []
+    archived_store_paths: list[StorePath] = []
     if result.replaces_input and input_items:
         for input_store_path in old_inputs:
             # Note some outputs may be missing if replace_input was used.
