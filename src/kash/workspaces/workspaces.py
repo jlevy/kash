@@ -1,6 +1,7 @@
 import contextvars
 import re
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar
@@ -13,8 +14,10 @@ from kash.config.settings import (
     global_settings,
     resolve_and_create_dirs,
 )
+from kash.config.text_styles import STYLE_HINT
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
+from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
@@ -104,6 +107,36 @@ def enclosing_ws_dir(path: Path) -> Path | None:
     return None
 
 
+@dataclass(frozen=True)
+class WsPathsContext:
+    global_ws_dir: Path
+    enclosing_ws_dir: Path | None
+    override_dir: Path | None
+
+    @property
+    def current_ws_dir(self) -> Path:
+        if self.override_dir:
+            return self.override_dir
+        elif self.enclosing_ws_dir:
+            return self.enclosing_ws_dir
+        else:
+            return self.global_ws_dir
+
+
+def _get_ws_paths_context() -> WsPathsContext:
+    """
+    Context path info about the current workspace, including the global workspace directory,
+    any workspace directory that encloses the current working directory, and any override
+    directory set by `with ws.as_current()` (if any).
+    """
+    override_dir = current_ws_context.get()
+
+    # Fall back to detecting from the current working directory.
+    enclosing_dir = enclosing_ws_dir(Path("."))
+
+    return WsPathsContext(global_ws_dir(), enclosing_dir, override_dir)
+
+
 def resolve_ws(name: str | Path) -> WorkspaceInfo:
     """
     Parse and resolve the given workspace path or name and return a tuple containing
@@ -163,7 +196,7 @@ def global_ws_dir() -> Path:
 
 
 def is_global_ws_path(path: Path) -> bool:
-    return path.name.lower() == GLOBAL_WS_NAME.lower()
+    return path.resolve() == global_settings().global_ws_dir
 
 
 def get_global_ws() -> "FileStore":
@@ -199,31 +232,14 @@ def switch_to_ws(base_dir: Path) -> "FileStore":
     return get_ws_registry().load(info.name, info.base_dir, info.is_global_ws)
 
 
-def _current_ws_info() -> tuple[Path | None, bool]:
-    """
-    Infer the current workspace from context or the current working directory.
-    Does not load the workspace.
-    """
-    # First check if we have an explicit workspace context.
-    override_dir = current_ws_context.get()
-    if override_dir:
-        return override_dir, is_global_ws_path(override_dir)
-
-    # Fall back to detecting from the current working directory.
-    dir = enclosing_ws_dir(Path("."))
-    is_global_ws = is_global_ws_path(dir) if dir else False
-    if not dir or is_global_ws:
-        dir = global_ws_dir()
-    return dir, is_global_ws
-
-
 def current_ws(silent: bool = False) -> "FileStore":
     """
     Get the current workspace based on the current working directory.
     Loads and registers the workspace if it is not already loaded.
     Also updates logging and cache directories if this has changed.
     """
-    base_dir, _is_global_ws = _current_ws_info()
+    path_context = _get_ws_paths_context()
+    base_dir = path_context.current_ws_dir
     if not base_dir:
         raise InvalidState(
             f"No workspace found in: {fmt_path(Path('.').absolute(), resolve=False)}\n"
@@ -233,7 +249,14 @@ def current_ws(silent: bool = False) -> "FileStore":
     ws = switch_to_ws(base_dir)
 
     if not silent:
-        ws.log_workspace_info(once=True)
+        did_log = ws.log_workspace_info(once=True)
+        if did_log and ws.is_global_ws and not path_context.override_dir:
+            PrintHooks.spacer()
+            log.warning("Note you are currently using the default global workspace.")
+            cprint(
+                "Create or switch to another workspace with the `workspace` command.",
+                style=STYLE_HINT,
+            )
 
     return ws
 

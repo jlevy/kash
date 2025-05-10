@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable, Generator
 from os.path import join, relpath
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
@@ -13,13 +13,13 @@ from strif import copyfile_atomic, hash_file, move_file
 from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
-from kash.config.text_styles import EMOJI_SAVED, STYLE_HINT
+from kash.config.text_styles import EMOJI_SAVED
 from kash.file_storage.item_file_format import read_item, write_item
 from kash.file_storage.metadata_dirs import MetadataDirs
 from kash.file_storage.store_filenames import folder_for_type, join_suffix, parse_item_filename
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
-from kash.shell.output.shell_output import PrintHooks, cprint
+from kash.shell.output.shell_output import PrintHooks
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.uniquifier import Uniquifier
 from kash.utils.common.url import Locator, Url, is_url
@@ -34,16 +34,18 @@ from kash.workspaces.workspaces import Workspace
 log = get_logger(__name__)
 
 
+SelfT = TypeVar("SelfT")
 T = TypeVar("T")
+P = ParamSpec("P")
 
 
-def synchronized(method: Callable[..., T]) -> Callable[..., T]:
+def synchronized(method: Callable[Concatenate[SelfT, P], T]) -> Callable[Concatenate[SelfT, P], T]:
     """
     Simple way to synchronize a few methods.
     """
 
     @functools.wraps(method)
-    def synchronized_method(self, *args: Any, **kwargs: Any) -> T:
+    def synchronized_method(self, *args: P.args, **kwargs: P.kwargs) -> T:
         with self._lock:
             return method(self, *args, **kwargs)
 
@@ -475,7 +477,6 @@ class FileStore(Workspace):
                 store_path = self.save(item)
                 log.info("Imported text file: %s", item.as_str())
             else:
-                log.message("Importing non-text file: %s", fmt_loc(path))
                 # Binary or other files we just copy over as-is, preserving the name.
                 # We know the extension is recognized.
                 store_path, _found, old_store_path = self.store_path_for(item)
@@ -586,12 +587,13 @@ class FileStore(Workspace):
         move_file(full_input_path, original_path)
         return StorePath(store_path)
 
-    def log_workspace_info(self, *, once: bool = False):
+    @synchronized
+    def log_workspace_info(self, *, once: bool = False) -> bool:
         """
         Log helpful information about the workspace.
         """
         if once and self.info_logged:
-            return
+            return False
 
         self.info_logged = True
 
@@ -606,25 +608,18 @@ class FileStore(Workspace):
             fmt_path(get_log_settings().log_file_path.absolute(), rel_to_cwd=False),
         )
         log.message(
-            "Media cache: %s", fmt_path(self.base_dir / self.dirs.media_cache_dir, rel_to_cwd=False)
-        )
-        log.message(
-            "Content cache: %s",
+            "Caches: %s, %s",
+            fmt_path(self.base_dir / self.dirs.media_cache_dir, rel_to_cwd=False),
             fmt_path(self.base_dir / self.dirs.content_cache_dir, rel_to_cwd=False),
         )
+        log.message("Current working directory: %s", fmt_path(Path.cwd(), rel_to_cwd=False))
+
         for warning in self.warnings:
             log.warning("%s", warning)
 
-        if self.is_global_ws:
-            PrintHooks.spacer()
-            log.warning("Note you are currently using the default global workspace.")
-            cprint(
-                "Create or switch to another workspace with the `workspace` command.",
-                style=STYLE_HINT,
-            )
-
         log.info("File store startup took %s.", format_duration(self.end_time - self.start_time))
         # TODO: Log more info like number of items by type.
+        return True
 
     def walk_items(
         self,

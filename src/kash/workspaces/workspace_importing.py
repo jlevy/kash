@@ -45,7 +45,7 @@ def import_and_load(ws: FileStore, locator: Locator | str) -> Item:
             # It's already a StorePath.
             item = ws.load(locator)
         else:
-            log.message("Importing locator as local path: %r", locator)
+            log.info("Importing locator as local path: %r", locator)
             path = Path(locator)
             if not path.exists():
                 raise InvalidInput(f"File not found: {path}")

@@ -178,9 +178,7 @@ class ItemId:
         if item.type == ItemType.resource and item.format == Format.url and item.url:
             item_id = ItemId(item.type, IdType.url, canonicalize_url(item.url))
         elif item.type == ItemType.concept and item.title:
-            item_id = ItemId(
-                item.type, IdType.concept, canonicalize_concept(item.title)
-            )
+            item_id = ItemId(item.type, IdType.concept, canonicalize_concept(item.title))
         elif item.source and item.source.cacheable:
             # We know the source of this and if the action was cacheable, we can create
             # an identity based on the source.
@@ -281,11 +279,9 @@ class Item:
         """
         item_dict = {**item_dict, **kwargs}
 
-        info_prefix = (
-            f"{fmt_store_path(item_dict['store_path'])}: "
-            if "store_path" in item_dict
-            else ""
-        )
+        info_prefix = ""
+        if "store_path" in item_dict and item_dict["store_path"]:
+            info_prefix = f"{fmt_store_path(item_dict['store_path'])}: "
 
         # Metadata formats might change over time so it's important to gracefully handle issues.
         def set_field(key: str, default: Any, cls_: type[T]) -> T:
@@ -314,9 +310,7 @@ class Item:
         body = item_dict.get("body")
         history = [OperationSummary(**op) for op in item_dict.get("history", [])]
         relations = (
-            ItemRelations(**item_dict["relations"])
-            if "relations" in item_dict
-            else ItemRelations()
+            ItemRelations(**item_dict["relations"]) if "relations" in item_dict else ItemRelations()
         )
         store_path = item_dict.get("store_path")
 
@@ -334,9 +328,7 @@ class Item:
         ]
         all_fields = [f.name for f in cls.__dataclass_fields__.values()]
         allowed_fields = [f for f in all_fields if f not in excluded_fields]
-        other_metadata = {
-            key: value for key, value in item_dict.items() if key in allowed_fields
-        }
+        other_metadata = {key: value for key, value in item_dict.items() if key in allowed_fields}
         unexpected_metadata = {
             key: value for key, value in item_dict.items() if key not in all_fields
         }
@@ -385,9 +377,7 @@ class Item:
         if not item_type:
             # Default to doc for general text files and resource for everything else.
             item_type = (
-                ItemType.doc
-                if format and format.supports_frontmatter
-                else ItemType.resource
+                ItemType.doc if format and format.supports_frontmatter else ItemType.resource
             )
         item = cls(
             type=item_type,
@@ -438,9 +428,7 @@ class Item:
         if not self.format:
             raise ValueError(f"Item has no format: {self}")
         if self.type.expects_body and self.format.has_body and not self.body:
-            raise ValueError(
-                f"Item type `{self.type.value}` is text but has no body: {self}"
-            )
+            raise ValueError(f"Item type `{self.type.value}` is text but has no body: {self}")
 
     def absolute_path(self, ws: "Workspace | None" = None) -> Path:  # noqa: UP037
         """
@@ -493,9 +481,7 @@ class Item:
                 return {k: serialize(v) for k, v in v.items()}
             elif isinstance(v, Enum):
                 return v.value
-            elif hasattr(
-                v, "as_dict"
-            ):  # Handle Operation or any object with as_dict method.
+            elif hasattr(v, "as_dict"):  # Handle Operation or any object with as_dict method.
                 return v.as_dict()
             elif is_dataclass(v) and not isinstance(v, type):
                 # Handle Python and Pydantic dataclasses.
@@ -617,9 +603,7 @@ class Item:
         """
         Get or infer description.
         """
-        return abbrev_on_words(
-            html_to_plaintext(self.description or self.body or ""), max_len
-        )
+        return abbrev_on_words(html_to_plaintext(self.description or self.body or ""), max_len)
 
     def read_as_config(self) -> Any:
         """
@@ -711,9 +695,7 @@ class Item:
         Copy item with the given field updates. Resets store_path to None. Updates
         created time if requested.
         """
-        new_fields = self._copy_and_update(
-            update_timestamp=update_timestamp, **other_updates
-        )
+        new_fields = self._copy_and_update(update_timestamp=update_timestamp, **other_updates)
         return Item(**new_fields)
 
     def merged_copy(self, other: Item) -> Item:
@@ -768,9 +750,7 @@ class Item:
 
         # Fall back to action title template if we have it and title wasn't explicitly set.
         if "title" not in updates:
-            prev_title = self.title or (
-                Path(self.store_path).stem if self.store_path else UNTITLED
-            )
+            prev_title = self.title or (Path(self.store_path).stem if self.store_path else UNTITLED)
             if self.context:
                 action = self.context.action
                 new_item.title = action.title_template.format(

@@ -264,6 +264,8 @@ def fmt_store_path(store_path: str | Path | StorePath) -> str:
     """
     Format a store path as a string.
     """
+    if not store_path:
+        raise ValueError("Cannot format empty store path")
     return StorePath(store_path).display_str()
 
 
