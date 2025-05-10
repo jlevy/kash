@@ -628,3 +628,4 @@ class PerItemAction(Action, ABC):
 
 # Handle circular dependency in Python dataclasses.
 rebuild_dataclass(Item)  # pyright: ignore
+rebuild_dataclass(ExecContext)  # pyright: ignore

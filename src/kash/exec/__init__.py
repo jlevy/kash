@@ -12,6 +12,7 @@ from kash.exec.resolve_args import (
     resolve_locator_arg,
     resolve_path_arg,
 )
+from kash.exec.runtime_settings import current_runtime_settings, runtime_settings
 
 __all__ = [
     "kash_action",
@@ -20,6 +21,8 @@ __all__ = [
     "prepare_action_input",
     "run_action_with_shell_context",
     "kash_command",
+    "runtime_settings",
+    "current_runtime_settings",
     "import_and_register",
     "llm_transform_item",
     "llm_transform_str",

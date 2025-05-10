@@ -21,6 +21,7 @@ from typing_extensions import override
 from kash.config.logger import get_logger
 from kash.exec.action_exec import run_action_with_caching
 from kash.exec.action_registry import register_action_class
+from kash.exec.runtime_settings import current_runtime_settings
 from kash.exec_model.args_model import ONE_ARG, ArgCount, ArgType
 from kash.model.actions_model import (
     Action,
@@ -31,12 +32,11 @@ from kash.model.actions_model import (
     TitleTemplate,
 )
 from kash.model.exec_model import ExecContext
-from kash.model.items_model import Item, ItemType, State
+from kash.model.items_model import Item, ItemType
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.utils.errors import InvalidDefinition
-from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
 
@@ -209,13 +209,6 @@ def kash_action(
     mcp_tool: bool = False,
     title_template: TitleTemplate = TitleTemplate("{title}"),
     llm_options: LLMOptions = LLMOptions(),
-    override_state: State | None = None,
-    # Including these for completeness but usually don't want to set them globally
-    # in the decorator:
-    rerun: bool = False,
-    refetch: bool = False,
-    tmp_output: bool = False,
-    no_format: bool = False,
 ) -> Callable[[AF], AF]:
     """
     A function decorator to create and register an action. The annotated function must
@@ -386,15 +379,7 @@ def kash_action(
             if provided_context:
                 context = provided_context
             else:
-                context = ExecContext(
-                    action,
-                    current_ws().base_dir,
-                    rerun=rerun,
-                    refetch=refetch,
-                    override_state=override_state,
-                    tmp_output=tmp_output,
-                    no_format=no_format,
-                )
+                context = ExecContext(action, current_runtime_settings())
 
             # Run the action.
             result, _, _ = run_action_with_caching(context, action_input)

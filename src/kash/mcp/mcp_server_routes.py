@@ -13,13 +13,13 @@ from strif import AtomicVar
 from kash.config.capture_output import CapturedOutput, captured_output
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
+from kash.exec import runtime_settings
 from kash.exec.action_exec import prepare_action_input, run_action_with_caching
 from kash.exec.action_registry import get_all_actions_defaults, look_up_action_class
 from kash.model.actions_model import Action, ActionResult
 from kash.model.exec_model import ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
-from kash.workspaces.workspaces import current_ws, get_ws
 
 log = get_logger(__name__)
 
@@ -215,9 +215,14 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
             # current workspace, which could be changed by the user by changing working
             # directories. Maybe confusing?
             explicit_mcp_ws = global_settings().mcp_ws_dir
-            ws = get_ws(explicit_mcp_ws) if explicit_mcp_ws else current_ws()
 
-            with ws:
+            with runtime_settings(
+                workspace_dir=explicit_mcp_ws,
+                rerun=True,  # Enabling rerun always for now, seems good for tools.
+                refetch=False,  # Using the file caches.
+                # Keeping all transient files for now, but maybe make transient?
+                override_state=None,
+            ) as exec_settings:
                 action_cls = look_up_action_class(action_name)
 
                 # Extract items array and remaining params from arguments.
@@ -229,14 +234,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 action = action_cls.create(param_values)
 
                 # Create execution context and assemble action input.
-                context = ExecContext(
-                    action=action,
-                    workspace_dir=ws.base_dir,
-                    rerun=True,  # Enabling rerun always for now, seems good for tools.
-                    refetch=False,  # Using the file caches.
-                    # Keeping all transient files for now, but maybe make transient?
-                    override_state=None,
-                )
+                context = ExecContext(action=action, settings=exec_settings)
                 action_input = prepare_action_input(*input_items)
 
                 result, result_store_paths, _archived_store_paths = run_action_with_caching(

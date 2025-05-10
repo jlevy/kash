@@ -430,7 +430,7 @@ class Item:
         if self.type.expects_body and self.format.has_body and not self.body:
             raise ValueError(f"Item type `{self.type.value}` is text but has no body: {self}")
 
-    def absolute_path(self, ws: "Workspace | None" = None) -> Path:  # noqa: UP037
+    def absolute_path(self, ws: Workspace | None = None) -> Path:
         """
         Get the absolute path to the item. Throws `ValueError` if the item has no
         store path. If no workspace is provided, uses the current workspace.

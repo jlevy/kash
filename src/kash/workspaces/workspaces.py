@@ -1,7 +1,6 @@
-import contextvars
-import re
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar
@@ -20,25 +19,13 @@ from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
+from kash.workspaces.workspace_dirs import check_strict_workspace_name, is_global_ws_dir, is_ws_dir
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
 
 if TYPE_CHECKING:
     from kash.file_storage.file_store import FileStore
 
 log = get_logger(__name__)
-
-
-def normalize_workspace_name(ws_name: str) -> str:
-    return str(ws_name).strip().rstrip("/")
-
-
-def check_strict_workspace_name(ws_name: str) -> str:
-    ws_name = normalize_workspace_name(ws_name)
-    if not re.match(r"^[\w.-]+$", ws_name):
-        raise InvalidInput(
-            f"Use an alphanumeric name (- and . also allowed) for the workspace name: `{ws_name}`"
-        )
-    return ws_name
 
 
 class Workspace(ABC):
@@ -61,80 +48,6 @@ class Workspace(ABC):
     @abstractmethod
     def base_dir(self) -> Path:
         """The base directory for this workspace."""
-
-    def __enter__(self):
-        """
-        Context manager to set this workspace as the current workspace.
-        """
-        from kash.workspaces.workspaces import current_ws_context
-
-        self._token = current_ws_context.set(self.base_dir)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Restore the previous workspace context.
-        """
-        from kash.workspaces.workspaces import current_ws_context
-
-        current_ws_context.reset(self._token)
-
-
-current_ws_context: contextvars.ContextVar[Path | None] = contextvars.ContextVar(
-    "current_ws_context", default=None
-)
-"""
-Context variable that tracks the current workspace. Only used if it is
-explicitly set with a `with ws.as_current()` block.
-"""
-
-
-def is_ws_dir(path: Path) -> bool:
-    dirs = MetadataDirs(path, False)
-    return dirs.is_initialized()
-
-
-def enclosing_ws_dir(path: Path) -> Path | None:
-    """
-    Get the workspace directory enclosing the given path (itself or a parent or None).
-    """
-    path = path.absolute()
-    while path != Path("/"):
-        if is_ws_dir(path):
-            return path
-        path = path.parent
-
-    return None
-
-
-@dataclass(frozen=True)
-class WsPathsContext:
-    global_ws_dir: Path
-    enclosing_ws_dir: Path | None
-    override_dir: Path | None
-
-    @property
-    def current_ws_dir(self) -> Path:
-        if self.override_dir:
-            return self.override_dir
-        elif self.enclosing_ws_dir:
-            return self.enclosing_ws_dir
-        else:
-            return self.global_ws_dir
-
-
-def _get_ws_paths_context() -> WsPathsContext:
-    """
-    Context path info about the current workspace, including the global workspace directory,
-    any workspace directory that encloses the current working directory, and any override
-    directory set by `with ws.as_current()` (if any).
-    """
-    override_dir = current_ws_context.get()
-
-    # Fall back to detecting from the current working directory.
-    enclosing_dir = enclosing_ws_dir(Path("."))
-
-    return WsPathsContext(global_ws_dir(), enclosing_dir, override_dir)
 
 
 def resolve_ws(name: str | Path) -> WorkspaceInfo:
@@ -170,10 +83,10 @@ def resolve_ws(name: str | Path) -> WorkspaceInfo:
 
     ws_name = check_strict_workspace_name(resolved.name)
 
-    return WorkspaceInfo(ws_name, resolved, is_global_ws_path(resolved))
+    return WorkspaceInfo(ws_name, resolved, is_global_ws_dir(resolved))
 
 
-def get_ws(name_or_path: str | Path, auto_init: bool = True) -> "FileStore":
+def get_ws(name_or_path: str | Path, auto_init: bool = True) -> FileStore:
     """
     Get a workspace by name or path. Adds to the in-memory registry so we reuse it.
     With `auto_init` true, will initialize the workspace if it is not already initialized.
@@ -195,18 +108,14 @@ def global_ws_dir() -> Path:
     return kb_path
 
 
-def is_global_ws_path(path: Path) -> bool:
-    return path.resolve() == global_settings().global_ws_dir
-
-
-def get_global_ws() -> "FileStore":
+def get_global_ws() -> FileStore:
     """
     Get the global_ws workspace.
     """
     return get_ws_registry().load(GLOBAL_WS_NAME, global_ws_dir(), True)
 
 
-def switch_to_ws(base_dir: Path) -> "FileStore":
+def _switch_ws_settings(base_dir: Path) -> FileStore:
     """
     Switch the current workspace to the given directory.
     Updates logging and cache directories to be within that workspace.
@@ -232,25 +141,29 @@ def switch_to_ws(base_dir: Path) -> "FileStore":
     return get_ws_registry().load(info.name, info.base_dir, info.is_global_ws)
 
 
-def current_ws(silent: bool = False) -> "FileStore":
+def current_ws(silent: bool = False) -> FileStore:
     """
     Get the current workspace based on the current working directory.
     Loads and registers the workspace if it is not already loaded.
-    Also updates logging and cache directories if this has changed.
+
+    As a convenience, this call also auto-updates logging and cache directories
+    if this has changed.
     """
-    path_context = _get_ws_paths_context()
-    base_dir = path_context.current_ws_dir
+    from kash.exec.runtime_settings import current_ws_context
+
+    ws_context = current_ws_context()
+    base_dir = ws_context.current_ws_dir
     if not base_dir:
         raise InvalidState(
             f"No workspace found in: {fmt_path(Path('.').absolute(), resolve=False)}\n"
             "Create one with the `workspace` command."
         )
 
-    ws = switch_to_ws(base_dir)
+    ws = _switch_ws_settings(base_dir)
 
     if not silent:
         did_log = ws.log_workspace_info(once=True)
-        if did_log and ws.is_global_ws and not path_context.override_dir:
+        if did_log and ws.is_global_ws and not ws_context.override_dir:
             PrintHooks.spacer()
             log.warning("Note you are currently using the default global workspace.")
             cprint(

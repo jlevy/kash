@@ -17,6 +17,7 @@ from kash.model.actions_model import (
     ExecContext,
     PathOpType,
 )
+from kash.model.exec_model import RuntimeSettings
 from kash.model.items_model import Item, State
 from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
@@ -85,7 +86,7 @@ def validate_action_input(
     inputs = [input_for(item) for item in input_items]
 
     # Add any non-default runtime options into the options summary.
-    options = {**action.param_value_summary(), **context.runtime_options}
+    options = {**action.param_value_summary(), **context.settings.non_default_options}
     operation = Operation(action.name, inputs, options)
 
     return operation
@@ -113,8 +114,9 @@ def check_for_existing_result(
     already exist.
     """
     action = context.action
-    ws = context.workspace
-    rerun = context.rerun
+    settings = context.settings
+    ws = settings.workspace
+    rerun = settings.rerun
 
     existing_result = None
 
@@ -161,6 +163,7 @@ def run_action_operation(
 
     # Run the action.
     action = context.action
+    settings = context.settings
     if action.run_per_item:
         result = _run_for_each_item(context, action_input)
     else:
@@ -179,9 +182,9 @@ def run_action_operation(
         item.update_history(Source(operation=this_op, output_num=i, cacheable=action.cacheable))
 
     # Override the state if appropriate (this handles marking items as transient).
-    if context.override_state:
+    if settings.override_state:
         for item in result.items:
-            item.state = context.override_state
+            item.state = settings.override_state
 
     log.info("Action `%s` result: %s", action.name, result)
 
@@ -336,7 +339,8 @@ def run_action_with_caching(
     Note: Mutates the input but only to add `context` to each item.
     """
     action = context.action
-    ws = context.workspace
+    settings = context.settings
+    ws = settings.workspace
 
     # For convenience, we include the context to each item too (this helps so per-item
     # functions don't have to take context args everywhere).
@@ -352,7 +356,7 @@ def run_action_with_caching(
     # Check if a previous run already produced the result.
     existing_result = check_for_existing_result(context, action_input, operation)
 
-    if existing_result and not context.rerun:
+    if existing_result and not settings.rerun:
         # Use the cached result.
         result = existing_result
         result_store_paths = [StorePath(not_none(item.store_path)) for item in result.items]
@@ -370,7 +374,7 @@ def run_action_with_caching(
         # Run it!
         result = run_action_operation(context, action_input, operation)
         result_store_paths, archived_store_paths = save_action_result(
-            ws, result, action_input, as_tmp=context.tmp_output, no_format=context.no_format
+            ws, result, action_input, as_tmp=settings.tmp_output, no_format=settings.no_format
         )
 
         PrintHooks.before_done_message()
@@ -426,8 +430,7 @@ def run_action_with_shell_context(
     action_name = action.name
 
     # Execution context. This is fixed for the duration of the action.
-    context = ExecContext(
-        action=action,
+    settings = RuntimeSettings(
         workspace_dir=ws.base_dir,
         rerun=rerun,
         refetch=refetch,
@@ -435,6 +438,7 @@ def run_action_with_shell_context(
         tmp_output=tmp_output,
         no_format=no_format,
     )
+    context = ExecContext(action, settings)
 
     # Collect args from the provided args or otherwise the current selection.
     args, from_selection = assemble_action_args(*provided_args, use_selection=action.uses_selection)
