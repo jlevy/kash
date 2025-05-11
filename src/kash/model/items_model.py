@@ -524,16 +524,19 @@ class Item:
         description, or finally body text.
         Optionally, include the last operation as a parenthetical at the end of the title.
         """
+        from kash.file_storage.store_filenames import parse_item_filename
+
         # Special case for URLs with no title..
         if not self.title and self.url:
             return abbrev_str(self.url, max_len)
 
         # Special case for filenames with no title.
-        path_name = (
-            (self.store_path and Path(self.store_path).name)
-            or (self.external_path and Path(self.external_path).name)
-            or (self.original_filename and Path(self.original_filename).name)
-        )
+        # Use stem to drop suffix like .resource.docx etc in a title.
+        path = self.store_path or self.external_path or self.original_filename
+        if path:
+            path_name, _item_type, _format, _file_ext = parse_item_filename(Path(path).name)
+        else:
+            path_name = None
 
         # Use the title or the path if possible, falling back to description or even body text.
         title_raw_text = (
