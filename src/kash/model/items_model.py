@@ -548,10 +548,14 @@ class Item:
         )
 
         suffix = ""
-        if add_ops_suffix and self.type not in [ItemType.concept, ItemType.resource]:
-            # For notes, exports, etc but not for concepts, add a parenthical note
-            # indicating the last operation, if there was one. This makes filename slugs
-            # more readable.
+        # For docs, etc but not for concepts/resources/exports, add a parenthical note
+        # indicating the last operation, if there was one. This makes filename slugs
+        # more readable.
+        if add_ops_suffix and self.type not in [
+            ItemType.concept,
+            ItemType.resource,
+            ItemType.export,
+        ]:
             last_op = self.history and self.history[-1].action_name
             if last_op:
                 step_num = len(self.history) + 1 if self.history else 1
