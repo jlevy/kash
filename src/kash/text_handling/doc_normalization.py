@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flowmark import fill_markdown, fill_text, line_wrap_by_sentence
 from flowmark.text_filling import DEFAULT_WRAP_WIDTH
-from flowmark.text_wrapping import simple_word_splitter, wrap_paragraph
+from flowmark.text_wrapping import simple_word_splitter
 from frontmatter_format import fmf_read, fmf_write
 
 from kash.utils.common.format_utils import fmt_loc
@@ -64,6 +64,7 @@ def normalize_text_file(
 
 def test_osc8_link():
     from clideps.terminal.osc_utils import osc8_link
+    from flowmark.text_wrapping import wrap_paragraph
 
     link = osc8_link("https://example.com/" + "x" * 50, "Example")
     assert ansi_cell_len(link) == 7

@@ -316,8 +316,8 @@ class Action(ABC):
         """
         Declaration sanity checks.
         """
-        if not self.name or not self.description:
-            raise InvalidDefinition("Action must have a name and description")
+        if not self.name:
+            raise InvalidDefinition("Action must have a name")
 
         for param in self.params:
             if not self.has_param(param.name):
