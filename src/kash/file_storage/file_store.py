@@ -318,9 +318,11 @@ class FileStore(Workspace):
         Save the item. Uses the `store_path` if it's already set or generates a new one.
         Updates `item.store_path`.
 
+        Unless `no_format` is true, also normalizes body text formatting (for Markdown)
+        and updates the item's body to match.
+
         If `as_tmp` is true, will save the item to a temporary file.
         If `overwrite` is false, will skip saving if the item already exists.
-        If `no_format` is true, will not normalize body text formatting (for Markdown).
         """
         # If external file already exists within the workspace, the file is already saved (without metadata).
         external_path = item.external_path and Path(item.external_path).resolve()

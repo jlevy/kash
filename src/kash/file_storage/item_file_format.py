@@ -7,7 +7,7 @@ from prettyfmt import custom_key_sort, fmt_size_human
 from kash.config.logger import get_logger
 from kash.model.items_model import ITEM_FIELDS, Item
 from kash.model.operations_model import OPERATION_FIELDS
-from kash.text_handling.doc_normalization import normalize_formatting_ansi
+from kash.text_handling.doc_normalization import normalize_formatting
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.file_utils.mtime_cache import MtimeCache
@@ -25,7 +25,7 @@ _item_cache = MtimeCache[Item](max_size=2000, name="Item")
 def write_item(item: Item, path: Path, normalize: bool = True):
     """
     Write a text item to a file with standard frontmatter format YAML.
-    Also normalizes formatting of the body text.
+    By default normalizes formatting of the body text and updates the item's body.
     """
     item.validate()
     if item.is_binary:
@@ -37,7 +37,7 @@ def write_item(item: Item, path: Path, normalize: bool = True):
     _item_cache.delete(path)
 
     if normalize:
-        body = normalize_formatting_ansi(item.body_text(), item.format)
+        body = normalize_formatting(item.body_text(), item.format)
     else:
         body = item.body_text()
 
@@ -78,6 +78,9 @@ def write_item(item: Item, path: Path, normalize: bool = True):
 
     # Update cache.
     _item_cache.update(path, item)
+
+    # Update the item's body to reflect normalization.
+    item.body = body
 
 
 def read_item(path: Path, base_dir: Path | None) -> Item:

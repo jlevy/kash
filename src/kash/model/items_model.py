@@ -570,7 +570,7 @@ class Item:
 
     def abbrev_body(self, max_len: int) -> str:
         """
-        Get a cut off version of the body text. Must not be a binary Item.
+        Get an abbreviated version of the body text. Must not be a binary Item.
         Abbreviates YAML bodies like {"role": "user", "content": "Hello"} to "user Hello".
         """
         body_text = self.body_text()[:max_len]
@@ -658,11 +658,19 @@ class Item:
         return "\n\n".join(part for part in parts if part)
 
     def body_text(self) -> str:
+        """
+        Body text of the item, also validating that the item is not binary.
+        """
         if self.is_binary:
             raise ValueError("Cannot get text content of a binary Item")
         return self.body or ""
 
     def body_as_html(self) -> str:
+        """
+        Body of the item, converted to HTML format. Validates that the body format can be
+        converted and then converts plaintext or Markdown to HTML. Simply returns the body
+        if it is already HTML.
+        """
         if self.format == Format.html:
             return self.body_text()
         elif self.format == Format.plaintext:

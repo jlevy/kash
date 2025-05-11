@@ -11,20 +11,26 @@ from kash.utils.file_utils.file_formats_model import Format, detect_file_format
 from kash.utils.rich_custom.ansi_cell_len import ansi_cell_len
 
 
-def normalize_formatting_ansi(text: str, format: Format | None, width=DEFAULT_WRAP_WIDTH) -> str:
+def normalize_formatting(
+    text: str,
+    format: Format | None,
+    width=DEFAULT_WRAP_WIDTH,
+    support_ansi: bool = True,
+    cleanups: bool = True,
+) -> str:
     """
     Normalize text formatting by wrapping lines and normalizing Markdown.
+    This only does "safe" normalizations that cannot break the text.
     Enables ANSI support so ANSI codes and OSC-8 links are correctly handled.
     """
+    len_fn = ansi_cell_len if support_ansi else len
     if format == Format.plaintext:
-        return fill_text(
-            text, width=width, word_splitter=simple_word_splitter, len_fn=ansi_cell_len
-        )
+        return fill_text(text, width=width, word_splitter=simple_word_splitter, len_fn=len_fn)
     elif format == Format.markdown or format == Format.md_html:
         return fill_markdown(
             text,
-            line_wrapper=line_wrap_by_sentence(len_fn=ansi_cell_len, is_markdown=True),
-            cleanups=True,  # Safe cleanups like unbolding section headers.
+            line_wrapper=line_wrap_by_sentence(len_fn=len_fn, is_markdown=True),
+            cleanups=cleanups,
         )
     elif format == Format.html:
         # We don't currently auto-format HTML as we sometimes use HTML with specifically chosen line breaks.
@@ -37,6 +43,7 @@ def normalize_text_file(
     path: str | Path,
     target_path: Path,
     format: Format | None = None,
+    support_ansi: bool = True,
 ) -> None:
     """
     Normalize formatting on a text file, handling Markdown, HTML, or text, as well as
@@ -48,7 +55,7 @@ def normalize_text_file(
         raise ValueError(f"Cannot format non-text files: {fmt_loc(path)}")
 
     content, metadata = fmf_read(path)
-    norm_content = normalize_formatting_ansi(content, format=format)
+    norm_content = normalize_formatting(content, format=format, support_ansi=support_ansi)
     fmf_write(not_none(target_path), norm_content, metadata)
 
 

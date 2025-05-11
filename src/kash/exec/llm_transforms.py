@@ -13,7 +13,7 @@ from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
 from kash.model.items_model import Item
-from kash.text_handling.doc_normalization import normalize_formatting_ansi
+from kash.text_handling.doc_normalization import normalize_formatting
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 
@@ -118,7 +118,7 @@ def llm_transform_item(
     if strip_fence:
         result_str = strip_markdown_fence(result_str)
     if normalize:
-        result_str = normalize_formatting_ansi(result_str, format=format)
+        result_str = normalize_formatting(result_str, format=format)
 
     result_item.body = result_str
     return result_item
