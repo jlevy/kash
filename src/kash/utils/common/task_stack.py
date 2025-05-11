@@ -106,7 +106,6 @@ class TaskStack:
         return f"TaskStack({self.full_str()})"
 
     def log_stack(self):
-        self._print()
         self._log.message(f"{EMOJI_ACTION} {TASK_STACK_HEADER} %s", self.full_str())
 
     @contextmanager
@@ -122,9 +121,7 @@ class TaskStack:
         except Exception as e:
             # Log immediately where the exception occurred, but don't double-log.
             if e not in self.exceptions_logged:
-                self._log.warning(
-                    "Exception in task context: %s: %s", type(e).__name__, e, exc_info=True
-                )
+                self._log.info("Exception in task context: %s: %s", type(e).__name__, e)
                 self.exceptions_logged.add(e)
             self.next(last_had_error=True)
             raise
@@ -137,12 +134,6 @@ class TaskStack:
         from kash.config.logger import get_logger
 
         return get_logger(__name__)
-
-    @property
-    def _print(self):
-        from kash.shell.output.shell_output import cprint
-
-        return cprint
 
 
 task_stack_var: contextvars.ContextVar[TaskStack | None] = contextvars.ContextVar(

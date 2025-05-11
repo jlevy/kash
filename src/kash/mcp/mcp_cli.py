@@ -9,9 +9,10 @@ import logging
 import os
 from pathlib import Path
 
+from clideps.utils.readable_argparse import ReadableColorFormatter
+
 from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, global_settings
 from kash.config.setup import kash_setup
-from kash.shell.utils.argparse_utils import WrappedColorFormatter
 from kash.shell.version import get_version
 
 __version__ = get_version()
@@ -27,7 +28,7 @@ log = logging.getLogger()
 def build_parser():
     from kash.workspaces.workspaces import global_ws_dir
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=WrappedColorFormatter)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=ReadableColorFormatter)
     parser.add_argument(
         "--version",
         action="version",

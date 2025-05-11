@@ -287,10 +287,12 @@ def prefix(line: str, emoji: str = "", warn_emoji: str = "") -> str:
     return " ".join(filter(None, [prefix, emojis, line]))
 
 
-def prefix_args(args: tuple[Any], emoji: str = "", warn_emoji: str = "") -> tuple[Any]:
-    if len(args) > 0:
-        args = (prefix(str(args[0]), emoji, warn_emoji),) + args[1:]
-    return args
+def prefix_args(
+    msg: object, *other_args: object, emoji: str = "", warn_emoji: str = ""
+) -> tuple[str, *tuple[object, ...]]:
+    """Prefixes the string representation of msg and returns it with other_args."""
+    prefixed_msg = prefix(str(msg), emoji, warn_emoji)
+    return (prefixed_msg,) + other_args
 
 
 class CustomLogger(logging.Logger):
@@ -301,29 +303,29 @@ class CustomLogger(logging.Logger):
     """
 
     @override
-    def debug(self, *args, **kwargs):
-        super().debug(*prefix_args(args), **kwargs)
+    def debug(self, msg: object, *args: object, **kwargs: Any) -> None:
+        super().debug(*prefix_args(msg, *args), **kwargs)
 
     @override
-    def info(self, *args, **kwargs):
-        super().info(*prefix_args(args), **kwargs)
+    def info(self, msg: object, *args: object, **kwargs: Any) -> None:
+        super().info(*prefix_args(msg, *args), **kwargs)
 
     @override
-    def warning(self, *args, **kwargs):
-        super().warning(*prefix_args(args, warn_emoji=EMOJI_WARN), **kwargs)
+    def warning(self, msg: object, *args: object, **kwargs: Any) -> None:
+        super().warning(*prefix_args(msg, *args, warn_emoji=EMOJI_WARN), **kwargs)
 
     @override
-    def error(self, *args, **kwargs):
-        super().error(*prefix_args(args, warn_emoji=EMOJI_ERROR), **kwargs)
+    def error(self, msg: object, *args: object, **kwargs: Any) -> None:
+        super().error(*prefix_args(msg, *args, warn_emoji=EMOJI_ERROR), **kwargs)
 
-    def log_at(self, level: LogLevel, *args, **kwargs):
+    def log_at(self, level: LogLevel, *args: object, **kwargs: Any) -> None:
         getattr(self, level.name)(*args, **kwargs)
 
-    def message(self, *args, **kwargs):
+    def message(self, msg: object, *args: object, **kwargs: Any) -> None:
         """
         An informative message that should appear even if log level is set to warning.
         """
-        super().warning(*prefix_args(args), **kwargs)
+        super().warning(*prefix_args(msg, *args), **kwargs)
 
     def save_object(
         self,
@@ -332,7 +334,7 @@ class CustomLogger(logging.Logger):
         obj: Any,
         level: LogLevel = LogLevel.info,
         file_ext: str = "txt",
-    ):
+    ) -> None:
         """
         Save an object to a file in the log directory. Useful for details too large to
         log normally but useful for debugging.
@@ -353,7 +355,7 @@ class CustomLogger(logging.Logger):
 
         self.log_at(level, "%s %s saved: %s", EMOJI_SAVED, description, path)
 
-    def dump_stack(self, all_threads: bool = True, level: LogLevel = LogLevel.info):
+    def dump_stack(self, all_threads: bool = True, level: LogLevel = LogLevel.info) -> None:
         self.log_at(level, "Stack trace dump:\n%s", current_stack_traces(all_threads))
 
     def __repr__(self):

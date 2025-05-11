@@ -293,19 +293,19 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.1.8"
+version = "8.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593, upload-time = "2024-12-21T18:38:44.339Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/0f/62ca20172d4f87d93cf89665fbaedcd560ac48b465bd1d92bfc7ea6b0a41/click-8.2.0.tar.gz", hash = "sha256:f5452aeddd9988eefa20f90f05ab66f17fce1ee2a36907fd30b05bbb5953814d", size = 235857, upload-time = "2025-05-10T22:21:03.111Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/d4/7ebdbd03970677812aac39c869717059dbb71a4cfc033ca6e5221787892c/click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2", size = 98188, upload-time = "2024-12-21T18:38:41.666Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/58/1f37bf81e3c689cc74ffa42102fa8915b59085f54a6e4a80bc6265c0f6bf/click-8.2.0-py3-none-any.whl", hash = "sha256:6b303f0b2aa85f1cb4e5303078fadcbcd4e476f114fab9b5007005711839325c", size = 102156, upload-time = "2025-05-10T22:21:01.352Z" },
 ]
 
 [[package]]
 name = "clideps"
-version = "0.1.2"
+version = "0.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -319,9 +319,9 @@ dependencies = [
     { name = "rich-argparse" },
     { name = "strif" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b7/62/fddbc599f6f874fb059ad34b91d23ed73b9615acd6ce8afcf34f1281ef92/clideps-0.1.2.tar.gz", hash = "sha256:b897092e846be1ab7674518066e5146ff1097c3169afe9b03b061c8ec62806d0", size = 55633, upload-time = "2025-05-10T19:08:20.387Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b4/89/13c3f1bdad0a3e3f3b60bfbefcc52854fab41403b221fb05c68676f26ec6/clideps-0.1.3.tar.gz", hash = "sha256:9498632cd5a7f5b88ea95e4db75c262b1492152b4f9aa81e90df54b1a1969352", size = 56469, upload-time = "2025-05-11T01:30:47.777Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/d0/05176af2bb07f94d4379abe743853d73257080fc20b03cec63838fc2ce40/clideps-0.1.2-py3-none-any.whl", hash = "sha256:79da29659ab2c86356f4247dc23a3e67368e6ff2256d11b750eb264679bb9e0a", size = 34533, upload-time = "2025-05-10T19:08:18.749Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/04/f7526330a04c67bf54555b66daff03af489d735f99eca552b7db45e8bf04/clideps-0.1.3-py3-none-any.whl", hash = "sha256:7679a81eeb0634944a03e8c7fe57ebf9cf6f778e27483b52bccaf02a3de488cd", size = 35441, upload-time = "2025-05-11T01:30:46.029Z" },
 ]
 
 [[package]]
@@ -981,7 +981,7 @@ requires-dist = [
     { name = "audioop-lts", marker = "python_full_version >= '3.13'", specifier = ">=0.2.1" },
     { name = "cachetools", specifier = ">=5.5.2" },
     { name = "chopdiff", specifier = ">=0.2.1" },
-    { name = "clideps", specifier = ">=0.1.2" },
+    { name = "clideps", specifier = ">=0.1.3" },
     { name = "colour", specifier = ">=0.1.5" },
     { name = "cssselect", specifier = ">=1.2.0" },
     { name = "deepgram-sdk", specifier = ">=3.10.1" },
@@ -1048,7 +1048,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/b3/15/c9f68c4f477fbaa9f
 
 [[package]]
 name = "litellm"
-version = "1.68.2"
+version = "1.69.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1063,9 +1063,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/ba/624b5ebbca8d3cbfe81ea130c72215a7ee929c2cabdef37e9fd7d07abc57/litellm-1.68.2.tar.gz", hash = "sha256:03c9ecb8955239f37f52e8e91f69ec02e75eb6290ed881b0597d7e16aa88d5e0", size = 7343243, upload-time = "2025-05-09T20:28:10.773Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/55/8d27d9c39fc092174ea274a1e5f7e237078b0959f3b9d70448d598551f97/litellm-1.69.0.tar.gz", hash = "sha256:9f37f5fedef87fa13ebfe89a8c9c484d609ffcbd6b82f2d1bb6e1f78761be335", size = 7365657, upload-time = "2025-05-11T01:04:57.313Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/43/c3d7939d5852679b5d2fcb85b9ee5ba3286129f9b2e171f826e3c1db2867/litellm-1.68.2-py3-none-any.whl", hash = "sha256:49b63e0bdea0a84ac95ae1032f25b5730dc480d11c00b3afe21f1532496d6570", size = 7719293, upload-time = "2025-05-09T20:28:07.147Z" },
+    { url = "https://files.pythonhosted.org/packages/10/8e/7a3812586581304e0aa5e8555bf21f00c6b576fe98ce17ed42d66caa2c47/litellm-1.69.0-py3-none-any.whl", hash = "sha256:7fe2745dfd991bee377922b53e25f8cc7a68fc89e3c5dbbdc1d0bacb942b5d78", size = 7722378, upload-time = "2025-05-11T01:04:53.941Z" },
 ]
 
 [[package]]
