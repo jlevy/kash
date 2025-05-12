@@ -78,7 +78,9 @@ class ShellCallableAction:
             return ShellResult(exception=e)
         except Exception as e:
             # Log here while we are in the true call stack (not inside the xonsh call stack).
-            log.error("Action error: %s", e, exc_info=KashEnv.KASH_SHOW_TRACEBACK.read_bool(True))
+            log.error(
+                "Action error: %s", e, exc_info=KashEnv.KASH_SHOW_TRACEBACK.read_bool(default=True)
+            )
             raise
         finally:
             log_tallies(level="warning", if_slower_than=10.0)

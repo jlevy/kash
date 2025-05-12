@@ -99,7 +99,7 @@ class LogLevel(IntEnum):
         return self.name
 
 
-DEFAULT_LOG_LEVEL = LogLevel.parse(KashEnv.KASH_LOG_LEVEL.read_str("warning"))
+DEFAULT_LOG_LEVEL = LogLevel.parse(KashEnv.KASH_LOG_LEVEL.read_str(default="warning"))
 
 
 def resolve_and_create_dirs(path: Path | str, is_dir: bool = False) -> Path:
@@ -220,7 +220,7 @@ def _get_ws_root_dir() -> Path:
 
 
 def _get_global_ws_dir() -> Path:
-    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path()
+    kash_ws_dir = KashEnv.KASH_GLOBAL_WS.read_path(default=None)
     if kash_ws_dir:
         return kash_ws_dir
     else:
@@ -240,7 +240,7 @@ def _get_system_cache_dir() -> Path:
 
 
 def _get_mcp_ws_dir() -> Path | None:
-    mcp_dir = KashEnv.KASH_MCP_WS.read_str()
+    mcp_dir = KashEnv.KASH_MCP_WS.read_str(default=None)
     if mcp_dir:
         return Path(mcp_dir).expanduser().resolve()
     else:

@@ -1,10 +1,7 @@
-import os
-from enum import Enum
-from pathlib import Path
-from typing import overload
+from clideps.env_vars.env_enum import EnvEnum
 
 
-class KashEnv(str, Enum):
+class KashEnv(EnvEnum):
     """
     Environment variable settings for kash. None are required, but these may be
     used to override default values.
@@ -33,40 +30,3 @@ class KashEnv(str, Enum):
 
     KASH_USER_AGENT = "KASH_USER_AGENT"
     """The user agent to use for HTTP requests."""
-
-    @overload
-    def read_str(self) -> str | None: ...
-
-    @overload
-    def read_str(self, default: str) -> str: ...
-
-    def read_str(self, default: str | None = None) -> str | None:
-        """
-        Get the value of the environment variable from the environment (with
-        optional default).
-        """
-        return os.environ.get(self.value, default)
-
-    @overload
-    def read_path(self) -> Path | None: ...
-
-    @overload
-    def read_path(self, default: Path) -> Path: ...
-
-    def read_path(self, default: Path | None = None) -> Path | None:
-        """
-        Get the value of the environment variable as a resolved path (with
-        optional default).
-        """
-        value = os.environ.get(self.value)
-        if value:
-            return Path(value).expanduser().resolve()
-        else:
-            return default.expanduser().resolve() if default else None
-
-    def read_bool(self, default: bool = False) -> bool:
-        """
-        Get the value of the environment variable as a boolean.
-        """
-        value = str(os.environ.get(self.value, default) or "").lower()
-        return bool(value and value != "0" and value != "false" and value != "no")
