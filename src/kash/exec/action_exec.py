@@ -4,7 +4,12 @@ from dataclasses import replace
 from prettyfmt import fmt_lines
 
 from kash.config.logger import get_logger
-from kash.config.text_styles import EMOJI_SKIP, EMOJI_SUCCESS, EMOJI_TIMING
+from kash.config.text_styles import (
+    EMOJI_SKIP,
+    EMOJI_START,
+    EMOJI_SUCCESS,
+    EMOJI_TIMING,
+)
 from kash.exec.preconditions import is_url_item
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
@@ -22,7 +27,7 @@ from kash.model.items_model import Item, State
 from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
-from kash.shell.output.shell_output import PrintHooks, print_h3
+from kash.shell.output.shell_output import PrintHooks
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
@@ -97,7 +102,7 @@ def log_action(action: Action, action_input: ActionInput, operation: Operation):
     Log the action and the operation we are about to run.
     """
     PrintHooks.before_log_action_run()
-    print_h3(f"Action `{action.name}`")
+    log.message("%s Action: `%s`", EMOJI_START, action.name)
     log.message("Running: `%s`", operation.command_line(with_options=True))
     if len(action.param_value_summary()) > 0:
         log.message("Parameters:\n%s", action.param_value_summary_str())
@@ -364,7 +369,7 @@ def run_action_with_caching(
 
         PrintHooks.before_done_message()
         log.message(
-            "%s Action skipped: `%s` completed with %s %s",
+            "%s Skipped: `%s` completed with %s %s",
             EMOJI_SKIP,
             action.name,
             len(result.items),
@@ -379,7 +384,7 @@ def run_action_with_caching(
 
         PrintHooks.before_done_message()
         log.message(
-            "%s Action done: `%s` completed with %s %s",
+            "%s Done: `%s` completed with %s %s",
             EMOJI_SUCCESS,
             action.name,
             len(result.items),

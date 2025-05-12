@@ -486,7 +486,7 @@ class Action(ABC):
                 log.info("Ignoring parameter for action `%s`: `%s`", self.name, param_name)
 
         if overrides:
-            log.message(
+            log.info(
                 "Overriding parameters for action `%s`:\n%s",
                 self.name,
                 fmt_lines(overrides),

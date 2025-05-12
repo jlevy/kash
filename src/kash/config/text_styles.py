@@ -73,8 +73,8 @@ COLOR_VALUE = "cyan"
 COLOR_PATH = "cyan"
 COLOR_HINT = "bright_black"
 COLOR_HINT_DIM = "dim bright_black"
-COLOR_SKIP = "green"
-COLOR_TASK = "magenta"
+COLOR_SKIP = "bright_blue"
+COLOR_ACTION = "magenta"
 COLOR_SAVED = "blue"
 COLOR_TIMING = "bright_black"
 COLOR_CALL = "bright_yellow"
@@ -133,7 +133,7 @@ RICH_STYLES = {
     "hint": COLOR_HINT,
     "hint_dim": COLOR_HINT_DIM,
     "skip": COLOR_SKIP,
-    "task": COLOR_TASK,
+    "action": COLOR_ACTION,
     "saved": COLOR_SAVED,
     "timing": COLOR_TIMING,
     "call": COLOR_CALL,
@@ -218,12 +218,14 @@ RICH_STYLES = {
     "kash.size_k": STYLE_SIZE2,
     "kash.size_m": STYLE_SIZE3,
     "kash.size_gtp": STYLE_SIZE4,
-    "kash.filename": Style(color=COLOR_VALUE),
-    "kash.task_stack_header": Style(color=COLOR_TASK),
-    "kash.task_stack": Style(color=COLOR_TASK),
+    "kash.filename": Style(color=COLOR_HINT),
+    "kash.start_action": Style(color=COLOR_ACTION, bold=True),
+    "kash.task_stack_header": Style(color=COLOR_HINT),
+    "kash.task_stack": Style(color=COLOR_HINT),
     "kash.task_stack_prefix": Style(color=COLOR_HINT),
     # Emoji colors:
-    "kash.task": Style(color=COLOR_TASK),
+    "kash.action": Style(color=COLOR_ACTION),
+    "kash.start": Style(color=COLOR_ACTION, bold=True),
     "kash.success": Style(color=COLOR_SUCCESS, bold=True),
     "kash.skip": Style(color=COLOR_SKIP, bold=True),
     "kash.failure": Style(color=COLOR_ERROR, bold=True),
@@ -259,16 +261,23 @@ PROMPT_ASSIST = "(assistant) ❯"
 
 EMOJI_HINT = "👉"
 
-# More ideas: ⦿⧁⧀⦿⦾⟐⦊⟡
+EMOJI_MSG_INDENT = "⋮"
 
+EMOJI_START = "[➤]"
 
-EMOJI_COMMAND = "⧁"
+EMOJI_SUCCESS = "[✔︎]"
 
-EMOJI_ACTION = "⛭"
+EMOJI_SKIP = "[-]"
+
+EMOJI_FAILURE = "[✘]"
 
 EMOJI_SNIPPET = "❯"
 
 EMOJI_HELP = "?"
+
+EMOJI_ACTION = "⛭"
+
+EMOJI_COMMAND = "⧁"  # More ideas: ⦿⧁⧀⦿⦾⟐⦊⟡
 
 EMOJI_SHELL = "⦊"
 
@@ -282,19 +291,11 @@ EMOJI_SAVED = "⩣"
 
 EMOJI_TIMING = "⏱"
 
-EMOJI_SUCCESS = "[✔︎]"
-
-EMOJI_SKIP = "[∕]"
-
-EMOJI_FAILURE = "[✘]"
-
 EMOJI_CALL_BEGIN = "≫"
 
 EMOJI_CALL_END = "≪"
 
 EMOJI_ASSISTANT = "🤖"
-
-EMOJI_MSG_INDENT = "⋮"
 
 EMOJI_BREADCRUMB_SEP = "›"
 
@@ -320,15 +321,17 @@ class KashHighlighter(RegexHighlighter):
     base_style = "kash."
     highlights = [
         _combine_regex(
+            # Important patterns that color the whole line:
+            f"(?P<start_action>{re.escape(EMOJI_START + ' Action')}.*)",
+            f"(?P<timing>{re.escape(EMOJI_TIMING)}.*)",
             # Task stack in logs:
             f"(?P<task_stack_header>{re.escape(TASK_STACK_HEADER)})",
             f"(?P<task_stack>{re.escape(EMOJI_BREADCRUMB_SEP)}.*)",
             f"(?P<task_stack_prefix>{re.escape(EMOJI_MSG_INDENT)})",
-            # Emojis that color the whole line:
-            f"(?P<timing>{re.escape(EMOJI_TIMING)}.*)",
             # Color emojis by themselves:
             f"(?P<saved>{re.escape(EMOJI_SAVED)})",
-            f"(?P<task>{re.escape(EMOJI_ACTION)})",
+            f"(?P<action>{re.escape(EMOJI_ACTION)})",
+            f"(?P<start>{re.escape(EMOJI_START)})",
             f"(?P<success>{re.escape(EMOJI_SUCCESS)})",
             f"(?P<skip>{re.escape(EMOJI_SKIP)})",
             f"(?P<failure>{re.escape(EMOJI_FAILURE)})",

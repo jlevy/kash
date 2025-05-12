@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 from kash.config.text_styles import (
-    EMOJI_ACTION,
     EMOJI_BREADCRUMB_SEP,
     EMOJI_MSG_INDENT,
     TASK_STACK_HEADER,
@@ -106,7 +105,7 @@ class TaskStack:
         return f"TaskStack({self.full_str()})"
 
     def log_stack(self):
-        self._log.message(f"{EMOJI_ACTION} {TASK_STACK_HEADER} %s", self.full_str())
+        self._log.message(f"{TASK_STACK_HEADER} %s", self.full_str())
 
     @contextmanager
     def context(self, name: str, total_parts: int = 1, unit: str = ""):

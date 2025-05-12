@@ -325,8 +325,8 @@ class PrintHooks(Enum):
     after_command_run = "after_command_run"
     before_status = "before_status"
     after_status = "after_status"
-    before_shell_action_run = "before_action_run"
-    after_shell_action_run = "after_action_run"
+    before_shell_action_run = "before_shell_action_run"
+    after_shell_action_run = "after_shell_action_run"
     before_log_action_run = "before_log_action_run"
     before_assistance = "before_assistance"
     after_assistance = "after_assistance"
@@ -378,7 +378,7 @@ class PrintHooks(Enum):
         elif self == PrintHooks.nonfatal_exception:
             self.nl()
         elif self == PrintHooks.before_done_message:
-            self.nl()
+            pass
         elif self == PrintHooks.before_output:
             self.nl()
         elif self == PrintHooks.after_output:
