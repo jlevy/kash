@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 from collections.abc import Sequence
-from typing import Any, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
-import numpy as np
+if TYPE_CHECKING:
+    from numpy import ndarray
 
-# Type aliases for clarity
-ArrayLike: TypeAlias = Sequence[float] | np.ndarray[Any, Any]
+    # Type aliases for clarity
+    ArrayLike: TypeAlias = Sequence[float] | ndarray[Any, Any]
+else:
+    # Keep numpy import lazy.
+    ArrayLike = Any
 
 
 def cosine(u: ArrayLike, v: ArrayLike) -> float:
@@ -12,6 +18,8 @@ def cosine(u: ArrayLike, v: ArrayLike) -> float:
     Compute the cosine distance between two 1-D arrays.
     Could use scipy.spatial.distance.cosine, but avoiding the dependency.
     """
+    import numpy as np
+
     # Convert to numpy arrays
     u_array = np.asarray(u, dtype=np.float64)
     v_array = np.asarray(v, dtype=np.float64)

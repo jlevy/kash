@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import humanfriendly
-import pandas as pd
 from funlog import log_calls
 from prettyfmt import fmt_path
 from pydantic.dataclasses import dataclass
@@ -11,6 +13,9 @@ from pydantic.dataclasses import dataclass
 from kash.config.logger import get_logger
 from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_walk import IgnoreFilter, walk_by_dir
+
+if TYPE_CHECKING:
+    from pandas import DataFrame
 
 log = get_logger(__name__)
 
@@ -122,8 +127,8 @@ class FileListing:
     size_matching: int
     since_timestamp: float
 
-    def as_dataframe(self) -> pd.DataFrame:
-        df = pd.DataFrame([file.__dict__ for file in self.files])
+    def as_dataframe(self) -> DataFrame:
+        df = DataFrame([file.__dict__ for file in self.files])
         return df
 
     @property

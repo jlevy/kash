@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from enum import IntEnum
 from functools import cache
 from logging import DEBUG, ERROR, INFO, WARNING
 from pathlib import Path
 from typing import Literal
 
-from pydantic.dataclasses import dataclass
 from strif import AtomicVar
 
 from kash.config.env_settings import KashEnv

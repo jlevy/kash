@@ -3,15 +3,17 @@ from __future__ import annotations
 import ast
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TypeAlias, cast
+from typing import TYPE_CHECKING, TypeAlias, cast
 
-import pandas as pd
 from pydantic.dataclasses import dataclass
 from strif import abbrev_list
 
 from kash.config.logger import get_logger
 from kash.llm_utils.init_litellm import init_litellm
 from kash.llm_utils.llms import DEFAULT_EMBEDDING_MODEL
+
+if TYPE_CHECKING:
+    from pandas import DataFrame
 
 log = get_logger(__name__)
 
@@ -40,11 +42,13 @@ class Embeddings:
     def as_iterable(self) -> Iterable[tuple[Key, str, list[float]]]:
         return ((key, text, emb) for key, (text, emb) in self.data.items())
 
-    def as_df(self) -> pd.DataFrame:
+    def as_df(self) -> DataFrame:
+        from pandas import DataFrame
+
         keys, texts, embeddings = zip(
             *[(key, text, emb) for key, (text, emb) in self.data.items()], strict=False
         )
-        return pd.DataFrame(
+        return DataFrame(
             {
                 "key": keys,
                 "text": texts,
@@ -106,6 +110,8 @@ class Embeddings:
 
     @classmethod
     def read_from_csv(cls, path: Path) -> Embeddings:
+        import pandas as pd
+
         df = pd.read_csv(path)
         df["embedding"] = df["embedding"].apply(ast.literal_eval)
         data = {row["key"]: (row["text"], row["embedding"]) for _, row in df.iterrows()}

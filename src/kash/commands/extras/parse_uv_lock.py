@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import subprocess
 import tomllib
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pandas as pd
 from packaging.tags import Tag, sys_tags
 from packaging.utils import parse_wheel_filename
 from prettyfmt import fmt_size_dual
@@ -12,6 +14,9 @@ from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_STATUS
 from kash.exec import kash_command
 from kash.shell.output.shell_output import cprint
+
+if TYPE_CHECKING:
+    from pandas import DataFrame
 
 log = get_logger(__name__)
 
@@ -49,13 +54,15 @@ def get_platform() -> str:
     return next(sys_tags()).platform
 
 
-def parse_uv_lock(lock_path: Path) -> pd.DataFrame:
+def parse_uv_lock(lock_path: Path) -> DataFrame:
     """
     Return one row per package from a uv.lock file, selecting the best
     matching wheel for the current interpreter or falling back to the sdist.
 
     Columns: name, version, registry, file_type, url, hash, size, filename.
     """
+    from pandas import DataFrame
+
     with open(lock_path, "rb") as f:
         data = tomllib.load(f)
 
@@ -88,7 +95,7 @@ def parse_uv_lock(lock_path: Path) -> pd.DataFrame:
             }
         )
 
-    return pd.DataFrame(rows)
+    return DataFrame(rows)
 
 
 def uv_runtime_packages(
@@ -141,6 +148,8 @@ def uv_dep_info(
     By default, filters to show only 'main' dependencies from pyproject.toml.
     Helpful for looking at sizes of dependencies.
     """
+    import pandas as pd
+
     uv_lock_path = Path(uv_lock)
     pyproject_path = Path(pyproject)
 
