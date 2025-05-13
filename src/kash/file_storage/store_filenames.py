@@ -1,15 +1,18 @@
+from functools import cache
 from pathlib import Path
 
 from kash.config.logger import get_logger
 from kash.model.items_model import ItemType
+from kash.utils.common.inflection import plural
 from kash.utils.file_utils.file_formats_model import FileExt, Format
 from kash.utils.file_utils.filename_parsing import split_filename
-from kash.utils.lang_utils.inflection import plural
 
 log = get_logger(__name__)
 
 
-_type_to_folder = {name: plural(name) for name, _value in ItemType.__members__.items()}
+@cache
+def _get_type_to_folder() -> dict[str, str]:
+    return {name: plural(name) for name, _value in ItemType.__members__.items()}
 
 
 def folder_for_type(item_type: ItemType) -> Path:
@@ -22,7 +25,7 @@ def folder_for_type(item_type: ItemType) -> Path:
     export -> exports
     etc.
     """
-    return Path(_type_to_folder[item_type.name])
+    return Path(_get_type_to_folder()[item_type.name])
 
 
 def join_suffix(base_slug: str, full_suffix: str) -> str:

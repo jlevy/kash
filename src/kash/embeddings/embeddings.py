@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import TypeAlias, cast
 
 import pandas as pd
-from litellm import embedding
-from litellm.types.utils import EmbeddingResponse
 from pydantic.dataclasses import dataclass
 from strif import abbrev_list
 
 from kash.config.logger import get_logger
+from kash.llm_utils.init_litellm import init_litellm
 from kash.llm_utils.llms import DEFAULT_EMBEDDING_MODEL
 
 log = get_logger(__name__)
@@ -61,6 +60,11 @@ class Embeddings:
 
     @classmethod
     def embed(cls, keyvals: list[KeyVal], model=DEFAULT_EMBEDDING_MODEL) -> Embeddings:
+        from litellm import embedding
+        from litellm.types.utils import EmbeddingResponse
+
+        init_litellm()
+
         data = {}
         log.message(
             "Embedding %d texts (model %s, batch size %s)…",

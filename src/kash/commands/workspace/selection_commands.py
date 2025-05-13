@@ -10,8 +10,8 @@ from kash.exec_model.shell_model import ShellResult
 from kash.model.paths_model import StorePath
 from kash.shell.ui.shell_results import shell_print_selection_history
 from kash.utils.common.format_utils import fmt_loc
+from kash.utils.common.inflection import plural
 from kash.utils.errors import InvalidInput
-from kash.utils.lang_utils.inflection import plural
 from kash.workspaces import Selection, current_ws
 
 log = get_logger(__name__)

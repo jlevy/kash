@@ -255,14 +255,6 @@ def _do_logging_setup(log_settings: LogSettings):
 
     # Manually adjust logging for a few packages, removing previous verbose default handlers.
 
-    try:
-        import litellm
-        from litellm import _logging  # noqa: F401
-
-        litellm.suppress_debug_info = True  # Suppress overly prominent exception messages.
-    except ImportError:
-        pass
-
     log_levels = {
         None: INFO,
         "LiteLLM": INFO,

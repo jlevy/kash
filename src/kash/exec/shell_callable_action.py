@@ -13,7 +13,7 @@ from kash.model.params_model import RawParamValues
 from kash.shell.output.shell_output import PrintHooks
 from kash.shell.utils.exception_printing import summarize_traceback
 from kash.utils.common.parse_shell_args import parse_shell_args
-from kash.utils.errors import NONFATAL_EXCEPTIONS
+from kash.utils.errors import get_nonfatal_exceptions
 
 log = get_logger(__name__)
 
@@ -71,7 +71,7 @@ class ShellCallableAction:
                     action_cls, explicit_values, *shell_args.args, rerun=rerun, refetch=refetch
                 )
             # We don't return the result to keep the xonsh shell output clean.
-        except NONFATAL_EXCEPTIONS as e:
+        except get_nonfatal_exceptions() as e:
             PrintHooks.nonfatal_exception()
             log.error(f"[{COLOR_ERROR}]Action error:[/{COLOR_ERROR}] %s", summarize_traceback(e))
             log.info("Action error details: %s", e, exc_info=True)

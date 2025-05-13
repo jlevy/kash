@@ -1,11 +1,10 @@
-import time
-from typing import cast
+from __future__ import annotations
 
-import litellm
+import time
+from typing import TYPE_CHECKING, cast
+
 from flowmark import Wrap, fill_text
 from funlog import format_duration, log_calls
-from litellm.types.utils import Choices, ModelResponse
-from litellm.types.utils import Message as LiteLLMMessage
 from prettyfmt import slugify_snake
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
@@ -13,11 +12,15 @@ from pydantic.dataclasses import dataclass
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_TIMING
 from kash.llm_utils.fuzzy_parsing import is_no_results
+from kash.llm_utils.init_litellm import init_litellm
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.llm_utils.llm_names import LLMName
 from kash.utils.common.url import Url, is_url
 from kash.utils.errors import ApiResultError
 from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
+
+if TYPE_CHECKING:
+    from litellm.types.utils import Message as LiteLLMMessage
 
 log = get_logger(__name__)
 
@@ -68,6 +71,10 @@ def llm_completion(
     """
     Perform an LLM completion with LiteLLM.
     """
+    import litellm
+    from litellm.types.utils import Choices, ModelResponse
+
+    init_litellm()
 
     chat_history = ChatHistory.from_dicts(messages)
     log.info(

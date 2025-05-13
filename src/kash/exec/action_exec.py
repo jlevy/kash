@@ -28,10 +28,10 @@ from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
+from kash.utils.common.inflection import plural
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
-from kash.utils.errors import NONFATAL_EXCEPTIONS, ContentError, InvalidOutput
-from kash.utils.lang_utils.inflection import plural
+from kash.utils.errors import ContentError, InvalidOutput, get_nonfatal_exceptions
 from kash.workspaces import Selection, current_ws
 from kash.workspaces.workspace_importing import import_and_load
 
@@ -248,7 +248,7 @@ def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult
                 log.info("Caught SkipItem exception, skipping run on this item")
                 result_items.append(item)
                 continue
-            except NONFATAL_EXCEPTIONS as e:
+            except get_nonfatal_exceptions() as e:
                 errors.append(e)
                 had_error = True
 

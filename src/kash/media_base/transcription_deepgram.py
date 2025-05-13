@@ -1,14 +1,19 @@
+from __future__ import annotations
+
 from os.path import getsize
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from clideps.env_vars.dotenv_utils import load_dotenv_paths
-from deepgram import ListenRESTClient, PrerecordedResponse
 from httpx import Timeout
 
 from kash.config.logger import CustomLogger, get_logger
 from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
 from kash.utils.errors import ApiError, ContentError
+
+if TYPE_CHECKING:
+    from deepgram import PrerecordedResponse
 
 log: CustomLogger = get_logger(__name__)
 
@@ -19,7 +24,15 @@ def deepgram_transcribe_raw(
     """
     Transcribe an audio file using Deepgram and return the raw response.
     """
-    from deepgram import ClientOptionsFromEnv, DeepgramClient, FileSource, PrerecordedOptions
+    # Slow import, do lazily.
+    from deepgram import (
+        ClientOptionsFromEnv,
+        DeepgramClient,
+        FileSource,
+        ListenRESTClient,
+        PrerecordedOptions,
+        PrerecordedResponse,
+    )
 
     size = getsize(audio_file_path)
     log.info(

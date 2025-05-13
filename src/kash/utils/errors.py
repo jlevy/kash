@@ -3,6 +3,8 @@ Common hierarchy of error types. These inherit from standard errors like
 ValueError and FileExistsError but are more fine-grained.
 """
 
+from functools import cache
+
 
 class KashRuntimeError(ValueError):
     """Base class for kash runtime errors."""
@@ -145,8 +147,14 @@ class ApiError(KashRuntimeError):
     pass
 
 
-def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
+@cache
+def get_nonfatal_exceptions() -> tuple[type[Exception], ...]:
+    """
+    Exceptions that are not fatal and usually don't merit a full stack trace.
+    """
     exceptions: list[type[Exception]] = [SelfExplanatoryError, FileNotFoundError, IOError]
+
+    # Slow imports, do lazily.
     try:
         from xonsh.tools import XonshError
 
@@ -155,14 +163,15 @@ def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
         pass
 
     try:
-        import litellm
+        import openai
 
-        exceptions.append(litellm.exceptions.APIError)
+        # LiteLLM exceptions subclass openai.APIError
+        exceptions.append(openai.APIError)
     except ImportError:
         pass
 
     try:
-        import yt_dlp
+        import yt_dlp.utils
 
         exceptions.append(yt_dlp.utils.DownloadError)
     except ImportError:
@@ -171,12 +180,8 @@ def _nonfatal_exceptions() -> tuple[type[Exception], ...]:
     return tuple(exceptions)
 
 
-NONFATAL_EXCEPTIONS = _nonfatal_exceptions()
-"""Exceptions that are not fatal and usually don't merit a full stack trace."""
-
-
 def is_fatal(exception: Exception) -> bool:
-    for e in NONFATAL_EXCEPTIONS:
+    for e in get_nonfatal_exceptions():
         if isinstance(exception, e):
             return False
     return True

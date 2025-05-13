@@ -1,15 +1,17 @@
-from typing import cast
+from __future__ import annotations
 
-import litellm
+from typing import TYPE_CHECKING, cast
+
 from funlog import log_calls
-from litellm import embedding
-from litellm.types.utils import EmbeddingResponse
 
 from kash.config.logger import get_logger
 from kash.embeddings.cosine import ArrayLike, cosine
 from kash.embeddings.embeddings import Embeddings
 from kash.llm_utils.llms import DEFAULT_EMBEDDING_MODEL, EmbeddingModel
 from kash.utils.errors import ApiResultError
+
+if TYPE_CHECKING:
+    from litellm.types.utils import EmbeddingResponse
 
 log = get_logger(__name__)
 
@@ -20,6 +22,10 @@ def cosine_relatedness(x: ArrayLike, y: ArrayLike) -> float:
 
 @log_calls(level="info", show_return_value=False)
 def embed_query(model: EmbeddingModel, query: str) -> EmbeddingResponse:
+    import litellm
+    from litellm import embedding
+    from litellm.types.utils import EmbeddingResponse
+
     try:
         response: EmbeddingResponse = cast(
             EmbeddingResponse, embedding(model=model.litellm_name, input=[query])

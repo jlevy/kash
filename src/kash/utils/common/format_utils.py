@@ -2,10 +2,9 @@ import html
 import re
 from pathlib import Path
 
-from inflect import engine
 from prettyfmt import fmt_path
 
-from kash.utils.common.lazyobject import lazyobject
+from kash.utils.common.inflection import inflect
 from kash.utils.common.url import Locator, is_url
 
 
@@ -43,11 +42,6 @@ def fmt_loc(locator: str | Locator, resolve: bool = True) -> str:
         return loc_str
     else:
         return fmt_path(locator, resolve=resolve)
-
-
-@lazyobject
-def inflect():
-    return engine()
 
 
 def fmt_count_items(count: int, name: str = "item") -> str:

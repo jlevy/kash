@@ -5,7 +5,7 @@ from typing import TypeVar
 from kash.config.logger import get_logger
 from kash.config.text_styles import COLOR_ERROR
 from kash.shell.output.shell_output import PrintHooks
-from kash.utils.errors import NONFATAL_EXCEPTIONS
+from kash.utils.errors import get_nonfatal_exceptions
 
 log = get_logger(__name__)
 
@@ -41,7 +41,7 @@ def wrap_with_exception_printing(func: Callable[..., R]) -> Callable[[list[str]]
                 (", ".join(str(arg) for arg in args)),
             )
             return func(*args)
-        except NONFATAL_EXCEPTIONS as e:
+        except get_nonfatal_exceptions() as e:
             PrintHooks.nonfatal_exception()
             log.error(f"[{COLOR_ERROR}]Command error:[/{COLOR_ERROR}] %s", summarize_traceback(e))
             log.info("Command error details: %s", e, exc_info=True)
