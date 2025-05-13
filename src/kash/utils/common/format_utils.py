@@ -4,7 +4,7 @@ from pathlib import Path
 
 from prettyfmt import fmt_path
 
-from kash.utils.common.inflection import inflect
+from kash.utils.common.inflection import plural
 from kash.utils.common.url import Locator, is_url
 
 
@@ -48,7 +48,7 @@ def fmt_count_items(count: int, name: str = "item") -> str:
     """
     Format a count and a name as a pluralized phrase, e.g. "1 item" or "2 items".
     """
-    return f"{count} {inflect.plural(name, count)}"  # pyright: ignore
+    return f"{count} {plural(name, count)}"  # pyright: ignore
 
 
 ## Tests

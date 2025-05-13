@@ -128,6 +128,8 @@ class FileListing:
     since_timestamp: float
 
     def as_dataframe(self) -> DataFrame:
+        from pandas import DataFrame
+
         df = DataFrame([file.__dict__ for file in self.files])
         return df
 
