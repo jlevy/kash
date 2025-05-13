@@ -1,5 +1,6 @@
 import re
-from typing import Any
+from textwrap import dedent
+from typing import Any, TypeAlias
 
 import marko
 import regex
@@ -10,6 +11,8 @@ from kash.config.logger import get_logger
 from kash.utils.common.url import Url
 
 log = get_logger(__name__)
+
+HTag: TypeAlias = str
 
 # Characters that commonly need escaping in Markdown inline text.
 MARKDOWN_ESCAPE_CHARS = r"([\\`*_{}\[\]()#+.!-])"
@@ -128,7 +131,7 @@ def extract_bullet_points(content: str) -> list[str]:
     return _tree_bullet_points(document)
 
 
-def _type_from_heading(heading: Heading) -> str:
+def _type_from_heading(heading: Heading) -> HTag:
     if heading.level in [1, 2, 3, 4, 5, 6]:
         return f"h{heading.level}"
     else:
@@ -172,6 +175,40 @@ def find_markdown_text(
 
         # Skip this match and continue searching
         pos = match.end()
+
+
+def extract_headings(text: str) -> list[tuple[HTag, str]]:
+    """
+    Extract all headings from markdown content.
+    Returns a list of (tag, text) tuples, e.g., [("h1", "Main Title"), ("h2", "Subtitle")].
+    """
+    document = marko.parse(text)
+    headings_list: list[tuple[HTag, str]] = []
+
+    def _collect_headings_recursive(element: Any) -> None:
+        if isinstance(element, Heading):
+            tag = _type_from_heading(element)
+            content = _extract_text(element).strip()
+            headings_list.append((tag, content))
+
+        if hasattr(element, "children"):
+            for child in element.children:
+                _collect_headings_recursive(child)
+
+    _collect_headings_recursive(document)
+    return headings_list
+
+
+def first_heading(text: str, *, allowed_tags: tuple[HTag, ...] = ("h1", "h2")) -> str | None:
+    """
+    Find the text of the first heading. Returns first h1 if present, otherwise first h2, etc.
+    """
+    headings = extract_headings(text)
+    for goal_tag in allowed_tags:
+        for h_tag, h_text in headings:
+            if h_tag == goal_tag:
+                return h_text
+    return None
 
 
 ## Tests
@@ -224,3 +261,44 @@ def test_find_markdown_text() -> None:  # pragma: no cover
     pattern = re.compile("bar", re.IGNORECASE)
     match = find_markdown_text(pattern, text)
     assert match is None
+
+
+def test_extract_headings_and_first_header() -> None:
+    markdown_content = dedent("""
+        # Title 1
+        Some text.
+        ## Subtitle 1.1
+        More text.
+        ### Sub-subtitle 1.1.1
+        Even more text.
+        # Title 2 *with formatting*
+        And final text.
+        ## Subtitle 2.1
+        """)
+    expected_headings = [
+        ("h1", "Title 1"),
+        ("h2", "Subtitle 1.1"),
+        ("h3", "Sub-subtitle 1.1.1"),
+        ("h1", "Title 2 with formatting"),
+        ("h2", "Subtitle 2.1"),
+    ]
+    assert extract_headings(markdown_content) == expected_headings
+
+    assert first_heading(markdown_content) == "Title 1"
+    assert first_heading(markdown_content) == "Title 1"
+    assert first_heading(markdown_content, allowed_tags=("h2",)) == "Subtitle 1.1"
+    assert first_heading(markdown_content, allowed_tags=("h3",)) == "Sub-subtitle 1.1.1"
+    assert first_heading(markdown_content, allowed_tags=("h4",)) is None
+
+    assert extract_headings("") == []
+    assert first_heading("") is None
+    assert first_heading("Just text, no headers.") is None
+
+    markdown_h2_only = "## Only H2 Here"
+    assert extract_headings(markdown_h2_only) == [("h2", "Only H2 Here")]
+    assert first_heading(markdown_h2_only) == "Only H2 Here"
+    assert first_heading(markdown_h2_only, allowed_tags=("h2",)) == "Only H2 Here"
+
+    formatted_header_md = "## *Formatted* _Header_ [link](#anchor)"
+    assert extract_headings(formatted_header_md) == [("h2", "Formatted Header link")]
+    assert first_heading(formatted_header_md, allowed_tags=("h2",)) == "Formatted Header link"

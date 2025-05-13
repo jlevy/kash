@@ -75,7 +75,8 @@ def _print_listing_tallies(
         cprint("(use --no_max to remove cutoff)", style=STYLE_HINT)
 
 
-DEFAULT_MAX_PG = 100
+DEFAULT_MAX_PER_GROUP = 50
+"""Default maximum number of files to display per group."""
 
 
 @kash_command
@@ -301,13 +302,13 @@ def files(
     # there are lots of groups and lots of files per group.
     # Default is max 100 per group but if we have 4 * 100 items, cut to 25.
     # If we have 2 * 100 items, cut to 50.
-    final_max_pg = DEFAULT_MAX_PG if cap_per_group else max_per_group
+    final_max_pg = DEFAULT_MAX_PER_GROUP if cap_per_group else max_per_group
     max_pg_explicit = max_per_group > 0
     if not max_pg_explicit:
         group_lens = [len(group_df) for group_df in grouped]
         for ratio in [2, 4]:
-            if sum(group_lens) > ratio * DEFAULT_MAX_PG:
-                final_max_pg = int(DEFAULT_MAX_PG / ratio)
+            if sum(group_lens) > ratio * DEFAULT_MAX_PER_GROUP:
+                final_max_pg = int(DEFAULT_MAX_PER_GROUP / ratio)
 
     total_displayed = 0
     total_displayed_size = 0
