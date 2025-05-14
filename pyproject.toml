@@ -38,7 +38,7 @@ classifiers = [
 # ---- Main dependencies ----
 
 dependencies = [
-    "dunamai>=1.23.0",
+"dunamai>=1.23.0",
     "pydantic>=2.10.6",
     "typing-extensions>=4.12.2",
     # My tools:
@@ -102,6 +102,8 @@ dependencies = [
     "mcp-proxy>=0.5.0",
 ]
 
+# ---- Dev dependencies ----
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
@@ -155,8 +157,8 @@ packages = ["src/kash"]
 line-length = 100
 
 [tool.ruff.lint]
-# See: https://docs.astral.sh/ruff/rules/
 select = [
+    # See: https://docs.astral.sh/ruff/rules/
     # Basic list from: https://docs.astral.sh/ruff/linter/#rule-selection
     "E", # https://docs.astral.sh/ruff/rules/#error-e
     "F", # https://docs.astral.sh/ruff/rules/#pyflakes-f
@@ -171,6 +173,7 @@ select = [
 
 ]
 ignore = [
+    # Disable some rules that are overly pedantic. Add/remove as desired:
     "E501", # https://docs.astral.sh/ruff/rules/line-too-long/
     "E402", # https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file/
     "E731", # https://docs.astral.sh/ruff/rules/lambda-assignment/
