@@ -12,36 +12,64 @@ log = logging.getLogger(__name__)
 Tallies: TypeAlias = dict[str, int]
 
 
-def import_subdirs(
+def import_recursive(
     parent_package_name: str,
     parent_dir: Path,
-    subdir_names: list[str] | None = None,
+    resource_names: list[str] | None = None,
     tallies: Tallies | None = None,
 ):
     """
-    Import all files in the given subdirectories of a single parent directory.
-    Wraps `pkgutil.iter_modules` to iterate over all modules in the subdirectories.
-    If `subdir_names` is `None`, will import all subdirectories.
+    Import modules from subdirectories or individual Python modules within a parent package.
+
+    Each resource in `resource_names` can be:
+    - A directory name (all modules within it will be imported)
+    - A module name with or without '.py' extension (a single module will be imported)
+    - "." to import all modules in the parent_dir
+
+    If `resource_names` is `None`, imports all modules directly in parent_dir.
+
+    Simply a convenience wrapper for `importlib.import_module` and
+    `pkgutil.iter_modules` to iterate over all modules in the subdirectories.
+
+    If `tallies` is provided, it will be updated with the number of modules imported
+    for each package.
     """
     if tallies is None:
         tallies = {}
-    if not subdir_names:
-        subdir_names = ["."]
+    if not resource_names:
+        resource_names = ["."]
 
-    for subdir_name in subdir_names:
-        if subdir_name == ".":
+    for name in resource_names:
+        if name == ".":
             full_path = parent_dir
             package_name = parent_package_name
         else:
-            full_path = parent_dir / subdir_name
-            package_name = f"{parent_package_name}.{subdir_name}"
+            full_path = parent_dir / name
+            package_name = f"{parent_package_name}.{name}"
 
-        if not full_path.is_dir():
-            raise FileNotFoundError(f"Subdirectory not found: {full_path}")
+        # Check if it's a directory
+        if full_path.is_dir():
+            # Import all modules in the directory
+            for _, module_name, _ in pkgutil.iter_modules(path=[str(full_path)]):
+                importlib.import_module(f"{package_name}.{module_name}")
+                tallies[package_name] = tallies.get(package_name, 0) + 1
+        else:
+            # Not a directory, try as a module file
+            module_path = full_path
+            module_name = name
 
-        for _module_finder, module_name, _is_pkg in pkgutil.iter_modules(path=[str(full_path)]):
-            importlib.import_module(f"{package_name}.{module_name}")  # Propagate import errors
-            tallies[package_name] = tallies.get(package_name, 0) + 1
+            # Handle with or without .py extension
+            if not module_path.is_file() and module_path.suffix != ".py":
+                module_path = parent_dir / f"{name}.py"
+                module_name = name
+            elif module_path.suffix == ".py":
+                module_name = module_path.stem
+
+            if module_path.is_file() and module_name != "__init__":
+                importlib.import_module(f"{parent_package_name}.{module_name}")
+                tallies[parent_package_name] = tallies.get(parent_package_name, 0) + 1
+            else:
+                raise FileNotFoundError(f"Path not found or not importable: {full_path}")
 
     return tallies
 

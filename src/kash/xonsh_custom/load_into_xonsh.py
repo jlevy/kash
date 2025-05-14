@@ -13,8 +13,6 @@ from kash.commands.help.welcome import welcome
 from kash.config.logger import get_logger
 from kash.config.settings import RECOMMENDED_PKGS, check_kerm_code_support
 from kash.config.text_styles import LOGO_NAME, STYLE_HINT
-from kash.local_server.local_server import start_ui_server
-from kash.local_server.local_url_formatters import enable_local_urls
 from kash.mcp.mcp_server_commands import start_mcp_server
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.shell.version import get_version_tag
@@ -89,6 +87,10 @@ def load_into_xonsh():
         # Currently only Kerm supports our advanced UI with Kerm codes.
         supports_kerm_codes = check_kerm_code_support()
         if supports_kerm_codes:
+            # Don't pay for import until needed.
+            from kash.local_server.local_server import start_ui_server
+            from kash.local_server.local_url_formatters import enable_local_urls
+
             start_ui_server()
             enable_local_urls(True)
         else:

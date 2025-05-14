@@ -1,4 +1,5 @@
 import os
+from functools import cache
 from pathlib import Path
 
 from prettyfmt import fmt_lines, fmt_path
@@ -11,7 +12,6 @@ from kash.media_base.media_services import (
     download_media_by_service,
     get_media_services,
 )
-from kash.media_base.transcription_deepgram import deepgram_transcribe_audio
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, as_file_url, is_url
 from kash.utils.errors import FileNotFound, InvalidInput, UnexpectedError
@@ -22,7 +22,14 @@ log = get_logger(__name__)
 
 # FIXME: Hard-coded dependency for now. Would be better to make it settable.
 # transcribe_audio = whisper_transcribe_audio_small
-transcribe_audio = deepgram_transcribe_audio
+
+
+@cache
+def get_transcriber():
+    from kash.media_base.transcription_deepgram import deepgram_transcribe_audio
+
+    transcribe_audio = deepgram_transcribe_audio
+    return transcribe_audio
 
 
 # For simplicity we assume all audio is converted to mp3.
@@ -83,7 +90,7 @@ class MediaCache(DirStore):
             url,
             fmt_path(downsampled_audio_file),
         )
-        transcript = transcribe_audio(downsampled_audio_file, language=language)
+        transcript = get_transcriber()(downsampled_audio_file, language=language)
         self._write_transcript(url, transcript)
         return transcript
 

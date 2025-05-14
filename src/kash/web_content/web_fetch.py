@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
-import httpx
 from strif import atomic_output_file, copyfile_atomic
-from tqdm import tqdm
 
 from kash.config.env_settings import KashEnv
 from kash.utils.common.url import Url
+
+if TYPE_CHECKING:
+    from httpx import Client, Response
 
 log = logging.getLogger(__name__)
 
@@ -30,11 +33,13 @@ def fetch_url(
     timeout: int = DEFAULT_TIMEOUT,
     auth: Any | None = None,
     headers: dict[str, str] | None = None,
-) -> httpx.Response:
+) -> Response:
     """
     Fetch a URL using httpx with logging and reasonable defaults.
     Raise httpx.HTTPError for non-2xx responses.
     """
+    import httpx
+
     with httpx.Client(
         follow_redirects=True,
         timeout=timeout,
@@ -51,7 +56,7 @@ def fetch_url(
 def download_url(
     url: Url,
     target_filename: str | Path,
-    session: httpx.Client | None = None,
+    session: Client | None = None,
     show_progress: bool = False,
     timeout: int = DEFAULT_TIMEOUT,
     auth: Any | None = None,
@@ -62,6 +67,9 @@ def download_url(
     Also handles file:// and s3:// URLs. Output file is created atomically.
     Raise httpx.HTTPError for non-2xx responses.
     """
+    import httpx
+    from tqdm import tqdm
+
     target_filename = str(target_filename)
     parsed_url = urlparse(url)
     if show_progress:

@@ -81,6 +81,9 @@ def clipboard_paste(path: str = "untitled_paste.txt") -> None:
     import pyperclip
 
     contents = pyperclip.paste()
+    if not contents.strip():
+        raise InvalidInput("Clipboard is empty")
+
     with atomic_output_file(path, backup_suffix=".{timestamp}.bak") as f:
         f.write_text(contents)
 

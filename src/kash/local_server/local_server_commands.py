@@ -1,7 +1,6 @@
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
 from kash.exec import kash_command
-from kash.local_server.local_url_formatters import enable_local_urls
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.errors import InvalidState
 
@@ -17,6 +16,7 @@ def start_ui_server() -> None:
     tooltips.
     """
     from kash.local_server.local_server import start_ui_server
+    from kash.local_server.local_url_formatters import enable_local_urls
 
     start_ui_server()
     enable_local_urls(True)
@@ -28,6 +28,7 @@ def stop_ui_server() -> None:
     Stop the kash local server.
     """
     from kash.local_server.local_server import stop_ui_server
+    from kash.local_server.local_url_formatters import enable_local_urls
 
     stop_ui_server()
     enable_local_urls(False)

@@ -6,14 +6,13 @@ from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, is_url
 from kash.utils.errors import InvalidInput
-from kash.web_content.canon_url import canonicalize_url
-from kash.web_content.web_extract import fetch_extract
-from kash.workspaces import current_ws
 
 log = get_logger(__name__)
 
 
 def fetch_url_metadata(locator: Url | StorePath, refetch: bool = False) -> Item:
+    from kash.workspaces import current_ws
+
     ws = current_ws()
     if is_url(locator):
         # Import or find URL as a resource in the current workspace.
@@ -34,6 +33,10 @@ def fetch_url_item_metadata(item: Item, refetch: bool = False) -> Item:
     Fetch metadata for a URL using a media service if we recognize the URL,
     and otherwise fetching and extracting it from the web page HTML.
     """
+    from kash.web_content.canon_url import canonicalize_url
+    from kash.web_content.web_extract import fetch_extract
+    from kash.workspaces import current_ws
+
     ws = current_ws()
     if not refetch and item.title and item.description:
         log.message(

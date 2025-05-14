@@ -6,8 +6,6 @@ from kash.config.settings import (
     global_settings,
 )
 from kash.exec import kash_command
-from kash.mcp import mcp_server_routes
-from kash.mcp.mcp_cli import MCP_CLI_LOG_PATH
 from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import cprint, print_h2
 from kash.shell.utils.native_utils import tail_file
@@ -21,6 +19,7 @@ def start_mcp_server() -> None:
     """
     Start the MCP server, using all currently known actions marked as MCP tools.
     """
+    from kash.mcp import mcp_server_routes
     from kash.mcp.mcp_server_sse import start_mcp_server_sse
 
     mcp_server_routes.publish_mcp_tools()
@@ -42,6 +41,7 @@ def restart_mcp_server() -> None:
     """
     Restart the MCP server, republishing all actions marked as MCP tools.
     """
+    from kash.mcp import mcp_server_routes
     from kash.mcp.mcp_server_sse import restart_mcp_server_sse
 
     mcp_server_routes.unpublish_mcp_tools(None)
@@ -57,6 +57,8 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
     :param follow: Follow the file as it grows.
     :param all: Show all logs, not just the server logs, including Claude Desktop logs if found.
     """
+    from kash.mcp.mcp_cli import MCP_CLI_LOG_PATH
+
     settings = global_settings()
     if all:
         global_log_base = settings.system_logs_dir
@@ -96,6 +98,7 @@ def list_mcp_tools() -> None:
     """
     List published MCP tools.
     """
+    from kash.mcp import mcp_server_routes
 
     tools = mcp_server_routes.get_published_tools()
 
@@ -118,6 +121,8 @@ def publish_mcp_tool(*action_names: str) -> None:
     Publish one or more actions as local MCP tools. With no arguments, publish all
     actions marked as MCP tools.
     """
+    from kash.mcp import mcp_server_routes
+
     if not action_names:
         log.message("Publishing all actions marked as MCP tools.")
         mcp_server_routes.publish_mcp_tools()
@@ -131,6 +136,7 @@ def unpublish_mcp_tool(*action_names: str) -> None:
     Un-publish one or more actions as local MCP tools. With no arguments,
     un-publish all published actions.
     """
+    from kash.mcp import mcp_server_routes
 
     if not action_names:
         log.message("Un-publishing all actions marked as MCP tools.")

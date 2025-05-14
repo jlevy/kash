@@ -5,7 +5,7 @@ from prettyfmt import fmt_lines, fmt_path
 from kash.config.logger import get_logger
 from kash.exec.action_registry import action_classes, refresh_action_classes
 from kash.exec.command_registry import get_all_commands
-from kash.utils.common.import_utils import Tallies, import_subdirs
+from kash.utils.common.import_utils import Tallies, import_recursive
 
 log = get_logger(__name__)
 
@@ -13,12 +13,12 @@ log = get_logger(__name__)
 def import_and_register(
     package_name: str | None,
     parent_dir: Path,
-    subdir_names: list[str] | None = None,
+    resource_names: list[str] | None = None,
     tallies: Tallies | None = None,
 ):
     """
     This hook can be used for auto-registering commands and actions from any
-    subdirectory of a given package.
+    module or subdirectory of a given package.
 
     Useful to call from `__init__.py` files to import a directory of code,
     auto-registering annotated commands and actions and also handles refreshing the
@@ -38,7 +38,7 @@ def import_and_register(
         prev_command_count = len(get_all_commands())
         prev_action_count = len(ac)
 
-        import_subdirs(package_name, parent_dir, subdir_names, tallies)
+        import_recursive(package_name, parent_dir, resource_names, tallies)
 
         new_command_count = len(get_all_commands()) - prev_command_count
         new_action_count = len(ac) - prev_action_count
