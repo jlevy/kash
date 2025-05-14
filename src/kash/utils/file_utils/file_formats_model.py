@@ -104,6 +104,13 @@ class Format(Enum):
         ]
 
     @property
+    def is_simple_text(self) -> bool:
+        """
+        Is this plaintext or close to it, like Markdown?
+        """
+        return self in [self.plaintext, self.markdown, self.md_html]
+
+    @property
     def is_doc(self) -> bool:
         return self in [
             self.markdown,
@@ -129,6 +136,14 @@ class Format(Enum):
     @property
     def is_code(self) -> bool:
         return self in [self.python, self.shellscript, self.xonsh, self.json, self.yaml]
+
+    @property
+    def is_markdown(self) -> bool:
+        return self in [self.markdown, self.md_html]
+
+    @property
+    def is_html(self) -> bool:
+        return self in [self.html, self.md_html]
 
     @property
     def is_data(self) -> bool:

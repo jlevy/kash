@@ -25,6 +25,7 @@ from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
 from kash.model.paths_model import StorePath, fmt_store_path
 from kash.text_handling.markdown_render import markdown_to_html
+from kash.text_handling.markdown_utils import first_heading
 from kash.utils.common.format_utils import fmt_loc, html_to_plaintext, plaintext_to_html
 from kash.utils.common.url import Locator, Url
 from kash.utils.errors import FileFormatError
@@ -518,7 +519,13 @@ class Item:
             display_title = self.abbrev_title()
         return display_title
 
-    def abbrev_title(self, max_len: int = 100, add_ops_suffix: bool = True) -> str:
+    def abbrev_title(
+        self,
+        *,
+        max_len: int = 100,
+        add_ops_suffix: bool = False,
+        pull_body_heading: bool = False,
+    ) -> str:
         """
         Get or infer a title for this item, falling back to the filename, URL,
         description, or finally body text.
@@ -526,7 +533,14 @@ class Item:
         """
         from kash.file_storage.store_filenames import parse_item_filename
 
-        # Special case for URLs with no title..
+        # First special case: if we are pulling the title from the body header, check
+        # that.
+        if not self.title and pull_body_heading:
+            heading = self.body_heading()
+            if heading:
+                return heading
+
+        # Next special case: URLs with no title use the url itself.
         if not self.title and self.url:
             return abbrev_str(self.url, max_len)
 
@@ -572,6 +586,15 @@ class Item:
 
         return final_text
 
+    def body_heading(self) -> str | None:
+        """
+        Get the first h1 or h2 heading from the body text, if present.
+        """
+        if self.format in [Format.markdown, Format.md_html]:
+            return first_heading(self.body_text(), allowed_tags=("h1", "h2"))
+        # TODO: Support HTML <h1> and <h2> as well.
+        return None
+
     def abbrev_body(self, max_len: int) -> str:
         """
         Get an abbreviated version of the body text. Must not be a binary Item.
@@ -602,7 +625,7 @@ class Item:
         Get a readable slugified version of the title or filename or content
         appropriate for this item. May not be unique.
         """
-        title = self.abbrev_title(max_len=max_len)
+        title = self.abbrev_title(max_len=max_len, add_ops_suffix=True)
         slug = slugify_snake(title)
         return slug
 
@@ -710,8 +733,8 @@ class Item:
         self, update_timestamp: bool = True, **other_updates: Unpack[ItemUpdateOptions]
     ) -> Item:
         """
-        Copy item with the given field updates. Resets store_path to None. Updates
-        created time if requested.
+        Copy item with the given field updates. Resets `store_path` to None but preserves
+        other fields, including the body. Updates created time if requested.
         """
         new_fields = self._copy_and_update(update_timestamp=update_timestamp, **other_updates)
         return Item(**new_fields)

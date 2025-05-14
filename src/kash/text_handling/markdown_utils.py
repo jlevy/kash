@@ -179,8 +179,10 @@ def find_markdown_text(
 
 def extract_headings(text: str) -> list[tuple[HTag, str]]:
     """
-    Extract all headings from markdown content.
-    Returns a list of (tag, text) tuples, e.g., [("h1", "Main Title"), ("h2", "Subtitle")].
+    Extract all Markdown headings from the given content.
+    Returns a list of (tag, text) tuples:
+    [("h1", "Main Title"), ("h2", "Subtitle")]
+    where `#` corresponds to `h1`, `##` to `h2`, etc.
     """
     document = marko.parse(text)
     headings_list: list[tuple[HTag, str]] = []
@@ -196,6 +198,7 @@ def extract_headings(text: str) -> list[tuple[HTag, str]]:
                 _collect_headings_recursive(child)
 
     _collect_headings_recursive(document)
+
     return headings_list
 
 

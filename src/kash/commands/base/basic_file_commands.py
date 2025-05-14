@@ -77,6 +77,7 @@ def clipboard_paste(path: str = "untitled_paste.txt") -> None:
     Paste the contents of the OS-native clipboard into a new file.
     """
     # TODO: Get this to work for images!
+    # And can we convert rich text to Markdown?
     import pyperclip
 
     contents = pyperclip.paste()

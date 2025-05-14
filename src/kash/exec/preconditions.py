@@ -85,13 +85,13 @@ def contains_curly_vars(item: Item) -> bool:
 
 
 @kash_precondition
-def has_text_body(item: Item) -> bool:
-    return has_body(item) and item.format in (Format.plaintext, Format.markdown, Format.md_html)
+def has_simple_text_body(item: Item) -> bool:
+    return bool(has_body(item) and item.format and item.format.is_simple_text)
 
 
 @kash_precondition
 def has_html_body(item: Item) -> bool:
-    return has_body(item) and item.format in (Format.html, Format.md_html)
+    return bool(has_body(item) and item.format and item.format.is_html)
 
 
 @kash_precondition
@@ -106,7 +106,7 @@ def is_plaintext(item: Item) -> bool:
 
 @kash_precondition
 def is_markdown(item: Item) -> bool:
-    return has_body(item) and item.format in (Format.markdown, Format.md_html)
+    return bool(has_body(item) and item.format and item.format.is_markdown)
 
 
 @kash_precondition
@@ -117,14 +117,6 @@ def is_markdown_template(item: Item) -> bool:
 @kash_precondition
 def is_html(item: Item) -> bool:
     return has_body(item) and item.format == Format.html
-
-
-@kash_precondition
-def is_text_doc(item: Item) -> bool:
-    """
-    A document that can be processed by LLMs and other plaintext tools.
-    """
-    return (is_plaintext(item) or is_markdown(item)) and has_body(item)
 
 
 @kash_precondition
