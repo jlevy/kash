@@ -104,7 +104,7 @@ def load_source_code() -> SourceCode:
             kash_base_path / "model" / "assistant_response_model.py",
         ),
         text_tool_src=read_source_code(
-            kash_base_path / "text_handling",
+            kash_base_path / "utils" / "text_handling",
             kash_base_path / "utils" / "lang_utils",
             # TODO: Include additional dep libs like chopdiff TextDoc too?
         ),
