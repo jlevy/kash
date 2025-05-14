@@ -8,9 +8,9 @@ from kash.config.logger import get_logger
 from kash.exec import assemble_path_args, kash_command, resolvable_paths
 from kash.exec_model.shell_model import ShellResult
 from kash.shell.output.shell_output import print_status
-from kash.text_handling.doc_normalization import normalize_text_file
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.filename_parsing import join_filename, split_filename
+from kash.utils.text_handling.doc_normalization import normalize_text_file
 
 log = get_logger(__name__)
 

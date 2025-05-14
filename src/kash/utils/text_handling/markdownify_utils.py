@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from kash.text_handling.escape_html_tags import escape_html_tags
+from kash.utils.text_handling.escape_html_tags import escape_html_tags
 
 _single_tilde_pat = re.compile(r"(?<!~)~(?!~)")
 _alt_tilde = "～"

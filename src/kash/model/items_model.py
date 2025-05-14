@@ -24,13 +24,13 @@ from kash.model.concept_model import canonicalize_concept
 from kash.model.media_model import MediaMetadata
 from kash.model.operations_model import OperationSummary, Source
 from kash.model.paths_model import StorePath, fmt_store_path
-from kash.text_handling.markdown_render import markdown_to_html
-from kash.text_handling.markdown_utils import first_heading
 from kash.utils.common.format_utils import fmt_loc, html_to_plaintext, plaintext_to_html
 from kash.utils.common.url import Locator, Url
 from kash.utils.errors import FileFormatError
 from kash.utils.file_formats.chat_format import ChatHistory
 from kash.utils.file_utils.file_formats_model import FileExt, Format
+from kash.utils.text_handling.markdown_render import markdown_to_html
+from kash.utils.text_handling.markdown_utils import first_heading
 
 if TYPE_CHECKING:
     from kash.model.exec_model import ExecContext

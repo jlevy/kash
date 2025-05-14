@@ -7,10 +7,10 @@ from prettyfmt import custom_key_sort, fmt_size_human
 from kash.config.logger import get_logger
 from kash.model.items_model import ITEM_FIELDS, Item
 from kash.model.operations_model import OPERATION_FIELDS
-from kash.text_handling.doc_normalization import normalize_formatting
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.file_utils.mtime_cache import MtimeCache
+from kash.utils.text_handling.doc_normalization import normalize_formatting
 
 log = get_logger(__name__)
 

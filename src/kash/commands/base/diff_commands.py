@@ -8,9 +8,9 @@ from kash.exec_model.shell_model import ShellResult
 from kash.model.items_model import Item, ItemRelations, ItemType
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import Wrap, cprint
-from kash.text_handling.unified_diffs import unified_diff, unified_diff_files
 from kash.utils.errors import ContentError, InvalidInput, InvalidOperation
 from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.text_handling.unified_diffs import unified_diff, unified_diff_files
 from kash.workspaces import current_ws
 
 log = get_logger(__name__)

@@ -13,9 +13,9 @@ from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
 from kash.model.items_model import Item
-from kash.text_handling.doc_normalization import normalize_formatting
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.text_handling.doc_normalization import normalize_formatting
 
 log = get_logger(__name__)
 
