@@ -299,7 +299,7 @@ def save_action_result(
                 skipped_paths.append(store_path)
                 continue
 
-        ws.save(item, as_tmp=as_tmp, no_format=no_format)
+        ws.save(item, overwrite=result.overwrite, as_tmp=as_tmp, no_format=no_format)
 
     if skipped_paths:
         log.message(

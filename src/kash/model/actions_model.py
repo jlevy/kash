@@ -90,6 +90,9 @@ class ActionResult:
     replaces_input: bool = False
     """If True, a hint to archive the input items."""
 
+    overwrite: bool = False
+    """If True, will not pick unique output paths to save to, overwriting existing files of the same name."""
+
     skip_duplicates: bool = False
     """If True, do not save duplicate items (based on identity)."""
 

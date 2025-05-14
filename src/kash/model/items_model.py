@@ -527,9 +527,9 @@ class Item:
         pull_body_heading: bool = False,
     ) -> str:
         """
-        Get or infer a title for this item, falling back to the filename, URL,
-        description, or finally body text.
-        Optionally, include the last operation as a parenthetical at the end of the title.
+        Get or infer a title for this item, falling back to the filename, URL, description, or
+        finally body text. Optionally, include the last operation as a parenthetical at the end
+        of the title. Will use "Untitled" if all else fails.
         """
         from kash.file_storage.store_filenames import parse_item_filename
 

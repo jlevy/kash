@@ -24,7 +24,7 @@ def import_url(ws: FileStore, url: Url) -> Item:
     )
     item = Item(ItemType.resource, url=canon_url, format=Format.url)
     # No need to overwrite any resource we already have for the identical URL.
-    store_path = ws.save(item, overwrite=False)
+    store_path = ws.save(item, skip_dup_names=True)
     # Load to fill in any metadata we may already have.
     item = ws.load(store_path)
     return item

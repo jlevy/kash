@@ -182,33 +182,6 @@ class FileStore(Workspace):
         except (FileNotFoundError, InvalidFilename):
             pass
 
-    @synchronized
-    def _new_filename_for(self, item: Item) -> tuple[str, str | None]:
-        """
-        Get a suitable filename for this item that is close to the slugified title yet also unique.
-        Also return the old filename if it's different.
-        """
-        slug = item.slug_name()
-        full_suffix = item.get_full_suffix()
-        # Get a unique name per item type.
-        unique_slug, old_slugs = self.uniquifier.uniquify_historic(slug, full_suffix)
-
-        # Suffix files with both item type and a suitable file extension.
-        new_unique_filename = join_suffix(unique_slug, full_suffix)
-
-        old_filename = join_suffix(old_slugs[0], full_suffix) if old_slugs else None
-
-        return new_unique_filename, old_filename
-
-    def _default_path_for(self, item: Item) -> StorePath:
-        folder_path = folder_for_type(item.type)
-        slug = item.slug_name()
-        suffix = item.get_full_suffix()
-        return StorePath(folder_path / join_suffix(slug, suffix))
-
-    def exists(self, store_path: StorePath) -> bool:
-        return (self.base_dir / store_path).exists()
-
     def resolve_path(self, path: Path | StorePath) -> StorePath | None:
         """
         Return a StorePath if the given path is within the store, otherwise None.
@@ -221,6 +194,44 @@ class FileStore(Workspace):
             return StorePath(resolved.relative_to(self.base_dir))
         else:
             return None
+
+    def exists(self, store_path: StorePath) -> bool:
+        """
+        Check given store path refers to an existing file.
+        """
+        return (self.base_dir / store_path).exists()
+
+    @synchronized
+    def _pick_filename_for(self, item: Item, *, overwrite: bool = False) -> tuple[str, str | None]:
+        """
+        Get a suitable filename for this item.
+        If `overwrite` is true, use the the slugified title.
+        If it is false, use the slugified title with a suffix to make it unique
+        and in this case returns the old filename for this item, if it is different.
+        """
+        if overwrite:
+            return self.default_path_for(item), None
+
+        slug = item.slug_name()
+        full_suffix = item.get_full_suffix()
+        # Get a unique name per item type.
+        unique_slug, old_slugs = self.uniquifier.uniquify_historic(slug, full_suffix)
+
+        # Suffix files with both item type and a suitable file extension.
+        new_unique_filename = join_suffix(unique_slug, full_suffix)
+
+        old_filename = join_suffix(old_slugs[0], full_suffix) if old_slugs else None
+
+        return new_unique_filename, old_filename
+
+    def default_path_for(self, item: Item) -> StorePath:
+        """
+        Get the default store path for an item based on slugifying its title or other metadata.
+        """
+        folder_path = folder_for_type(item.type)
+        slug = item.slug_name()
+        full_suffix = item.get_full_suffix()
+        return StorePath(folder_path / join_suffix(slug, full_suffix))
 
     @synchronized
     def find_by_id(self, item: Item) -> StorePath | None:
@@ -235,7 +246,7 @@ class FileStore(Workspace):
             store_path = self.id_map.get(item_id)
             if not store_path:
                 # Just in case the id_map is not complete, check the default path too.
-                default_path = self._default_path_for(item)
+                default_path = self.default_path_for(item)
                 if self.exists(default_path):
                     old_item = self.load(default_path)
                     if old_item.item_id() == item_id:
@@ -256,7 +267,7 @@ class FileStore(Workspace):
 
     @synchronized
     def store_path_for(
-        self, item: Item, as_tmp: bool = False
+        self, item: Item, *, as_tmp: bool = False, overwrite: bool = False
     ) -> tuple[StorePath, bool, StorePath | None]:
         """
         Return the store path for an item. If the item already has a `store_path`, we use that.
@@ -265,6 +276,10 @@ class FileStore(Workspace):
         Returns `store_path, found, old_store_path` where `found` indicates whether the path was
         already found (in the item or in the store by checking for identity) and `old_store_path`
         is the previous similarly named item with a different identity (or None there is none).
+
+        If `as_tmp` is true, will return a path from the temporary directory in the store.
+        Normally an item is always saved to a unique store path but if `overwrite` is true,
+        will always save to the same path
         """
         item_id = item.item_id()
         old_filename = None
@@ -283,7 +298,7 @@ class FileStore(Workspace):
         else:
             # We need to generate a new filename.
             folder_path = folder_for_type(item.type)
-            filename, old_filename = self._new_filename_for(item)
+            filename, old_filename = self._pick_filename_for(item, overwrite=overwrite)
             store_path = folder_path / filename
 
             old_store_path = None
@@ -312,7 +327,13 @@ class FileStore(Workspace):
 
     @log_calls()
     def save(
-        self, item: Item, *, overwrite: bool = True, as_tmp: bool = False, no_format: bool = False
+        self,
+        item: Item,
+        *,
+        overwrite: bool = False,
+        skip_dup_names: bool = False,
+        as_tmp: bool = False,
+        no_format: bool = False,
     ) -> StorePath:
         """
         Save the item. Uses the `store_path` if it's already set or generates a new one.
@@ -321,9 +342,18 @@ class FileStore(Workspace):
         Unless `no_format` is true, also normalizes body text formatting (for Markdown)
         and updates the item's body to match.
 
+        If `overwrite` is true, will overwrite a file that has the same path.
+
         If `as_tmp` is true, will save the item to a temporary file.
-        If `overwrite` is false, will skip saving if the item already exists.
+
+        If `skip_dup_names` is true, will skip saving if an item if an item with a
+        matching path (based on its title) already exists.
         """
+        if overwrite and skip_dup_names:
+            raise ValueError("Cannot both overwrite and skip duplicate names.")
+        if overwrite and as_tmp:
+            raise ValueError("Cannot both overwrite and save to a temporary file.")
+
         # If external file already exists within the workspace, the file is already saved (without metadata).
         external_path = item.external_path and Path(item.external_path).resolve()
         if external_path and self._is_in_store(external_path):
@@ -335,10 +365,15 @@ class FileStore(Workspace):
             return StorePath(rel_path)
         else:
             # Otherwise it's still in memory or in a file outside the workspace and we need to save it.
-            store_path, found, old_store_path = self.store_path_for(item, as_tmp=as_tmp)
+            store_path, found, old_store_path = self.store_path_for(
+                item, as_tmp=as_tmp, overwrite=overwrite
+            )
 
-            if not overwrite and found:
-                log.message("Skipping save of item already saved: %s", fmt_loc(store_path))
+            if skip_dup_names and found:
+                log.message(
+                    "Skipping save because an item of the same name already exists: %s",
+                    fmt_loc(store_path),
+                )
                 item.store_path = str(store_path)
                 return store_path
 
@@ -358,6 +393,12 @@ class FileStore(Workspace):
                 if item.external_path:
                     copyfile_atomic(item.external_path, full_path)
                 else:
+                    if overwrite and full_path.exists():
+                        log.info(
+                            "Overwrite is enabled and a previous file exists so will archive it: %s",
+                            fmt_loc(store_path),
+                        )
+                        self.archive(store_path, quiet=True)
                     write_item(item, full_path, normalize=not no_format)
             except OSError as e:
                 log.error("Error saving item: %s", e)
