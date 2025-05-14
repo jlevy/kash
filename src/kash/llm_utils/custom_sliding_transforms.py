@@ -31,9 +31,6 @@ log = get_logger(__name__)
 # more customized logging and task stack.
 
 
-log = get_logger(__name__)
-
-
 def filtered_transform(
     doc: TextDoc,
     transform_func: TextDocTransform,

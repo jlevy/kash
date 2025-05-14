@@ -7,10 +7,7 @@ import regex
 from marko.block import Heading, ListItem
 from marko.inline import Link
 
-from kash.config.logger import get_logger
 from kash.utils.common.url import Url
-
-log = get_logger(__name__)
 
 HTag: TypeAlias = str
 

@@ -5,14 +5,49 @@ from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger
 from kash.exec import import_locator_args, kash_command
 from kash.exec_model.shell_model import ShellResult
-from kash.model.items_model import Item, ItemType
+from kash.model.items_model import Item, ItemRelations, ItemType
+from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import Wrap, cprint
-from kash.text_handling.unified_diffs import unified_diff_files, unified_diff_items
-from kash.utils.errors import InvalidInput, InvalidOperation
+from kash.text_handling.unified_diffs import unified_diff, unified_diff_files
+from kash.utils.errors import ContentError, InvalidInput, InvalidOperation
 from kash.utils.file_utils.file_formats_model import Format
 from kash.workspaces import current_ws
 
 log = get_logger(__name__)
+
+
+def unified_diff_items(from_item: Item, to_item: Item, strict: bool = True) -> Item:
+    """
+    Generate a unified diff between two items. If `strict` is true, will raise
+    an error if the items are of different formats.
+    """
+    if not from_item.body and not to_item.body:
+        raise ContentError(f"No body to diff for {from_item} and {to_item}")
+    if not from_item.store_path or not to_item.store_path:
+        raise ContentError("No store path on items; save before diffing")
+    diff_items = [item for item in [from_item, to_item] if item.format == Format.diff]
+    if len(diff_items) == 1:
+        raise ContentError(
+            f"Cannot compare diffs to non-diffs: {from_item.format}, {to_item.format}"
+        )
+    if len(diff_items) > 0 or from_item.format != to_item.format:
+        msg = f"Diffing items of incompatible format: {from_item.format}, {to_item.format}"
+        if strict:
+            raise ContentError(msg)
+        else:
+            log.warning("%s", msg)
+
+    from_path, to_path = StorePath(from_item.store_path), StorePath(to_item.store_path)
+
+    diff = unified_diff(from_item.body, to_item.body, str(from_path), str(to_path))
+
+    return Item(
+        type=ItemType.doc,
+        title=f"Diff of {from_path} and {to_path}",
+        format=Format.diff,
+        relations=ItemRelations(diff_of=[from_path, to_path]),
+        body=diff.patch_text,
+    )
 
 
 @kash_command
