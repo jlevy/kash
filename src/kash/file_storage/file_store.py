@@ -210,7 +210,8 @@ class FileStore(Workspace):
         and in this case returns the old filename for this item, if it is different.
         """
         if overwrite:
-            return self.default_path_for(item), None
+            log.info("Picked default filename: %s for item: %s", item.default_filename(), item)
+            return item.default_filename(), None
 
         slug = item.slug_name()
         full_suffix = item.get_full_suffix()
@@ -222,6 +223,7 @@ class FileStore(Workspace):
 
         old_filename = join_suffix(old_slugs[0], full_suffix) if old_slugs else None
 
+        log.info("Picked new unique filename: %s for item: %s", new_unique_filename, item)
         return new_unique_filename, old_filename
 
     def default_path_for(self, item: Item) -> StorePath:
@@ -229,9 +231,7 @@ class FileStore(Workspace):
         Get the default store path for an item based on slugifying its title or other metadata.
         """
         folder_path = folder_for_type(item.type)
-        slug = item.slug_name()
-        full_suffix = item.get_full_suffix()
-        return StorePath(folder_path / join_suffix(slug, full_suffix))
+        return StorePath(folder_path / item.default_filename())
 
     @synchronized
     def find_by_id(self, item: Item) -> StorePath | None:
@@ -296,7 +296,7 @@ class FileStore(Workspace):
             )
             return store_path, True, None
         else:
-            # We need to generate a new filename.
+            # We need to pick the path and filename.
             folder_path = folder_for_type(item.type)
             filename, old_filename = self._pick_filename_for(item, overwrite=overwrite)
             store_path = folder_path / filename

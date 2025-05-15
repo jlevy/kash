@@ -629,6 +629,17 @@ class Item:
         slug = slugify_snake(title)
         return slug
 
+    def default_filename(self) -> str:
+        """
+        Get the default filename for an item based on slugifying its title or other
+        metadata. May not be unique.
+        """
+        from kash.file_storage.store_filenames import join_suffix
+
+        slug = self.slug_name()
+        full_suffix = self.get_full_suffix()
+        return join_suffix(slug, full_suffix)
+
     def abbrev_description(self, max_len: int = 1000) -> str:
         """
         Get or infer description.
