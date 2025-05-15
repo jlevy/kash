@@ -26,6 +26,13 @@ def _fix_single_tilde(html: str) -> str:
     return _single_tilde_pat.sub(replace_tilde, html)
 
 
+def markdownify_preprocess(html: str) -> str:
+    """
+    Preprocess HTML before passing it to markdownify.
+    """
+    return _fix_single_tilde(html)
+
+
 # Good options for markdownify. Without setting sup_symbol and sub_symbol, that
 # info is typically lost.
 MARKDOWNIFY_OPTIONS = {
@@ -38,17 +45,11 @@ MARKDOWNIFY_OPTIONS = {
 }
 
 
-def markdownify_preprocess(html: str) -> str:
-    """
-    Preprocess HTML before passing it to markdownify.
-    """
-    return _fix_single_tilde(html)
-
-
 def markdownify_postprocess(md_text: str) -> str:
     """
     Postprocess Markdown after markdownify has converted HTML to Markdown.
     """
+    md_text = escape_html_in_md(md_text)
     # We use our own custom tags for sup/sub to avoid possible conflicts with other
     # tags in a doc. But when done we should replace them with the standard ones.
     return (
