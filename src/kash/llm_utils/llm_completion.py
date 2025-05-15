@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from flowmark import Wrap, fill_text
 from funlog import format_duration, log_calls
 from prettyfmt import slugify_snake
 from pydantic import BaseModel
-from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import EMOJI_TIMING
