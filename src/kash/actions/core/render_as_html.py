@@ -12,9 +12,9 @@ from kash.web_gen.simple_webpage import simple_webpage_render
 @kash_action(
     expected_args=ONE_OR_MORE_ARGS,
     precondition=(has_html_body | has_simple_text_body) & ~has_full_html_page_body,
-    params=(Param("add_title", "Add a title to the page body.", type=bool),),
+    params=(Param("no_title", "Don't add a title to the page body.", type=bool),),
 )
-def render_as_html(input: ActionInput, add_title: bool = False) -> ActionResult:
+def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
     """
     Convert text, Markdown, or HTML to pretty, formatted HTML using a clean
     and simple page template. Supports GFM-flavored Markdown tables and footnotes.
@@ -27,11 +27,13 @@ def render_as_html(input: ActionInput, add_title: bool = False) -> ActionResult:
     """
     if len(input.items) == 1:
         input_item = input.items[0]
-        html_body = simple_webpage_render(input_item, add_title_h1=add_title)
+        html_body = simple_webpage_render(input_item, add_title_h1=not no_title)
         result_item = input_item.derived_copy(
             type=ItemType.export, format=Format.html, body=html_body
         )
         return ActionResult([result_item])
     else:
         config_result = tabbed_webpage_config(input)
-        return tabbed_webpage_generate(ActionInput(items=config_result.items), add_title=add_title)
+        return tabbed_webpage_generate(
+            ActionInput(items=config_result.items), add_title=not no_title
+        )
