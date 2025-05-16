@@ -59,6 +59,7 @@ from kash.utils.common.url import Url, is_url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
 from kash.utils.file_utils.dir_info import is_nonempty_dir
+from kash.utils.file_utils.file_formats_model import Format
 from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import (
     current_ws,
@@ -437,7 +438,7 @@ def import_item(
     *files_or_urls: str, type: ItemType | None = None, inplace: bool = False
 ) -> ShellResult:
     """
-    Add a file or URL resource to the workspace as an item, with associated metadata.
+    Add a file or URL resource to the workspace as an item.
 
     :param inplace: If set and the item is already in the store, reimport the item,
       adding or rewriting metadata frontmatter.
@@ -460,6 +461,34 @@ def import_item(
         fmt_lines(store_paths),
     )
     select(*store_paths)
+
+    return ShellResult(show_selection=True)
+
+
+@kash_command
+def import_clipboard(
+    title: str | None = "pasted_text",
+    type: ItemType = ItemType.resource,
+    format: Format = Format.plaintext,
+) -> ShellResult:
+    """
+    Import the contents of the OS-native clipboard as a new item in the workspace.
+
+    :param title: The title of the new item (default: "pasted_text").
+    :param type: The type of the new item (default: resource).
+    :param format: The format of the new item (default: plaintext).
+    """
+    import pyperclip
+
+    contents = pyperclip.paste()
+    if not contents.strip():
+        raise InvalidInput("Clipboard is empty")
+
+    ws = current_ws()
+    store_path = ws.save(Item(type=type, format=format, title=title, body=contents))
+
+    print_status("Imported clipboard contents to:\n%s", fmt_lines([fmt_loc(store_path)]))
+    select(store_path)
 
     return ShellResult(show_selection=True)
 

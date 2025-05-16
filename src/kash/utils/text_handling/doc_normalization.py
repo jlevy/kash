@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from flowmark import fill_markdown, fill_text, line_wrap_by_sentence
-from flowmark.text_filling import DEFAULT_WRAP_WIDTH
-from flowmark.text_wrapping import simple_word_splitter
+from flowmark import fill_markdown, line_wrap_by_sentence
 from frontmatter_format import fmf_read, fmf_write
 
 from kash.utils.common.format_utils import fmt_loc
@@ -14,24 +12,28 @@ from kash.utils.rich_custom.ansi_cell_len import ansi_cell_len
 def normalize_formatting(
     text: str,
     format: Format | None,
-    width=DEFAULT_WRAP_WIDTH,
     support_ansi: bool = True,
     cleanups: bool = True,
 ) -> str:
     """
-    Normalize text formatting by wrapping lines and normalizing Markdown.
+    Normalize formatting. Currently only normalizes Markdown and leaves plaintext
+    and HTML intact.
+
     This only does "safe" normalizations that cannot break the text.
     Enables ANSI support so ANSI codes and OSC-8 links are correctly handled.
     """
     len_fn = ansi_cell_len if support_ansi else len
-    if format == Format.plaintext:
-        return fill_text(text, width=width, word_splitter=simple_word_splitter, len_fn=len_fn)
-    elif format == Format.markdown or format == Format.md_html:
+    if format == Format.markdown or format == Format.md_html:
         return fill_markdown(
             text,
             line_wrapper=line_wrap_by_sentence(len_fn=len_fn, is_markdown=True),
             cleanups=cleanups,
         )
+    elif format == Format.plaintext:
+        # Consider plaintext a raw format and don't normalize.
+        # We could add support for formatted plaintext as well?
+        # Then do: fill_text(text, width=width, word_splitter=simple_word_splitter, len_fn=len_fn)
+        return text
     elif format == Format.html:
         # We don't currently auto-format HTML as we sometimes use HTML with specifically chosen line breaks.
         return text
