@@ -507,17 +507,41 @@ class Item:
 
         return item_dict
 
-    def display_title(self) -> str:
+    def filename_stem(self) -> str | None:
         """
-        A display title for this item. Same as abbrev_title() but will fall back
-        to the filename if it is available.
+        If the item has an existing or previous filename, return its stem,
+        for use in picking new filenames.
         """
-        display_title = self.title
-        if not display_title and self.store_path:
-            display_title = Path(self.store_path).name
-        if not display_title:
-            display_title = self.abbrev_title()
-        return display_title
+        from kash.file_storage.store_filenames import parse_item_filename
+
+        path = self.store_path or self.external_path or self.original_filename
+        if path:
+            path_name, _item_type, _format, _file_ext = parse_item_filename(Path(path).name)
+        else:
+            path_name = None
+        return path_name
+
+    def slug_name(self, max_len: int = SLUG_MAX_LEN, prefer_title: bool = False) -> str:
+        """
+        Get a readable slugified name for this item, either from a previous filename
+        or from slugifying the title or content. May not be unique.
+        """
+        filename_stem = self.filename_stem()
+        if filename_stem and not prefer_title:
+            return slugify_snake(filename_stem)
+        else:
+            return slugify_snake(self.abbrev_title(max_len=max_len, add_ops_suffix=True))
+
+    def default_filename(self) -> str:
+        """
+        Get the default filename for an item based on slugifying its title or other
+        metadata. May not be unique.
+        """
+        from kash.file_storage.store_filenames import join_suffix
+
+        slug = self.slug_name()
+        full_suffix = self.get_full_suffix()
+        return join_suffix(slug, full_suffix)
 
     def abbrev_title(
         self,
@@ -531,8 +555,6 @@ class Item:
         finally body text. Optionally, include the last operation as a parenthetical at the end
         of the title. Will use "Untitled" if all else fails.
         """
-        from kash.file_storage.store_filenames import parse_item_filename
-
         # First special case: if we are pulling the title from the body header, check
         # that.
         if not self.title and pull_body_heading:
@@ -544,18 +566,12 @@ class Item:
         if not self.title and self.url:
             return abbrev_str(self.url, max_len)
 
-        # Special case for filenames with no title.
-        # Use stem to drop suffix like .resource.docx etc in a title.
-        path = self.store_path or self.external_path or self.original_filename
-        if path:
-            path_name, _item_type, _format, _file_ext = parse_item_filename(Path(path).name)
-        else:
-            path_name = None
+        filename_stem = self.filename_stem()
 
         # Use the title or the path if possible, falling back to description or even body text.
         title_raw_text = (
             self.title
-            or path_name
+            or filename_stem
             or self.description
             or (not self.is_binary and self.abbrev_body(max_len))
             or UNTITLED
@@ -585,6 +601,24 @@ class Item:
             final_text += suffix
 
         return final_text
+
+    def display_title(self) -> str:
+        """
+        A display title for this item. Same as abbrev_title() but will fall back
+        to the filename if it is available.
+        """
+        display_title = self.title
+        if not display_title and self.store_path:
+            display_title = Path(self.store_path).name
+        if not display_title:
+            display_title = self.abbrev_title()
+        return display_title
+
+    def abbrev_description(self, max_len: int = 1000) -> str:
+        """
+        Get or infer description.
+        """
+        return abbrev_on_words(html_to_plaintext(self.description or self.body or ""), max_len)
 
     def body_heading(self) -> str | None:
         """
@@ -619,32 +653,6 @@ class Item:
         True if the item has a non-empty body.
         """
         return bool(self.body and self.body.strip())
-
-    def slug_name(self, max_len: int = SLUG_MAX_LEN) -> str:
-        """
-        Get a readable slugified version of the title or filename or content
-        appropriate for this item. May not be unique.
-        """
-        title = self.abbrev_title(max_len=max_len, add_ops_suffix=True)
-        slug = slugify_snake(title)
-        return slug
-
-    def default_filename(self) -> str:
-        """
-        Get the default filename for an item based on slugifying its title or other
-        metadata. May not be unique.
-        """
-        from kash.file_storage.store_filenames import join_suffix
-
-        slug = self.slug_name()
-        full_suffix = self.get_full_suffix()
-        return join_suffix(slug, full_suffix)
-
-    def abbrev_description(self, max_len: int = 1000) -> str:
-        """
-        Get or infer description.
-        """
-        return abbrev_on_words(html_to_plaintext(self.description or self.body or ""), max_len)
 
     def read_as_config(self) -> Any:
         """
