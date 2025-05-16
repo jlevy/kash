@@ -45,22 +45,7 @@ MARKDOWNIFY_OPTIONS = {
 }
 
 
-def markdownify_postprocess(md_text: str) -> str:
-    """
-    Postprocess Markdown after markdownify has converted HTML to Markdown.
-    """
-    md_text = escape_html_in_md(md_text)
-    # We use our own custom tags for sup/sub to avoid possible conflicts with other
-    # tags in a doc. But when done we should replace them with the standard ones.
-    return (
-        md_text.replace("<__sup>", "<sup>")
-        .replace("</__sup>", "</sup>")
-        .replace("<__sub>", "<sub>")
-        .replace("</__sub>", "</sub>")
-    )
-
-
-def escape_html_in_md(md_text: str, whitelist_tags: set[str] | None = None) -> str:
+def _escape_html_in_md(md_text: str, whitelist_tags: set[str] | None = None) -> str:
     """
     HTML tags originally escaped with entities can get parsed and appear unescaped
     in the Markdown so it usually makes sense to do a full escaping (except for our
@@ -73,3 +58,30 @@ def escape_html_in_md(md_text: str, whitelist_tags: set[str] | None = None) -> s
         allow_bare_md_urls=True,
         whitelist_tags={"__sup", "__sub"} | (whitelist_tags or set()),
     )
+
+
+def markdownify_postprocess(md_text: str) -> str:
+    """
+    Postprocess Markdown after markdownify has converted HTML to Markdown.
+    """
+    md_text = _escape_html_in_md(md_text)
+    # We use our own custom tags for sup/sub to avoid possible conflicts with other
+    # tags in a doc. But when done we should replace them with the standard ones.
+    return (
+        md_text.replace("<__sup>", "<sup>")
+        .replace("</__sup>", "</sup>")
+        .replace("<__sub>", "<sub>")
+        .replace("</__sub>", "</sub>")
+    )
+
+
+def markdownify_custom(html: str) -> str:
+    """
+    Customized version of `markdownify_convert to be more robust than with default settings.
+    """
+
+    from markdownify import markdownify as markdownify_convert
+
+    preprocessed_html = markdownify_preprocess(html)
+    md_text = markdownify_convert(preprocessed_html, **MARKDOWNIFY_OPTIONS)
+    return markdownify_postprocess(md_text)

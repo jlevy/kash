@@ -115,11 +115,6 @@ def is_markdown_template(item: Item) -> bool:
 
 
 @kash_precondition
-def is_html(item: Item) -> bool:
-    return has_body(item) and item.format == Format.html
-
-
-@kash_precondition
 def is_markdown_list(item: Item) -> bool:
     try:
         return (
