@@ -85,6 +85,7 @@ p {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
 }
+
 pre {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
@@ -137,7 +138,7 @@ h4 {
 
 ul {
   list-style-type: none;
-  margin-left: 2rem;
+  margin-left: 1.8rem;
   margin-bottom: 1rem;
   padding-left: 0;
 }
@@ -161,9 +162,9 @@ ul > li::before {
 }
 
 ol {
-  margin-bottom: 0.7rem;
   list-style-type: decimal;
-  margin-left: 2rem;
+  margin-left: 1.8rem;
+  margin-bottom: 0.7rem;
 }
 
 ol > li {
@@ -178,18 +179,30 @@ blockquote {
   color: var(--color-secondary);
 }
 
+/* Inline code styling */
 code {
   font-family: var(--font-mono);
   font-size: var(--font-size-mono);
   letter-spacing: -0.025em;
-  padding: 0.2rem 0;
 }
 
+/* Code blocks (pre + code) */
 pre {
   font-family: var(--font-mono);
   font-size: var(--font-size-mono);
   letter-spacing: -0.025em;
-  {# overflow-x: auto; #}
+  background-color: var(--color-bg-alt);
+  border-radius: 4px;
+  border: 1px dotted var(--color-border-hint);
+  padding: 0.2rem 0.2rem 0.1rem 0.2rem;
+  overflow-x: auto;  /* Enable horizontal scrolling */
+  position: relative;  /* Create new stacking context */
+}
+
+/* Reset code styling when inside pre blocks */
+pre > code {
+  display: block;  /* Make code block take full width */
+  line-height: 1.5;  /* Improve readability */
 }
 
 hr {
@@ -249,13 +262,16 @@ hr:before {
   font-style: italic;
   font-size: 1rem;
 }
+
 .long-text .sans-text {
   font-family: var(--font-sans);
 }
+
 .long-text .sans-text p {
   margin-top: 0.8rem;
   margin-bottom: 0.8rem;
 }
+
 .long-text .sans-text h1 {
   font-family: var(--font-sans);
   font-size: 1.75rem;
@@ -263,6 +279,7 @@ hr:before {
   margin-top: 1rem;
   margin-bottom: 1.2rem;
 }
+
 .long-text .sans-text h2 {
   font-family: var(--font-sans);
   font-size: 1.25rem;
@@ -270,6 +287,7 @@ hr:before {
   margin-top: 1rem;
   margin-bottom: 0.8rem;
 }
+
 .long-text .sans-text h3 {
   font-family: var(--font-sans);
   font-size: 1.03rem;
@@ -377,7 +395,7 @@ sup {
   
   /* Apply shadow to long-text containers on larger screens */
   .long-text {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 -2px 6px -1px rgba(0, 0, 0, 0.07);
   }
   /* But remove shadow when wrapped in no-shadow class */
   .no-shadow .long-text {
@@ -385,9 +403,14 @@ sup {
   }
 }
 
+/* Make narrower screens more usable for lists and tables. */
 @media (max-width: 768px) {
   table {
     font-size: var(--font-size-smaller);
   }
+  ul, ol {
+    margin-left: 1rem;
+  }
 }
+
 {% endblock responsive_styles %}
