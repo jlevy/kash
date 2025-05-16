@@ -53,7 +53,7 @@ def is_instructions(item: Item) -> bool:
 
 
 @kash_precondition
-def is_url_item(item: Item) -> bool:
+def is_url_resource(item: Item) -> bool:
     return bool(item.type == ItemType.resource and item.url)
 
 

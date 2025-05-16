@@ -126,13 +126,13 @@ def get_url_html(
     Returns the HTML content of an URL item, using the content cache,
     or the body of the item if it has a URL and HTML body.
     """
-    from kash.exec.preconditions import has_html_body, is_url_item
+    from kash.exec.preconditions import has_html_body, is_url_resource
 
     if not item.url:
         raise InvalidInput("Item must have a URL or an HTML body")
     url = Url(canonicalize_url(item.url))
 
-    if is_url_item(item):
+    if is_url_resource(item):
         path, _was_cached = cache_file(url, global_cache, expiration_sec)
         with open(path) as file:
             html_content = file.read()

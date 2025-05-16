@@ -26,7 +26,7 @@ from kash.exec.action_registry import get_all_actions_defaults
 from kash.exec.fetch_url_metadata import fetch_url_metadata
 from kash.exec.precondition_checks import actions_matching_paths
 from kash.exec.precondition_registry import get_all_preconditions
-from kash.exec.preconditions import is_url_item
+from kash.exec.preconditions import is_url_resource
 from kash.exec_model.shell_model import ShellResult
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.media_base import media_tools
@@ -205,7 +205,7 @@ def download(*urls_or_paths: str, refetch: bool = False) -> None:
             url = Url(locator)
         if isinstance(locator, StorePath):
             url_item = ws.load(locator)
-            if is_url_item(url_item):
+            if is_url_resource(url_item):
                 url = url_item.url
         if not url:
             raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")

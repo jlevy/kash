@@ -10,7 +10,7 @@ from kash.config.text_styles import (
     EMOJI_SUCCESS,
     EMOJI_TIMING,
 )
-from kash.exec.preconditions import is_url_item
+from kash.exec.preconditions import is_url_resource
 from kash.exec.resolve_args import assemble_action_args
 from kash.exec_model.args_model import CommandArg
 from kash.file_storage.file_store import FileStore
@@ -56,7 +56,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     if input_items:
         log.message("Assembling metadata for input items:\n%s", fmt_lines(input_items))
         input_items = [
-            fetch_url_item_metadata(item, refetch=refetch) if is_url_item(item) else item
+            fetch_url_item_metadata(item, refetch=refetch) if is_url_resource(item) else item
             for item in input_items
         ]
 

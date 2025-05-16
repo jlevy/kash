@@ -1,5 +1,5 @@
 from kash.config.logger import get_logger
-from kash.exec.preconditions import is_url_item
+from kash.exec.preconditions import is_url_resource
 from kash.media_base.media_services import get_media_metadata
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
@@ -20,7 +20,7 @@ def fetch_url_metadata(locator: Url | StorePath, refetch: bool = False) -> Item:
         item = ws.load(store_path)
     elif isinstance(locator, StorePath):
         item = ws.load(locator)
-        if not is_url_item(item):
+        if not is_url_resource(item):
             raise InvalidInput(f"Not a URL resource: {fmt_loc(locator)}")
     else:
         raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")

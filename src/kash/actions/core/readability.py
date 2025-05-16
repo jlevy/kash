@@ -1,6 +1,6 @@
 from kash.config.logger import get_logger
 from kash.exec import kash_action
-from kash.exec.preconditions import has_html_body, is_url_item
+from kash.exec.preconditions import has_html_body, is_url_resource
 from kash.model import Format, Item
 from kash.model.params_model import common_params
 from kash.web_content.file_cache_utils import get_url_html
@@ -10,7 +10,7 @@ log = get_logger(__name__)
 
 
 @kash_action(
-    precondition=is_url_item | has_html_body,
+    precondition=is_url_resource | has_html_body,
     params=common_params("refetch"),
     mcp_tool=True,
 )
