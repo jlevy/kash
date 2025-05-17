@@ -391,7 +391,7 @@ class FileStore(Workspace):
             # Now save the new item.
             try:
                 if item.external_path:
-                    copyfile_atomic(item.external_path, full_path)
+                    copyfile_atomic(item.external_path, full_path, make_parents=True)
                 else:
                     if overwrite and full_path.exists():
                         log.info(
