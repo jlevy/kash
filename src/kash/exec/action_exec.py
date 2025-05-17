@@ -1,7 +1,7 @@
 import time
 from dataclasses import replace
 
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_lines, plural
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import (
@@ -28,7 +28,6 @@ from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
-from kash.utils.common.inflection import plural
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import ContentError, InvalidOutput, get_nonfatal_exceptions

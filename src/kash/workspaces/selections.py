@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import TypeVar
 
 from frontmatter_format import new_yaml, yaml_util
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_count_items, fmt_lines
 from pydantic import BaseModel, Field, PrivateAttr, field_serializer, field_validator
 
 from kash.config.logger import get_logger
 from kash.model.paths_model import StorePath
 from kash.shell.utils.native_utils import native_trash
-from kash.utils.common.format_utils import fmt_count_items, fmt_loc
+from kash.utils.common.format_utils import fmt_loc
 from kash.utils.errors import InvalidInput, InvalidOperation
 
 log = get_logger(__name__)

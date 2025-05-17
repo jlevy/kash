@@ -112,6 +112,9 @@ class Format(Enum):
 
     @property
     def is_doc(self) -> bool:
+        """
+        Is this a textual document of some kind?
+        """
         return self in [
             self.markdown,
             self.md_html,
@@ -119,6 +122,7 @@ class Format(Enum):
             self.pdf,
             self.docx,
             self.pptx,
+            self.epub,
         ]
 
     @property

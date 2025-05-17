@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from frontmatter_format import to_yaml_string
-from prettyfmt import fmt_lines
+from prettyfmt import fmt_lines, plural
 from rich.text import Text
 
 from kash.commands.base.basic_file_commands import trash
@@ -51,7 +51,6 @@ from kash.shell.output.shell_output import (
 )
 from kash.shell.utils.native_utils import tail_file
 from kash.utils.common.format_utils import fmt_loc
-from kash.utils.common.inflection import plural
 from kash.utils.common.obj_replace import remove_values
 from kash.utils.common.parse_key_vals import parse_key_value
 from kash.utils.common.type_utils import not_none

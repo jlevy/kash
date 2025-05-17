@@ -1,9 +1,10 @@
 from functools import cache
 from pathlib import Path
 
+from prettyfmt import plural
+
 from kash.config.logger import get_logger
 from kash.model.items_model import ItemType
-from kash.utils.common.inflection import plural
 from kash.utils.file_utils.file_formats_model import FileExt, Format
 from kash.utils.file_utils.filename_parsing import split_filename
 
