@@ -62,9 +62,9 @@ class HelpIndex:
             embeddings.to_npz(target_path)
 
         key = f"kash_help_embeddings_v1_{len(self.docs)}.npz"
-        path, _ = cache_file(
+        path = cache_file(
             Loadable(key, save=calculate_and_save_help_embeddings), global_cache=True
-        )
+        ).content.path
         log.info("Loaded help doc embeddings from: %s", path)
         return Embeddings.read_from_npz(path)
 

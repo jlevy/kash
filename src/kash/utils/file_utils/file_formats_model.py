@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from kash.utils.common.url import Url, is_file_url, parse_file_url
+from kash.utils.common.url import Url, is_file_url, is_url, parse_file_url
 from kash.utils.file_utils.file_ext import FileExt
 from kash.utils.file_utils.file_formats import (
     MIME_EMPTY,
@@ -344,8 +344,8 @@ Format._init_mime_type_map()
 
 @dataclass(frozen=True)
 class FileFormatInfo:
-    file_ext: FileExt | None
-    """File extension, if recognized."""
+    current_file_ext: FileExt | None
+    """File extension, if recognized and in the current filename."""
 
     format: Format | None
     """Format, if recognized."""
@@ -354,10 +354,17 @@ class FileFormatInfo:
     """Raw mime type, which may include more formats than the ones above."""
 
     @property
+    def suggested_file_ext(self) -> FileExt | None:
+        """
+        Suggested file extension based on detected format.
+        """
+        return self.format.file_ext if self.format else self.current_file_ext
+
+    @property
     def is_text(self) -> bool:
         return bool(
-            self.file_ext
-            and self.file_ext.is_text
+            self.current_file_ext
+            and self.current_file_ext.is_text
             or self.format
             and self.format.is_text
             or self.mime_type
@@ -377,8 +384,8 @@ class FileFormatInfo:
     @property
     def is_image(self) -> bool:
         return bool(
-            self.file_ext
-            and self.file_ext.is_image
+            self.current_file_ext
+            and self.current_file_ext.is_image
             or self.format
             and self.format.is_image
             or self.mime_type
@@ -451,24 +458,33 @@ def detect_media_type(filename: str | Path) -> MediaType:
     return media_type
 
 
-def choose_file_ext(url_or_path: Url | Path | str) -> FileExt | None:
+def choose_file_ext(
+    url_or_path: Url | Path | str, mime_type: MimeType | None = None
+) -> FileExt | None:
     """
-    Pick a suffix to reflect the type of the content. Recognizes known file
-    extensions, then tries libmagic, then gives up.
+    Pick a file extension to reflect the type of the content. First tries from any
+    provided content type (e.g. if this item was just downloaded). Then
+    recognizes known file extensions on the filename or URL, then tries looking
+    at the content with libmagic and heuristics, then gives up.
     """
+    if mime_type:
+        fmt = Format.from_mime_type(mime_type)
+        if fmt:
+            return fmt.file_ext
 
-    def file_ext_for(path: Path) -> FileExt | None:
-        fmt = detect_file_format(path)
-        return fmt.file_ext if fmt else None
+    # First check if it's a known standard extension.
+    filename_ext = parse_file_ext(url_or_path)
+    if filename_ext:
+        return filename_ext
 
-    ext = None
-    if isinstance(url_or_path, Path):
-        ext = parse_file_ext(url_or_path) or file_ext_for(url_or_path)
-    elif is_file_url(url_or_path):
-        path = parse_file_url(url_or_path)
-        if path:
-            ext = parse_file_ext(path) or file_ext_for(path)
-    else:
-        ext = parse_file_ext(url_or_path)
+    local_path = None
+    if isinstance(url_or_path, str) and is_file_url(url_or_path):
+        local_path = parse_file_url(url_or_path)
+    elif not is_url(url_or_path):
+        local_path = Path(url_or_path)
 
-    return ext
+    # If it's local based the extension on the file content.
+    if local_path:
+        return file_format_info(local_path).suggested_file_ext
+
+    return None

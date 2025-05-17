@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
@@ -9,6 +11,7 @@ from strif import atomic_output_file, copyfile_atomic
 
 from kash.config.env_settings import KashEnv
 from kash.utils.common.url import Url
+from kash.utils.file_utils.file_formats import MimeType
 
 if TYPE_CHECKING:
     from httpx import Client, Response
@@ -53,6 +56,23 @@ def fetch_url(
         return response
 
 
+@dataclass(frozen=True)
+class HttpHeaders:
+    """
+    HTTP response headers.
+    """
+
+    headers: dict[str, str]
+
+    @cached_property
+    def mime_type(self) -> MimeType | None:
+        """Get content type header, if available."""
+        for key, value in self.headers.items():
+            if key.lower() == "content-type":
+                return MimeType(value)
+        return None
+
+
 def download_url(
     url: Url,
     target_filename: str | Path,
@@ -61,11 +81,12 @@ def download_url(
     timeout: int = DEFAULT_TIMEOUT,
     auth: Any | None = None,
     headers: dict[str, str] | None = None,
-) -> None:
+) -> HttpHeaders | None:
     """
     Download given file, optionally with progress bar, streaming to a target file.
     Also handles file:// and s3:// URLs. Output file is created atomically.
     Raise httpx.HTTPError for non-2xx responses.
+    Returns response headers for HTTP/HTTPS requests, None for other URL types.
     """
     import httpx
     from tqdm import tqdm
@@ -76,16 +97,19 @@ def download_url(
         log.info("%s", url)
 
     if parsed_url.scheme == "file" or parsed_url.scheme == "":
-        copyfile_atomic(parsed_url.netloc + parsed_url.path, target_filename)
+        copyfile_atomic(parsed_url.netloc + parsed_url.path, target_filename, make_parents=True)
+        return None
     elif parsed_url.scheme == "s3":
         import boto3  # pyright: ignore
 
         s3 = boto3.resource("s3")
         s3_path = parsed_url.path.lstrip("/")
         s3.Bucket(parsed_url.netloc).download_file(s3_path, target_filename)
+        return None
     else:
         client = session or httpx.Client(follow_redirects=True, timeout=timeout)
         response: httpx.Response | None = None
+        response_headers: dict[str, str] | None = None
         try:
             headers = headers or default_headers()
             log.debug("download_url: using headers: %s", headers)
@@ -98,6 +122,7 @@ def download_url(
                 headers=headers,
             ) as response:
                 response.raise_for_status()
+                response_headers = dict(response.headers)
                 total_size = int(response.headers.get("content-length", "0"))
 
                 with atomic_output_file(target_filename, make_parents=True) as temp_filename:
@@ -115,3 +140,5 @@ def download_url(
                 client.close()
             if response:
                 response.raise_for_status()  # In case of errors during streaming
+
+        return HttpHeaders(response_headers) if response_headers else None

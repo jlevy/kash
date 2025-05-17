@@ -14,7 +14,7 @@ from kash.utils.common.url import Url
 from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_formats_model import detect_media_type
 from kash.web_content.canon_url import canonicalize_url
-from kash.web_content.local_file_cache import Loadable, LocalFileCache
+from kash.web_content.local_file_cache import CacheResult, Loadable, LocalFileCache
 
 log = get_logger(__name__)
 
@@ -41,7 +41,7 @@ def reset_content_cache_dir(path: Path):
 
 def cache_file(
     source: Url | Path | Loadable, global_cache: bool = False, expiration_sec: float | None = None
-) -> tuple[Path, bool]:
+) -> CacheResult:
     """
     Return a local cached copy of the item. If it is an URL, content is fetched.
     If it is a Path or a Loadable, a cached copy is returned.
@@ -51,8 +51,7 @@ def cache_file(
     in which case the global cache is used.
     """
     cache = _global_content_cache if global_cache else _content_cache
-    path, was_cached = cache.cache(source, expiration_sec)
-    return path, was_cached
+    return cache.cache(source, expiration_sec)
 
 
 def cache_api_response(
@@ -65,9 +64,9 @@ def cache_api_response(
     Cache an API response. By default parse the response as JSON.
     """
     cache = _global_content_cache if global_cache else _content_cache
-    path, was_cached = cache.cache(url, expiration_sec)
-    result = parser(path.read_text())
-    return result, was_cached
+    result = cache.cache(url, expiration_sec)
+    parsed_result = parser(result.content.path.read_text())
+    return parsed_result, result.was_cached
 
 
 def cache_resource(
@@ -75,7 +74,8 @@ def cache_resource(
 ) -> dict[MediaType, Path]:
     """
     Cache a resource item for an external local path or a URL, fetching or
-    copying as needed. For media this may yield more than one format.
+    copying as needed and returning direct paths to the cached content.
+    For media this may yield more than one format.
     """
     from kash.exec.preconditions import is_resource
     from kash.media_base.media_services import is_media_url
@@ -84,40 +84,46 @@ def cache_resource(
     if not is_resource(item):
         raise ValueError(f"Item is not a resource: {item}")
 
-    path = None
-    result: dict[MediaType, Path] = {}
+    path: Path | None = None
+    results: dict[MediaType, Path] = {}
+    cache_result: CacheResult | None = None
+
+    # Cache the content using media or content cache.
     if item.url:
         if is_media_url(item.url):
-            result = cache_media(item.url)
+            results = cache_media(item.url)
         else:
-            path, _was_cached = cache_file(item.url, global_cache, expiration_sec)
+            cache_result = cache_file(item.url, global_cache, expiration_sec)
     elif item.external_path:
-        path = Path(item.external_path)
-        if not path.is_file():
-            raise FileNotFound(f"External path not found: {path}")
-        path, _was_cached = cache_file(path, global_cache, expiration_sec)
+        ext_path = Path(item.external_path)
+        if not ext_path.is_file():
+            raise FileNotFound(f"External path not found: {ext_path}")
+        cache_result = cache_file(ext_path, global_cache, expiration_sec)
     elif item.original_filename:
-        path = Path(item.original_filename)
-        if not path.is_file():
-            raise FileNotFound(f"Original filename not found: {path}")
-        path, _was_cached = cache_file(path, global_cache, expiration_sec)
+        orig_path = Path(item.original_filename)
+        if not orig_path.is_file():
+            raise FileNotFound(f"Original filename not found: {orig_path}")
+        cache_result = cache_file(orig_path, global_cache, expiration_sec)
     else:
         raise ValueError(f"Item has no URL or external path: {item}")
 
+    if cache_result:
+        path = cache_result.content.path
+
     # If we just have the local file path, determine its format.
-    if not result and path:
-        result = {detect_media_type(path): path}
+    if not results and path:
+        results = {detect_media_type(path): path}
 
     log.message(
         "Cached resource %s:\n%s",
         item.as_str_brief(),
         fmt_lines(
             f"{media_type.value}: {fmt_path(media_path)}"
-            for media_type, media_path in result.items()
+            for media_type, media_path in results.items()
         ),
     )
 
-    return result
+    return results
 
 
 def get_url_html(
@@ -132,7 +138,7 @@ def get_url_html(
     if is_url_resource(item) and item.url and not item.has_body:
         # Need to fetch the content.
         locator = Url(canonicalize_url(item.url))
-        path, _was_cached = cache_file(locator, global_cache, expiration_sec)
+        path = cache_file(locator, global_cache, expiration_sec).content.path
         with open(path) as file:
             html_content = file.read()
     else:

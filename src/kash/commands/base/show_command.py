@@ -54,7 +54,7 @@ def show(
                 item = ws.load(input_path)
                 if thumbnail and item.thumbnail_url:
                     try:
-                        local_path, _was_cached = cache_file(item.thumbnail_url)
+                        local_path = cache_file(item.thumbnail_url).content.path
                         terminal_show_image(local_path)
                     except Exception as e:
                         log.info("Had trouble showing thumbnail image (will skip): %s", e)

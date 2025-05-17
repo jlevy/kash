@@ -54,7 +54,7 @@ from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.obj_replace import remove_values
 from kash.utils.common.parse_key_vals import parse_key_value
 from kash.utils.common.type_utils import not_none
-from kash.utils.common.url import Url, is_url
+from kash.utils.common.url import Url, is_url, parse_http_url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
 from kash.utils.file_utils.dir_info import is_nonempty_dir
@@ -181,15 +181,15 @@ def cache_content(*urls_or_paths: str, refetch: bool = False) -> None:
     PrintHooks.spacer()
     for url_or_path in urls_or_paths:
         locator = resolve_locator_arg(url_or_path)
-        cache_path, was_cached = cache_file(locator, expiration_sec=expiration_sec)
-        cache_str = " (already cached)" if was_cached else ""
+        cache_result = cache_file(locator, expiration_sec=expiration_sec)
+        cache_str = " (already cached)" if cache_result.was_cached else ""
         cprint(f"{fmt_loc(url_or_path)}{cache_str}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
-        cprint(f"{cache_path}", text_wrap=Wrap.INDENT_ONLY)
+        cprint(f"{cache_result.content.path}", text_wrap=Wrap.INDENT_ONLY)
         PrintHooks.spacer()
 
 
 @kash_command
-def download(*urls_or_paths: str, refetch: bool = False) -> None:
+def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
     """
     Download a URL or resource. Uses cached content if available, unless `refetch` is true.
     Inputs can be URLs or paths to URL resources.
@@ -198,9 +198,10 @@ def download(*urls_or_paths: str, refetch: bool = False) -> None:
 
     # TODO: Add option to include frontmatter metadata for text files.
     ws = current_ws()
+    saved_paths = []
     for url_or_path in urls_or_paths:
         locator = resolve_locator_arg(url_or_path)
-        url = None
+        url: Url | None = None
         if not isinstance(locator, Path) and is_url(locator):
             url = Url(locator)
         if isinstance(locator, StorePath):
@@ -211,18 +212,35 @@ def download(*urls_or_paths: str, refetch: bool = False) -> None:
             raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
 
         if is_media_url(url):
-            store_path = ws.import_item(locator, as_type=ItemType.resource)
             log.message(
-                "URL is a media URL, so added as a resource and will cache media: %s", fmt_loc(url)
+                "URL is a media URL, so adding as a resource and will cache media: %s", fmt_loc(url)
             )
+            store_path = ws.import_item(locator, as_type=ItemType.resource)
             media_tools.cache_media(url)
         else:
             log.message("Will cache file and save to workspace: %s", fmt_loc(url))
-            cache_path, _was_cached = cache_file(url, expiration_sec=expiration_sec)
-            item = Item.from_external_path(cache_path, item_type=ItemType.resource)
+            original_filename = Path(parse_http_url(url).path).name
+            cache_result = cache_file(url, expiration_sec=expiration_sec)
+            # If available, use the mime type to help set item file extension.
+            mime_type = cache_result.content.headers and cache_result.content.headers.mime_type
+            item = Item.from_external_path(
+                cache_result.content.path,
+                ItemType.resource,
+                mime_type=mime_type,
+                original_filename=original_filename,
+            )
             store_path = ws.save(item)
+            saved_paths.append(store_path)
 
-        log.info("Saved item to workspace: %s", fmt_loc(store_path))
+    print_status(
+        "Downloaded %s %s:\n%s",
+        len(urls_or_paths),
+        plural("item", len(urls_or_paths)),
+        fmt_lines(saved_paths),
+    )
+    select(*saved_paths)
+
+    return ShellResult(show_selection=True)
 
 
 @kash_command

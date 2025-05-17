@@ -28,6 +28,7 @@ from kash.utils.common.format_utils import fmt_loc, html_to_plaintext, plaintext
 from kash.utils.common.url import Locator, Url
 from kash.utils.errors import FileFormatError
 from kash.utils.file_formats.chat_format import ChatHistory
+from kash.utils.file_utils.file_formats import MimeType
 from kash.utils.file_utils.file_formats_model import FileExt, Format
 from kash.utils.text_handling.markdown_render import markdown_to_html
 from kash.utils.text_handling.markdown_utils import first_heading
@@ -359,15 +360,19 @@ class Item:
         cls,
         path: Path | str,
         item_type: ItemType | None = None,
+        *,
         title: str | None = None,
+        original_filename: str | None = None,
+        mime_type: MimeType | None = None,
     ) -> Item:
         """
         Create a resource Item for a file with a format inferred from the file extension
         or the content. Only sets basic metadata. Does not read the content. Will set
         `format` and `file_ext` if possible but will leave them as None if unrecognized.
+        If `mime_type` is provided, it can help determine the file extension.
         """
         from kash.file_storage.store_filenames import parse_item_filename
-        from kash.utils.file_utils.file_formats_model import detect_file_format
+        from kash.utils.file_utils.file_formats_model import choose_file_ext, detect_file_format
 
         # Will raise error for unrecognized file ext.
         _name, filename_item_type, format, file_ext = parse_item_filename(path)
@@ -380,12 +385,17 @@ class Item:
             item_type = (
                 ItemType.doc if format and format.supports_frontmatter else ItemType.resource
             )
+        # Do our best to determine a good file extension if it's not already on the filename.
+        if not file_ext and mime_type:
+            file_ext = choose_file_ext(path, mime_type)
+
         item = cls(
             type=item_type,
             title=title,
             file_ext=file_ext,
             format=format,
             external_path=str(path),
+            original_filename=original_filename,
         )
 
         # Update modified time from the file system.
@@ -514,7 +524,9 @@ class Item:
         """
         from kash.file_storage.store_filenames import parse_item_filename
 
-        path = self.store_path or self.external_path or self.original_filename
+        # Prefer original to external, e.g. if we know the original but the external might
+        # be a cache filename.
+        path = self.store_path or self.original_filename or self.external_path
         if path:
             path_name, _item_type, _format, _file_ext = parse_item_filename(Path(path).name)
         else:
@@ -672,8 +684,6 @@ class Item:
         """
         if self.file_ext:
             return self.file_ext
-        if self.is_binary and not self.file_ext:
-            raise ValueError(f"Binary Items must have a file extension: {self}")
         inferred_ext = self.format and self.format.file_ext
         if not inferred_ext:
             raise ValueError(f"Cannot infer file extension for Item: {self}")

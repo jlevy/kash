@@ -22,7 +22,7 @@ def fetch_extract(
     """
     expiration_sec = 0 if refetch else None
     if use_cache:
-        path, _was_cached = cache_file(url, expiration_sec=expiration_sec)
+        path = cache_file(url, expiration_sec=expiration_sec).content.path
         with open(path, "rb") as file:
             content = file.read()
         page_data = extractor(url, content)

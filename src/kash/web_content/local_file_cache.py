@@ -12,9 +12,10 @@ from strif import atomic_output_file, copyfile_atomic
 
 from kash.utils.common.url import Url, is_file_url, is_url, normalize_url, parse_file_url
 from kash.utils.errors import FileNotFound
+from kash.utils.file_utils.file_formats import MimeType
 from kash.utils.file_utils.file_formats_model import choose_file_ext
 from kash.web_content.dir_store import DirStore
-from kash.web_content.web_fetch import download_url
+from kash.web_content.web_fetch import HttpHeaders, download_url
 
 log = logging.getLogger(__name__)
 
@@ -73,9 +74,26 @@ An item that can be cached as a file.
 """
 
 
-def _suffix_for(cacheable: Cacheable) -> str | None:
+@dataclass(frozen=True)
+class CacheContent:
+    """
+    An item in the local file cache. If it was a cache miss for a web-fetched URL,
+    also has HTTP headers.
+    """
+
+    path: Path
+    headers: HttpHeaders | None
+
+
+@dataclass(frozen=True)
+class CacheResult:
+    content: CacheContent
+    was_cached: bool
+
+
+def _suffix_for(cacheable: Cacheable, mime_type: MimeType | None = None) -> str | None:
     key = cacheable.key if isinstance(cacheable, Loadable) else cacheable
-    file_ext = choose_file_ext(key)
+    file_ext = choose_file_ext(key, mime_type)
     return file_ext.dot_ext if file_ext else None
 
 
@@ -135,7 +153,7 @@ class LocalFileCache(DirStore):
         if backup_url and mode in (WebCacheMode.TEST, WebCacheMode.UPDATE):
             self._restore(backup_url)
 
-    def _load_source(self, source: Cacheable) -> Path:
+    def _load_source(self, source: Cacheable) -> CacheContent:
         """
         Load or compute the given source and save it to the cache.
         """
@@ -147,6 +165,7 @@ class LocalFileCache(DirStore):
         suffix = _suffix_for(source)
         cache_path = self.path_for(key, folder=self.folder, suffix=_suffix_for(source))
 
+        headers = None
         if isinstance(source, Path) or (isinstance(source, str) and is_file_url(source)):
             # Local file or file:// URL.
             url_or_path = source
@@ -165,7 +184,8 @@ class LocalFileCache(DirStore):
             # URL.
             url = _normalize_url(source)
             log.info("Downloading to cache: %s -> %s", url, fmt_path(cache_path))
-            download_url(url, cache_path)
+            headers = download_url(url, cache_path)
+            log.debug("Response headers: %s", headers)
         elif isinstance(source, Loadable):
             # Arbitrary loadable. Load and save (atomically).
             with atomic_output_file(
@@ -180,7 +200,7 @@ class LocalFileCache(DirStore):
         else:
             raise ValueError(f"Invalid source: {source}")
 
-        return cache_path
+        return CacheContent(cache_path, headers)
 
     def _age_in_sec(self, cache_path: Path) -> float:
         now = time.time()
@@ -210,7 +230,7 @@ class LocalFileCache(DirStore):
 
         return cache_path is not None and not self._is_expired(cache_path, expiration_sec)
 
-    def cache(self, source: Cacheable, expiration_sec: float | None = None) -> tuple[Path, bool]:
+    def cache(self, source: Cacheable, expiration_sec: float | None = None) -> CacheResult:
         """
         Returns cached download path of given URL and whether it was previously cached.
         For file:// URLs does a copy.
@@ -221,13 +241,10 @@ class LocalFileCache(DirStore):
 
         if cache_path and not self._is_expired(cache_path, expiration_sec):
             log.info("URL in cache, not fetching: %s: %s", key, fmt_path(cache_path))
-            return cache_path, True
+            return CacheResult(CacheContent(cache_path, None), True)
         else:
             log.info("Caching new copy: %s", key)
-            return (
-                self._load_source(source),
-                False,
-            )
+            return CacheResult(self._load_source(source), False)
 
     def backup(self) -> None:
         if not self.backup_url:
