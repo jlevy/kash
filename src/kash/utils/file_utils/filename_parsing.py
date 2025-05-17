@@ -1,39 +1,46 @@
 import os
+import re
 from pathlib import Path
 
 from kash.config.logger import get_logger
 from kash.utils.common.url import Url, check_if_url
-from kash.utils.errors import InvalidFilename
 from kash.utils.file_utils.file_ext import FileExt, canonicalize_file_ext
 
 log = get_logger(__name__)
 
+_valid_ext_re = re.compile(r"^[a-z0-9]*[a-z][a-z0-9]*$", re.IGNORECASE)
 
-def split_filename(path: str | Path, require_type_ext: bool = False) -> tuple[str, str, str, str]:
+
+def split_filename(path: str | Path) -> tuple[str, str, str, str]:
     """
-    Parse a filename into its path, name, (optional) type, and extension parts:
+    Parse a filename into its path, name, (optional) type, and extension parts.
+    Type and extension are optional but must be only letters/numbers and not
+    all numbers.
 
     folder/file.name.type.ext -> ("folder", "file.name", "type", "ext")
     filename.doc.txt -> ("", "filename", "note", "txt")
     filename.txt -> ("", "filename", "", "txt")
     filename -> ("", "filename", "", "")
+    filename.123.txt -> ("", "filename.123", "", "txt")
+    filename.123.456 -> ("", "filename.123.456", "", "")
     """
     path_str = str(path)
 
     dirname = os.path.dirname(path_str)
     parts = os.path.basename(path_str).rsplit(".", 2)
-    if len(parts) == 3:
+    if len(parts) == 3 and _valid_ext_re.match(parts[1]) and _valid_ext_re.match(parts[2]):
         name, item_type, ext = parts
-    elif len(parts) == 2 and not require_type_ext:
+    elif len(parts) == 3 and _valid_ext_re.match(parts[2]):
+        name = f"{parts[0]}.{parts[1]}"
+        item_type = ""
+        ext = parts[2]
+    elif len(parts) == 2 and _valid_ext_re.match(parts[1]):
         name, ext = parts
         item_type = ""
-    elif len(parts) == 1 and not require_type_ext:
-        name = parts[0]
-        item_type = ext = ""
     else:
-        raise InvalidFilename(
-            f"Filename does not match file store convention (name.type.ext): {path_str}"
-        )
+        name = os.path.basename(path_str)
+        item_type = ext = ""
+
     return dirname, name, item_type, ext
 
 
@@ -67,8 +74,6 @@ def parse_file_ext(url_or_path: str | Url | Path) -> FileExt | None:
 
 
 def test_parse_filename():
-    import pytest
-
     filename = "foo/bar/test_file.1.type.ext"
     dirname, name, item_type, ext = split_filename(filename)
     assert dirname == "foo/bar"
@@ -90,9 +95,29 @@ def test_parse_filename():
     assert item_type == ""
     assert ext == ""
 
-    filename = "missing_type.ext"
-    with pytest.raises(InvalidFilename):
-        split_filename(filename, require_type_ext=True)
+    # Numeric extensions not allowed.
+    dirname, name, item_type, ext = split_filename("test.abc")
+    assert name == "test"
+    assert ext == "abc"
+
+    dirname, name, item_type, ext = split_filename("test.123")
+    assert name == "test.123"
+    assert ext == ""
+
+    dirname, name, item_type, ext = split_filename("test.type.123")
+    assert name == "test.type.123"
+    assert item_type == ""
+    assert ext == ""
+
+    dirname, name, item_type, ext = split_filename("test.valid.123")
+    assert name == "test.valid.123"
+    assert item_type == ""
+    assert ext == ""
+
+    dirname, name, item_type, ext = split_filename("test.123.txt")
+    assert name == "test.123"
+    assert item_type == ""
+    assert ext == "txt"
 
 
 def test_parse_file_ext():
