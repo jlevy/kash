@@ -9,6 +9,7 @@ from kash.config.logger import get_logger
 from kash.config.settings import atomic_global_settings, global_settings
 from kash.model.items_model import Item
 from kash.model.media_model import MediaType
+from kash.model.paths_model import StorePath
 from kash.utils.common.url import Url
 from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_formats_model import detect_media_type
@@ -121,24 +122,25 @@ def cache_resource(
 
 def get_url_html(
     item: Item, global_cache: bool = False, expiration_sec: float | None = None
-) -> tuple[Url, str]:
+) -> tuple[Url | StorePath, str]:
     """
     Returns the HTML content of an URL item, using the content cache,
     or the body of the item if it has a URL and HTML body.
     """
     from kash.exec.preconditions import has_html_body, is_url_resource
 
-    if not item.url:
-        raise InvalidInput("Item must have a URL or an HTML body")
-    url = Url(canonicalize_url(item.url))
-
-    if is_url_resource(item):
-        path, _was_cached = cache_file(url, global_cache, expiration_sec)
+    if is_url_resource(item) and item.url and not item.has_body:
+        # Need to fetch the content.
+        locator = Url(canonicalize_url(item.url))
+        path, _was_cached = cache_file(locator, global_cache, expiration_sec)
         with open(path) as file:
             html_content = file.read()
     else:
         if not item.body or not has_html_body(item):
-            raise InvalidInput("Item must have a URL or an HTML body")
+            raise InvalidInput("Item must be a URL resource or have an HTML body")
+        if not item.store_path:
+            raise InvalidInput("Item missing store path")
         html_content = item.body
+        locator = StorePath(item.store_path)
 
-    return url, html_content
+    return locator, html_content

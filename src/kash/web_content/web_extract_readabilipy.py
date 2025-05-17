@@ -1,9 +1,11 @@
+from pathlib import Path
+
 from kash.utils.common.url import Url
 from kash.utils.errors import InvalidInput
 from kash.web_content.web_page_model import WebPageData
 
 
-def extract_text_readabilipy(url: Url, html: str) -> WebPageData:
+def extract_text_readabilipy(locator: Url | Path, html: str) -> WebPageData:
     """
     Extracts text from HTML using readability.
     This requires Node readability. Justext is an alternative and seems good for
@@ -16,7 +18,7 @@ def extract_text_readabilipy(url: Url, html: str) -> WebPageData:
         raise InvalidInput("No clean HTML found")
 
     return WebPageData(
-        url=url,
+        locator=locator,
         title=result["title"],
         byline=result["byline"],
         clean_html=result["content"],

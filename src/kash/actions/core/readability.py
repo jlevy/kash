@@ -20,8 +20,8 @@ def readability(item: Item, refetch: bool = False) -> Item:
     See `markdownify` to also convert to Markdown.
     """
     expiration_sec = 0 if refetch else None
-    url, html_content = get_url_html(item, expiration_sec=expiration_sec)
-    page_data = extract_text_readabilipy(url, html_content)
+    locator, html_content = get_url_html(item, expiration_sec=expiration_sec)
+    page_data = extract_text_readabilipy(locator, html_content)
 
     output_item = item.derived_copy(format=Format.html, body=page_data.clean_html)
 

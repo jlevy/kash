@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Protocol
 
 from prettyfmt import abbrev_obj
@@ -12,7 +13,7 @@ class WebPageData:
     Data about a web page, including URL, title and optionally description and extracted content.
     """
 
-    url: Url
+    locator: Url | Path
     title: str | None = None
     byline: str | None = None
     description: str | None = None
