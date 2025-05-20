@@ -23,8 +23,13 @@ def is_doc_resource(item: Item) -> bool:
 
 
 @kash_precondition
+def is_markdown_resource(item: Item) -> bool:
+    return bool(is_resource(item) and item.format and item.format.is_markdown)
+
+
+@kash_precondition
 def is_html_resource(item: Item) -> bool:
-    return bool(is_resource(item) and item.format and item.format == Format.html)
+    return bool(is_resource(item) and item.format and item.format.is_html)
 
 
 @kash_precondition

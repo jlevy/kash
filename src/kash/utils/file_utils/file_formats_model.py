@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from kash.utils.common.url import Url, is_file_url, is_url, parse_file_url
 from kash.utils.file_utils.file_ext import FileExt
 from kash.utils.file_utils.file_formats import (
     MIME_EMPTY,
@@ -406,15 +405,6 @@ class FileFormatInfo:
         return self.as_str()
 
 
-def _guess_format(file_ext: FileExt | None, mime_type: MimeType | None) -> Format | None:
-    format = None
-    if file_ext:
-        format = Format.guess_by_file_ext(file_ext)
-    if not format and mime_type:
-        format = Format.from_mime_type(mime_type)
-    return format
-
-
 def guess_format_by_name(path: str | Path) -> Format | None:
     """
     Fast guess of file format by the file name only.
@@ -423,22 +413,36 @@ def guess_format_by_name(path: str | Path) -> Format | None:
     return Format.guess_by_file_ext(file_ext) if file_ext else None
 
 
-def file_format_info(path: str | Path, always_check_content: bool = False) -> FileFormatInfo:
+def file_format_info(
+    path: str | Path,
+    suggested_mime_type: MimeType | None = None,
+) -> FileFormatInfo:
     """
     Get info on the file format path and content (file extension and file content).
     Looks at the file extension first and then the file content if needed.
-    If `always_check_content` is True, look at the file content even if we
-    recognize the file extension.
+    If `suggested_mime_type` is provided, it will be used as the detected mime type
+    instead of detecting it from the file content.
     """
     path = Path(path)
     file_ext = parse_file_ext(path)
-    if always_check_content or not file_ext:
+    if not suggested_mime_type and not file_ext:
         # Look at the file content.
         detected_mime_type = detect_mime_type(path)
+    elif suggested_mime_type:
+        detected_mime_type = suggested_mime_type
     else:
         detected_mime_type = None
-    format = _guess_format(file_ext, detected_mime_type)
+
+    # Pick format first by file extension, then by detected mime type.
+    format = None
+    if file_ext:
+        format = Format.guess_by_file_ext(file_ext)
+    if not format and detected_mime_type:
+        format = Format.from_mime_type(detected_mime_type)
+
+    # Attempt to canonicalize the mime type to match the format.
     final_mime_type = format.mime_type if format else detected_mime_type
+
     return FileFormatInfo(file_ext, format, final_mime_type)
 
 
@@ -456,35 +460,3 @@ def detect_media_type(filename: str | Path) -> MediaType:
     fmt = detect_file_format(filename)
     media_type = fmt.media_type if fmt else MediaType.binary
     return media_type
-
-
-def choose_file_ext(
-    url_or_path: Url | Path | str, mime_type: MimeType | None = None
-) -> FileExt | None:
-    """
-    Pick a file extension to reflect the type of the content. First tries from any
-    provided content type (e.g. if this item was just downloaded). Then
-    recognizes known file extensions on the filename or URL, then tries looking
-    at the content with libmagic and heuristics, then gives up.
-    """
-    if mime_type:
-        fmt = Format.from_mime_type(mime_type)
-        if fmt:
-            return fmt.file_ext
-
-    # First check if it's a known standard extension.
-    filename_ext = parse_file_ext(url_or_path)
-    if filename_ext:
-        return filename_ext
-
-    local_path = None
-    if isinstance(url_or_path, str) and is_file_url(url_or_path):
-        local_path = parse_file_url(url_or_path)
-    elif not is_url(url_or_path):
-        local_path = Path(url_or_path)
-
-    # If it's local based the extension on the file content.
-    if local_path:
-        return file_format_info(local_path).suggested_file_ext
-
-    return None

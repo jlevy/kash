@@ -369,15 +369,17 @@ class Item:
         Create a resource Item for a file with a format inferred from the file extension
         or the content. Only sets basic metadata. Does not read the content. Will set
         `format` and `file_ext` if possible but will leave them as None if unrecognized.
-        If `mime_type` is provided, it can help determine the file extension.
+        If `mime_type` is provided, it can help determine the file extension if the
+        extension isn't recognized from the filename or URL.
         """
         from kash.file_storage.store_filenames import parse_item_filename
-        from kash.utils.file_utils.file_formats_model import choose_file_ext, detect_file_format
+        from kash.utils.file_utils.file_formats_model import file_format_info
 
         # Will raise error for unrecognized file ext.
         _name, filename_item_type, format, file_ext = parse_item_filename(path)
+        format_info = file_format_info(path, suggested_mime_type=mime_type)
         if not format:
-            format = detect_file_format(path)
+            format = format_info.format
         if not item_type and filename_item_type:
             item_type = filename_item_type
         if not item_type:
@@ -385,9 +387,10 @@ class Item:
             item_type = (
                 ItemType.doc if format and format.supports_frontmatter else ItemType.resource
             )
-        # Do our best to determine a good file extension if it's not already on the filename.
-        if not file_ext and mime_type:
-            file_ext = choose_file_ext(path, mime_type)
+
+        # Try to determine a good file extension if it's not already on the filename.
+        if not file_ext:
+            file_ext = format_info.suggested_file_ext
 
         item = cls(
             type=item_type,

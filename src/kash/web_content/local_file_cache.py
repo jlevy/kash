@@ -13,7 +13,7 @@ from strif import atomic_output_file, copyfile_atomic
 from kash.utils.common.url import Url, is_file_url, is_url, normalize_url, parse_file_url
 from kash.utils.errors import FileNotFound
 from kash.utils.file_utils.file_formats import MimeType
-from kash.utils.file_utils.file_formats_model import choose_file_ext
+from kash.utils.file_utils.file_formats_model import file_format_info
 from kash.web_content.dir_store import DirStore
 from kash.web_content.web_fetch import HttpHeaders, download_url
 
@@ -93,7 +93,7 @@ class CacheResult:
 
 def _suffix_for(cacheable: Cacheable, mime_type: MimeType | None = None) -> str | None:
     key = cacheable.key if isinstance(cacheable, Loadable) else cacheable
-    file_ext = choose_file_ext(key, mime_type)
+    file_ext = file_format_info(key, suggested_mime_type=mime_type).suggested_file_ext
     return file_ext.dot_ext if file_ext else None
 
 
