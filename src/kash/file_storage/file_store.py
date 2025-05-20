@@ -334,6 +334,7 @@ class FileStore(Workspace):
         skip_dup_names: bool = False,
         as_tmp: bool = False,
         no_format: bool = False,
+        no_frontmatter: bool = False,
     ) -> StorePath:
         """
         Save the item. Uses the `store_path` if it's already set or generates a new one.
@@ -341,6 +342,8 @@ class FileStore(Workspace):
 
         Unless `no_format` is true, also normalizes body text formatting (for Markdown)
         and updates the item's body to match.
+
+        If `no_frontmatter` is true, will not add frontmatter metadata to the item.
 
         If `overwrite` is true, will overwrite a file that has the same path.
 
@@ -390,9 +393,14 @@ class FileStore(Workspace):
 
             # Now save the new item.
             try:
-                if item.external_path:
+                supports_frontmatter = item.format and item.format.supports_frontmatter
+                # For binary or unknown formats or if we're not adding frontmatter, copy the file exactly.
+                if item.external_path and (no_frontmatter or not supports_frontmatter):
                     copyfile_atomic(item.external_path, full_path, make_parents=True)
                 else:
+                    # Save as a text item with frontmatter.
+                    if item.external_path:
+                        item.body = Path(item.external_path).read_text()
                     if overwrite and full_path.exists():
                         log.info(
                             "Overwrite is enabled and a previous file exists so will archive it: %s",

@@ -193,10 +193,10 @@ def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
     """
     Download a URL or resource. Uses cached content if available, unless `refetch` is true.
     Inputs can be URLs or paths to URL resources.
+    Unless `no_format` is true, adds frontmatter metadata and auto-formats and normalizes Markdown text.
     """
     expiration_sec = 0 if refetch else None
 
-    # TODO: Add option to include frontmatter metadata for text files.
     ws = current_ws()
     saved_paths = []
     for url_or_path in urls_or_paths:
@@ -223,14 +223,26 @@ def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
             cache_result = cache_file(url, expiration_sec=expiration_sec)
             # If available, use the mime type to help set item file extension.
             mime_type = cache_result.content.headers and cache_result.content.headers.mime_type
-            item = Item.from_external_path(
+            resource_item = Item.from_external_path(
                 cache_result.content.path,
                 ItemType.resource,
+                url=url,
                 mime_type=mime_type,
                 original_filename=original_filename,
             )
-            store_path = ws.save(item)
+            store_path = ws.save(resource_item, no_frontmatter=True, no_format=True)
             saved_paths.append(store_path)
+
+            if resource_item.format and resource_item.format.supports_frontmatter:
+                doc_item = Item.from_external_path(
+                    cache_result.content.path,
+                    ItemType.doc,
+                    url=url,
+                    mime_type=mime_type,
+                    original_filename=original_filename,
+                )
+                doc_store_path = ws.save(doc_item, no_frontmatter=False, no_format=False)
+                saved_paths.append(doc_store_path)
 
     print_status(
         "Downloaded %s %s:\n%s",

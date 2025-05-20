@@ -363,6 +363,7 @@ class Item:
         *,
         title: str | None = None,
         original_filename: str | None = None,
+        url: Url | None = None,
         mime_type: MimeType | None = None,
     ) -> Item:
         """
@@ -399,6 +400,7 @@ class Item:
             format=format,
             external_path=str(path),
             original_filename=original_filename,
+            url=url,
         )
 
         # Update modified time from the file system.
