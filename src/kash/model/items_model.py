@@ -181,7 +181,7 @@ class ItemId:
             item_id = ItemId(item.type, IdType.url, canonicalize_url(item.url))
         elif item.type == ItemType.concept and item.title:
             item_id = ItemId(item.type, IdType.concept, canonicalize_concept(item.title))
-        elif item.source and item.source.cacheable:
+        elif item.source and item.source.cacheable and item.source.operation.has_known_inputs:
             # We know the source of this and if the action was cacheable, we can create
             # an identity based on the source.
             item_id = ItemId(item.type, IdType.source, item.source.as_str())

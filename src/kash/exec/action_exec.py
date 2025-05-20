@@ -383,7 +383,7 @@ def run_action_with_caching(
 
         PrintHooks.before_done_message()
         log.message(
-            "%s Done: `%s` completed with %s %s",
+            "%s Action: `%s` completed with %s %s",
             EMOJI_SUCCESS,
             action.name,
             len(result.items),

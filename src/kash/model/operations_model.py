@@ -66,6 +66,13 @@ class Input:
         else:
             return "[input info missing]"
 
+    @property
+    def is_known(self) -> bool:
+        """
+        Whether the input is known, i.e. we had saved inputs with hashes.
+        """
+        return bool(self.path and self.hash)
+
     # Inputs are equal if the hashes match (even if the paths have changed).
 
     def __hash__(self):
@@ -116,6 +123,13 @@ class Operation:
             d["options"] = self.options
 
         return d
+
+    @property
+    def has_known_inputs(self) -> bool:
+        """
+        Whether the operation has known inputs, i.e. all inputs have hashes.
+        """
+        return all(arg.is_known for arg in self.arguments)
 
     def summary(self) -> OperationSummary:
         return OperationSummary(self.action_name)
