@@ -7,7 +7,7 @@ from chopdiff.html import has_timestamp
 
 from kash.exec.precondition_registry import kash_precondition
 from kash.model.items_model import Item, ItemType
-from kash.utils.file_utils.file_formats import is_full_html_page
+from kash.utils.file_utils.file_formats import is_fullpage_html
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.text_handling.markdown_utils import extract_bullet_points
 
@@ -105,8 +105,18 @@ def has_html_body(item: Item) -> bool:
 
 
 @kash_precondition
-def has_full_html_page_body(item: Item) -> bool:
-    return bool(has_html_body(item) and item.body and is_full_html_page(item.body))
+def has_markdown_body(item: Item) -> bool:
+    return bool(has_body(item) and item.format and item.format.is_markdown)
+
+
+@kash_precondition
+def has_markdown_with_html_body(item: Item) -> bool:
+    return bool(has_body(item) and item.format and item.format.is_markdown_with_html)
+
+
+@kash_precondition
+def has_fullpage_html_body(item: Item) -> bool:
+    return bool(has_html_body(item) and item.body and is_fullpage_html(item.body))
 
 
 @kash_precondition
@@ -117,6 +127,11 @@ def is_plaintext(item: Item) -> bool:
 @kash_precondition
 def is_markdown(item: Item) -> bool:
     return bool(has_body(item) and item.format and item.format.is_markdown)
+
+
+@kash_precondition
+def is_markdown_with_html(item: Item) -> bool:
+    return bool(has_body(item) and item.format and item.format.is_markdown_with_html)
 
 
 @kash_precondition

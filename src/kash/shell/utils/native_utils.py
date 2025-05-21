@@ -23,7 +23,7 @@ from kash.shell.output.shell_output import cprint
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import as_file_url, is_file_url, is_url
 from kash.utils.errors import FileNotFound, SetupError
-from kash.utils.file_utils.file_formats import is_full_html_page, read_partial_text
+from kash.utils.file_utils.file_formats import is_fullpage_html, read_partial_text
 from kash.utils.file_utils.file_formats_model import file_format_info
 
 log = get_logger(__name__)
@@ -88,7 +88,7 @@ def _detect_view_mode(file_or_url: str) -> ViewMode:
     path = Path(file_or_url)
     if path.is_file():  # File or symlink.
         content = read_partial_text(path)
-        if content and is_full_html_page(content):
+        if content and is_fullpage_html(content):
             return ViewMode.browser
 
         info = file_format_info(path)

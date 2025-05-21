@@ -1,7 +1,7 @@
 from kash.actions.core.tabbed_webpage_config import tabbed_webpage_config
 from kash.actions.core.tabbed_webpage_generate import tabbed_webpage_generate
 from kash.exec import kash_action
-from kash.exec.preconditions import has_full_html_page_body, has_html_body, has_simple_text_body
+from kash.exec.preconditions import has_fullpage_html_body, has_html_body, has_simple_text_body
 from kash.exec_model.args_model import ONE_OR_MORE_ARGS
 from kash.model import ActionInput, ActionResult, Param
 from kash.model.items_model import ItemType
@@ -11,7 +11,7 @@ from kash.web_gen.simple_webpage import simple_webpage_render
 
 @kash_action(
     expected_args=ONE_OR_MORE_ARGS,
-    precondition=(has_html_body | has_simple_text_body) & ~has_full_html_page_body,
+    precondition=(has_html_body | has_simple_text_body) & ~has_fullpage_html_body,
     params=(Param("no_title", "Don't add a title to the page body.", type=bool),),
 )
 def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:

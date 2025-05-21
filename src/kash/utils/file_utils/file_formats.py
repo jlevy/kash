@@ -11,9 +11,10 @@ from kash.config.logger import get_logger
 log = get_logger(__name__)
 
 
-def is_full_html_page(content: str) -> bool:
+def is_fullpage_html(content: str) -> bool:
     """
-    A full HTML document that is probably best rendered in a browser.
+    A full HTML document that is a full page (headers, footers, etc.) and
+    so probably best rendered in a browser.
     """
     return bool(re.search(r"<!DOCTYPE html>|<html>|<body>|<head>", content[:2048], re.IGNORECASE))
 
