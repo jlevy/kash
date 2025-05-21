@@ -10,10 +10,17 @@ from funlog import log_if_modifies
 from prettyfmt import fmt_path
 from strif import atomic_output_file, copyfile_atomic
 
-from kash.utils.common.url import Url, is_file_url, is_url, normalize_url, parse_file_url
+from kash.utils.common.url import (
+    Url,
+    is_file_url,
+    is_url,
+    is_valid_path,
+    normalize_url,
+    parse_file_url,
+)
 from kash.utils.errors import FileNotFound
-from kash.utils.file_utils.file_formats import MimeType
 from kash.utils.file_utils.file_formats_model import file_format_info
+from kash.utils.file_utils.filename_parsing import parse_file_ext
 from kash.web_content.dir_store import DirStore
 from kash.web_content.web_fetch import HttpHeaders, download_url
 
@@ -91,9 +98,25 @@ class CacheResult:
     was_cached: bool
 
 
-def _suffix_for(cacheable: Cacheable, mime_type: MimeType | None = None) -> str | None:
+def _suffix_for(cacheable: Cacheable) -> str | None:
     key = cacheable.key if isinstance(cacheable, Loadable) else cacheable
-    file_ext = file_format_info(key, suggested_mime_type=mime_type).suggested_file_ext
+
+    # Check for recognized file extensions on URLs and Paths.
+    filename_ext = parse_file_ext(str(key))
+    if filename_ext:
+        return filename_ext.dot_ext
+
+    # Handle local paths
+    if is_file_url(str(key)):
+        path = parse_file_url(str(key))
+    elif is_valid_path(str(key)):
+        path = Path(str(key))
+    else:
+        # A non-local path with no recognized extension.
+        return None
+
+    # If it's a local file, check the file content too.
+    file_ext = file_format_info(path).suggested_file_ext
     return file_ext.dot_ext if file_ext else None
 
 
