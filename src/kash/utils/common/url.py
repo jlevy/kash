@@ -149,9 +149,9 @@ def normalize_url(
 
 def is_valid_path(text: UnresolvedLocator) -> bool:
     """
-    Check if the input is plausibly a file path, i.e. not a URL or malformed in an obvious
-    way. Does not check for existence or OS-specific naming restrictions. For a more
-    thorough check there are other more complex options like:
+    Sanity check if the input is plausibly a file path, i.e. not a URL or malformed in
+    an obvious way. Does not check for existence or OS-specific naming restrictions.
+    For a more thorough check there are other more complex options like:
     https://github.com/thombashi/pathvalidate
     """
     if isinstance(text, Path):

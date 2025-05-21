@@ -22,7 +22,7 @@ from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.uniquifier import Uniquifier
-from kash.utils.common.url import Locator, Url, is_url
+from kash.utils.common.url import Locator, UnresolvedLocator, Url, is_url
 from kash.utils.errors import FileExists, FileNotFound, InvalidFilename, SkippableError
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.file_utils.file_walk import walk_by_dir
@@ -456,7 +456,7 @@ class FileStore(Workspace):
 
     def import_item(
         self,
-        locator: Locator,
+        locator: UnresolvedLocator,
         *,
         as_type: ItemType | None = None,
         reimport: bool = False,
@@ -470,7 +470,10 @@ class FileStore(Workspace):
         """
         from kash.web_content.canon_url import canonicalize_url
 
-        if is_url(locator):
+        if isinstance(locator, StorePath) and not reimport:
+            log.info("Store path already imported: %s", fmt_loc(locator))
+            return locator
+        elif is_url(locator):
             # Import a URL as a resource.
             orig_url = Url(str(locator))
             url = canonicalize_url(orig_url)
@@ -488,9 +491,6 @@ class FileStore(Workspace):
             else:
                 store_path = self.save(item)
                 return store_path
-        elif isinstance(locator, StorePath) and not reimport:
-            log.info("Store path already imported: %s", fmt_loc(locator))
-            return locator
         else:
             # We have a path, possibly outside of or inside of the store.
             path = Path(locator).resolve()
@@ -560,6 +560,13 @@ class FileStore(Workspace):
         return [
             self.import_item(locator, as_type=as_type, reimport=reimport) for locator in locators
         ]
+
+    def import_and_load(self, locator: UnresolvedLocator) -> Item:
+        """
+        Import a locator and return the item.
+        """
+        store_path = self.import_item(locator)
+        return self.load(store_path)
 
     def _filter_selection_paths(self):
         """
@@ -703,14 +710,20 @@ class FileStore(Workspace):
             dirs_ignored,
         )
 
-    def normalize(self, store_path: StorePath) -> StorePath:
+    def normalize(
+        self,
+        store_path: StorePath,
+        *,
+        no_format: bool = False,
+        no_frontmatter: bool = False,
+    ) -> StorePath:
         """
         Normalize an item or all items in a folder to make sure contents are in current
-        format.
+        format. This is the same as loading and saving the item.
         """
         log.info("Normalizing item: %s", fmt_path(store_path))
 
         item = self.load(store_path)
-        new_store_path = self.save(item)
+        new_store_path = self.save(item, no_format=no_format, no_frontmatter=no_frontmatter)
 
         return new_store_path

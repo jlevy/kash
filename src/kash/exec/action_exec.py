@@ -32,7 +32,6 @@ from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import ContentError, InvalidOutput, get_nonfatal_exceptions
 from kash.workspaces import Selection, current_ws
-from kash.workspaces.workspace_importing import import_and_load
 
 log = get_logger(__name__)
 
@@ -49,7 +48,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
 
     # Ensure input items are already saved in the workspace and load the corresponding items.
     # This also imports any URLs.
-    input_items = [import_and_load(ws, arg) for arg in input_args]
+    input_items = [ws.import_and_load(arg) for arg in input_args]
 
     # URLs should have metadata like a title and be valid, so we fetch them.
     if input_items:

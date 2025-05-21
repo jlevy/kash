@@ -38,7 +38,7 @@ classifiers = [
 # ---- Main dependencies ----
 
 dependencies = [
-"dunamai>=1.23.0",
+    "dunamai>=1.23.0",
     "pydantic>=2.10.6",
     "typing-extensions>=4.12.2",
     # My tools:
