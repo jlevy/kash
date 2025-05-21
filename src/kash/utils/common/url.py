@@ -47,7 +47,9 @@ def check_if_url(
         if only_schemes:
             return result if result.scheme in only_schemes else None
         else:
-            return result if result.scheme != "" else None
+            # Consider it a URL if the scheme is present and longer than a single character.
+            # This helps avoid misinterpreting Windows drive letters (e.g., "C:\foo") as schemes.
+            return result if result.scheme and len(result.scheme) > 1 else None
     except ValueError:
         return None
 
@@ -145,6 +147,41 @@ def normalize_url(
     return Url(normalized_url)
 
 
+def is_valid_path(text: UnresolvedLocator) -> bool:
+    """
+    Check if the input is plausibly a file path, i.e. not a URL or malformed in an obvious
+    way. Does not check for existence or OS-specific naming restrictions. For a more
+    thorough check there are other more complex options like:
+    https://github.com/thombashi/pathvalidate
+    """
+    if isinstance(text, Path):
+        return True
+    elif isinstance(text, str):
+        path_str = text
+    else:
+        return False
+
+    # Check for empty or whitespace-only strings or null characters
+    # (never acceptable paths).
+    if not path_str or path_str.isspace():
+        return False
+    if "\0" in path_str:
+        return False
+
+    # Explicitly disallow URLs.
+    if is_url(path_str):
+        return False
+
+    # As a final lightweight check, ensure it can be instantiated as a Path object
+    # This doesn't validate existence or character restrictions.
+    try:
+        _ = Path(path_str)
+    except (TypeError, ValueError):
+        return False
+
+    return True
+
+
 ## Tests
 
 
@@ -155,12 +192,18 @@ def test_is_url():
     assert is_url("ftp://example.com") == True
     assert is_url("file:///path/to/file") == True
     assert is_url("file://hostname/path/to/file") == True
-    assert is_url("invalid-url") == False
-    assert is_url("www.example.com") == False
     assert is_url("http://example.com", only_schemes=HTTP_ONLY) == True
     assert is_url("https://example.com", only_schemes=HTTP_ONLY) == True
+
+    assert is_url("invalid-url") == False
+    assert is_url("www.example.com") == False
     assert is_url("ftp://example.com", only_schemes=HTTP_ONLY) == False
     assert is_url("file:///path/to/file", only_schemes=HTTP_ONLY) == False
+
+    assert is_url("www.example.com") is False
+    assert is_url("c:\\path\\to\\file") is False
+    assert is_url("/foo/bar") is False
+    assert is_url("//foo") is False
 
 
 def test_as_file_url():
@@ -205,3 +248,37 @@ def test_normalize_url():
             str(e)
             == "Scheme 'ftp' not in allowed schemes: ['http', 'https', 'file']: ftp://example.com"
         )
+
+
+def test_is_path():
+    assert is_valid_path("foo/bar") is True
+    assert is_valid_path("/foo/bar") is True
+    assert is_valid_path("./foo/bar") is True
+    assert is_valid_path("../foo/bar") is True
+    assert is_valid_path("foo.txt") is True
+    assert is_valid_path(Path("foo/bar")) is True
+    assert is_valid_path(Path()) is True
+    assert is_valid_path(".") is True
+    assert is_valid_path("..") is True
+    assert is_valid_path("C:\\Users\\name") is True  # Windows-style
+    assert is_valid_path("file_with:colon.txt") is True  # Valid on POSIX
+    assert is_valid_path(Url("relative/path")) is True  # Url type with relative content
+
+    assert is_valid_path("http://example.com") is False
+    assert is_valid_path("https://example.com/path") is False
+    assert is_valid_path("file:///path/to/file") is False
+    assert is_valid_path(Url("http://example.com")) is False
+    assert is_valid_path("") is False
+    assert is_valid_path("  ") is False
+    assert is_valid_path("foo\0bar.txt") is False
+    assert is_valid_path(None) is False  # pyright: ignore
+    assert is_valid_path(123) is False  # pyright: ignore
+
+    # Edge cases
+    assert is_valid_path("www.example.com") is True  # No scheme
+    assert str(Path("")) == "."
+    assert str(Path(" ")) == " "
+    assert is_valid_path(Path(" ")) is True  # A bad idea but allowed
+    assert is_valid_path(Path("")) is True
+    assert is_valid_path(" ") is False
+    assert is_valid_path("") is False

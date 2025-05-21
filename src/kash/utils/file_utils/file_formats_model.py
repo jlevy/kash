@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from kash.utils.common.url import is_valid_path
 from kash.utils.file_utils.file_ext import FileExt
 from kash.utils.file_utils.file_formats import (
     MIME_EMPTY,
@@ -423,6 +424,9 @@ def file_format_info(
     If `suggested_mime_type` is provided, it will be used as the detected mime type
     instead of detecting it from the file content.
     """
+    if not is_valid_path(path):
+        raise ValueError(f"Expected a file path but got: {path!r}")
+
     path = Path(path)
     file_ext = parse_file_ext(path)
     if not suggested_mime_type and not file_ext:
