@@ -9,6 +9,13 @@ from kash.utils.file_utils.file_formats_model import Format, detect_file_format
 from kash.utils.rich_custom.ansi_cell_len import ansi_cell_len
 
 
+def can_normalize(format: Format) -> bool:
+    """
+    True for Markdown (the only format we currently normalize).
+    """
+    return format == Format.markdown or format == Format.md_html
+
+
 def normalize_formatting(
     text: str,
     format: Format | None,

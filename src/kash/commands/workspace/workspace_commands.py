@@ -59,6 +59,7 @@ from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
 from kash.utils.file_utils.dir_info import is_nonempty_dir
 from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.text_handling.doc_normalization import can_normalize
 from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import (
     current_ws,
@@ -189,11 +190,13 @@ def cache_content(*urls_or_paths: str, refetch: bool = False) -> None:
 
 
 @kash_command
-def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
+def download(*urls_or_paths: str, refetch: bool = False, no_format: bool = False) -> ShellResult:
     """
     Download a URL or resource. Uses cached content if available, unless `refetch` is true.
     Inputs can be URLs or paths to URL resources.
     Creates both resource and document versions for text content.
+
+    :param no_format: If true, do not also normalize Markdown content.
     """
     ws = current_ws()
     saved_paths = []
@@ -236,11 +239,13 @@ def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
                 mime_type=mime_type,
                 original_filename=original_filename,
             )
+            # For initial content, do not format or add frontmatter.
             store_path = ws.save(resource_item, no_frontmatter=True, no_format=True)
             saved_paths.append(store_path)
+            select(store_path)
 
-            # Also create a doc version for text content
-            if resource_item.format and resource_item.format.supports_frontmatter:
+            # Also create a doc version for text content if we want to normalize formatting.
+            if resource_item.format and can_normalize(resource_item.format) and not no_format:
                 doc_item = Item.from_external_path(
                     cache_result.content.path,
                     ItemType.doc,
@@ -248,8 +253,10 @@ def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
                     mime_type=mime_type,
                     original_filename=original_filename,
                 )
-                doc_store_path = ws.save(doc_item, no_frontmatter=False, no_format=False)
+                # Now use default formatting and frontmatter.
+                doc_store_path = ws.save(doc_item)
                 saved_paths.append(doc_store_path)
+                select(doc_store_path)
 
     print_status(
         "Downloaded %s %s:\n%s",
@@ -257,7 +264,6 @@ def download(*urls_or_paths: str, refetch: bool = False) -> ShellResult:
         plural("item", len(saved_paths)),
         fmt_lines(saved_paths),
     )
-    select(*saved_paths)
 
     return ShellResult(show_selection=True)
 
