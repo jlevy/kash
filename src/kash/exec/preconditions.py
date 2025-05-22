@@ -105,6 +105,11 @@ def has_html_body(item: Item) -> bool:
 
 
 @kash_precondition
+def has_html_compatible_body(item: Item) -> bool:
+    return bool(has_body(item) and item.format and item.format.is_html_compatible)
+
+
+@kash_precondition
 def has_markdown_body(item: Item) -> bool:
     return bool(has_body(item) and item.format and item.format.is_markdown)
 
@@ -136,14 +141,14 @@ def is_markdown_with_html(item: Item) -> bool:
 
 @kash_precondition
 def is_markdown_template(item: Item) -> bool:
-    return is_markdown(item) and contains_curly_vars(item)
+    return has_markdown_body(item) and contains_curly_vars(item)
 
 
 @kash_precondition
 def is_markdown_list(item: Item) -> bool:
     try:
         return (
-            is_markdown(item)
+            has_markdown_body(item)
             and item.body is not None
             and len(extract_bullet_points(item.body)) >= 2
         )

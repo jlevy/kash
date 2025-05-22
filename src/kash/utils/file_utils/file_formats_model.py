@@ -143,17 +143,23 @@ class Format(Enum):
 
     @property
     def is_markdown(self) -> bool:
-        """Is in pure Markdown (no HTML)."""
+        """Is this pure Markdown? Does not include Markdown mixed with HTML."""
         return self in [self.markdown]
 
     @property
     def is_markdown_with_html(self) -> bool:
-        """Is in Markdown with HTML."""
+        """Is this Markdown mixed with HTML?"""
         return self in [self.md_html]
 
     @property
     def is_html(self) -> bool:
-        return self in [self.html, self.md_html]
+        """Is this format HTML? Does not include Markdown mixed with HTML."""
+        return self in [self.html]
+
+    @property
+    def is_html_compatible(self) -> bool:
+        """Is this format directly compatible with HTML (any combination of text, markdown, or HTML)?"""
+        return self in [self.plaintext, self.markdown, self.md_html, self.html]
 
     @property
     def is_data(self) -> bool:

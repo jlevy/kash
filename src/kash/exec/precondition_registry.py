@@ -16,11 +16,13 @@ def kash_precondition(func: Callable[[Item], bool]) -> Precondition:
     """
     Decorator to register a function as a Precondition.
     The function should return a bool and/or raise `PreconditionFailure`.
+    Returns an actual Precondition object, not the function, so that it's possible to
+    do precondition algebra, e.g. `is_file & has_body`.
 
     Example:
-        @register_precondition
-        def is_file(item: Item) -> bool:
-            return item.is_file()
+        @kash_precondition
+        def has_body(item: Item) -> bool:
+            return item.has_body()
     """
     precondition = Precondition(func)
 
