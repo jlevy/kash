@@ -7,6 +7,7 @@ from strif import copyfile_atomic
 
 from kash.config.logger import get_logger
 from kash.exec import kash_command
+from kash.exec.resolve_args import assemble_path_args
 from kash.exec_model.shell_model import ShellResult
 from kash.model.paths_model import StorePath
 from kash.shell.ui.shell_results import shell_print_selection_history
@@ -30,6 +31,7 @@ def select(
     clear_all: bool = False,
     clear_future: bool = False,
     refresh: bool = False,
+    no_check: bool = False,
 ) -> ShellResult:
     """
     Set or show the current selection.
@@ -51,6 +53,7 @@ def select(
     :param clear_all: Clear the full selection history.
     :param clear_future: Clear all selections from history after the current one.
     :param refresh: Refresh the current selection to drop any paths that no longer exist.
+    :param no_check: Do not check if the paths exist.
     """
     ws = current_ws()
 
@@ -68,6 +71,10 @@ def select(
         raise InvalidInput("Cannot combine multiple flags")
     if paths and any(exclusive_flags):
         raise InvalidInput("Cannot combine paths with other flags")
+    if not no_check:
+        for path in paths:
+            if not Path(ws.base_dir / path).exists():
+                raise InvalidInput(f"Path does not exist: {fmt_loc(path)}")
 
     if paths:
         store_paths = [StorePath(path) for path in paths]
@@ -203,3 +210,18 @@ def save(parent: str | None = None, to: str | None = None, no_frontmatter: bool 
         for store_path in store_paths:
             target_path = target_dir / basename(store_path)
             copy_file(store_path, target_path)
+
+
+@kash_command
+def show_parent_dir(*paths: str) -> None:
+    """
+    Show the parent directory of the first item in the current selection.
+    """
+    from kash.commands.base.show_command import show
+
+    input_paths = assemble_path_args(*paths)
+    if not input_paths:
+        raise InvalidInput("No paths provided")
+
+    input_path = current_ws().resolve_to_abs_path(input_paths[0])
+    show(input_path.parent)

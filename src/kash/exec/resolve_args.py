@@ -42,7 +42,7 @@ def resolve_path_arg(path_str: UnresolvedPath) -> Path | StorePath:
         return path
     else:
         try:
-            store_path = current_ws().resolve_path(path)
+            store_path = current_ws().resolve_to_store_path(path)
             if store_path:
                 return store_path
             else:
@@ -110,7 +110,7 @@ def resolvable_paths(paths: Sequence[StorePath | Path]) -> list[StorePath]:
     current workspace.
     """
     ws = current_ws()
-    resolvable = list(filter(None, (ws.resolve_path(p) for p in paths)))
+    resolvable = list(filter(None, (ws.resolve_to_store_path(p) for p in paths)))
     return resolvable
 
 

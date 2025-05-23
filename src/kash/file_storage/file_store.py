@@ -182,7 +182,7 @@ class FileStore(Workspace):
         except (FileNotFoundError, InvalidFilename):
             pass
 
-    def resolve_path(self, path: Path | StorePath) -> StorePath | None:
+    def resolve_to_store_path(self, path: Path | StorePath) -> StorePath | None:
         """
         Return a StorePath if the given path is within the store, otherwise None.
         If it is already a StorePath, return it unchanged.
@@ -194,6 +194,21 @@ class FileStore(Workspace):
             return StorePath(resolved.relative_to(self.base_dir))
         else:
             return None
+
+    def resolve_to_abs_path(self, path: Path | StorePath) -> Path:
+        """
+        Return an absolute path, resolving any store paths to within the store
+        and resolving other paths like regular `Path.resolve()`.
+        """
+        store_path = self.resolve_to_store_path(path)
+        if store_path:
+            return self.base_dir / store_path
+        elif path.is_absolute():
+            return path
+        else:
+            # Unspecified relative paths resolved to cwd.
+            # TODO: Consider if such paths might be store paths.
+            return path.resolve()
 
     def exists(self, store_path: StorePath) -> bool:
         """
