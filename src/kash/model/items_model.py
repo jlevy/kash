@@ -628,7 +628,7 @@ class Item:
         if not display_title and self.store_path:
             display_title = Path(self.store_path).name
         if not display_title:
-            display_title = self.abbrev_title()
+            display_title = self.abbrev_title(pull_body_heading=True)
         return display_title
 
     def abbrev_description(self, max_len: int = 1000) -> str:

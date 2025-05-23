@@ -1,7 +1,8 @@
 import time
 from dataclasses import replace
+from pathlib import Path
 
-from prettyfmt import fmt_lines, plural
+from prettyfmt import fmt_lines, fmt_path, plural
 
 from kash.config.logger import get_logger
 from kash.config.text_styles import (
@@ -287,6 +288,14 @@ def save_action_result(
     Save the result of an action to the workspace. Handles skipping duplicates and
     archiving old inputs, if appropriate, based on hints in the ActionResult.
     """
+    # If an action returned an external path, we should confirm it exists or it is probably
+    # a bug in the action.
+    for item in result.items:
+        if item.external_path and not Path(item.external_path).exists():
+            raise InvalidOutput(
+                f"External path returned by action does not exist: {fmt_path(item.external_path)}"
+            )
+
     input_items = action_input.items
 
     skipped_paths = []
@@ -377,7 +386,11 @@ def run_action_with_caching(
         # Run it!
         result = run_action_operation(context, action_input, operation)
         result_store_paths, archived_store_paths = save_action_result(
-            ws, result, action_input, as_tmp=settings.tmp_output, no_format=settings.no_format
+            ws,
+            result,
+            action_input,
+            as_tmp=settings.tmp_output,
+            no_format=settings.no_format,
         )
 
         PrintHooks.before_done_message()
@@ -448,13 +461,19 @@ def run_action_with_shell_context(
 
     # As a special case for convenience, if the action expects no args, ignore any pre-selected inputs.
     if action.expected_args == NO_ARGS and from_selection:
-        log.message("Not using current selection since action `%s` expects no args.", action_name)
+        log.message(
+            "Not using current selection since action `%s` expects no args.",
+            action_name,
+        )
         args.clear()
 
     if args:
         source_str = "provided args" if provided_args else "selection"
         log.message(
-            "Using %s as inputs to action `%s`:\n%s", source_str, action_name, fmt_lines(args)
+            "Using %s as inputs to action `%s`:\n%s",
+            source_str,
+            action_name,
+            fmt_lines(args),
         )
 
     # Get items for each input arg.
