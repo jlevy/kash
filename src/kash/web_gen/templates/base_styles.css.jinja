@@ -121,13 +121,17 @@ h1 {
 
 h2 {
   font-size: 1.4rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   margin-bottom: 1rem;
+}
+
+h1 + h2 {
+  margin-top: 2rem;
 }
 
 h3 {
   font-size: 1.03rem;
-  margin-top: 1.5rem;
+  margin-top: 1.6rem;
   margin-bottom: 0.5rem;
 }
 
@@ -340,7 +344,7 @@ tbody tr:nth-child(even) {
   left: 50%;
   transform: translateX(-50%);
   box-sizing: border-box;
-  margin-bottom: 1rem;
+  margin: 2rem 0;
   background-color: var(--color-bg-solid);
 }
 {% endblock table_styles %}
