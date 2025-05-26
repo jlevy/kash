@@ -244,7 +244,7 @@ def _serve_item(
             media_type=mime_type,
         )
     else:
-        display_title = item.display_title() if item else str(path)
+        display_title = item.abbrev_title() if item else str(path)
 
         # For HEAD requests, return header with mime type only.
         if request.method == "HEAD":

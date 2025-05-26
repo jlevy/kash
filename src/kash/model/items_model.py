@@ -560,6 +560,15 @@ class Item:
         full_suffix = self.get_full_suffix()
         return join_suffix(slug, full_suffix)
 
+    def body_heading(self, allowed_tags: tuple[str, ...] = ("h1", "h2")) -> str | None:
+        """
+        Get the first heading (by default h1 or h2) from the body text, if present.
+        """
+        if self.format in [Format.markdown, Format.md_html]:
+            return first_heading(self.body_text(), allowed_tags=allowed_tags)
+        # TODO: Support HTML <h1> and <h2> as well.
+        return None
+
     def abbrev_title(
         self,
         *,
@@ -619,32 +628,11 @@ class Item:
 
         return final_text
 
-    def display_title(self) -> str:
-        """
-        A display title for this item. Same as abbrev_title() but will fall back
-        to the filename if it is available.
-        """
-        display_title = self.title
-        if not display_title and self.store_path:
-            display_title = Path(self.store_path).name
-        if not display_title:
-            display_title = self.abbrev_title(pull_body_heading=True)
-        return display_title
-
     def abbrev_description(self, max_len: int = 1000) -> str:
         """
         Get or infer description.
         """
         return abbrev_on_words(html_to_plaintext(self.description or self.body or ""), max_len)
-
-    def body_heading(self) -> str | None:
-        """
-        Get the first h1 or h2 heading from the body text, if present.
-        """
-        if self.format in [Format.markdown, Format.md_html]:
-            return first_heading(self.body_text(), allowed_tags=("h1", "h2"))
-        # TODO: Support HTML <h1> and <h2> as well.
-        return None
 
     def abbrev_body(self, max_len: int) -> str:
         """
@@ -745,9 +733,14 @@ class Item:
         self,
         other: Item | None = None,
         update_timestamp: bool = False,
+        clear_fields=(
+            "store_path",  # Will be set at save time.
+            "source",  # Should be cleared so the ItemId of a copy is not the same as the original.
+            "modified_at",
+        ),
         **other_updates: Unpack[ItemUpdateOptions],
     ) -> dict[str, Any]:
-        overrides: dict[str, Any] = {"store_path": None, "modified_at": None}
+        overrides: dict[str, Any] = {f: None for f in clear_fields}
         if update_timestamp:
             overrides["created_at"] = datetime.now()
 
@@ -767,8 +760,9 @@ class Item:
         self, update_timestamp: bool = True, **other_updates: Unpack[ItemUpdateOptions]
     ) -> Item:
         """
-        Copy item with the given field updates. Resets `store_path` to None but preserves
-        other fields, including the body. Updates created time if requested.
+        Copy item with the given field updates. Resets `store_path` and `source` to None
+        since those should be set explicitly later. But preserves other fields, including
+        the body. Updates created time if requested.
         """
         new_fields = self._copy_and_update(update_timestamp=update_timestamp, **other_updates)
         return Item(**new_fields)

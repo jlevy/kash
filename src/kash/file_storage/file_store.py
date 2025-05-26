@@ -308,7 +308,7 @@ class FileStore(Workspace):
             # If this item has an identity and we've saved under that id before, use the same store path.
             store_path = self.id_map[item_id]
             log.info(
-                "Found existing item with same id:\n%s",
+                "When picking a store path, found an existing item with same id:\n%s",
                 fmt_lines([fmt_loc(store_path), item_id]),
             )
             return store_path, True, None
