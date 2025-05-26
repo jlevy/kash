@@ -219,6 +219,12 @@ class Item:
     a text document, PDF or other resource, URL, etc.
     """
 
+    # TODO: A few cleanups:
+    # - Consider adding aliases and tags. See also Obsidian frontmatter format:
+    #   https://help.obsidian.md/Editing+and+formatting/Properties#Default%20properties
+    # - Can eliminate context here as we now have ExectContext in a contextvar.
+    # - Change store_path and external_path to a StorePath and Path instead of a str.
+
     type: ItemType
     state: State = State.draft
     title: str | None = None
@@ -230,17 +236,15 @@ class Item:
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     modified_at: datetime | None = None
 
-    # TODO: Consider adding aliases and tags. See also Obsidian frontmatter format:
-    # https://help.obsidian.md/Editing+and+formatting/Properties#Default%20properties
-
     # Content of the item.
     # Text items are in body. Large or binary items may be stored externally.
+    # The external_path if present should always hold the current body of the content
+    # (and body will not be set). This is necessary for large or binary files.
     body: str | None = None
     external_path: str | None = None
     original_filename: str | None = None
 
     # Path to the item in the store, if it has been saved.
-    # TODO: Migrate this to StorePath.
     store_path: str | None = None
 
     # Optionally, relations to other items, including any time this item is derived from.
@@ -761,8 +765,8 @@ class Item:
     ) -> Item:
         """
         Copy item with the given field updates. Resets `store_path` and `source` to None
-        since those should be set explicitly later. But preserves other fields, including
-        the body. Updates created time if requested.
+        since those should be set explicitly later. Preserves other fields, including
+        the body.
         """
         new_fields = self._copy_and_update(update_timestamp=update_timestamp, **other_updates)
         return Item(**new_fields)
@@ -777,9 +781,12 @@ class Item:
 
     def derived_copy(self, **updates: Unpack[ItemUpdateOptions]) -> Item:
         """
-        Same as `new_copy_with()`, but also makes any other updates and updates the
-        `derived_from` relation. If we also have an action context, then use the
-        `title_template` to derive a new title.
+        Copy item with the given field updates. Resets `store_path` and `source` to None
+        since those should be set explicitly later. Preserves other fields, including
+        the body.
+
+        Same as `new_copy_with` but also updates the `derived_from` relation. If we also
+        have an action context, then use the `title_template` to derive a new title.
         """
         if not self.store_path:
             if self.relations.derived_from:

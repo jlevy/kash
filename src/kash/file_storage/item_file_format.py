@@ -28,8 +28,6 @@ def write_item(item: Item, path: Path, normalize: bool = True):
     By default normalizes formatting of the body text and updates the item's body.
     """
     item.validate()
-    if item.is_binary:
-        raise ValueError(f"Binary items should be external files: {item}")
     if item.format and not item.format.supports_frontmatter:
         raise ValueError(f"Item format `{item.format.value}` does not support frontmatter: {item}")
 

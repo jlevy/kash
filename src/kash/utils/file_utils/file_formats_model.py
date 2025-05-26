@@ -176,8 +176,8 @@ class Format(Enum):
         """
         Is this format compatible with frontmatter format metadata?
         PDF and docx unfortunately won't work with frontmatter.
-        CSV does to some degree, depending on the tool, and this is useful so we support it.
-        Perhaps we could include JSON here (assuming it's JSON5), but currently we do not.
+        CSV does to some degree, depending on the tool, and this can be useful so we support it.
+        Including JSON here (assuming it's JSON5) for similar reasons.
         """
         return self in [
             self.url,
@@ -191,7 +191,7 @@ class Format(Enum):
             self.python,
             self.shellscript,
             self.xonsh,
-            self.csv,
+            self.csv,  # Often but not always supported.
             self.log,
         ]
 

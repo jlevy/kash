@@ -22,7 +22,7 @@ from kash.exec_model.shell_model import ShellResult
 from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.exec_model import ExecContext
-from kash.model.items_model import UNTITLED, Item, ItemType
+from kash.model.items_model import UNTITLED, Format, Item, ItemType
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import (
     ALL_COMMON_PARAMS,
@@ -101,6 +101,10 @@ class ActionResult:
 
     shell_result: ShellResult | None = None
     """Customize control of how the action's result is displayed in the shell."""
+
+    def get_by_format(self, format: Format) -> Item:
+        """Convenience method to get an item for actions that return multiple formats."""
+        return next(item for item in self.items if item.format == format)
 
     def has_hints(self) -> bool:
         return bool(
