@@ -15,7 +15,7 @@ def simple_webpage_render(
     return render_web_template(
         template_filename=page_template,
         data={
-            "title": item.abbrev_title(),
+            "title": item.pick_title(),
             "add_title_h1": add_title_h1,
             "content_html": item.body_as_html(),
             "thumbnail_url": item.thumbnail_url,

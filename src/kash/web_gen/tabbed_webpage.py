@@ -68,14 +68,14 @@ def tabbed_webpage_config(
 
     tabs = [
         TabInfo(
-            label=clean_label(item.abbrev_title()),
+            label=clean_label(item.pick_title()),
             store_path=item.store_path,
             thumbnail_url=get_thumbnail_url(item),
         )
         for item in items
     ]
     _fill_in_ids(tabs)
-    title = summary_heading([item.abbrev_title() for item in items])
+    title = summary_heading([item.pick_title() for item in items])
     config = TabbedWebpage(
         title=title, tabs=tabs, show_tabs=len(tabs) > 1, add_title_h1=add_title_h1
     )

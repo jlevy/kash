@@ -547,7 +547,7 @@ class Item:
         if filename_stem and not prefer_title:
             return slugify_snake(filename_stem)
         else:
-            return slugify_snake(self.abbrev_title(max_len=max_len, add_ops_suffix=True))
+            return slugify_snake(self.pick_title(max_len=max_len, add_ops_suffix=True))
 
     def default_filename(self) -> str:
         """
@@ -569,7 +569,7 @@ class Item:
         # TODO: Support HTML <h1> and <h2> as well.
         return None
 
-    def abbrev_title(
+    def pick_title(
         self,
         *,
         max_len: int = 100,
@@ -628,7 +628,7 @@ class Item:
 
         return final_text
 
-    def abbrev_description(self, max_len: int = 1000) -> str:
+    def pick_description(self, max_len: int = 1000) -> str:
         """
         Get or infer description.
         """
@@ -639,9 +639,9 @@ class Item:
         Get an abbreviated version of the body text. Must not be a binary Item.
         Abbreviates YAML bodies like {"role": "user", "content": "Hello"} to "user Hello".
         """
-        body_text = self.body_text()[:max_len]
+        body_text = abbrev_str(self.body_text(), max_len)
 
-        # Just for aesthetics especially for titles of chat files.
+        # Just for aesthetics, especially for titles of chat files.
         if self.type in [ItemType.chat, ItemType.config] or self.format == Format.yaml:
             try:
                 yaml_obj = list(new_yaml().load_all(self.body_text()))
@@ -650,7 +650,7 @@ class Item:
             except Exception as e:
                 log.info("Error parsing YAML body: %s", e)
 
-        return body_text[:max_len]
+        return abbrev_str(body_text, max_len)
 
     @property
     def has_body(self) -> bool:
@@ -892,7 +892,7 @@ class Item:
         elif self.external_path:
             return fmt_loc(self.external_path)
         else:
-            return repr(self.abbrev_title())
+            return repr(self.pick_title())
 
     def as_chat_history(self) -> ChatHistory:
         if self.type != ItemType.chat:

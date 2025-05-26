@@ -270,7 +270,7 @@ def get_item_completions(
                 f"{fmt_store_path(not_none(item.store_path))}",
                 COMPLETION_DISPLAY_MAX_LEN,
             ),
-            description=item.abbrev_title(),
+            description=item.pick_title(),
             append_space=True,
             score=score,
         )
