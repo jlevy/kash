@@ -161,8 +161,10 @@ class FileStore(Workspace):
                         "Duplicate items (%s):\n%s", item_id, fmt_lines([old_path, store_path])
                     )
                 self.id_map[item_id] = store_path
-        except SkippableError as e:
-            log.warning("Could not read file, skipping: %s: %s", fmt_path(store_path), e)
+        except (ValueError, SkippableError) as e:
+            log.warning(
+                "Could not load file, skipping from store index: %s: %s", fmt_path(store_path), e
+            )
 
         return dup_path
 

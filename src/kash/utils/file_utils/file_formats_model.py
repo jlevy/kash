@@ -106,7 +106,9 @@ class Format(Enum):
     @property
     def is_simple_text(self) -> bool:
         """
-        Is this plaintext or close to it, like Markdown?
+        Is this plaintext or close to it, like Markdown or Markdown with limited HTML?
+        "Simple text" should be a format that converts canonically to clean HTML.
+        Does not include full-page general HTML.
         """
         return self in [self.plaintext, self.markdown, self.md_html]
 

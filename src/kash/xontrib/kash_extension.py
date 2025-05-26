@@ -12,7 +12,6 @@ Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 import kash.exec.command_registry
 import kash.xonsh_custom.load_into_xonsh
 import kash.xonsh_custom.xonsh_env
-from kash.config.logger import get_logger
 
 
 # We add action loading here directly in the xontrib so we expose `load` and
@@ -55,6 +54,8 @@ kash.xonsh_custom.xonsh_env.set_alias("load", load)
 try:
     kash.xonsh_custom.load_into_xonsh.load_into_xonsh()
 except Exception as e:
+    from kash.config.logger import get_logger
+
     log = get_logger(__name__)
-    log.error("Could not initialize kash: %s", e)
+    log.error("Could not initialize kash: %s", e, exc_info=True)
     raise
