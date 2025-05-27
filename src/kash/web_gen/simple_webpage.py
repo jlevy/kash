@@ -7,6 +7,7 @@ def simple_webpage_render(
     item: Item,
     page_template: str = "simple_webpage.html.jinja",
     add_title_h1: bool = True,
+    show_theme_toggle: bool = False,
 ) -> str:
     """
     Generate a simple web page from a single item.
@@ -19,6 +20,7 @@ def simple_webpage_render(
             "add_title_h1": add_title_h1,
             "content_html": item.body_as_html(),
             "thumbnail_url": item.thumbnail_url,
+            "show_theme_toggle": show_theme_toggle,
         },
     )
 

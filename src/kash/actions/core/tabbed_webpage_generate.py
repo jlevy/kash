@@ -17,7 +17,9 @@ def tabbed_webpage_generate(input: ActionInput, add_title: bool = False) -> Acti
     Generate a tabbed web page from a config item for the tabbed template.
     """
     config_item = input.items[0]
-    html = tabbed_webpage.tabbed_webpage_generate(config_item, add_title_h1=add_title)
+    html = tabbed_webpage.tabbed_webpage_generate(
+        config_item, add_title_h1=add_title, show_theme_toggle=True
+    )
 
     webpage_item = Item(
         title=config_item.title,

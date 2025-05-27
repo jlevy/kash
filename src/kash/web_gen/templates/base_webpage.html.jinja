@@ -5,9 +5,25 @@
   {% block meta %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark">
   {% endblock meta %}
 
   {% block title %}<title>{{ title }}</title>{% endblock title %}
+
+  {% block dark_mode_script %}
+  <script>
+    // Set theme before body renders to prevent flash of unstyled content
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem('theme', theme);
+    }
+
+    const storedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = storedTheme || (systemPrefersDark ? 'dark' : 'light');
+    applyTheme(initialTheme);
+  </script>
+  {% endblock dark_mode_script %}
 
   {% block head_basic %}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,6 +51,52 @@
   {% block head_extra %}{% endblock head_extra %}
 
   <style>
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      transition: background 0.4s ease-in-out, color 0.4s ease-in-out;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      color: var(--color-hint);
+      border: none;
+      padding: 0;
+      border-radius: 0.3rem;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 100;
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .theme-toggle:hover {
+      background: var(--color-hover-bg);
+      color: var(--color-primary);
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      color: var(--color-primary-light);
+    }
+
+    [data-theme="dark"] .theme-toggle:hover {
+      color: var(--color-bright);
+      background: var(--color-hover-bg);
+    }
+
+    .theme-toggle svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
     {% block font_faces %}
     /* https://fontsource.org/fonts/pt-serif/cdn */
     /* pt-serif-latin-400-normal */
@@ -108,6 +170,14 @@
 </head>
 
 <body>
+  {% block theme_toggle %}
+  {% if show_theme_toggle %}
+  <button class="theme-toggle" aria-label="toggle dark mode">
+    <i data-feather="moon"></i>
+  </button>
+  {% endif %}
+  {% endblock theme_toggle %}
+  
   {% block body_header %}{% endblock body_header %}
   
   {% block main_content %}
@@ -119,6 +189,21 @@
   {% block scripts %}
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Feather icons
+      if (typeof feather !== 'undefined') {
+        feather.replace();
+      }
+      
+      // Theme toggle (if present on page)
+      const themeToggleButton = document.querySelector('.theme-toggle');
+      if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', () => {
+          const currentTheme = document.documentElement.dataset.theme;
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          applyTheme(newTheme);
+        });
+      }
+      
       // Send messages to the parent window, in case we are in a viewport where that matters
       // (e.g. an iframe tooltip).
       // Request a resize of the parent viewport. This iframe size message format isn't

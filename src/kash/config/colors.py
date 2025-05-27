@@ -154,6 +154,32 @@ web_light_translucent = SimpleNamespace(
 )
 
 
+# Web dark colors
+web_dark_translucent = SimpleNamespace(
+    primary=hsl_to_hex("hsl(188, 40%, 62%)"),
+    primary_light=hsl_to_hex("hsl(188, 50%, 72%)"),
+    secondary=hsl_to_hex("hsl(188, 12%, 65%)"),
+    bg=hsl_to_hex("hsla(220, 14%, 7%, 0.95)"),
+    bg_solid=hsl_to_hex("hsl(220, 14%, 7%)"),
+    bg_header=hsl_to_hex("hsla(188, 42%, 20%, 0.3)"),
+    bg_alt=hsl_to_hex("hsla(220, 14%, 12%, 0.5)"),
+    bg_alt_solid=hsl_to_hex("hsl(220, 14%, 12%)"),
+    text=hsl_to_hex("hsl(188, 20%, 90%)"),
+    border=hsl_to_hex("hsl(188, 8%, 25%)"),
+    border_hint=hsl_to_hex("hsla(188, 8%, 35%, 0.7)"),
+    border_accent=hsl_to_hex("hsla(305, 30%, 55%, 0.85)"),
+    hover=hsl_to_hex("hsl(188, 12%, 35%)"),
+    hover_bg=hsl_to_hex("hsla(188, 20%, 25%, 0.4)"),
+    hint=hsl_to_hex("hsl(188, 11%, 55%)"),
+    tooltip_bg=hsl_to_hex("hsla(188, 6%, 20%, 0.9)"),
+    popover_bg=hsl_to_hex("hsla(188, 6%, 20%, 0.9)"),
+    bright=hsl_to_hex("hsl(134, 43%, 60%)"),
+    selection=hsl_to_hex("hsla(225, 61%, 40%, 0.40)"),
+    scrollbar=hsl_to_hex("hsla(189, 12%, 35%, 0.9)"),
+    scrollbar_hover=hsl_to_hex("hsla(190, 12%, 50%, 0.9)"),
+)
+
+
 rich_terminal_dark = TerminalTheme(
     hex_to_int(terminal_dark.background),
     hex_to_int(terminal_dark.foreground),
@@ -211,9 +237,6 @@ rich_terminal_light = TerminalTheme(
 # We default to light colors for Rich content in HTML.
 rich_terminal = rich_terminal_light
 
-# Only support light web colors for now.
-web = web_light_translucent
-
 # Logical colors
 logical = SimpleNamespace(
     concept_dark=terminal.green_dark,
@@ -234,18 +257,23 @@ logical = SimpleNamespace(
 )
 
 
-def consolidate_color_vars(overrides: dict[str, str] | None = None) -> dict[str, str]:
+def consolidate_color_vars(
+    overrides: dict[str, str] | None = None, web_colors: SimpleNamespace | None = None
+) -> dict[str, str]:
     """
     Consolidate all color variables into a single dictionary with appropriate prefixes.
     Terminal variables have no prefix, while web and logical variables have "color-" prefix.
     """
     if overrides is None:
         overrides = {}
+    if web_colors is None:
+        web_colors = web_light_translucent
+
     return {
         # Terminal variables (no prefix)
         **terminal.__dict__,
         # Web and logical variables with "color-" prefix
-        **{f"color-{k}": v for k, v in web.__dict__.items()},
+        **{f"color-{k}": v for k, v in web_colors.__dict__.items()},
         **{f"color-{k}": v for k, v in logical.__dict__.items()},
         # Overrides take precedence (assume they already have correct prefixes)
         **overrides,
@@ -262,19 +290,63 @@ def normalize_var_names(variables: dict[str, str]) -> dict[str, str]:
 
 def generate_css_vars(overrides: dict[str, str] | None = None) -> str:
     """
-    Generate CSS variables for the terminal and web colors.
+    Generate CSS variables for terminal and both light and dark themes.
     """
     if overrides is None:
         overrides = {}
-    normalized_vars = normalize_var_names(consolidate_color_vars(overrides))
 
-    # Generate the CSS.
-    css_variables = ":root {\n"
-    for name, value in normalized_vars.items():
-        css_variables += f"  --{name}: {value};\n"
-    css_variables += "}"
+    # Get base variables (terminal colors stay the same)
+    base_vars = normalize_var_names({k: v for k, v in terminal.__dict__.items()})
 
-    return css_variables
+    # Get light theme color variables
+    light_color_vars = normalize_var_names(
+        {f"color-{k}": v for k, v in web_light_translucent.__dict__.items()}
+    )
+    light_color_vars.update(
+        normalize_var_names({f"color-{k}": v for k, v in logical.__dict__.items()})
+    )
+
+    # Get dark theme color variables
+    dark_color_vars = normalize_var_names(
+        {f"color-{k}": v for k, v in web_dark_translucent.__dict__.items()}
+    )
+    dark_color_vars.update(
+        normalize_var_names({f"color-{k}": v for k, v in logical.__dict__.items()})
+    )
+
+    # Apply overrides
+    if overrides:
+        normalized_overrides = normalize_var_names(overrides)
+        light_color_vars.update(normalized_overrides)
+        dark_color_vars.update(normalized_overrides)
+
+    # Generate CSS
+    css_parts = []
+
+    # Root with all variables (defaults to light)
+    css_parts.append(":root {")
+    css_parts.extend(f"  --{k}: {v};" for k, v in base_vars.items())
+    css_parts.extend(f"  --{k}: {v};" for k, v in light_color_vars.items())
+    css_parts.append("}\n")
+
+    # Light theme (only color- variables)
+    css_parts.append('[data-theme="light"] {')
+    css_parts.extend(f"  --{k}: {v};" for k, v in light_color_vars.items())
+    css_parts.append("}\n")
+
+    # Dark theme (only color- variables)
+    css_parts.append('[data-theme="dark"] {')
+    css_parts.extend(f"  --{k}: {v};" for k, v in dark_color_vars.items())
+    css_parts.append("}\n")
+
+    # Print media
+    css_parts.append("@media print {")
+    css_parts.append('  :root, [data-theme="dark"] {')
+    css_parts.extend(f"    --{k}: {v} !important;" for k, v in light_color_vars.items())
+    css_parts.append("  }")
+    css_parts.append("}")
+
+    return "\n".join(css_parts)
 
 
 if __name__ == "__main__":

@@ -27,7 +27,9 @@ def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
     """
     if len(input.items) == 1:
         input_item = input.items[0]
-        html_body = simple_webpage_render(input_item, add_title_h1=not no_title)
+        html_body = simple_webpage_render(
+            input_item, add_title_h1=not no_title, show_theme_toggle=True
+        )
         result_item = input_item.derived_copy(
             type=ItemType.export, format=Format.html, body=html_body
         )

@@ -1,5 +1,29 @@
 {% extends "base_webpage.html.jinja" %}
 
+{% block custom_styles %}
+{{ super() }}
+<style>
+/* Override Tailwind's bg-white in dark mode */
+[data-theme="dark"] .bg-white {
+  background-color: var(--color-bg-alt-solid) !important;
+}
+.long-text {
+  transition: background 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+/* Ensure long-text containers respect theme */
+[data-theme="dark"] .long-text {
+  background-color: var(--color-bg-alt-solid);
+  color: var(--color-text);
+}
+
+/* Adjust shadow for dark mode */
+[data-theme="dark"] .long-text {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 -2px 6px -1px rgba(0, 0, 0, 0.2);
+}
+</style>
+{% endblock custom_styles %}
+
 <!-- simple_webpage begin main_content block -->
 {% block main_content %}
 <div class="long-text container max-w-3xl mx-auto bg-white py-4 px-6 md:px-16">

@@ -100,7 +100,10 @@ def _load_tab_content(config: TabbedWebpage):
 
 
 def tabbed_webpage_generate(
-    config_item: Item, page_template: str = "base_webpage.html.jinja", add_title_h1: bool = True
+    config_item: Item,
+    page_template: str = "base_webpage.html.jinja",
+    add_title_h1: bool = True,
+    show_theme_toggle: bool = False,
 ) -> str:
     """
     Generate a web page using the supplied config.
@@ -121,6 +124,7 @@ def tabbed_webpage_generate(
             "title": tabbed_webpage.title,
             "add_title_h1": add_title_h1,
             "content": content,
+            "show_theme_toggle": show_theme_toggle,
         },
     )
 
