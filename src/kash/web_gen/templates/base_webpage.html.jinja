@@ -195,10 +195,42 @@
   {% block scripts %}
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize Feather icons
-      if (typeof feather !== 'undefined') {
-        feather.replace();
-      }
+      // Add copy buttons to code blocks
+      document.querySelectorAll('pre').forEach(pre => {
+        // Skip if already has a copy button
+        if (pre.querySelector('.code-copy-button')) {
+          return;
+        }
+        
+        const copyButton = document.createElement('button');
+        copyButton.className = 'code-copy-button';
+        copyButton.setAttribute('aria-label', 'Copy code');
+        
+        const copyIcon = typeof feather !== 'undefined' ? feather.icons.copy.toSvg() : '<i data-feather="copy"></i>';
+        const checkIcon = typeof feather !== 'undefined' ? feather.icons.check.toSvg() : '<i data-feather="check"></i>';
+        
+        copyButton.innerHTML = copyIcon;
+        copyButton.addEventListener('click', async () => {
+          const codeElement = pre.querySelector('code') || pre;
+          const textToCopy = (codeElement.textContent || codeElement.innerText).trim();
+          
+          // Works on modern browsers.
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            copyButton.innerHTML = checkIcon;
+            copyButton.classList.add('copied');
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+              copyButton.innerHTML = copyIcon;
+              copyButton.classList.remove('copied');
+            }, 2000);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+          });
+        });
+        
+        pre.appendChild(copyButton);
+      });
       
       // Theme toggle (if present on page)
       const themeToggleButton = document.querySelector('.theme-toggle');
@@ -250,6 +282,11 @@
           }
         });
       });
+      
+      // Initialize Feather icons once at the end, after all DOM manipulation.
+      if (typeof feather !== 'undefined') {
+        feather.replace();
+      }
     });
 
     // Double-click to expand (e.g. expand tooltip to popover).

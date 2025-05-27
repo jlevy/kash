@@ -210,6 +210,44 @@ pre > code {
   line-height: 1.5;  /* Improve readability */
 }
 
+/* Copy button for code blocks */
+.code-copy-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--color-bg-alt);
+  color: var(--color-hint);
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  z-index: 10;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  opacity: 0.6;
+}
+
+.code-copy-button:hover {
+  background: var(--color-hover-bg);
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.code-copy-button.copied {
+  color: var(--color-success);
+  opacity: 1;
+}
+
+.code-copy-button svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 hr {
   border: none;
   height: 1.5rem;
