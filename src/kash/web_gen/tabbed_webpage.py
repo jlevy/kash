@@ -124,6 +124,7 @@ def tabbed_webpage_generate(
             "title": tabbed_webpage.title,
             "add_title_h1": add_title_h1,
             "content": content,
+            "enable_themes": show_theme_toggle,
             "show_theme_toggle": show_theme_toggle,
         },
     )

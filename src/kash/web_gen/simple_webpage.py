@@ -20,6 +20,7 @@ def simple_webpage_render(
             "add_title_h1": add_title_h1,
             "content_html": item.body_as_html(),
             "thumbnail_url": item.thumbnail_url,
+            "enable_themes": show_theme_toggle,
             "show_theme_toggle": show_theme_toggle,
         },
     )

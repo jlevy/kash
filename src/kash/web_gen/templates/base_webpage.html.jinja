@@ -18,9 +18,9 @@
       localStorage.setItem('theme', theme);
     }
 
-    // If theme toggle is shown, respect stored preference or system preference.
+    // If theme toggle is enabled, respect stored preference or system preference.
     // Otherwise default to light mode.
-    {% if show_theme_toggle %}
+    {% if enable_themes %}
     const storedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initialTheme = storedTheme || (systemPrefersDark ? 'dark' : 'light');
