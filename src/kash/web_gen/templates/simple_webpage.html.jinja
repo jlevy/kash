@@ -24,14 +24,17 @@
   --toc-breakpoint: {{ toc_breakpoint | default(1200) }}px;
 }
 
-/* TOC Container - hidden by default */
+/* TOC Container - different behavior for desktop vs mobile */
 .toc-container {
-  display: none;
   transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
 }
 
 /* Desktop TOC Layout */
 @media (min-width: {{ toc_breakpoint | default(1200) }}px) {
+  .toc-container {
+    display: none; /* Hidden by default on desktop until TOC is enabled */
+  }
+  
   .content-with-toc {
     display: grid;
     grid-template-columns: calc(var(--toc-width) + 4rem) 1fr; /* TOC space + gap, then remaining space */
@@ -45,7 +48,7 @@
   }
   
   .toc-container {
-    display: block;
+    display: block; /* Override the base hidden state for desktop when TOC is enabled */
     width: var(--toc-width);
     position: sticky;
     top: 2rem;
@@ -109,8 +112,8 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: var(--font-size-smaller);
-  line-height: 1.4;
+  font-size: var(--font-size-small);
+  line-height: 1.2;
 }
 
 .toc-list li {
@@ -126,7 +129,7 @@
   display: block;
   color: var(--color-secondary);
   text-decoration: none;
-  padding: 0.25rem 0 0.25rem 0;
+  padding: 0.2rem 0;
   transition: all 0.15s ease-in-out;
   border-left: 2px solid transparent;
 }
@@ -147,7 +150,6 @@
 /* Hierarchical indentation - adjust for new base padding */
 .toc-h1 {
   padding-left: 0.3rem;
-  font-weight: var(--font-weight-sans-bold);
 }
 .toc-h2 {
   padding-left: 1.0rem;
@@ -169,50 +171,17 @@
   color: var(--color-primary-light);
 }
 
-/* Mobile TOC toggle */
-/* Match theme toggle */
-
+/* Mobile TOC Layout */
 @media (max-width: {{ toc_breakpoint | default(1200) - 1 }}px) {
+  /* Specific positioning and z-index for TOC toggle */
   .toc-toggle {
-    position: fixed;
-    top: 1rem; 
     left: 1rem;
-    background: transparent; 
-    color: var(--color-hint);
-    border: none;
-    padding: 0;
-    border-radius: 0.3rem;
-    cursor: pointer;
-    font-size: 1rem;
-    z-index: 99;
-    transition: all 0.2s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-  .toc-toggle:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-primary);
-  }
-  .toc-toggle svg {
-    width: 1rem;
-    height: 1rem;
+    z-index: 101; /* Above theme toggle but below mobile TOC */
   }
   
-  /* Dark mode styling to match theme toggle */
-  [data-theme="dark"] .toc-toggle {
-    color: var(--color-primary-light);
-  }
-
-  [data-theme="dark"] .toc-toggle:hover {
-    background: var(--color-hover-bg);
-    color: var(--color-bright);
-  }
-  
-  .toc-container.mobile-visible {
-    display: block;
+  /* Mobile TOC state - always rendered but hidden by default */
+  .toc-container {
+    display: block !important; /* Override base rule and any JS inline styles */
     position: fixed;
     top: 4rem;
     left: 1rem;
@@ -223,16 +192,38 @@
     padding: 1rem 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     z-index: 200;
-    transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    
+    /* Hidden state */
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    visibility: hidden;
+    pointer-events: none; /* Prevent interaction when hidden */
+    
+    /* Smooth transitions */
+    transition: opacity 0.3s ease-in-out, 
+                transform 0.3s ease-in-out, 
+                visibility 0.3s ease-in-out,
+                pointer-events 0.3s ease-in-out,
+                background-color 0.4s ease-in-out, 
+                border-color 0.4s ease-in-out, 
+                box-shadow 0.4s ease-in-out;
+  }
+    
+  .toc-container.mobile-visible {
+    /* Visible state */
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto; /* Re-enable interaction */
   }
   
-  [data-theme="dark"] .toc-container.mobile-visible {
+  [data-theme="dark"] .toc-container {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
   }
 }
 
-.toc-toggle {
-  z-index: 101; /* Above theme toggle but below mobile TOC */
+.toc-container.toc-hidden {
+  display: none !important;
 }
 </style>
 {% endblock custom_styles %}
@@ -260,7 +251,7 @@
   </div>
   
   <!-- Mobile TOC toggle (hidden on desktop) -->
-  <button class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" style="display: none;">
+  <button class="fixed-button toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" style="display: none;">
     <i data-feather="list"></i>
   </button>
   
@@ -301,17 +292,16 @@ function initTOC() {
       .getPropertyValue('--toc-breakpoint')
       .replace('px', '')
   );
-  console.info("TOC breakpoint:", tocBreakpoint + "px");
   
   // Find all headings in the main content - Fix: Properly quote the selector
-  const headings = mainContent.querySelectorAll('{{ toc_headings | default("h1, h2, h3, h4") }}');
+  const headings = mainContent.querySelectorAll('{{ toc_headings | default("h1, h2, h3") }}');
   
-  // Only show TOC if we have toc_min_headings (default 5) or more headings
-  const tocThreshold = {{ toc_min_headings | default(5) }};
-  console.info("TOC headings found:", headings.length, "threshold:", tocThreshold);
+  // Only show TOC if we have toc_min_headings (default 10) or more headings
+  const tocThreshold = {{ toc_min_headings | default(10) }};
   
   if (headings.length < tocThreshold) {
-    tocContainer.style.display = 'none';
+    // Instead of setting display: none, add a class that hides the TOC
+    tocContainer.classList.add('toc-hidden');
     if (tocToggle) {
       tocToggle.style.display = 'none';
     }
@@ -319,8 +309,11 @@ function initTOC() {
     return;
   }
   
-  console.info("TOC enabled with", headings.length, "headings");
-  
+  // Make sure TOC is not hidden
+  tocContainer.classList.remove('toc-hidden');
+  console.info("Showing TOC with", headings.length, "headings", headings);
+
+    
   // Add TOC classes
   contentContainer.classList.add('has-toc');
   mainContent.classList.add('with-toc');
