@@ -15,34 +15,441 @@
 [data-theme="dark"] .long-text {
   background-color: var(--color-bg-alt-solid);
   color: var(--color-text);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 -2px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-/* Adjust shadow for dark mode */
-[data-theme="dark"] .long-text {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 -2px 6px -1px rgba(0, 0, 0, 0.2);
+/* Table of Contents Styles */
+:root {
+  --toc-width: 16rem;
+  --toc-breakpoint: {{ toc_breakpoint | default(1200) }}px;
+}
+
+/* TOC Container - hidden by default */
+.toc-container {
+  display: none;
+  transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+}
+
+/* Desktop TOC Layout */
+@media (min-width: {{ toc_breakpoint | default(1200) }}px) {
+  .content-with-toc {
+    display: grid;
+    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr; /* TOC space + gap, then remaining space */
+    max-width: none;
+    min-height: 100vh;
+  }
+  
+  /* Hide mobile toggle on desktop */
+  .toc-toggle {
+    display: none !important;
+  }
+  
+  .toc-container {
+    display: block;
+    width: var(--toc-width);
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding: 1rem 0.5rem;
+    margin: 2rem 0 0 2rem; /* Position within the grid cell */
+    border: 1px solid var(--color-border-hint);
+    background: var(--color-bg-alt-solid);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    order: 1; /* TOC first */
+  }
+  
+  /* Content area centered within its grid space */
+  .long-text.with-toc {
+    max-width: 48rem; /* Keep the same text width */
+    margin: 0 auto; /* Center within the remaining grid space */
+    order: 2; /* Content second */
+  }
+
+  /* More minimal TOC scrollbar */
+  .toc-container::-webkit-scrollbar {
+    width: 2px; 
+  }
+  .toc-container::-webkit-scrollbar-track {
+    background: transparent; /* Invisible track */
+  }
+  .toc-container::-webkit-scrollbar-thumb {
+    background: var(--color-border-hint);
+    border-radius: 2px;
+    opacity: 0.1;
+  }
+  .toc-container::-webkit-scrollbar-thumb:hover {
+    opacity: 0.2;
+  }
+  .toc-container {
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-hint) transparent;
+  }
+}
+
+/* TOC Styling */
+.toc {
+  font-family: var(--font-sans);
+}
+
+.toc-title {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-sans-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-text);
+  margin: 0 0 0.5rem 0.3rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-hint);
+  transition: color 0.4s ease-in-out, border-bottom-color 0.4s ease-in-out;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-size-smaller);
+  line-height: 1.4;
+}
+
+.toc-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.toc-list li::before {
+  display: none; /* Remove custom bullet points */
+}
+
+.toc-link {
+  display: block;
+  color: var(--color-secondary);
+  text-decoration: none;
+  padding: 0.25rem 0 0.25rem 0;
+  transition: all 0.15s ease-in-out;
+  border-left: 2px solid transparent;
+}
+
+.toc-link:hover {
+  color: var(--color-primary);
+  background-color: var(--color-hover-bg);
+  text-decoration: none;
+}
+
+.toc-link.active {
+  color: var(--color-text);
+  font-weight: 500;
+  border-left: 2px solid var(--color-primary);
+  background-color: var(--color-hover-bg);
+}
+
+/* Hierarchical indentation - adjust for new base padding */
+.toc-h1 {
+  padding-left: 0.3rem;
+  font-weight: var(--font-weight-sans-bold);
+}
+.toc-h2 {
+  padding-left: 1.0rem;
+}
+.toc-h3 {
+  padding-left: 1.7rem;
+}
+.toc-h4 {
+  padding-left: 2.4rem;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .toc-container {
+  border-left-color: var(--color-border-hint);
+}
+
+[data-theme="dark"] .toc-link:hover,
+[data-theme="dark"] .toc-link.active {
+  color: var(--color-primary-light);
+}
+
+/* Mobile TOC toggle */
+/* Match theme toggle */
+
+@media (max-width: {{ toc_breakpoint | default(1200) - 1 }}px) {
+  .toc-toggle {
+    position: fixed;
+    top: 1rem; 
+    left: 1rem;
+    background: transparent; 
+    color: var(--color-hint);
+    border: none;
+    padding: 0;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    font-size: 1rem;
+    z-index: 99;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .toc-toggle:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-primary);
+  }
+  .toc-toggle svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  /* Dark mode styling to match theme toggle */
+  [data-theme="dark"] .toc-toggle {
+    color: var(--color-primary-light);
+  }
+
+  [data-theme="dark"] .toc-toggle:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-bright);
+  }
+  
+  .toc-container.mobile-visible {
+    display: block;
+    position: fixed;
+    top: 4rem;
+    left: 1rem;
+    width: calc(100vw - 2rem);
+    max-height: calc(100vh - 5rem);
+    background: var(--color-bg-alt-solid);
+    border: 1px solid var(--color-border-hint);
+    padding: 1rem 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 200;
+    transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+  }
+  
+  [data-theme="dark"] .toc-container.mobile-visible {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.toc-toggle {
+  z-index: 101; /* Above theme toggle but below mobile TOC */
 }
 </style>
 {% endblock custom_styles %}
 
-<!-- simple_webpage begin main_content block -->
 {% block main_content %}
-<div class="long-text container max-w-3xl mx-auto bg-white py-4 px-6 md:px-16">
-  {% block page_title %}
-  {% if title and add_title_h1 %}
-    <h1 class="text-center text-4xl mt-6 mb-6">{{ title }}</h1>
-  {% endif %}
-  {% endblock page_title %}
-  
-  <div>
-    {% block page_content %}
-    {% if thumbnail_url %}
-    <img class="thumbnail" src="{{ thumbnail_url }}" alt="{{ title }}" />
+<!-- simple_webpage begin main_content block -->
+<div class="content-with-toc" id="content-container">
+  <div class="long-text container max-w-3xl mx-auto bg-white py-4 px-6 md:px-16" id="main-content">
+    {% block page_title %}
+    {% if title and add_title_h1 %}
+      <h1 class="text-center text-4xl mt-6 mb-6">{{ title }}</h1>
     {% endif %}
-    <div class="content">
-      {{ content_html | safe }}
+    {% endblock page_title %}
+    
+    <div>
+      {% block page_content %}
+      {% if thumbnail_url %}
+      <img class="thumbnail" src="{{ thumbnail_url }}" alt="{{ title }}" />
+      {% endif %}
+      <div class="content">
+        {{ content_html | safe }}
+      </div>
+      {% endblock page_content %}
     </div>
-    {% endblock page_content %}
   </div>
+  
+  <!-- Mobile TOC toggle (hidden on desktop) -->
+  <button class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" style="display: none;">
+    <i data-feather="list"></i>
+  </button>
+  
+  <!-- TOC Container -->
+  <aside class="toc-container" id="toc-container" aria-label="Table of contents">
+    <div class="toc">
+      <h2 class="toc-title">Contents</h2>
+      <ul class="toc-list" id="toc-list">
+        <!-- TOC items will be populated by JavaScript -->
+      </ul>
+    </div>
+  </aside>
 </div>
-{% endblock main_content %}
 <!-- simple_webpage end main_content block -->
+{% endblock main_content %}
+
+
+{% block scripts_extra %}
+{{ super() }}
+<!-- simple_webpage begin scripts_extra block -->
+<script>
+// Table of Contents functionality
+function initTOC() {
+  const tocContainer = document.getElementById('toc-container');
+  const tocList = document.getElementById('toc-list');
+  const tocToggle = document.getElementById('toc-toggle');
+  const contentContainer = document.getElementById('content-container');
+  const mainContent = document.getElementById('main-content');
+  
+  if (!tocContainer || !tocList || !mainContent) {
+    console.warn("TOC not initialized: missing elements");
+    return;
+  }
+  
+  // Get the TOC breakpoint from CSS variable
+  const tocBreakpoint = parseInt(
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--toc-breakpoint')
+      .replace('px', '')
+  );
+  console.info("TOC breakpoint:", tocBreakpoint + "px");
+  
+  // Find all headings in the main content - Fix: Properly quote the selector
+  const headings = mainContent.querySelectorAll('{{ toc_headings | default("h1, h2, h3, h4") }}');
+  
+  // Only show TOC if we have toc_min_headings (default 5) or more headings
+  const tocThreshold = {{ toc_min_headings | default(5) }};
+  console.info("TOC headings found:", headings.length, "threshold:", tocThreshold);
+  
+  if (headings.length < tocThreshold) {
+    tocContainer.style.display = 'none';
+    if (tocToggle) {
+      tocToggle.style.display = 'none';
+    }
+    console.info("TOC hidden: not enough headings");
+    return;
+  }
+  
+  console.info("TOC enabled with", headings.length, "headings");
+  
+  // Add TOC classes
+  contentContainer.classList.add('has-toc');
+  mainContent.classList.add('with-toc');
+  console.info("TOC classes added");
+  
+  // Check current viewport and expected visibility
+  const viewportWidth = window.innerWidth;
+  const isDesktop = viewportWidth >= tocBreakpoint;
+  console.info("Viewport:", viewportWidth + "px", "isDesktop:", isDesktop);
+  
+  // Show mobile toggle
+  if (tocToggle) {
+    tocToggle.style.display = 'flex';
+    // Ensure feather icon is rendered after making visible
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+    console.info("TOC mobile toggle shown");
+  }
+  
+  // Generate TOC items
+  tocList.innerHTML = '';
+  
+  headings.forEach((heading, index) => {
+    // Ensure heading has an ID
+    if (!heading.id) {
+      const text = heading.textContent.trim().toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-')     // Replace spaces with hyphens
+        .replace(/-+/g, '-')      // Replace multiple hyphens with single
+        .replace(/^-|-$/g, '');   // Remove leading/trailing hyphens
+      heading.id = text || `heading-${index}`;
+    }
+    
+    const level = heading.tagName.toLowerCase();
+    const text = heading.textContent.trim();
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${heading.id}`;
+    a.textContent = text;
+    a.className = `toc-link toc-${level}`;
+    
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+  
+  // Check TOC container visibility after setup
+  const tocStyles = getComputedStyle(tocContainer);
+  console.info("TOC container display:", tocStyles.display, "visibility:", tocStyles.visibility);
+  
+  // Check if grid layout is applied
+  const containerStyles = getComputedStyle(contentContainer);
+  console.info("Content container display:", containerStyles.display, "grid-template-columns:", containerStyles.gridTemplateColumns);
+  
+  // Add smooth scrolling and active state management
+  const tocLinks = tocList.querySelectorAll('.toc-link');
+  
+  tocLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      
+      if (target) {
+        target.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+        
+        // Update active state
+        tocLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        
+        // Hide mobile TOC after navigation
+        if (window.innerWidth < tocBreakpoint) {
+          tocContainer.classList.remove('mobile-visible');
+        }
+      }
+    });
+  });
+  
+  // Intersection Observer for active state
+  const observerOptions = {
+    rootMargin: '-20% 0% -70% 0%',
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(link => link.classList.remove('active'));
+        const activeLink = tocList.querySelector(`a[href="#${entry.target.id}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+    });
+  }, observerOptions);
+  
+  headings.forEach(heading => observer.observe(heading));
+  
+  // Mobile TOC toggle functionality
+  if (tocToggle) {
+    tocToggle.addEventListener('click', () => {
+      tocContainer.classList.toggle('mobile-visible');
+    });
+    
+    // Close TOC when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth < tocBreakpoint && 
+          !tocContainer.contains(e.target) && 
+          !tocToggle.contains(e.target)) {
+        tocContainer.classList.remove('mobile-visible');
+      }
+    });
+  }
+}
+
+// Initialize TOC after small delay after content is rendered
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    initTOC();
+    // Ensure feather icons are processed after TOC setup
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  }, 100);
+});
+</script>
+<!-- simple_webpage end scripts_extra block -->
+{% endblock scripts_extra %}

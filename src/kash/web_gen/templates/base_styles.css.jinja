@@ -377,13 +377,21 @@ tbody tr:nth-child(even) {
 
 /* Container for wide tables to allow tables to break out of parent width. */
 .table-container {
-  {# max-width: calc(100vw - 6rem); #}
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
   box-sizing: border-box;
   margin: 2rem 0;
   background-color: var(--color-bg-solid);
+  /* Default: center tables within their container */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* When TOC is present, simplify table container positioning */
+.content-with-toc.has-toc .table-container {
+  /* Within grid layout, position relative to the grid column */
+  left: 50%;
+  transform: translateX(-50%);
+  /* Let the table width be controlled by the responsive styles */
 }
 {% endblock table_styles %}
 
@@ -445,8 +453,40 @@ sup {
   }
 }
 
+/* Handle TOC layouts specially - tables should bleed within their grid column */
+@media (min-width: 1200px) {
+  /* When TOC is present, tables should bleed within the content grid column */
+  .content-with-toc.has-toc table {
+    /* Calculate available width: full viewport minus TOC column width minus margins */
+    width: calc(100vw - var(--toc-width, 16rem) - 8rem);
+    max-width: none;
+  }
+  .content-with-toc.has-toc .table-container {
+    width: calc(100vw - var(--toc-width, 16rem) - 8rem);
+    max-width: none;
+  }
+  
+  /* But ensure tables don't exceed their grid column space */
+  .content-with-toc.has-toc .long-text {
+    /* The content area needs to allow tables to bleed beyond the text width */
+    overflow: visible;
+  }
+}
+
+/* Medium screens (768px - TOC breakpoint) - no TOC, tables should bleed but not as wide */
+@media (min-width: 768px) and (max-width: 1199px) {
+  table {
+    width: calc(100vw - 6rem);
+    max-width: calc(100vw - 6rem);
+  }
+  .table-container {
+    width: calc(100vw - 6rem);
+    max-width: calc(100vw - 6rem);
+  }
+}
+
 /* Make narrower screens more usable for lists and tables. */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   /* Prevent horizontal scrolling on the body */
   body {
     overflow-x: hidden;
@@ -460,7 +500,7 @@ sup {
   
   /* Make table containers scrollable without affecting page layout */
   .table-container {
-    max-width: 100%;
+    max-width: calc(100vw - 3rem);
     overflow-x: auto;
     transform: none;
     left: 0;
@@ -471,9 +511,10 @@ sup {
   
   table {
     font-size: var(--font-size-smaller);
-    /* Tables can be wider than container */
+    /* Tables can be wider than container on mobile */
     width: auto;
     min-width: 100%;
+    max-width: none;
   }
   
   ul, ol {
