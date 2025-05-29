@@ -64,7 +64,6 @@ def _print_listing_tallies(
             f"{EMOJI_WARN} {file_listing.files_ignored} files and {file_listing.dirs_ignored} dirs were ignored",
             style=COLOR_EXTRA,
         )
-        cprint("(use --no_ignore to show hidden files)", style=STYLE_HINT)
 
     if file_listing.total_skipped > 0:
         cprint(
@@ -72,7 +71,8 @@ def _print_listing_tallies(
             f"at max_files={max_files}, max_depth={max_depth}, max_per_subdir={max_per_subdir}",
             style=COLOR_EXTRA,
         )
-        cprint("(use --no_max to remove cutoff)", style=STYLE_HINT)
+    if file_listing.total_ignored + file_listing.total_skipped > 0:
+        cprint("(use --all to show all files)", style=STYLE_HINT)
 
 
 DEFAULT_MAX_PER_GROUP = 50
