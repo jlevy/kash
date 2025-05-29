@@ -40,8 +40,9 @@
 {% endblock page_content %}
 <!-- tabbed_webpage end page_content block -->
 
-<!-- tabbed_webpage begin scripts_extra block -->
 {% block scripts_extra %}
+<!-- tabbed_webpage begin scripts_extra block -->
+<script>
   function showTab(tabId, element) {
     document.querySelectorAll(".tab-pane").forEach((tab) => {
       tab.classList.add("hidden");
@@ -54,5 +55,6 @@
     element.classList.add("tab-button-active");
     element.classList.remove("tab-button-inactive");
   }
-{% endblock scripts_extra %}
+</script>
 <!-- tabbed_webpage end scripts_extra block -->
+{% endblock scripts_extra %}
