@@ -20,8 +20,14 @@
 
 /* Table of Contents Styles */
 :root {
-  --toc-width: 16rem;
+  --toc-width: 16em; 
   --toc-breakpoint: {{ toc_breakpoint | default(1200) }}px;
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --toc-width: min(25vw, 30rem);
+  }
 }
 
 /* TOC Container - different behavior for desktop vs mobile */
@@ -32,12 +38,22 @@
 /* Desktop TOC Layout */
 @media (min-width: {{ toc_breakpoint | default(1200) }}px) {
   .toc-container {
-    display: none; /* Hidden by default on desktop until TOC is enabled */
+    display: block;
+    width: var(--toc-width);
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding: 1rem 0.7rem;
+    margin: 0 0 0 2rem;
+    border: 1px solid var(--color-border-hint);
+    order: 1;
+    align-self: start;
   }
   
   .content-with-toc {
     display: grid;
-    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr; /* TOC space + gap, then remaining space */
+    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
     max-width: none;
     min-height: 100vh;
   }
@@ -47,26 +63,11 @@
     display: none !important;
   }
   
-  .toc-container {
-    display: block; /* Override the base hidden state for desktop when TOC is enabled */
-    width: var(--toc-width);
-    position: sticky;
-    top: 2rem;
-    height: calc(100vh - 4rem);
-    overflow-y: auto;
-    padding: 1rem 0.5rem;
-    margin: 2rem 0 0 2rem; /* Position within the grid cell */
-    border: 1px solid var(--color-border-hint);
-    background: var(--color-bg-alt-solid);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    order: 1; /* TOC first */
-  }
-  
   /* Content area centered within its grid space */
   .long-text.with-toc {
-    max-width: 48rem; /* Keep the same text width */
-    margin: 0 auto; /* Center within the remaining grid space */
-    order: 2; /* Content second */
+    max-width: 48rem;
+    margin: 0 auto;
+    order: 2;
   }
 
   /* More minimal TOC scrollbar */
@@ -77,7 +78,7 @@
     background: transparent; /* Invisible track */
   }
   .toc-container::-webkit-scrollbar-thumb {
-    background: var(--color-border-hint);
+    background: var(--color-hint-gentle);
     border-radius: 2px;
     opacity: 0.1;
   }
@@ -87,25 +88,7 @@
   .toc-container {
     /* For Firefox */
     scrollbar-width: thin;
-    scrollbar-color: var(--color-border-hint) transparent;
-  }
-}
-
-@media (min-width: 1536px) {
-  :root {
-    --toc-width: 23rem;
-  }
-  .content-with-toc {
-    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
-  }
-  .toc-container {
-    width: var(--toc-width);
-  }
-  .content-with-toc.has-toc table {
-    width: calc(100vw - var(--toc-width) - 8rem);
-  }
-  .content-with-toc.has-toc .table-container {
-    width: calc(100vw - var(--toc-width) - 8rem);
+    scrollbar-color: var(--color-hint-gentle) transparent;
   }
 }
 
@@ -114,14 +97,15 @@
 /* TOC Styling */
 .toc {
   font-family: var(--font-sans);
+  color: var(--color-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 
 .toc-title {
   font-size: var(--font-size-small);
-  font-weight: var(--font-weight-sans-bold);
+  font-weight: 550;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  color: var(--color-tertiary);
   margin: 0 0 0.5rem 0.3rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border-hint);
@@ -147,55 +131,45 @@
 
 .toc-link {
   display: block;
-  color: var(--color-secondary);
+  color: var(--color-tertiary);
   text-decoration: none;
   padding: 0.2rem 0;
-  transition: all 0.15s ease-in-out;
+  transition: background 0.4s ease-in-out, all 0.15s ease-in-out;
   border-left: 2px solid transparent;
 }
 
 .toc-link:hover {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   background-color: var(--color-hover-bg);
   text-decoration: none;
 }
 
 .toc-link.active {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   border-left: 2px solid var(--color-primary);
   background-color: var(--color-hover-bg);
 }
 
-/* Hierarchical indentation - adjust for new base padding */
+/* Hanging indent and styles for each TOC heading */
 .toc-h1 {
-  padding-left: 0.3rem;
+  padding-left: 1.3rem;
+  text-indent: -1em;
   font-weight: 550;
-  color: var(--color-tertiary);
 }
 .toc-h2 {
-  padding-left: 1.0rem;
+  padding-left: 2.0rem;
+  text-indent: -1em;
   font-weight: 550;
-  color: var(--color-tertiary);
 }
 .toc-h3 {
-  padding-left: 1.7rem;
+  padding-left: 2.7rem;
+  text-indent: -1em;
   font-weight: 380;
-  color: var(--color-tertiary);
 }
 .toc-h4 {
-  padding-left: 2.4rem;
+  padding-left: 3.4rem;
+  text-indent: -1em;
   font-weight: 380;
-  color: var(--color-tertiary);
-}
-
-/* Dark mode adjustments */
-[data-theme="dark"] .toc-container {
-  border-left-color: var(--color-border-hint);
-}
-
-[data-theme="dark"] .toc-link:hover,
-[data-theme="dark"] .toc-link.active {
-  color: var(--color-primary-light);
 }
 
 /* Mobile TOC Layout */
@@ -203,10 +177,19 @@
   /* Specific positioning and z-index for TOC toggle */
   .toc-toggle {
     left: 1rem;
-    z-index: 101; /* Above theme toggle but below mobile TOC */
+    z-index: 101;
+    opacity: 0; /* Hidden by default */
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
   }
   
-  /* Mobile TOC state - always rendered but hidden by default */
+  /* Show TOC toggle when user has scrolled past top */
+  .toc-toggle.show-toggle {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Mobile TOC state: always rendered but hidden by default */
   .toc-container {
     display: block !important; /* Override base rule and any JS inline styles */
     position: fixed;
@@ -214,10 +197,11 @@
     left: 1rem;
     width: calc(100vw - 2rem);
     max-height: calc(100vh - 5rem);
+    /* Keep background and darker text on mobile since it's primary UI */
+    color: var(--color-text);
     background: var(--color-bg-alt-solid);
     border: 1px solid var(--color-border-hint);
-    padding: 1rem 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0.7rem;
     z-index: 200;
     
     /* Hidden state */
@@ -235,6 +219,20 @@
                 border-color 0.4s ease-in-out, 
                 box-shadow 0.4s ease-in-out;
   }
+  /* Darker text on mobile */
+  .toc {
+    color: var(--color-secondary);
+  }
+  .toc-link {
+    color: var(--color-secondary);
+  }
+  .toc-link:hover {
+    color: var(--color-text);
+  }
+
+  .toc-link.active {
+    color: var(--color-text);
+  }
     
   .toc-container.mobile-visible {
     /* Visible state */
@@ -242,10 +240,6 @@
     transform: translateY(0);
     visibility: visible;
     pointer-events: auto; /* Re-enable interaction */
-  }
-  
-  [data-theme="dark"] .toc-container {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -278,7 +272,7 @@
   </div>
   
   <!-- Mobile TOC toggle (hidden on desktop) -->
-  <button class="fixed-button toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" style="display: none;">
+  <button class="button fixed-button toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" style="display: none;">
     <i data-feather="list"></i>
   </button>
   
@@ -309,58 +303,41 @@ function initTOC() {
   const mainContent = document.getElementById('main-content');
   
   if (!tocContainer || !tocList || !mainContent) {
-    console.warn("TOC not initialized: missing elements");
+    console.debug("TOC not initialized: missing elements");
     return;
   }
   
-  // Get the TOC breakpoint from CSS variable
   const tocBreakpoint = parseInt(
     getComputedStyle(document.documentElement)
       .getPropertyValue('--toc-breakpoint')
       .replace('px', '')
   );
   
-  // Find all headings in the main content - Fix: Properly quote the selector
+  // Find all headings in the main content
   const headings = mainContent.querySelectorAll('{{ toc_headings | default("h1, h2, h3") }}');
-  
   // Only show TOC if we have toc_min_headings (default 10) or more headings
   const tocThreshold = {{ toc_min_headings | default(10) }};
   
   if (headings.length < tocThreshold) {
-    // Instead of setting display: none, add a class that hides the TOC
     tocContainer.classList.add('toc-hidden');
     if (tocToggle) {
       tocToggle.style.display = 'none';
     }
-    console.info("TOC hidden: not enough headings");
+    console.debug("TOC hidden: not enough headings");
     return;
   }
   
-  // Make sure TOC is not hidden
   tocContainer.classList.remove('toc-hidden');
-  console.info("Showing TOC with", headings.length, "headings", headings);
-    
-  // Add TOC classes
   contentContainer.classList.add('has-toc');
   mainContent.classList.add('with-toc');
-  
-  // Make TOC state globally available for headers, footers, and other components
   document.body.classList.add('page-has-toc');
-  console.info("TOC classes added");
   
-  // Check current viewport and expected visibility
-  const viewportWidth = window.innerWidth;
-  const isDesktop = viewportWidth >= tocBreakpoint;
-  console.info("Viewport:", viewportWidth + "px", "isDesktop:", isDesktop);
-  
-  // Show mobile toggle
   if (tocToggle) {
     tocToggle.style.display = 'flex';
     // Ensure feather icon is rendered after making visible
     if (typeof feather !== 'undefined') {
       feather.replace();
     }
-    console.info("TOC mobile toggle shown");
   }
   
   // Generate TOC items
@@ -370,12 +347,10 @@ function initTOC() {
   let filteredHeadings = Array.from(headings);
   if (headings.length > 0) {
     const firstHeading = headings[0];
-    const h1Count = Array.from(headings).filter(h => h.tagName.toLowerCase() === 'h1').length;
+    const h1Count = filteredHeadings.filter(h => h.tagName.toLowerCase() === 'h1').length;
 
-    console.info("First heading:", firstHeading, "h1Count:", h1Count);
-    // If first heading is h1 and there's exactly one h1, skip it
     if (firstHeading.tagName.toLowerCase() === 'h1' && h1Count === 1) {
-      filteredHeadings = Array.from(headings).slice(1);
+      filteredHeadings = filteredHeadings.slice(1);
     }
   }
   
@@ -383,10 +358,10 @@ function initTOC() {
     // Ensure heading has an ID
     if (!heading.id) {
       const text = heading.textContent.trim().toLowerCase()
-        .replace(/[^\w\s-]/g, '') // Remove special characters
-        .replace(/\s+/g, '-')     // Replace spaces with hyphens
-        .replace(/-+/g, '-')      // Replace multiple hyphens with single
-        .replace(/^-|-$/g, '');   // Remove leading/trailing hyphens
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
       heading.id = text || `heading-${index}`;
     }
     
@@ -403,17 +378,8 @@ function initTOC() {
     tocList.appendChild(li);
   });
   
-  // Check TOC container visibility after setup
-  const tocStyles = getComputedStyle(tocContainer);
-  console.info("TOC container display:", tocStyles.display, "visibility:", tocStyles.visibility);
-  
-  // Check if grid layout is applied
-  const containerStyles = getComputedStyle(contentContainer);
-  console.info("Content container display:", containerStyles.display, "grid-template-columns:", containerStyles.gridTemplateColumns);
-  
   // Add smooth scrolling and active state management
   const tocLinks = tocList.querySelectorAll('.toc-link');
-  
   tocLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -425,8 +391,6 @@ function initTOC() {
           behavior: 'smooth',
           block: 'start'
         });
-        
-        // Update active state
         tocLinks.forEach(l => l.classList.remove('active'));
         link.classList.add('active');
         
@@ -443,7 +407,6 @@ function initTOC() {
     rootMargin: '-20% 0% -70% 0%',
     threshold: 0
   };
-  
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -454,6 +417,14 @@ function initTOC() {
         }
       }
     });
+    
+    // Show/hide TOC toggle based on whether we're past the first section
+    if (tocToggle && tocLinks.length > 0) {
+      const activeLink = tocList.querySelector('.toc-link.active');
+      const firstTocLink = tocLinks[0];
+      const showToggle = activeLink && activeLink !== firstTocLink;
+      tocToggle.classList.toggle('show-toggle', showToggle);
+    }
   }, observerOptions);
   
   filteredHeadings.forEach(heading => observer.observe(heading));
@@ -463,7 +434,6 @@ function initTOC() {
     tocToggle.addEventListener('click', () => {
       tocContainer.classList.toggle('mobile-visible');
     });
-    
     // Close TOC when clicking outside on mobile
     document.addEventListener('click', (e) => {
       if (window.innerWidth < tocBreakpoint && 
@@ -479,7 +449,6 @@ function initTOC() {
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     initTOC();
-    // Ensure feather icons are processed after TOC setup
     if (typeof feather !== 'undefined') {
       feather.replace();
     }

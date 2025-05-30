@@ -64,12 +64,9 @@
       transition: background 0.4s ease-in-out, color 0.4s ease-in-out;
     }
 
-    /* Base class for fixed buttons (theme toggle, TOC toggle, etc.) */
-    .fixed-button {
-      position: fixed;
-      top: 1rem;
-      background: var(--color-bg);
+    .button {
       color: var(--color-hint);
+      background: var(--color-bg);
       border: none;
       padding: 0;
       border-radius: 0.3rem;
@@ -88,26 +85,31 @@
                   box-shadow 0.2s ease-in-out;
     }
 
-    .fixed-button:hover {
+    .button:hover {
       background: var(--color-hover-bg);
       color: var(--color-primary);
-      transform: scale(1.05); /* Optional: subtle hover scale */
     }
 
-    .fixed-button svg {
+    .button svg {
       width: 1rem;
       height: 1rem;
       transition: inherit; /* Inherit the color transition */
     }
 
-    /* Dark mode styles for fixed buttons */
-    [data-theme="dark"] .fixed-button {
+    /* Dark mode styles for buttons */
+    [data-theme="dark"] .button {
       color: var(--color-primary-light);
     }
 
-    [data-theme="dark"] .fixed-button:hover {
+    [data-theme="dark"] .button:hover {
       background: var(--color-hover-bg);
       color: var(--color-bright);
+    }
+
+    /* Positioning class for fixed buttons */
+    .fixed-button {
+      position: fixed;
+      top: 1rem;
     }
 
     /* Specific positioning and z-index for theme toggle */
@@ -191,7 +193,7 @@
 <body>
   {% block theme_toggle %}
   {% if show_theme_toggle %}
-  <button class="fixed-button theme-toggle" aria-label="toggle dark mode">
+  <button class="button fixed-button theme-toggle" aria-label="toggle dark mode">
     <i data-feather="moon"></i>
   </button>
   {% endif %}
