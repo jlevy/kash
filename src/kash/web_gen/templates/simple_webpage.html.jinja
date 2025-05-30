@@ -91,6 +91,26 @@
   }
 }
 
+@media (min-width: 1536px) {
+  :root {
+    --toc-width: 23rem;
+  }
+  .content-with-toc {
+    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
+  }
+  .toc-container {
+    width: var(--toc-width);
+  }
+  .content-with-toc.has-toc table {
+    width: calc(100vw - var(--toc-width) - 8rem);
+  }
+  .content-with-toc.has-toc .table-container {
+    width: calc(100vw - var(--toc-width) - 8rem);
+  }
+}
+
+
+
 /* TOC Styling */
 .toc {
   font-family: var(--font-sans);
@@ -101,7 +121,7 @@
   font-weight: var(--font-weight-sans-bold);
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  color: var(--color-text);
+  color: var(--color-tertiary);
   margin: 0 0 0.5rem 0.3rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border-hint);
@@ -141,8 +161,7 @@
 }
 
 .toc-link.active {
-  color: var(--color-text);
-  font-weight: 500;
+  color: var(--color-primary);
   border-left: 2px solid var(--color-primary);
   background-color: var(--color-hover-bg);
 }
@@ -150,15 +169,23 @@
 /* Hierarchical indentation - adjust for new base padding */
 .toc-h1 {
   padding-left: 0.3rem;
+  font-weight: 550;
+  color: var(--color-tertiary);
 }
 .toc-h2 {
   padding-left: 1.0rem;
+  font-weight: 550;
+  color: var(--color-tertiary);
 }
 .toc-h3 {
   padding-left: 1.7rem;
+  font-weight: 380;
+  color: var(--color-tertiary);
 }
 .toc-h4 {
   padding-left: 2.4rem;
+  font-weight: 380;
+  color: var(--color-tertiary);
 }
 
 /* Dark mode adjustments */
@@ -312,11 +339,13 @@ function initTOC() {
   // Make sure TOC is not hidden
   tocContainer.classList.remove('toc-hidden');
   console.info("Showing TOC with", headings.length, "headings", headings);
-
     
   // Add TOC classes
   contentContainer.classList.add('has-toc');
   mainContent.classList.add('with-toc');
+  
+  // Make TOC state globally available for headers, footers, and other components
+  document.body.classList.add('page-has-toc');
   console.info("TOC classes added");
   
   // Check current viewport and expected visibility
@@ -337,7 +366,20 @@ function initTOC() {
   // Generate TOC items
   tocList.innerHTML = '';
   
-  headings.forEach((heading, index) => {
+  // If there is only one h1, skip it as it is the title of the page.
+  let filteredHeadings = Array.from(headings);
+  if (headings.length > 0) {
+    const firstHeading = headings[0];
+    const h1Count = Array.from(headings).filter(h => h.tagName.toLowerCase() === 'h1').length;
+
+    console.info("First heading:", firstHeading, "h1Count:", h1Count);
+    // If first heading is h1 and there's exactly one h1, skip it
+    if (firstHeading.tagName.toLowerCase() === 'h1' && h1Count === 1) {
+      filteredHeadings = Array.from(headings).slice(1);
+    }
+  }
+  
+  filteredHeadings.forEach((heading, index) => {
     // Ensure heading has an ID
     if (!heading.id) {
       const text = heading.textContent.trim().toLowerCase()
@@ -414,7 +456,7 @@ function initTOC() {
     });
   }, observerOptions);
   
-  headings.forEach(heading => observer.observe(heading));
+  filteredHeadings.forEach(heading => observer.observe(heading));
   
   // Mobile TOC toggle functionality
   if (tocToggle) {
