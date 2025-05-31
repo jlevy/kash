@@ -20,7 +20,7 @@
 
 /* Table of Contents Styles */
 :root {
-  --toc-width: 16em; 
+  --toc-width: 15rem; 
   --toc-breakpoint: {{ toc_breakpoint | default(1200) }}px;
 }
 
@@ -35,10 +35,28 @@
   transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
 }
 
-/* Desktop TOC Layout */
+/* Desktop TOC layout applies when TOC is present */
 @media (min-width: {{ toc_breakpoint | default(1200) }}px) {
   .toc-container {
-    display: block;
+    display: none;  /* Hide TOC container by default on desktop */
+  }
+  
+  /* Default: content centered normally */
+  .content-with-toc .long-text {
+    max-width: 48rem;
+    margin: 0 auto;
+  }
+  
+  /* Only apply grid layout when TOC is visible */
+  .content-with-toc.has-toc {
+    display: grid;
+    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
+    max-width: none;
+    min-height: 100vh;
+  }
+  
+  .content-with-toc.has-toc .toc-container {
+    display: block;  /* Show when has-toc is present */
     width: var(--toc-width);
     position: sticky;
     top: 2rem;
@@ -51,11 +69,10 @@
     align-self: start;
   }
   
-  .content-with-toc {
-    display: grid;
-    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
-    max-width: none;
-    min-height: 100vh;
+  .content-with-toc.has-toc .long-text {
+    max-width: 48rem;
+    margin: 0 auto;
+    order: 2;
   }
   
   /* Hide mobile toggle on desktop */
@@ -242,10 +259,6 @@
     pointer-events: auto; /* Re-enable interaction */
   }
 }
-
-.toc-container.toc-hidden {
-  display: none !important;
-}
 </style>
 {% endblock custom_styles %}
 
@@ -319,16 +332,16 @@ function initTOC() {
   const tocThreshold = {{ toc_min_headings | default(10) }};
   
   if (headings.length < tocThreshold) {
-    tocContainer.classList.add('toc-hidden');
+    // TOC is disabled
     if (tocToggle) {
       tocToggle.style.display = 'none';
     }
     console.debug("TOC hidden: not enough headings");
     return;
   }
-  
-  tocContainer.classList.remove('toc-hidden');
-  contentContainer.classList.add('has-toc');
+
+  // TOC is enabled
+  contentContainer.classList.add('has-toc');  // This triggers grid layout
   mainContent.classList.add('with-toc');
   document.body.classList.add('page-has-toc');
   

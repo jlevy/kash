@@ -102,9 +102,9 @@ class ActionResult:
     shell_result: ShellResult | None = None
     """Customize control of how the action's result is displayed in the shell."""
 
-    def get_by_format(self, format: Format) -> Item:
+    def get_by_format(self, *formats: Format) -> Item:
         """Convenience method to get an item for actions that return multiple formats."""
-        return next(item for item in self.items if item.format == format)
+        return next(item for item in self.items if item.format in formats)
 
     def has_hints(self) -> bool:
         return bool(
