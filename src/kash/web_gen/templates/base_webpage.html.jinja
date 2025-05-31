@@ -212,11 +212,20 @@
     document.addEventListener('DOMContentLoaded', () => {
       // Add copy buttons to code blocks
       document.querySelectorAll('pre').forEach(pre => {
-        // Skip if already has a copy button
-        if (pre.querySelector('.code-copy-button')) {
+        // Skip if already has a copy button (check parent for wrapper)
+        if (pre.parentElement.classList.contains('code-block-wrapper')) {
           return;
         }
         
+        // Create wrapper div
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+        
+        // Insert wrapper before pre and move pre inside it
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        
+        // Create copy button
         const copyButton = document.createElement('button');
         copyButton.className = 'code-copy-button';
         copyButton.setAttribute('aria-label', 'Copy code');
@@ -244,7 +253,8 @@
           });
         });
         
-        pre.appendChild(copyButton);
+        // Add button to wrapper, not to pre
+        wrapper.appendChild(copyButton);
       });
       
       // Theme toggle (if present on page)

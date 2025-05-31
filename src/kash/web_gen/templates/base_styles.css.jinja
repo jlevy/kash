@@ -198,6 +198,11 @@ code:not(pre code) {
   padding: 0.25em 0.2em 0.1em 0.2em;
 }
 
+/* Code block wrapper for positioning copy button */
+.code-block-wrapper {
+  position: relative;
+}
+
 /* Code blocks (pre + code) */
 pre {
   font-family: var(--font-mono);
@@ -209,8 +214,7 @@ pre {
   border: 1px solid var(--color-hint-gentle);
   padding: 0.25rem 0.2rem 0.1rem 0.2rem;
   overflow-x: auto;  /* Enable horizontal scrolling */
-  position: relative;  /* Create new stacking context */
-  
+  margin: 0;
   transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out;
 }
 
@@ -225,6 +229,7 @@ pre > code {
   position: absolute;
   top: 0;
   right: 0;
+  margin: 1px;
   background: var(--color-bg-alt-solid);
   color: var(--color-hint);
   border: none;
@@ -346,7 +351,7 @@ hr:before {
   font-weight: var(--font-weight-sans-bold);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin-top: 1.1rem;
+  margin-top: 1rem;
   margin-bottom: 0.8rem;
 }
 {% endblock long_text_styles %}
