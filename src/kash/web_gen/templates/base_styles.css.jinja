@@ -187,7 +187,15 @@ code {
   font-family: var(--font-mono);
   font-size: var(--font-size-mono);
   letter-spacing: -0.025em;
+
   transition: color 0.4s ease-in-out;
+}
+/* For code inside pre we style the pre tag */
+code:not(pre code) {
+  background-color: var(--color-bg-alt);
+  border-radius: 3px;
+  border: 1px solid var(--color-hint-gentle);
+  padding: 0.25em 0.2em 0.1em 0.2em;
 }
 
 /* Code blocks (pre + code) */
@@ -195,12 +203,14 @@ pre {
   font-family: var(--font-mono);
   font-size: var(--font-size-mono);
   letter-spacing: -0.025em;
+
   background-color: var(--color-bg-alt);
-  border-radius: 4px;
-  border: 1px dotted var(--color-border-hint);
-  padding: 0.2rem 0.2rem 0.1rem 0.2rem;
+  border-radius: 3px;
+  border: 1px solid var(--color-hint-gentle);
+  padding: 0.25rem 0.2rem 0.1rem 0.2rem;
   overflow-x: auto;  /* Enable horizontal scrolling */
   position: relative;  /* Create new stacking context */
+  
   transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out;
 }
 
