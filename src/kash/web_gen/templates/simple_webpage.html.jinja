@@ -30,54 +30,32 @@
   }
 }
 
-/* TOC container handles different behavior for desktop vs mobile */
-.toc-container {
-  transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
-  visibility: hidden;
-}
-
-/* Ensure these elements never participate in grid layout */
-.toc-backdrop,
-.toc-toggle {
-  position: fixed;
-}
-
-.toc-backdrop {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 199;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-}
-
-/* Desktop TOC layout applies when TOC is present */
+/* Desktop: Always use grid layout, adjust TOC column width */
 @media (min-width: {{ toc_breakpoint | default(1200) }}px) {
-  .toc-container {
-    display: none;  /* Hide TOC container by default on desktop. This also handles FOUC for desktop. */
-  }
-  
-  /* Default: content centered normally */
-  .content-with-toc .long-text {
-    max-width: 48rem;
-    margin: 0 auto;
-  }
-  
-  /* Only apply grid layout when TOC is visible */
-  .content-with-toc.has-toc {
+  .content-with-toc {
     display: grid;
     grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
     max-width: none;
     min-height: 100vh;
   }
   
-  .content-with-toc.has-toc .toc-container {
-    display: block;  /* Show when .has-toc is present, making it a grid item. */
-    visibility: visible; /* Ensure it's visible when displayed as block */
+  .content-with-toc.has-toc {
+    grid-template-columns: calc(var(--toc-width) + 4rem) 1fr;
+  }
+  
+  /* Content goes in the second column (right side) */
+  .content-with-toc .long-text {
+    max-width: 48rem;
+    margin: 0 auto;
+    order: 2;
+    grid-column: 2;
+  }
+  
+  /* TOC goes in the first column (left side) */
+  .toc-container {
+    order: 1;
+    grid-column: 1;
+    align-self: start;
     width: var(--toc-width);
     position: sticky;
     top: 2rem;
@@ -86,14 +64,13 @@
     padding: 1rem 0.7rem;
     margin: 0 0 0 2rem;
     border: 1px solid var(--color-border-hint);
-    order: 1;
-    align-self: start;
+    opacity: 0;
+    transform: translateX(-100%);
   }
-  
-  .content-with-toc.has-toc .long-text {
-    max-width: 48rem;
-    margin: 0 auto;
-    order: 2;
+
+  .content-with-toc.has-toc .toc-container {
+    transform: translateX(0);
+    opacity: 1;
   }
   
   /* Hide mobile toggle on desktop */
@@ -101,13 +78,6 @@
     display: none !important;
   }
   
-  /* Content area centered within its grid space */
-  .long-text.with-toc {
-    max-width: 48rem;
-    margin: 0 auto;
-    order: 2;
-  }
-
   /* More minimal TOC scrollbar */
   .toc-container::-webkit-scrollbar {
     width: 2px; 
@@ -129,8 +99,6 @@
     scrollbar-color: var(--color-hint-gentle) transparent;
   }
 }
-
-
 
 /* TOC Styling */
 .toc {
