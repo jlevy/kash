@@ -915,10 +915,10 @@ class Item:
                 key_filter={
                     "store_path": 0,
                     "type": 64,
-                    "title": 64,
+                    "format": 64,
+                    "title": 40,
                     "url": 64,
                     "external_path": 64,
-                    "context": 64,
                 },
             )
             + f"[{len(self.body) if self.body else 0} body chars]"
@@ -932,13 +932,12 @@ class Item:
                     "store_path": 0,
                     "external_path": 64,
                     "type": 64,
-                    "state": 64,
-                    "title": 64,
-                    "url": 64,
                     "format": 64,
+                    "state": 64,
+                    "title": 40,
+                    "url": 64,
                     "created_at": 64,
                     "body": 64,
-                    "context": 64,
                 },
             )
             + f"[{len(self.body) if self.body else 0} body chars]"

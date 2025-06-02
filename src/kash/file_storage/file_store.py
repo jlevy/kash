@@ -468,7 +468,7 @@ class FileStore(Workspace):
         item.store_path = str(store_path)
         self._id_index_item(store_path)
 
-        log.message("%s Saved item:\n%s", EMOJI_SAVED, fmt_lines([fmt_loc(store_path)]))
+        log.message("%s Saved item: %s", EMOJI_SAVED, fmt_loc(store_path))
         return store_path
 
     @log_calls(level="debug")
