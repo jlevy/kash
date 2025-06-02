@@ -36,7 +36,7 @@ def main():
 @log_calls(level="warning", show_timing_only=True)
 def run(cmd: list[str]) -> int:
     rprint()
-    rprint(f"[bold green]:arrow_forward: {' '.join(cmd)}[/bold green]")
+    rprint(f"[bold green]>> {' '.join(cmd)}[/bold green]")
     errcount = 0
     try:
         subprocess.run(cmd, text=True, check=True)

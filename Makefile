@@ -21,7 +21,7 @@ run: install lint test
 	uv run kash
 
 upgrade:
-	uv sync --upgrade
+	uv sync --upgrade --all-extras --dev
 
 build:
 	uv build
