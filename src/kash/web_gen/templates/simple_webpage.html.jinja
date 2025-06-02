@@ -345,6 +345,7 @@ function initTOC() {
   
   if (headings.length < tocThreshold) {
     // TOC is disabled
+    contentContainer.classList.remove('content-with-toc');
     if (tocToggle) {
       tocToggle.style.display = 'none';
     }
