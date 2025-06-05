@@ -206,10 +206,10 @@ A list of parameter declarations, possibly with default values.
 
 # These are the default models for typical use cases.
 # The user may override them with parameters.
-DEFAULT_CAREFUL_LLM = LLM.o1_preview
+DEFAULT_CAREFUL_LLM = LLM.o3
 DEFAULT_STRUCTURED_LLM = LLM.gpt_4o
-DEFAULT_STANDARD_LLM = LLM.claude_3_7_sonnet
-DEFAULT_FAST_LLM = LLM.claude_3_5_haiku
+DEFAULT_STANDARD_LLM = LLM.claude_4_sonnet
+DEFAULT_FAST_LLM = LLM.o1_mini
 
 
 # Parameters set globally such as in the workspace.
@@ -261,6 +261,12 @@ COMMON_ACTION_PARAMS: dict[str, Param] = {
         type=LLMName,
         valid_str_values=list(LLM),
         is_open_ended=True,
+    ),
+    "model_list": Param(
+        "model_list",
+        "A list of LLMs to use, as names separated by commas.",
+        type=str,
+        default_value=None,
     ),
     "language": Param(
         "language",

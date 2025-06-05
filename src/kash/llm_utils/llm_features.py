@@ -56,13 +56,17 @@ FEATURES = {
 }
 
 preferred_llms: list[LLMName] = [
+    LLM.o4_mini,
+    LLM.o3,
     LLM.o3_mini,
     LLM.o1_mini,
     LLM.o1,
     LLM.gpt_4o_mini,
     LLM.gpt_4o,
     LLM.gpt_4,
+    LLM.claude_4_sonnet,
+    LLM.claude_4_opus,
     LLM.claude_3_7_sonnet,
-    LLM.claude_3_5_sonnet,
     LLM.claude_3_5_haiku,
+    LLM.gemini_2_5_pro_preview_05_06,
 ]
