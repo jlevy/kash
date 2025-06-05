@@ -262,6 +262,44 @@ pre > code {
   height: 0.875rem;
 }
 
+img {
+  margin: 1rem 0;
+}
+
+details {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+
+  border: 1px solid var(--color-hint-gentle);
+  border-radius: 3px;
+  margin: 0.75rem 0;
+}
+
+summary {
+  color: var(--color-secondary);
+  padding: .5rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  background: var(--color-bg-alt);
+  transition: all 0.15s ease-in-out;
+}
+
+summary:hover {
+  color: var(--color-primary-light);
+  {# background: var(--color-hover-bg); #}
+}
+
+/* keep the border on the summary when open so it blends */
+details[open] summary {
+  border-bottom: 1px solid var(--color-hint-gentle);
+}
+/* focus ring for a11y */
+summary:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+
 hr {
   border: none;
   height: 1.5rem;
