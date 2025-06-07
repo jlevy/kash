@@ -1,0 +1,256 @@
+// Table of Contents functionality
+function initTOC() {
+  const tocContainer = document.getElementById('toc-container');
+  const tocList = document.getElementById('toc-list');
+  const tocToggle = document.getElementById('toc-toggle');
+  const contentContainer = document.getElementById('content-container');
+  const mainContent = document.getElementById('main-content');
+  
+  if (!tocContainer || !tocList || !mainContent) {
+    console.debug("TOC not initialized: missing elements");
+    return;
+  }
+  
+  const tocBreakpoint = parseInt(
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--toc-breakpoint')
+      .replace('px', '')
+  );
+  
+  // Find all headings in the main content
+  const headings = mainContent.querySelectorAll('{{ toc_headings | default("h1, h2, h3") }}');
+  // Only show TOC if we have toc_min_headings (default 10) or more headings
+  const tocThreshold = {{ toc_min_headings | default(10) }};
+  
+  if (headings.length < tocThreshold) {
+    // TOC is disabled
+    contentContainer.classList.remove('content-with-toc');
+    if (tocToggle) {
+      tocToggle.style.display = 'none';
+    }
+    console.debug("TOC hidden: not enough headings");
+    return;
+  }
+
+  // TOC is enabled
+  contentContainer.classList.add('has-toc');  // This triggers grid layout
+  mainContent.classList.add('with-toc');
+  document.body.classList.add('page-has-toc');
+  
+  if (tocToggle) {
+    tocToggle.style.display = 'flex';
+    // Ensure feather icon is rendered after making visible
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
+  }
+  
+  // Generate TOC items
+  tocList.innerHTML = '';
+  
+  // If there is only one h1, skip it as it is the title of the page.
+  let filteredHeadings = Array.from(headings);
+  if (headings.length > 0) {
+    const firstHeading = headings[0];
+    const h1Count = filteredHeadings.filter(h => h.tagName.toLowerCase() === 'h1').length;
+
+    if (firstHeading.tagName.toLowerCase() === 'h1' && h1Count === 1) {
+      filteredHeadings = filteredHeadings.slice(1);
+    }
+  }
+  
+  filteredHeadings.forEach((heading, index) => {
+    // Ensure heading has an ID
+    if (!heading.id) {
+      const text = heading.textContent.trim().toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      heading.id = text || `heading-${index}`;
+    }
+    
+    const level = heading.tagName.toLowerCase();
+    const text = heading.textContent.trim();
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${heading.id}`;
+    a.textContent = text;
+    a.className = `toc-link toc-${level}`;
+    
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+  
+  // Mobile TOC toggle functionality
+  if (tocToggle) {
+    const tocBackdrop = document.getElementById('toc-backdrop');
+    let scrollPosition = 0;
+    
+    const openTOC = () => {
+      // Save current scroll position
+      scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Add classes to show TOC and prevent body scroll
+      tocContainer.classList.add('mobile-visible');
+      if (tocBackdrop) tocBackdrop.classList.add('visible');
+      document.body.classList.add('toc-open');
+      
+      // Set body position to maintain scroll position while fixed
+      document.body.style.top = `-${scrollPosition}px`;
+    };
+    
+    const closeTOC = () => {
+      // Remove classes
+      tocContainer.classList.remove('mobile-visible');
+      if (tocBackdrop) tocBackdrop.classList.remove('visible');
+      document.body.classList.remove('toc-open');
+      
+      // Restore body position and scroll
+      document.body.style.top = '';
+      window.scrollTo(0, scrollPosition);
+    };
+    
+    tocToggle.addEventListener('click', () => {
+      if (tocContainer.classList.contains('mobile-visible')) {
+        closeTOC();
+      } else {
+        openTOC();
+      }
+    });
+    
+    // Close TOC when clicking backdrop
+    if (tocBackdrop) {
+      tocBackdrop.addEventListener('click', closeTOC);
+    }
+    
+    // Update the existing click handler to use closeTOC
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth < tocBreakpoint && 
+          tocContainer.classList.contains('mobile-visible') &&
+          !tocContainer.contains(e.target) && 
+          !tocToggle.contains(e.target)) {
+        closeTOC();
+      }
+    });
+    
+    // Prevent touch events from propagating through TOC
+    tocContainer.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: false });
+  }
+  
+  // Add smooth scrolling and active state management
+  const tocLinks = tocList.querySelectorAll('.toc-link');
+  tocLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      
+      if (target) {
+        // Close TOC first on mobile
+        if (window.innerWidth < tocBreakpoint) {
+          tocContainer.classList.remove('mobile-visible');
+          document.getElementById('toc-backdrop')?.classList.remove('visible');
+          document.body.classList.remove('toc-open');
+          document.body.style.top = '';
+        }
+        
+        target.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+        tocLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        
+      }
+    });
+  });
+  
+  // Add click handler for Contents title link
+  const tocTitleLink = document.getElementById('toc-title-link');
+  if (tocTitleLink) {
+    tocTitleLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToTop();
+    });
+  }
+  
+  // Scroll to top function
+  function scrollToTop() {
+    // Close TOC first on mobile
+    if (window.innerWidth < tocBreakpoint) {
+      tocContainer.classList.remove('mobile-visible');
+      document.getElementById('toc-backdrop')?.classList.remove('visible');
+      document.body.classList.remove('toc-open');
+      document.body.style.top = '';
+    }
+    
+    // Scroll to top
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+  }
+  
+  // Helper function to check if TOC toggle should be visible
+  const updateTocToggleVisibility = () => {
+    if (tocToggle && tocLinks.length > 0) {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const activeLink = tocList.querySelector('.toc-link.active');
+      const firstTocLink = tocLinks[0];
+      
+      // Only show toggle if:
+      // 1. We've scrolled down at least 100px from the top, AND
+      // 2. We're past the first section (activeLink exists and is not the first)
+      const hasScrolled = scrollTop > 100;
+      const isPastFirstSection = activeLink && activeLink !== firstTocLink;
+      const showToggle = hasScrolled && isPastFirstSection;
+      
+      tocToggle.classList.toggle('show-toggle', showToggle);
+    }
+  };
+  
+  // Intersection Observer for active state
+  const observerOptions = {
+    rootMargin: '-20% 0% -70% 0%',
+    threshold: 0
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(link => link.classList.remove('active'));
+        const activeLink = tocList.querySelector(`a[href="#${entry.target.id}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+    });
+    
+    // Update toggle visibility after intersection changes
+    updateTocToggleVisibility();
+  }, observerOptions);
+  
+  filteredHeadings.forEach(heading => observer.observe(heading));
+  
+  // Update toggle visibility on scroll
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    // Throttle scroll events for performance
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateTocToggleVisibility, 16); // ~60fps
+  });
+  
+  // Initial check
+  updateTocToggleVisibility();
+}
+
+// Initialize immediately, no setTimeout
+document.addEventListener('DOMContentLoaded', () => {
+  initTOC();
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+}); 
