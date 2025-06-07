@@ -83,6 +83,11 @@ class FileStore(Workspace):
     def base_dir(self) -> Path:
         return self.base_dir_path
 
+    @property
+    @override
+    def assets_dir(self) -> Path:
+        return self.base_dir / "assets"
+
     @synchronized
     @log_calls(level="warning", if_slower_than=2.0)
     def reload(self, auto_init: bool = True):

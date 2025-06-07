@@ -19,7 +19,11 @@ from kash.model.params_model import GLOBAL_PARAMS, RawParamValues
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.utils.errors import FileNotFound, InvalidInput, InvalidState
 from kash.utils.file_utils.ignore_files import IgnoreFilter, is_ignored_default
-from kash.workspaces.workspace_dirs import check_strict_workspace_name, is_global_ws_dir, is_ws_dir
+from kash.workspaces.workspace_dirs import (
+    check_strict_workspace_name,
+    is_global_ws_dir,
+    is_ws_dir,
+)
 from kash.workspaces.workspace_registry import WorkspaceInfo, get_ws_registry
 
 if TYPE_CHECKING:
@@ -48,6 +52,11 @@ class Workspace(ABC):
     @abstractmethod
     def base_dir(self) -> Path:
         """The base directory for this workspace."""
+
+    @property
+    @abstractmethod
+    def assets_dir(self) -> Path:
+        """The directory for this workspace's assets."""
 
 
 def resolve_ws(name: str | Path) -> WorkspaceInfo:

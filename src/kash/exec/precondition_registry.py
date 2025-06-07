@@ -39,7 +39,7 @@ def kash_precondition(func: Callable[[Item], bool]) -> Precondition:
 
 def get_all_preconditions() -> dict[str, Precondition]:
     """
-    Returns a copy of all registered preconditions.
+    Returns a copy of all registered preconditions (in alphabetical order).
     """
-    # Return a copy for safety.
-    return dict(_preconditions.copy())
+    # Return a copy for safety, sorted by key.
+    return dict(sorted(_preconditions.copy().items()))
