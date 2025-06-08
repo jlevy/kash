@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from textwrap import dedent
 from typing import Any, TypeAlias
 
@@ -72,21 +73,40 @@ def _tree_links(element, include_internal=False):
     return links
 
 
-def extract_links(file_path: str, include_internal=False) -> list[str]:
+def extract_links(content: str, include_internal=False) -> list[str]:
+    """
+    Extract all links from Markdown content.
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
+    """
+    document = marko.parse(content)
+    return _tree_links(document, include_internal)
+
+
+def extract_file_links(file_path: Path, include_internal=False) -> list[str]:
     """
     Extract all links from a Markdown file. Future: Include textual and section context.
-    """
 
-    with open(file_path) as file:
-        content = file.read()
-        document = marko.parse(content)
-        return _tree_links(document, include_internal)
+    Returns an empty list if there are parsing errors.
+    """
+    import logging
+
+    try:
+        content = file_path.read_text()
+        return extract_links(content, include_internal)
+    except Exception as e:
+        logging.warning(f"Failed to extract links from {file_path}: {e}")
+        return []
 
 
 def extract_first_header(content: str) -> str | None:
     """
     Extract the first header from markdown content if present.
     Also drops any formatting, so the result can be used as a document title.
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
     document = marko.parse(content)
 
@@ -105,12 +125,38 @@ def _extract_text(element: Any) -> str:
         return ""
 
 
+def _extract_list_item_text(element: Any) -> str:
+    """
+    Extract text from a list item, excluding nested lists.
+    """
+    from marko.block import List
+    from marko.inline import CodeSpan
+
+    if isinstance(element, str):
+        return element
+    elif isinstance(element, List):
+        # Skip nested lists
+        return ""
+    elif isinstance(element, CodeSpan):
+        # Handle inline code spans - preserve backticks
+        return f"`{''.join(_extract_list_item_text(child) for child in element.children)}`"
+    elif hasattr(element, "children"):
+        return "".join(_extract_list_item_text(child) for child in element.children)
+    else:
+        return ""
+
+
 def _tree_bullet_points(element: marko.block.Document) -> list[str]:
     bullet_points: list[str] = []
 
     def _find_bullet_points(element):
         if isinstance(element, ListItem):
-            bullet_points.append(_extract_text(element).strip())
+            # Extract text from this list item, excluding nested lists
+            bullet_points.append(_extract_list_item_text(element).strip())
+            # Then recursively process any nested lists within this item
+            if hasattr(element, "children"):
+                for child in element.children:
+                    _find_bullet_points(child)
         elif hasattr(element, "children"):
             for child in element.children:
                 _find_bullet_points(child)
@@ -119,13 +165,31 @@ def _tree_bullet_points(element: marko.block.Document) -> list[str]:
     return bullet_points
 
 
-def extract_bullet_points(content: str) -> list[str]:
+def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
     """
     Extract list item values from a Markdown file.
+
+    If no bullet points are found and `strict` is False, returns the entire content
+    as a single item (treating plain text as if it were the first bullet point).
+    If `strict` is True, only actual list items are returned.
+
+    Raises:
+        ValueError: If `strict` is True and no bullet points are found.
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
 
     document = marko.parse(content)
-    return _tree_bullet_points(document)
+    bullet_points = _tree_bullet_points(document)
+
+    # If no bullet points found
+    if not bullet_points:
+        if strict:
+            raise ValueError("No bullet points found in content")
+        elif content.strip():
+            # Not strict mode, treat as plain text
+            return [content.strip()]
+
+    return bullet_points
 
 
 def _type_from_heading(heading: Heading) -> HTag:
@@ -180,6 +244,10 @@ def extract_headings(text: str) -> list[tuple[HTag, str]]:
     Returns a list of (tag, text) tuples:
     [("h1", "Main Title"), ("h2", "Subtitle")]
     where `#` corresponds to `h1`, `##` to `h2`, etc.
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
+        ValueError: If a heading with an unsupported level is encountered.
     """
     document = marko.parse(text)
     headings_list: list[tuple[HTag, str]] = []
@@ -202,6 +270,10 @@ def extract_headings(text: str) -> list[tuple[HTag, str]]:
 def first_heading(text: str, *, allowed_tags: tuple[HTag, ...] = ("h1", "h2")) -> str | None:
     """
     Find the text of the first heading. Returns first h1 if present, otherwise first h2, etc.
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
+        ValueError: If a heading with an unsupported level is encountered.
     """
     headings = extract_headings(text)
     for goal_tag in allowed_tags:
@@ -302,3 +374,219 @@ def test_extract_headings_and_first_header() -> None:
     formatted_header_md = "## *Formatted* _Header_ [link](#anchor)"
     assert extract_headings(formatted_header_md) == [("h2", "Formatted Header link")]
     assert first_heading(formatted_header_md, allowed_tags=("h2",)) == "Formatted Header link"
+
+
+def test_extract_bullet_points() -> None:
+    # Empty content
+    assert extract_bullet_points("") == []
+
+    # No lists (strict mode)
+    try:
+        extract_bullet_points("Just some text without lists.", strict=True)
+        raise AssertionError("Expected ValueError for strict mode with no bullet points")
+    except ValueError as e:
+        assert "No bullet points found" in str(e)
+    # No lists (non-strict mode - should return as single item)
+    assert extract_bullet_points("Just some text without lists.") == [
+        "Just some text without lists."
+    ]
+
+    # Simple unordered list
+    content = """
+- First item
+- Second item
+- Third item
+"""
+    expected = ["First item", "Second item", "Third item"]
+    assert extract_bullet_points(content) == expected
+
+    # Simple ordered list
+    content = """
+1. First item
+2. Second item
+3. Third item
+"""
+    expected = ["First item", "Second item", "Third item"]
+    assert extract_bullet_points(content) == expected
+
+    # Mixed list types (asterisk and dash)
+    content = """
+* Item with asterisk
+- Item with dash
++ Item with plus
+"""
+    expected = ["Item with asterisk", "Item with dash", "Item with plus"]
+    assert extract_bullet_points(content) == expected
+
+    # List items with formatting
+    content = """
+- **Bold item**
+- *Italic item*
+- `Code item`
+- [Link item](http://example.com)
+- Item with _multiple_ **formats** and `code`
+"""
+    expected = [
+        "Bold item",
+        "Italic item",
+        "`Code item`",
+        "Link item",
+        "Item with multiple formats and `code`",
+    ]
+    assert extract_bullet_points(content) == expected
+
+    # Nested lists
+    content = """
+- Top level item 1
+  - Nested item 1.1
+  - Nested item 1.2
+- Top level item 2
+  1. Nested ordered 2.1
+  2. Nested ordered 2.2
+"""
+    expected = [
+        "Top level item 1",
+        "Nested item 1.1",
+        "Nested item 1.2",
+        "Top level item 2",
+        "Nested ordered 2.1",
+        "Nested ordered 2.2",
+    ]
+    assert extract_bullet_points(content) == expected
+
+    # Multi-line list items
+    content = """
+- First item that spans
+  multiple lines with content
+- Second item
+  that also spans multiple
+  lines
+"""
+    expected = [
+        "First item that spans\nmultiple lines with content",
+        "Second item\nthat also spans multiple\nlines",
+    ]
+    assert extract_bullet_points(content) == expected
+
+    # Lists mixed with other content
+    content = """
+# Header
+
+Some text before the list.
+
+- First item
+- Second item
+
+More text after the list.
+
+1. Another list item
+2. Final item
+
+Conclusion text.
+"""
+    expected = ["First item", "Second item", "Another list item", "Final item"]
+    assert extract_bullet_points(content) == expected
+
+    # List items with complex content
+    content = """
+- Item with **bold** and *italic* and `inline code`
+- Item with [external link](https://example.com) and [internal link](#section)
+- Item with line breaks
+  and continued text
+"""
+    expected = [
+        "Item with bold and italic and `inline code`",
+        "Item with external link and internal link",
+        "Item with line breaks\nand continued text",
+    ]
+    assert extract_bullet_points(content) == expected
+
+    # Edge case: empty list items
+    content = """
+- 
+- Non-empty item
+-   
+"""
+    expected = ["", "Non-empty item", ""]
+    assert extract_bullet_points(content) == expected
+
+    # Plain text handling (default behavior - not strict)
+    plain_text = "This is just plain text without any lists."
+    expected = ["This is just plain text without any lists."]
+    assert extract_bullet_points(plain_text) == expected
+    assert extract_bullet_points(plain_text, strict=False) == expected
+
+    # Plain text handling (strict mode)
+    try:
+        extract_bullet_points(plain_text, strict=True)
+        raise AssertionError("Expected ValueError for strict mode with no bullet points")
+    except ValueError as e:
+        assert "No bullet points found" in str(e)
+
+    # Multi-line plain text handling
+    multiline_plain = """This is a paragraph
+with multiple lines
+and no bullets."""
+    expected_multiline = ["This is a paragraph\nwith multiple lines\nand no bullets."]
+    assert extract_bullet_points(multiline_plain) == expected_multiline
+    try:
+        extract_bullet_points(multiline_plain, strict=True)
+        raise AssertionError("Expected ValueError for strict mode with no bullet points")
+    except ValueError as e:
+        assert "No bullet points found" in str(e)
+
+    # Mixed content with no lists in strict mode
+    mixed_no_lists = """
+# Header
+Some text here.
+**Bold text** and *italic*.
+"""
+    try:
+        extract_bullet_points(mixed_no_lists, strict=True)
+        raise AssertionError("Expected ValueError for strict mode with no bullet points")
+    except ValueError as e:
+        assert "No bullet points found" in str(e)
+    # Non-strict should return the content as single item
+    assert len(extract_bullet_points(mixed_no_lists, strict=False)) == 1
+
+
+def test_markdown_utils_exceptions() -> None:
+    """Test exception handling for markdown utility functions."""
+    import tempfile
+
+    # Test extract_file_links with non-existent file
+    result = extract_file_links(Path("/non/existent/file.md"))
+    assert result == []  # Should return empty list for any error
+
+    # Test extract_file_links with empty file (should work fine)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
+        tmp.write("")
+        tmp_path = Path(tmp.name)
+
+    try:
+        result = extract_file_links(tmp_path)
+        assert result == []  # Empty file has no links
+    finally:
+        tmp_path.unlink()
+
+    # Test with invalid markdown formatting (markdown is very permissive)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as tmp:
+        tmp.write("[incomplete link\n# Header\n- List item")
+        tmp_path = Path(tmp.name)
+
+    try:
+        result = extract_file_links(tmp_path)
+        # Should still work - marko is very permissive with markdown
+        assert isinstance(result, list)
+    finally:
+        tmp_path.unlink()
+
+    # Test extract_links with string content
+    content = "Check out [this link](https://example.com) and [internal](#section)"
+    result = extract_links(content)
+    assert "https://example.com" in result
+    assert "#section" not in result  # Internal links excluded by default
+
+    result_with_internal = extract_links(content, include_internal=True)
+    assert "https://example.com" in result_with_internal
+    assert "#section" in result_with_internal
