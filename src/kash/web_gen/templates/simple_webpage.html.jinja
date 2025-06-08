@@ -7,6 +7,14 @@
 [data-theme="dark"] .bg-white {
   background-color: var(--color-bg-alt-solid) !important;
 }
+
+/* Fallback responsive padding for compatibility */
+@media (min-width: 768px) {
+  .content-with-toc .long-text {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
 .long-text {
   transition: background 0.4s ease-in-out, color 0.4s ease-in-out;
 }

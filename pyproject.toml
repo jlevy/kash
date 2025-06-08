@@ -49,6 +49,7 @@ dependencies = [
     "frontmatter-format>=0.2.1",
     "chopdiff>=0.2.2",
     "clideps>=0.1.4",
+    "minify-tw-html>=0.1.2",
     # Shell and file essentials:
     # python-magic is most current and works with libmagic on macOS and Linux.
     # on Windows, python-magic-bin seems like the best option.
@@ -122,6 +123,7 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 [tool.uv.sources]
 # For local development:
 # clideps = { path = "../clideps", editable = true }
+# minify-tw-html = { path = "../../github/minify-tw-html", editable = true }
 
 # ---- Build system ----
 

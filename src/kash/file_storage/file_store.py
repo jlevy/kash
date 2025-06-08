@@ -345,6 +345,18 @@ class FileStore(Workspace):
 
             return StorePath(store_path), old_store_path
 
+    def target_path_for(self, item: Item) -> Path:
+        """
+        Get an the absolute path for an item. Use this if you need to work around the
+        usual save mechanism and write directly to the store yourself, at the location
+        the item usually would be saved.
+
+        If you write to this path, then set the item's `external_path` to indicate it's
+        already saved.
+        """
+        store_path, _old_store_path = self.store_path_for(item)
+        return self.base_dir / store_path
+
     def _tmp_path_for(self, item: Item) -> StorePath:
         """
         Find a path for an item in the tmp directory.
