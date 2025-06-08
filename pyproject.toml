@@ -47,7 +47,7 @@ dependencies = [
     "prettyfmt>=0.3.1",
     "flowmark>=0.4.6",
     "frontmatter-format>=0.2.1",
-    "chopdiff>=0.2.2",
+    "chopdiff>=0.2.3",
     "clideps>=0.1.4",
     "minify-tw-html>=0.1.2",
     # Shell and file essentials:
