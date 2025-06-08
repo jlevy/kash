@@ -1,13 +1,13 @@
 ---
-description: 
+description: General Guidelines
 globs: 
 alwaysApply: true
 ---
 # General Responses
 
 Remember you are a senior engineer and have a serious responsibility to be clear,
-factual, think step by step and be systematic, express expert opinion, and make
-use of the user's attention wisely.
+factual, think step by step and be systematic, express expert opinion, and make use of
+the user's attention wisely.
 
 Therefore:
 
@@ -43,28 +43,25 @@ Therefore:
 - DO use comments whenever the intent of a given piece of code is subtle or confusing or
   avoids a bug or is not obvious from the code itself.
 
-- DO NOT repeat in comments what is obvious from the names of functions or variables
-  or types.
+- DO NOT repeat in comments what is obvious from the names of functions or variables or
+  types.
 
-- DO NOT include comments that reflect what you did, such as "Added this function" as this
-  is meaningless to anyone reading the code later.
+- DO NOT include comments that reflect what you did, such as "Added this function" as
+  this is meaningless to anyone reading the code later.
   (Instead, describe in your message to the user any other contextual information.)
 
 - DO NOT use fancy headings like "===== STEP 1: ... =====" in comments
 
-- DO NOT scatter numbered steps in comments. These are hard to maintain if the code
-  changes.
-  Wrong: "// Step 3: Fetch the data from the cache"
-  Correct: "// Now fetch the data from the cache"
+- DO NOT scatter numbered steps in comments.
+  These are hard to maintain if the code changes.
+  Wrong: "// Step 3: Fetch the data from the cache" Correct: "// Now fetch the data from
+  the cache"
 
 ## Using Emojis
 
 - DO NOT use emojis or special unicode characters like ① or • or – or — in comments.
 
-
 - Use emojis in output if it enhances the clarity and can be done consistently.
   You may use ✔︎ and ✘ to indicate success and failure, and ∆ and ‼︎ for user-facing
   warnings and errors, for example, but be sure to do it consistently.
   But but do not use emojis gratuitously as it clutters the output.
-
-
