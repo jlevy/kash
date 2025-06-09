@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from datetime import date
 from enum import Enum
@@ -7,6 +9,7 @@ from prettyfmt import abbrev_obj
 from pydantic.dataclasses import dataclass
 
 from kash.utils.common.url import Url
+from kash.utils.common.url_slice import Slice
 from kash.utils.file_utils.file_formats_model import MediaType
 
 
@@ -109,7 +112,12 @@ class MediaService(ABC):
 
     @abstractmethod
     def download_media(
-        self, url: Url, target_dir: Path, media_types: list[MediaType] | None = None
+        self,
+        url: Url,
+        target_dir: Path,
+        *,
+        media_types: list[MediaType] | None = None,
+        slice: Slice | None = None,
     ) -> dict[MediaType, Path]:
         """
         Download media from URL and extract to audio or video formats.

@@ -13,6 +13,7 @@ from kash.file_storage.store_filenames import parse_item_filename
 from kash.model.media_model import MediaMetadata, MediaService, MediaUrlType
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url
+from kash.utils.common.url_slice import Slice
 from kash.utils.errors import FileNotFound, InvalidInput
 from kash.utils.file_utils.file_formats_model import FileExt, MediaType
 
@@ -73,11 +74,18 @@ class LocalFileMedia(MediaService):
 
     @override
     def download_media(
-        self, url: Url, target_dir: Path, media_types: list[MediaType] | None = None
+        self,
+        url: Url,
+        target_dir: Path,
+        *,
+        media_types: list[MediaType] | None = None,
+        slice: Slice | None = None,
     ) -> dict[MediaType, Path]:
         path = self._parse_file_url(url)
         if not path:
             raise InvalidInput(f"Not a local file URL: {url}")
+        if slice:
+            raise NotImplementedError("Slicing currently not supported for local files")
 
         _name, _item_type, format, file_ext = parse_item_filename(path)
         os.makedirs(target_dir, exist_ok=True)

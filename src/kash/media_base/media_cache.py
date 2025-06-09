@@ -14,6 +14,7 @@ from kash.media_base.media_services import (
 )
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, as_file_url, is_url
+from kash.utils.common.url_slice import parse_url_slice
 from kash.utils.errors import FileNotFound, InvalidInput, UnexpectedError
 from kash.utils.file_utils.file_formats_model import MediaType
 from kash.web_content.dir_store import DirStore
@@ -51,14 +52,16 @@ class MediaCache(DirStore):
         super().__init__(root)
 
     def _write_transcript(self, url: Url, content: str) -> None:
-        transcript_path = self.path_for(url, suffix=SUFFIX_TRANSCRIPT)
+        key = str(url)  # Cache key is the URL (with slice fragment if present)
+        transcript_path = self.path_for(key, suffix=SUFFIX_TRANSCRIPT)
         with atomic_output_file(transcript_path) as temp_output:
             with open(temp_output, "w") as f:
                 f.write(content)
         log.message("Transcript saved to cache: %s", fmt_path(transcript_path))
 
     def _read_transcript(self, url: Url) -> str | None:
-        transcript_file = self.find(url, suffix=SUFFIX_TRANSCRIPT)
+        key = str(url)  # Cache key is the URL (with slice fragment if present)
+        transcript_file = self.find(key, suffix=SUFFIX_TRANSCRIPT)
         if transcript_file:
             log.message("Video transcript already in cache: %s: %s", url, fmt_path(transcript_file))
             with open(transcript_file) as f:
@@ -66,12 +69,13 @@ class MediaCache(DirStore):
         return None
 
     def _downsample_audio(self, url: Url) -> Path:
-        downsampled_audio_file = self.find(url, suffix=SUFFIX_16KMP3)
+        key = str(url)  # Cache key is the URL (with slice fragment if present)
+        downsampled_audio_file = self.find(key, suffix=SUFFIX_16KMP3)
         if not downsampled_audio_file:
-            full_audio_file = self.find(url, suffix=SUFFIX_MP3)
+            full_audio_file = self.find(key, suffix=SUFFIX_MP3)
             if not full_audio_file:
                 raise ValueError("No audio file found for: %s" % url)
-            downsampled_audio_file = self.path_for(url, suffix=SUFFIX_16KMP3)
+            downsampled_audio_file = self.path_for(key, suffix=SUFFIX_16KMP3)
             log.message(
                 "Downsampling audio: %s -> %s",
                 fmt_path(full_audio_file),
@@ -95,13 +99,18 @@ class MediaCache(DirStore):
         return transcript
 
     def cache(
-        self, url: Url, refetch=False, media_types: list[MediaType] | None = None
+        self, url_or_slice: Url, refetch=False, media_types: list[MediaType] | None = None
     ) -> dict[MediaType, Path]:
         """
         Cache the media files for the given media URL. Returns paths to cached copies
         for each media type (video or audio). Returns cached copies if available,
         unless `refetch` is True.
         """
+        key = str(url_or_slice)  # Cache key is the URL (with slice fragment if present)
+
+        # Extract base URL and slice information
+        base_url, slice_obj = parse_url_slice(url_or_slice)
+
         cached_paths: dict[MediaType, Path] = {}
 
         if not media_types:
@@ -109,14 +118,18 @@ class MediaCache(DirStore):
 
         if not refetch:
             if MediaType.audio in media_types:
-                audio_file = self.find(url, suffix=SUFFIX_MP3)
+                audio_file = self.find(key, suffix=SUFFIX_MP3)
                 if audio_file:
-                    log.message("Audio already in cache: %s: %s", url, fmt_path(audio_file))
+                    log.message(
+                        "Audio already in cache: %s: %s", url_or_slice, fmt_path(audio_file)
+                    )
                     cached_paths[MediaType.audio] = audio_file
             if MediaType.video in media_types:
-                video_file = self.find(url, suffix=SUFFIX_MP4)
+                video_file = self.find(key, suffix=SUFFIX_MP4)
                 if video_file:
-                    log.message("Video already in cache: %s: %s", url, fmt_path(video_file))
+                    log.message(
+                        "Video already in cache: %s: %s", url_or_slice, fmt_path(video_file)
+                    )
                     cached_paths[MediaType.video] = video_file
             if set(media_types).issubset(cached_paths.keys()):
                 return cached_paths
@@ -127,14 +140,16 @@ class MediaCache(DirStore):
                     [t.name for t in cached_paths.keys()],
                 )
 
-        log.message("Downloading media: %s", url)
-        media_paths = download_media_by_service(url, self.root, media_types)
+        log.message("Downloading media: %s", url_or_slice)
+        media_paths = download_media_by_service(
+            base_url, self.root, media_types=media_types, slice=slice_obj
+        )
         if MediaType.audio in media_paths:
-            audio_path = self.path_for(url, suffix=SUFFIX_MP3)
+            audio_path = self.path_for(key, suffix=SUFFIX_MP3)
             os.rename(media_paths[MediaType.audio], audio_path)
             cached_paths[MediaType.audio] = audio_path
         if MediaType.video in media_paths:
-            video_path = self.path_for(url, suffix=SUFFIX_MP4)
+            video_path = self.path_for(key, suffix=SUFFIX_MP4)
             os.rename(media_paths[MediaType.video], video_path)
             cached_paths[MediaType.video] = video_path
 
@@ -143,7 +158,7 @@ class MediaCache(DirStore):
             fmt_lines([f"{t.name}: {fmt_path(p)}" for (t, p) in cached_paths.items()]),
         )
 
-        self._downsample_audio(url)
+        self._downsample_audio(url_or_slice)
 
         return cached_paths
 
@@ -156,30 +171,33 @@ class MediaCache(DirStore):
         """
         if not isinstance(url_or_path, Path) and is_url(url_or_path):
             # If it is a URL, cache it locally.
-            url = url_or_path
-            url = canonicalize_media_url(url)
-            if not url:
+            url_or_slice = url_or_path
+            # Canonicalize the URL (preserving slice information if present)
+            canon = canonicalize_media_url(url_or_slice)
+            if not canon:
                 log.error("Unrecognized media, current services: %s", get_media_services())
                 raise InvalidInput(
                     "Unrecognized media URL (is this media service configured?): %s" % url_or_path
                 )
+            url_or_slice = canon
+
             if not refetch:
-                transcript = self._read_transcript(url)
+                transcript = self._read_transcript(url_or_slice)
                 if transcript:
                     return transcript
             # Cache all formats since we usually will want them.
-            self.cache(url, refetch)
+            self.cache(url_or_slice, refetch)
         elif isinstance(url_or_path, Path):
             # Treat local media files as file:// URLs.
             # Don't need to cache originals but we still will cache audio and transcriptions.
             if not url_or_path.exists():
                 raise FileNotFound(f"File not found: {fmt_loc(url_or_path)}")
-            url = as_file_url(url_or_path)
+            url_or_slice = as_file_url(url_or_path)
         else:
             raise InvalidInput(f"Not a media URL or path: {fmt_loc(url_or_path)}")
 
         # Now do the transcription.
-        transcript = self._do_transcription(url, language=language)
+        transcript = self._do_transcription(url_or_slice, language=language)
         if not transcript:
-            raise UnexpectedError("No transcript found for: %s" % url)
+            raise UnexpectedError("No transcript found for: %s" % url_or_slice)
         return transcript
