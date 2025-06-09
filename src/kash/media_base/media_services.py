@@ -40,15 +40,15 @@ def canonicalize_media_url(url_or_slice: Url) -> Url | None:
     Return the canonical form of a media URL from a supported service (like YouTube).
     Preserves any slice information in URL fragments.
     """
-    base_url, slice_obj = parse_url_slice(url_or_slice)
+    base_url, slice = parse_url_slice(url_or_slice)
 
     # Canonicalize the base URL
     for service in _media_services.copy():
         canonical_url = service.canonicalize(base_url)
         if canonical_url:
             # Add slice back to canonical URL if it existed
-            if slice_obj:
-                return add_slice_to_url(canonical_url, slice_obj)
+            if slice:
+                return add_slice_to_url(canonical_url, slice)
             else:
                 return canonical_url
     return None

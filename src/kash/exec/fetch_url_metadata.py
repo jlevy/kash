@@ -5,6 +5,7 @@ from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, is_url
+from kash.utils.common.url_slice import add_slice_to_url, parse_url_slice
 from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
@@ -55,6 +56,14 @@ def fetch_url_item_metadata(item: Item, refetch: bool = False) -> Item:
     media_metadata = get_media_metadata(url)
     if media_metadata:
         fetched_item = Item.from_media_metadata(media_metadata)
+        # Preserve and canonicalize any slice suffix on the URL.
+        _base_url, slice = parse_url_slice(item.url)
+        if slice:
+            new_url = add_slice_to_url(media_metadata.url, slice)
+            if new_url != item.url:
+                log.message("Updated URL from metadata and added slice: %s", new_url)
+            fetched_item.url = new_url
+
         fetched_item = item.merged_copy(fetched_item)
     else:
         page_data = fetch_extract(url, refetch=refetch)

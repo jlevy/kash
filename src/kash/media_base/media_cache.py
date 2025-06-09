@@ -3,6 +3,7 @@ from functools import cache
 from pathlib import Path
 
 from prettyfmt import fmt_lines, fmt_path
+from prettyfmt.prettyfmt import fmt_size_dual
 from strif import atomic_output_file
 
 from kash.config.logger import get_logger
@@ -109,7 +110,7 @@ class MediaCache(DirStore):
         key = str(url_or_slice)  # Cache key is the URL (with slice fragment if present)
 
         # Extract base URL and slice information
-        base_url, slice_obj = parse_url_slice(url_or_slice)
+        base_url, slice = parse_url_slice(url_or_slice)
 
         cached_paths: dict[MediaType, Path] = {}
 
@@ -142,7 +143,7 @@ class MediaCache(DirStore):
 
         log.message("Downloading media: %s", url_or_slice)
         media_paths = download_media_by_service(
-            base_url, self.root, media_types=media_types, slice=slice_obj
+            base_url, self.root, media_types=media_types, slice=slice
         )
         if MediaType.audio in media_paths:
             audio_path = self.path_for(key, suffix=SUFFIX_MP3)
@@ -155,7 +156,12 @@ class MediaCache(DirStore):
 
         log.message(
             "Downloaded media and saved to cache:\n%s",
-            fmt_lines([f"{t.name}: {fmt_path(p)}" for (t, p) in cached_paths.items()]),
+            fmt_lines(
+                [
+                    f"{t.name}: {fmt_size_dual(p.stat().st_size)}: {fmt_path(p)} "
+                    for (t, p) in cached_paths.items()
+                ]
+            ),
         )
 
         self._downsample_audio(url_or_slice)

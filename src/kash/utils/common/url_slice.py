@@ -145,15 +145,15 @@ def parse_url_slice(url: Url) -> tuple[Url, Slice | None]:
         return url, None
 
     try:
-        slice_obj = Slice.parse(slice_str)
+        slice = Slice.parse(slice_str)
         base_url = Url(url[:slice_index])  # Everything before #~slice=
-        return base_url, slice_obj
+        return base_url, slice
     except ValueError:
         # Invalid slice format, treat as regular URL
         return url, None
 
 
-def add_slice_to_url(url: Url, slice_obj: Slice) -> Url:
+def add_slice_to_url(url: Url, slice: Slice) -> Url:
     """Add slice information to a URL as a fragment."""
     # Remove any existing fragment and add the slice
     fragment_index = url.find("#")
@@ -161,7 +161,7 @@ def add_slice_to_url(url: Url, slice_obj: Slice) -> Url:
         base_url = Url(url[:fragment_index])
     else:
         base_url = url
-    return Url(f"{base_url}#~slice={slice_obj}")
+    return Url(f"{base_url}#~slice={slice}")
 
 
 ## Tests
@@ -171,10 +171,10 @@ def test_url_slice_functionality():
     """Test URL slice functionality with fragment-based encoding."""
 
     # Basic slice creation and validation
-    slice_obj = Slice(10.0, 20.0)
-    assert slice_obj.start_time == 10.0
-    assert slice_obj.end_time == 20.0
-    assert str(slice_obj) == "10-20"
+    slice = Slice(10.0, 20.0)
+    assert slice.start_time == 10.0
+    assert slice.end_time == 20.0
+    assert str(slice) == "10-20"
 
     # Invalid slice creation should raise ValueError
     for start, end in [(20.0, 10.0), (10.0, 10.0), (-5.0, 10.0), (0.0, 0.0)]:
@@ -226,42 +226,42 @@ def test_url_slice_detection():
     assert not is_url_slice(other_fragment_url)
 
     # Test slice extraction
-    base_url, slice_obj = parse_url_slice(regular_url)
+    base_url, slice = parse_url_slice(regular_url)
     assert base_url == regular_url
-    assert slice_obj is None
+    assert slice is None
 
-    base_url, slice_obj = parse_url_slice(slice_url)
+    base_url, slice = parse_url_slice(slice_url)
     assert base_url == "https://example.com/video.mp4"
-    assert slice_obj is not None
-    if slice_obj:  # Help type checker understand slice_obj is not None
-        assert slice_obj.start_time == 10.0
-        assert slice_obj.end_time == 30.0
+    assert slice is not None
+    if slice:  # Help type checker understand slice is not None
+        assert slice.start_time == 10.0
+        assert slice.end_time == 30.0
 
     # Test with HH:MM:SS format
     hms_url = Url("https://example.com/video.mp4#~slice=01:30-02:45")
-    base_url, slice_obj = parse_url_slice(hms_url)
+    base_url, slice = parse_url_slice(hms_url)
     assert base_url == "https://example.com/video.mp4"
-    assert slice_obj is not None
-    if slice_obj:  # Help type checker understand slice_obj is not None
-        assert slice_obj.start_time == 90.0  # 1:30 in seconds
-        assert slice_obj.end_time == 165.0  # 2:45 in seconds
+    assert slice is not None
+    if slice:  # Help type checker understand slice is not None
+        assert slice.start_time == 90.0  # 1:30 in seconds
+        assert slice.end_time == 165.0  # 2:45 in seconds
 
     # Test slice at end of URL
     slice_at_end_url = Url("https://example.com/video.mp4#~slice=30-60")
     assert is_url_slice(slice_at_end_url)
-    base_url, slice_obj = parse_url_slice(slice_at_end_url)
+    base_url, slice = parse_url_slice(slice_at_end_url)
     assert base_url == "https://example.com/video.mp4"
-    assert slice_obj is not None
-    if slice_obj:
-        assert slice_obj.start_time == 30.0
-        assert slice_obj.end_time == 60.0
+    assert slice is not None
+    if slice:
+        assert slice.start_time == 30.0
+        assert slice.end_time == 60.0
 
     # Test invalid slice in fragment
     invalid_slice_url = Url("https://example.com/video.mp4#~slice=invalid-format")
     assert not is_url_slice(invalid_slice_url)
-    base_url, slice_obj = parse_url_slice(invalid_slice_url)
+    base_url, slice = parse_url_slice(invalid_slice_url)
     assert base_url == invalid_slice_url
-    assert slice_obj is None
+    assert slice is None
 
     # Test partial slice marker
     partial_slice_url = Url("https://example.com/video.mp4#~slic=10-30")
@@ -272,10 +272,10 @@ def test_url_slice_manipulation():
     """Test adding slices to URLs."""
 
     base_url = Url("https://example.com/video.mp4")
-    slice_obj = Slice(10.0, 30.0)
+    slice = Slice(10.0, 30.0)
 
     # Add slice to URL
-    sliced_url = add_slice_to_url(base_url, slice_obj)
+    sliced_url = add_slice_to_url(base_url, slice)
     assert sliced_url == "https://example.com/video.mp4#~slice=10-30"
     assert is_url_slice(sliced_url)
 
@@ -294,7 +294,7 @@ def test_url_slice_manipulation():
 
     # URL with existing non-slice fragment
     fragment_url = Url("https://example.com/video.mp4#chapter1")
-    sliced_fragment_url = add_slice_to_url(fragment_url, slice_obj)
+    sliced_fragment_url = add_slice_to_url(fragment_url, slice)
     assert sliced_fragment_url == "https://example.com/video.mp4#~slice=10-30"
 
 
@@ -308,11 +308,11 @@ def test_parse_url_slice():
     ]
 
     for url_str, expected_start, expected_end in valid_cases:
-        _, slice_obj = parse_url_slice(Url(url_str))
-        assert slice_obj is not None
-        if slice_obj:
-            assert slice_obj.start_time == expected_start
-            assert slice_obj.end_time == expected_end
+        _, slice = parse_url_slice(Url(url_str))
+        assert slice is not None
+        if slice:
+            assert slice.start_time == expected_start
+            assert slice.end_time == expected_end
 
     # Test invalid or missing slices
     invalid_cases = [
@@ -325,5 +325,5 @@ def test_parse_url_slice():
     ]
 
     for url_str in invalid_cases:
-        _, slice_obj = parse_url_slice(Url(url_str))
-        assert slice_obj is None
+        _, slice = parse_url_slice(Url(url_str))
+        assert slice is None
