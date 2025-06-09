@@ -125,49 +125,42 @@ def _extract_text(element: Any) -> str:
         return ""
 
 
-def _extract_list_item_text(element: Any) -> str:
+def _extract_list_item_markdown(element: Any) -> str:
     """
-    Extract text from a list item, excluding nested lists.
+    Extract markdown from a list item, preserving all formatting.
     """
-    from marko.block import List
-    from marko.inline import CodeSpan
+    from marko.block import BlankLine, List, Paragraph
+    from marko.inline import CodeSpan, Emphasis, Link, StrongEmphasis
 
     if isinstance(element, str):
         return element
     elif isinstance(element, List):
         # Skip nested lists
         return ""
+    elif isinstance(element, BlankLine):
+        # Preserve paragraph breaks
+        return "\n\n"
+    elif isinstance(element, Paragraph):
+        # Extract content from paragraph
+        return "".join(_extract_list_item_markdown(child) for child in element.children)
     elif isinstance(element, CodeSpan):
-        # Handle inline code spans - preserve backticks
-        return f"`{''.join(_extract_list_item_text(child) for child in element.children)}`"
+        return f"`{''.join(_extract_list_item_markdown(child) for child in element.children)}`"
+    elif isinstance(element, Emphasis):
+        return f"*{''.join(_extract_list_item_markdown(child) for child in element.children)}*"
+    elif isinstance(element, StrongEmphasis):
+        return f"**{''.join(_extract_list_item_markdown(child) for child in element.children)}**"
+    elif isinstance(element, Link):
+        text = "".join(_extract_list_item_markdown(child) for child in element.children)
+        return f"[{text}]({element.dest})"
     elif hasattr(element, "children"):
-        return "".join(_extract_list_item_text(child) for child in element.children)
+        return "".join(_extract_list_item_markdown(child) for child in element.children)
     else:
         return ""
 
 
-def _tree_bullet_points(element: marko.block.Document) -> list[str]:
-    bullet_points: list[str] = []
-
-    def _find_bullet_points(element):
-        if isinstance(element, ListItem):
-            # Extract text from this list item, excluding nested lists
-            bullet_points.append(_extract_list_item_text(element).strip())
-            # Then recursively process any nested lists within this item
-            if hasattr(element, "children"):
-                for child in element.children:
-                    _find_bullet_points(child)
-        elif hasattr(element, "children"):
-            for child in element.children:
-                _find_bullet_points(child)
-
-    _find_bullet_points(element)
-    return bullet_points
-
-
 def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
     """
-    Extract list item values from a Markdown file.
+    Extract list item values from a Markdown file, preserving all original formatting.
 
     If no bullet points are found and `strict` is False, returns the entire content
     as a single item (treating plain text as if it were the first bullet point).
@@ -177,9 +170,22 @@ def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
         ValueError: If `strict` is True and no bullet points are found.
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
-
     document = marko.parse(content)
-    bullet_points = _tree_bullet_points(document)
+    bullet_points: list[str] = []
+
+    def _find_bullet_points(element):
+        if isinstance(element, ListItem):
+            # Extract markdown from this list item, preserving formatting
+            bullet_points.append(_extract_list_item_markdown(element).strip())
+            # Then recursively process any nested lists within this item
+            if hasattr(element, "children"):
+                for child in element.children:
+                    _find_bullet_points(child)
+        elif hasattr(element, "children"):
+            for child in element.children:
+                _find_bullet_points(child)
+
+    _find_bullet_points(document)
 
     # If no bullet points found
     if not bullet_points:
@@ -392,58 +398,58 @@ def test_extract_bullet_points() -> None:
     ]
 
     # Simple unordered list
-    content = """
-- First item
-- Second item
-- Third item
-"""
+    content = dedent("""
+        - First item
+        - Second item
+        - Third item
+        """)
     expected = ["First item", "Second item", "Third item"]
     assert extract_bullet_points(content) == expected
 
     # Simple ordered list
-    content = """
-1. First item
-2. Second item
-3. Third item
-"""
+    content = dedent("""
+        1. First item
+        2. Second item
+        3. Third item
+        """)
     expected = ["First item", "Second item", "Third item"]
     assert extract_bullet_points(content) == expected
 
     # Mixed list types (asterisk and dash)
-    content = """
-* Item with asterisk
-- Item with dash
-+ Item with plus
-"""
+    content = dedent("""
+        * Item with asterisk
+        - Item with dash
+        + Item with plus
+        """)
     expected = ["Item with asterisk", "Item with dash", "Item with plus"]
     assert extract_bullet_points(content) == expected
 
     # List items with formatting
-    content = """
-- **Bold item**
-- *Italic item*
-- `Code item`
-- [Link item](http://example.com)
-- Item with _multiple_ **formats** and `code`
-"""
+    content = dedent("""
+        - **Bold item**
+        - *Italic item*
+        - `Code item`
+        - [Link item](http://example.com)
+        - Item with _multiple_ **formats** and `code`
+        """)
     expected = [
-        "Bold item",
-        "Italic item",
+        "**Bold item**",
+        "*Italic item*",
         "`Code item`",
-        "Link item",
-        "Item with multiple formats and `code`",
+        "[Link item](http://example.com)",
+        "Item with *multiple* **formats** and `code`",
     ]
     assert extract_bullet_points(content) == expected
 
     # Nested lists
-    content = """
-- Top level item 1
-  - Nested item 1.1
-  - Nested item 1.2
-- Top level item 2
-  1. Nested ordered 2.1
-  2. Nested ordered 2.2
-"""
+    content = dedent("""
+        - Top level item 1
+          - Nested item 1.1
+          - Nested item 1.2
+        - Top level item 2
+          1. Nested ordered 2.1
+          2. Nested ordered 2.2
+        """)
     expected = [
         "Top level item 1",
         "Nested item 1.1",
@@ -455,13 +461,13 @@ def test_extract_bullet_points() -> None:
     assert extract_bullet_points(content) == expected
 
     # Multi-line list items
-    content = """
-- First item that spans
-  multiple lines with content
-- Second item
-  that also spans multiple
-  lines
-"""
+    content = dedent("""
+        - First item that spans
+          multiple lines with content
+        - Second item
+          that also spans multiple
+          lines
+        """)
     expected = [
         "First item that spans\nmultiple lines with content",
         "Second item\nthat also spans multiple\nlines",
@@ -469,44 +475,44 @@ def test_extract_bullet_points() -> None:
     assert extract_bullet_points(content) == expected
 
     # Lists mixed with other content
-    content = """
-# Header
+    content = dedent("""
+        # Header
 
-Some text before the list.
+        Some text before the list.
 
-- First item
-- Second item
+        - First item
+        - Second item
 
-More text after the list.
+        More text after the list.
 
-1. Another list item
-2. Final item
+        1. Another list item
+        2. Final item
 
-Conclusion text.
-"""
+        Conclusion text.
+        """)
     expected = ["First item", "Second item", "Another list item", "Final item"]
     assert extract_bullet_points(content) == expected
 
     # List items with complex content
-    content = """
-- Item with **bold** and *italic* and `inline code`
-- Item with [external link](https://example.com) and [internal link](#section)
-- Item with line breaks
-  and continued text
-"""
+    content = dedent("""
+        - Item with **bold** and *italic* and `inline code`
+        - Item with [external link](https://example.com) and [internal link](#section)
+        - Item with line breaks
+          and continued text
+        """)
     expected = [
-        "Item with bold and italic and `inline code`",
-        "Item with external link and internal link",
+        "Item with **bold** and *italic* and `inline code`",
+        "Item with [external link](https://example.com) and [internal link](#section)",
         "Item with line breaks\nand continued text",
     ]
     assert extract_bullet_points(content) == expected
 
     # Edge case: empty list items
-    content = """
-- 
-- Non-empty item
--   
-"""
+    content = dedent("""
+        - 
+        - Non-empty item
+        -   
+        """)
     expected = ["", "Non-empty item", ""]
     assert extract_bullet_points(content) == expected
 
@@ -524,9 +530,10 @@ Conclusion text.
         assert "No bullet points found" in str(e)
 
     # Multi-line plain text handling
-    multiline_plain = """This is a paragraph
-with multiple lines
-and no bullets."""
+    multiline_plain = dedent("""
+        This is a paragraph
+        with multiple lines
+        and no bullets.""").strip()
     expected_multiline = ["This is a paragraph\nwith multiple lines\nand no bullets."]
     assert extract_bullet_points(multiline_plain) == expected_multiline
     try:
@@ -536,11 +543,11 @@ and no bullets."""
         assert "No bullet points found" in str(e)
 
     # Mixed content with no lists in strict mode
-    mixed_no_lists = """
-# Header
-Some text here.
-**Bold text** and *italic*.
-"""
+    mixed_no_lists = dedent("""
+        # Header
+        Some text here.
+        **Bold text** and *italic*.
+        """)
     try:
         extract_bullet_points(mixed_no_lists, strict=True)
         raise AssertionError("Expected ValueError for strict mode with no bullet points")
@@ -548,6 +555,119 @@ Some text here.
         assert "No bullet points found" in str(e)
     # Non-strict should return the content as single item
     assert len(extract_bullet_points(mixed_no_lists, strict=False)) == 1
+
+
+def test_extract_bullet_points_key_scenarios() -> None:
+    """Test key scenarios: plain text, multi-paragraph lists, and links in bullet text."""
+
+    # Plain text handling (the fundamental case)
+    plain_text = "This is just plain text without any markdown formatting."
+    assert extract_bullet_points(plain_text) == [plain_text]
+
+    # Multi-paragraph plain text
+    multiline_plain = dedent("""
+        This is a paragraph
+        with multiple lines
+        and no bullets at all.""").strip()
+    assert extract_bullet_points(multiline_plain) == [multiline_plain]
+
+    # Multi-paragraph bulleted lists with complex formatting
+    multi_paragraph_content = dedent("""
+        - First bullet point with **bold text** and a [link](https://example.com)
+          
+          This is a continuation paragraph within the same bullet point.
+          It spans multiple lines and includes *italic text*.
+
+        - Second bullet point with `inline code` and another [internal link](#section)
+          
+          Another paragraph here with more content.
+          Including **bold** and *italic* formatting.
+
+        - Third simple bullet
+        """)
+    expected_multi = [
+        "First bullet point with **bold text** and a [link](https://example.com)\n\nThis is a continuation paragraph within the same bullet point.\nIt spans multiple lines and includes *italic text*.",
+        "Second bullet point with `inline code` and another [internal link](#section)\n\nAnother paragraph here with more content.\nIncluding **bold** and *italic* formatting.",
+        "Third simple bullet",
+    ]
+    result_multi = extract_bullet_points(multi_paragraph_content)
+    assert result_multi == expected_multi
+
+    # Links inside bullet text (various types)
+    links_content = dedent("""
+        - Check out [this external link](https://google.com) for more info
+        - Visit [our docs](https://docs.example.com/api) and [FAQ](https://example.com/faq)
+        - Internal reference: [see section below](#implementation)
+        - Mixed: [external](https://test.com) and [internal](#ref) in one bullet
+        - Email link: [contact us](mailto:test@example.com)
+        - Link with **bold text**: [**Important Link**](https://critical.com)
+        """)
+    expected_links = [
+        "Check out [this external link](https://google.com) for more info",
+        "Visit [our docs](https://docs.example.com/api) and [FAQ](https://example.com/faq)",
+        "Internal reference: [see section below](#implementation)",
+        "Mixed: [external](https://test.com) and [internal](#ref) in one bullet",
+        "Email link: [contact us](mailto:test@example.com)",
+        "Link with **bold text**: [**Important Link**](https://critical.com)",
+    ]
+    result_links = extract_bullet_points(links_content)
+    assert result_links == expected_links
+
+    # Complex formatting combinations
+    complex_content = dedent("""
+        - **Bold** start with [link](https://example.com) and `code` end
+        - *Italic* with `inline code` and [another link](https://test.com) here
+        - Mixed: **bold _nested italic_** and `code with [link inside](https://nested.com)`
+        """)
+    expected_complex = [
+        "**Bold** start with [link](https://example.com) and `code` end",
+        "*Italic* with `inline code` and [another link](https://test.com) here",
+        "Mixed: **bold *nested italic*** and `code with [link inside](https://nested.com)`",
+    ]
+    result_complex = extract_bullet_points(complex_content)
+    assert result_complex == expected_complex
+
+
+def test_markdown_structure_parsing() -> None:
+    """Test that demonstrates how markdown structure is parsed and preserved."""
+
+    # Test markdown structure preservation in list items
+    content = dedent("""
+        - First bullet with **bold text**
+
+          This is a continuation paragraph with *italic text*.
+          It spans multiple lines.
+
+          Another paragraph in the same list item.
+
+        - Second bullet with `code` and [link](https://example.com)
+        """)
+
+    result = extract_bullet_points(content)
+
+    # Verify we get exactly 2 bullet points
+    assert len(result) == 2
+
+    # Verify first bullet preserves all formatting and paragraph structure
+    expected_first = "First bullet with **bold text**\n\nThis is a continuation paragraph with *italic text*.\nIt spans multiple lines.\n\nAnother paragraph in the same list item."
+    assert result[0] == expected_first
+
+    # Verify second bullet preserves formatting
+    expected_second = "Second bullet with `code` and [link](https://example.com)"
+    assert result[1] == expected_second
+
+    # Test nested formatting combinations
+    nested_content = dedent("""
+        - Item with **bold containing *italic* text** and `code`
+        - Link with formatting: [**Bold Link Text**](https://example.com)
+        - Code with special chars: `function(param="value")`
+        """)
+
+    nested_result = extract_bullet_points(nested_content)
+    assert len(nested_result) == 3
+    assert nested_result[0] == "Item with **bold containing *italic* text** and `code`"
+    assert nested_result[1] == "Link with formatting: [**Bold Link Text**](https://example.com)"
+    assert nested_result[2] == 'Code with special chars: `function(param="value")`'
 
 
 def test_markdown_utils_exceptions() -> None:
