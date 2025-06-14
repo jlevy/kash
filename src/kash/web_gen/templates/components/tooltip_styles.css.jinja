@@ -1,0 +1,371 @@
+/* -----------------------------------------------------------------------------
+   Real DOM Element Tooltip Foundation
+   ----------------------------------------------------------------------------- */
+
+/* Tooltip container */
+[data-tooltip-trigger] {
+  position: relative;
+}
+
+/* Tooltip element (real DOM element) */
+.tooltip-element {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  /* Only transition opacity and visibility, not transform to avoid movement */
+  transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+  /* Ensure no transition on positioning properties */
+  transition-property: opacity, visibility;
+  z-index: 1000;
+  
+  /* Tooltip styling - matching TOC active item */
+  background: var(--color-bg-selected);
+  border: 1px solid var(--color-border-hint);
+  border-left: 2px solid var(--color-primary);
+  color: var(--color-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  line-height: 1.4;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0;
+  
+  /* Sizing and text handling */
+  width: max-content;
+  max-width: 20rem;
+  min-width: 8rem;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Tooltip arrow */
+.tooltip-element::after {
+  content: '';
+  position: absolute;
+  border: 5px solid transparent;
+  z-index: 1001;
+}
+
+/* Show tooltip when visible */
+.tooltip-element.tooltip-visible {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Ensure tooltip content is interactive when visible */
+.tooltip-element.tooltip-visible * {
+  pointer-events: auto;
+}
+
+/* Tooltip hover state */
+.tooltip-element:hover {
+  background: var(--color-hover-bg);
+}
+
+/* -----------------------------------------------------------------------------
+   General Tooltip Positioning
+   ----------------------------------------------------------------------------- */
+
+/* Default: Top positioning */
+.tooltip-element.tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0.125rem);
+  margin-bottom: 10px;
+}
+
+.tooltip-element.tooltip-top::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--color-border-hint);
+  margin-top: -5px;
+}
+
+/* Active state overrides for top positioning */
+.tooltip-element.tooltip-top.tooltip-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Bottom positioning */
+.tooltip-element.tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-0.125rem);
+  margin-top: 10px;
+}
+
+.tooltip-element.tooltip-bottom::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--color-border-hint);
+  margin-bottom: -5px;
+}
+
+.tooltip-element.tooltip-bottom.tooltip-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Left positioning */
+.tooltip-element.tooltip-left {
+  right: 100%;
+  top: 50%;
+  transform: translateX(0.125rem) translateY(-50%);
+  margin-right: 10px;
+}
+
+.tooltip-element.tooltip-left::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--color-border-hint);
+  margin-left: -5px;
+}
+
+.tooltip-element.tooltip-left.tooltip-visible {
+  transform: translateX(0) translateY(-50%);
+}
+
+/* Right positioning */
+.tooltip-element.tooltip-right {
+  left: 100%;
+  top: 50%;
+  transform: translateX(-0.125rem) translateY(-50%);
+  margin-left: 10px;
+}
+
+.tooltip-element.tooltip-right::after {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--color-border-hint);
+  margin-right: -5px;
+}
+
+.tooltip-element.tooltip-right.tooltip-visible {
+  transform: translateX(0) translateY(-50%);
+}
+
+/* -----------------------------------------------------------------------------
+   Footnote-Specific Tooltips
+   ----------------------------------------------------------------------------- */
+
+/* Footnote reference styling */
+.footnote-ref a[data-tooltip-trigger] {
+  transition: color 0.4s ease-in-out;
+}
+
+.footnote-ref a[data-tooltip-trigger]:hover {
+  color: var(--color-primary-light);
+}
+
+/* Enhanced footnote tooltip styling */
+.footnote-element {
+  /* Larger max-width for footnote content */
+  max-width: 25rem;
+  min-width: 12rem;
+  /* Better typography for longer footnote text */
+  line-height: 1.5;
+  text-align: left;
+  /* Same styling as base tooltip - no additional overrides needed */
+}
+
+/* Footnote tooltip positioning adjustments */
+.footnote-element.tooltip-top {
+  /* Position slightly higher to avoid covering the link */
+  margin-bottom: 15px;
+}
+
+.footnote-element.tooltip-top::after {
+  margin-top: -5px;
+}
+
+/* Links within footnote tooltips */
+.footnote-element a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  overflow-wrap: break-word; /* Break long URLs only when necessary */
+  word-break: normal;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.footnote-element a:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+/* Ensure all links in tooltips are properly styled and clickable */
+.tooltip-element a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+  overflow-wrap: break-word; /* Break long URLs only when necessary */
+  word-break: normal;
+  transition: color 0.2s ease-in-out;
+}
+
+.tooltip-element a:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+/* Hide the footnote back-link in tooltips */
+.footnote-element .footnote {
+  display: none;
+}
+
+/* Special handling for very long URLs or code that needs aggressive breaking */
+.tooltip-element .force-break,
+.tooltip-element code,
+.tooltip-element pre {
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+/* But keep normal word breaking for most text content */
+.tooltip-element p,
+.tooltip-element span,
+.tooltip-element div {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* -----------------------------------------------------------------------------
+   Wide Screen Tooltip Positioning (Right of Main Content)
+   ----------------------------------------------------------------------------- */
+
+/* Position tooltips to the right of main content on wide screens */
+@media (min-width: 1200px) {
+  /* Create a new positioning class for wide screen tooltips */
+  .tooltip-element.tooltip-wide-right {
+    /* Position absolutely to viewport for placement to right of main content */
+    position: fixed;
+    /* Horizontal position now set dynamically via JavaScript */
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    transform: translateX(0.125rem) translateY(-50%);
+    margin: 0;
+    
+    /* Larger size for side placement */
+    max-width: 22rem; /* Will be overridden by JS when needed */
+    min-width: 16rem;
+    /* Ensure text wraps properly when constrained */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    
+    /* Enhanced styling for sidebar placement */
+    box-shadow: 0 8px 25px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .tooltip-element.tooltip-wide-right::after {
+    /* Arrow pointing left towards the content */
+    right: 100%;
+    top: 50%;
+    left: auto;
+    bottom: auto;
+    transform: translateY(-50%);
+    border-right-color: var(--color-border-hint);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    margin: 0;
+    margin-right: -5px;
+  }
+  
+  .tooltip-element.tooltip-wide-right.tooltip-visible {
+    transform: translateX(0) translateY(-50%);
+  }
+  
+  /* Ensure footnote tooltips use this positioning on wide screens */
+  .footnote-element.tooltip-wide-right {
+    max-width: 24rem;
+    min-width: 18rem;
+  }
+}
+
+/* Extra wide screens - make tooltips even wider and adjust positioning */
+@media (min-width: 1600px) {
+  .tooltip-element.tooltip-wide-right {
+    left: calc(50% + 24rem + 2rem); /* Extra spacing on very wide screens */
+    max-width: 28rem;
+    min-width: 20rem;
+  }
+  
+  .footnote-element.tooltip-wide-right {
+    max-width: 30rem;
+    min-width: 22rem;
+  }
+}
+
+/* Medium screens - use standard positioning with constrained width */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .tooltip-element {
+    /* Constrain width to fit within content area */
+    max-width: min(20rem, calc(100vw - 4rem));
+    box-sizing: border-box;
+  }
+  
+  .footnote-element {
+    max-width: min(22rem, calc(100vw - 4rem));
+  }
+  
+  /* Ensure tooltips don't overflow on medium screens */
+  .tooltip-element.tooltip-top,
+  .tooltip-element.tooltip-bottom {
+    /* Ensure centered tooltips stay within viewport */
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(0.125rem);
+    max-width: min(20rem, calc(100vw - 4rem));
+  }
+  
+  .tooltip-element.tooltip-top.tooltip-visible,
+  .tooltip-element.tooltip-bottom.tooltip-visible {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Small screens - constrained positioning */
+@media (max-width: 767px) {
+  .tooltip-element {
+    /* Constrain all tooltips on mobile to fit within content area */
+    max-width: min(20rem, calc(100vw - 2rem)) !important;
+    min-width: 10rem !important;
+    box-sizing: border-box;
+    /* Remove any positioning overrides - let JS handle it */
+    position: fixed !important;
+    margin: 0 !important;
+  }
+  
+  /* Ensure footnote tooltips also respect mobile constraints */
+  .footnote-element {
+    max-width: min(20rem, calc(100vw - 2rem)) !important;
+    min-width: 10rem !important;
+  }
+}
+
+/* Additional constraints for better positioning */
+@media (min-width: 768px) and (max-width: 1199px) {
+  /* Ensure all tooltips use border-box for consistent sizing */
+  .tooltip-element {
+    box-sizing: border-box;
+  }
+  
+  /* Override any conflicting positioning - let JavaScript handle edge cases */
+  .tooltip-element.tooltip-top,
+  .tooltip-element.tooltip-bottom {
+    /* Reset any specific edge positioning to let JS handle it */
+    left: 50%;
+    right: auto;
+  }
+} 

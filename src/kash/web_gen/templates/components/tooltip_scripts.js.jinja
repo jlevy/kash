@@ -1,0 +1,630 @@
+/* -----------------------------------------------------------------------------
+   Core tooltip functionality and utilities
+   ----------------------------------------------------------------------------- */
+
+// Tooltip utility functions
+const TooltipUtils = {
+  // Sanitize text content for safe HTML attribute usage
+  sanitizeText(text) {
+    return text
+      .replace(/\s+/g, ' ')  // Normalize whitespace
+      .trim()
+      .replace(/"/g, '&quot;')  // Escape quotes
+      .replace(/</g, '&lt;')    // Escape HTML
+      .replace(/>/g, '&gt;');
+  },
+  
+  // Extract clean text content from an element
+  extractTextContent(element) {
+    // Clone the element to avoid modifying the original
+    const clone = element.cloneNode(true);
+    
+    // Remove unwanted elements (like the footnote back-link)
+    const backLinks = clone.querySelectorAll('.footnote');
+    backLinks.forEach(link => link.remove());
+    
+    // Get clean text content
+    return clone.textContent || clone.innerText || '';
+  },
+  
+  // Extract clean HTML content from an element (preserving links)
+  extractHtmlContent(element) {
+    // Clone the element to avoid modifying the original
+    const clone = element.cloneNode(true);
+    
+    // Remove unwanted elements (like the footnote back-link)
+    const backLinks = clone.querySelectorAll('.footnote');
+    backLinks.forEach(link => link.remove());
+    
+    // Get clean HTML content
+    return clone.innerHTML || '';
+  },
+  
+  // Determine optimal tooltip position based on element location and screen size
+  getOptimalPosition(element) {
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // On wide screens (>=1200px), try to use the sidebar on the right of the
+    // main content, but only when the tooltip can actually fit there
+    if (viewportWidth >= 1200) {
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        const contentRect = mainContent.getBoundingClientRect();
+        const margin = 16; // 1rem gap
+        const available = viewportWidth - contentRect.right - margin;
+        const minRequired = 320; // Increased minimum required space
+        if (available >= minRequired) {
+          return 'wide-right';
+        }
+      }
+    }
+    
+    // On medium and small screens, use traditional positioning logic
+    if (rect.top < viewportHeight / 3) {
+      return 'bottom';  // Not enough space above
+    } else if (rect.left < viewportWidth / 4) {
+      return 'right';   // Too close to left edge
+    } else if (rect.right > viewportWidth * 3/4) {
+      return 'left';    // Too close to right edge
+    }
+    
+    return 'top';  // Default position
+  }
+};
+
+/* -----------------------------------------------------------------------------
+   Generic tooltip creation and management functions
+   ----------------------------------------------------------------------------- */
+
+// Advanced tooltip manager with real DOM elements
+const TooltipManager = {
+  activeTooltips: new Map(), // Track active tooltip states
+  
+  // Add tooltip to any element with HTML content
+  addTooltip(element, htmlContent, position = 'auto') {
+    if (!element || !htmlContent) return;
+    
+    // Check if tooltip already exists for this element
+    if (this.activeTooltips.has(element)) {
+      console.debug('Tooltip already exists for element, skipping creation');
+      return;
+    }
+    
+    const actualPosition = position === 'auto' ? 
+      TooltipUtils.getOptimalPosition(element) : position;
+    
+    // Create real DOM tooltip element
+    const tooltipElement = this.createTooltipElement(htmlContent, actualPosition);
+    
+    // Mark the trigger element
+    element.setAttribute('data-tooltip-trigger', 'true');
+    
+    // Position tooltip based on screen size and position
+    if (actualPosition === 'wide-right') {
+      // For wide-right positioning, append to body for fixed positioning
+      document.body.appendChild(tooltipElement);
+      // Store reference to the tooltip for cleanup
+      element._wideTooltip = tooltipElement;
+    } else {
+      // Standard positioning - append to trigger element
+      element.appendChild(tooltipElement);
+    }
+    
+    // Set up enhanced hover behavior
+    this.setupAdvancedHover(element, tooltipElement, actualPosition);
+  },
+  
+  // Create a real DOM tooltip element
+  createTooltipElement(htmlContent, position) {
+    const tooltip = document.createElement('div');
+    tooltip.className = `tooltip-element tooltip-${position}`;
+    
+    // Handle footnote-specific class
+    if (htmlContent.includes('footnote') || htmlContent.includes('<a')) {
+      tooltip.classList.add('footnote-element');
+    }
+    
+    // Set HTML content directly (preserving links)
+    tooltip.innerHTML = htmlContent;
+    
+    return tooltip;
+  },
+  
+  // Set up advanced hover behavior with delays and mouse tracking
+  setupAdvancedHover(triggerElement, tooltipElement, position) {
+    const tooltipState = {
+      triggerElement: triggerElement,
+      tooltipElement: tooltipElement,
+      position: position,
+      hideTimeout: null,
+      isVisible: false
+    };
+    
+    this.activeTooltips.set(triggerElement, tooltipState);
+    
+    // Show tooltip on trigger mouse enter
+    triggerElement.addEventListener('mouseenter', (e) => {
+      this.showTooltip(tooltipState, e);
+    });
+    
+    // Start hide timer on trigger mouse leave
+    triggerElement.addEventListener('mouseleave', (e) => {
+      this.startHideTimer(tooltipState, e);
+    });
+    
+    // Keep tooltip visible when hovering over tooltip itself
+    tooltipElement.addEventListener('mouseenter', () => {
+      if (tooltipState.hideTimeout) {
+        clearTimeout(tooltipState.hideTimeout);
+        tooltipState.hideTimeout = null;
+      }
+      // Ensure tooltip stays visible while mouse is inside (avoid duplicate calls)
+      if (!tooltipState.isVisible) {
+        tooltipState.isVisible = true;
+        tooltipElement.classList.add('tooltip-visible');
+      }
+    });
+    
+    // Hide tooltip when leaving tooltip
+    tooltipElement.addEventListener('mouseleave', () => {
+      this.startHideTimer(tooltipState);
+    });
+    
+    // Ensure links within tooltips work properly
+    tooltipElement.addEventListener('click', (e) => {
+      // Allow clicks on links within tooltips
+      if (e.target.tagName === 'A') {
+        e.stopPropagation();
+        // Keep tooltip open briefly after clicking a link
+        if (tooltipState.hideTimeout) {
+          clearTimeout(tooltipState.hideTimeout);
+        }
+        tooltipState.hideTimeout = setTimeout(() => {
+          this.hideTooltip(tooltipState);
+        }, 300); // Short delay after link click
+      }
+    });
+  },
+  
+  // Show tooltip immediately
+  showTooltip(tooltipState, event = null) {
+    // Close any other open tooltips first (but not this one)
+    this.closeAllTooltips(tooltipState.triggerElement);
+    
+    if (tooltipState.hideTimeout) {
+      clearTimeout(tooltipState.hideTimeout);
+      tooltipState.hideTimeout = null;
+    }
+    
+    // Prevent duplicate tooltips by checking if already visible
+    if (tooltipState.isVisible) {
+      return;
+    }
+    
+    // Ensure tooltip is hidden before positioning
+    tooltipState.tooltipElement.style.opacity = '0';
+    tooltipState.tooltipElement.style.visibility = 'hidden';
+    tooltipState.tooltipElement.classList.remove('tooltip-visible');
+    
+    // Position tooltip BEFORE making it visible to avoid animation
+    if (tooltipState.position === 'wide-right') {
+      this.positionWideRightTooltip(tooltipState.tooltipElement, tooltipState.triggerElement);
+    } else {
+      // For standard tooltips, ensure they stay within bounds
+      this.ensureTooltipWithinBounds(tooltipState.tooltipElement, tooltipState.triggerElement, tooltipState.position);
+    }
+    
+    // Double requestAnimationFrame to ensure layout is complete before showing
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        // Remove inline styles and add visible class
+        tooltipState.tooltipElement.style.opacity = '';
+        tooltipState.tooltipElement.style.visibility = '';
+        tooltipState.tooltipElement.classList.add('tooltip-visible');
+        tooltipState.isVisible = true;
+      });
+    });
+  },
+  
+  // Position wide-right tooltips vertically aligned with trigger element
+  positionWideRightTooltip(tooltipElement, triggerElement) {
+    const triggerRect = triggerElement.getBoundingClientRect();
+    const tooltipHeight = tooltipElement.offsetHeight || 200; // Fallback height
+    
+    // Horizontal placement - position to the right of main content
+    const mainContent = document.getElementById('main-content');
+    const viewportWidth = window.innerWidth;
+    const margin = 16; // 1rem
+    if (mainContent) {
+      const contentRect = mainContent.getBoundingClientRect();
+      const tooltipWidth = tooltipElement.offsetWidth || 320; // Fallback width
+      let leftPosition = contentRect.right + margin; // Just outside content
+      
+      // Ensure tooltip fits within available space and doesn't overlap content
+      const maxWidth = viewportWidth - leftPosition - margin;
+      if (tooltipWidth > maxWidth) {
+        // Constrain tooltip width to fit available space
+        tooltipElement.style.maxWidth = `${maxWidth}px`;
+      }
+      
+      // Final check - if still too wide, position at edge with margin
+      const finalWidth = Math.min(tooltipWidth, maxWidth);
+      if (leftPosition + finalWidth + margin > viewportWidth) {
+        leftPosition = viewportWidth - finalWidth - margin;
+      }
+      tooltipElement.style.left = `${leftPosition}px`;
+    }
+    
+    // Vertical placement - center on trigger element
+    let topPosition = triggerRect.top + (triggerRect.height / 2) - (tooltipHeight / 2);
+    
+    // Ensure tooltip stays within viewport
+    const viewportHeight = window.innerHeight;
+    const minTop = 20; // 20px from top
+    const maxTop = viewportHeight - tooltipHeight - 20; // 20px from bottom
+    
+    topPosition = Math.max(minTop, Math.min(topPosition, maxTop));
+    
+    // Apply vertical position
+    tooltipElement.style.top = `${topPosition}px`;
+  },
+  
+  // Ensure standard tooltips stay within content bounds
+  ensureTooltipWithinBounds(tooltipElement, triggerElement, position) {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Skip repositioning for wide screens (they use wide-right positioning)
+    if (viewportWidth >= 1200) return;
+    
+    // Temporarily make tooltip visible but transparent to measure
+    const originalOpacity = tooltipElement.style.opacity;
+    const originalPointerEvents = tooltipElement.style.pointerEvents;
+    tooltipElement.style.opacity = '0';
+    tooltipElement.style.pointerEvents = 'none';
+    tooltipElement.style.display = 'block';
+    
+    // Get tooltip dimensions
+    const tooltipRect = tooltipElement.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width || tooltipElement.offsetWidth || 320;
+    const tooltipHeight = tooltipRect.height || tooltipElement.offsetHeight || 200;
+    
+    // Restore original styles
+    tooltipElement.style.opacity = originalOpacity;
+    tooltipElement.style.pointerEvents = originalPointerEvents;
+    tooltipElement.style.display = '';
+    
+    // Get trigger element position
+    const triggerRect = triggerElement.getBoundingClientRect();
+    
+    // Universal positioning logic that works for all screen sizes
+    const margin = 10; // Minimum distance from viewport edges
+    
+    // Calculate ideal position based on tooltip type
+    let idealLeft, idealTop;
+    
+    if (position === 'top' || position === 'bottom') {
+      // Center horizontally on trigger
+      idealLeft = triggerRect.left + (triggerRect.width / 2) - (tooltipWidth / 2);
+      
+      if (position === 'top') {
+        idealTop = triggerRect.top - tooltipHeight - 10; // 10px gap
+      } else {
+        idealTop = triggerRect.bottom + 10; // 10px gap
+      }
+    } else if (position === 'left' || position === 'right') {
+      // Center vertically on trigger
+      idealTop = triggerRect.top + (triggerRect.height / 2) - (tooltipHeight / 2);
+      
+      if (position === 'left') {
+        idealLeft = triggerRect.left - tooltipWidth - 10; // 10px gap
+      } else {
+        idealLeft = triggerRect.right + 10; // 10px gap
+      }
+    }
+    
+    // Constrain to viewport bounds
+    let finalLeft = Math.max(margin, Math.min(idealLeft, viewportWidth - tooltipWidth - margin));
+    let finalTop = Math.max(margin, Math.min(idealTop, viewportHeight - tooltipHeight - margin));
+    
+    // Apply absolute positioning
+    tooltipElement.style.position = 'fixed';
+    tooltipElement.style.left = `${finalLeft}px`;
+    tooltipElement.style.top = `${finalTop}px`;
+    tooltipElement.style.right = 'auto';
+    tooltipElement.style.bottom = 'auto';
+    tooltipElement.style.transform = 'none';
+    
+    // Update arrow position to point to trigger
+    this.updateArrowPosition(tooltipElement, triggerRect, finalLeft, finalTop, tooltipWidth, tooltipHeight, position);
+  },
+  
+  // Update arrow position to point correctly at trigger
+  updateArrowPosition(tooltipElement, triggerRect, tooltipLeft, tooltipTop, tooltipWidth, tooltipHeight, position) {
+    // Create or get arrow pseudo-element styles
+    const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
+    tooltipElement.setAttribute('data-tooltip-id', tooltipId);
+    
+    // Remove existing arrow style if any
+    const existingStyle = tooltipElement.querySelector('style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    // Calculate arrow position
+    let arrowStyle = '';
+    
+    if (position === 'top' || position === 'bottom') {
+      // Horizontal arrow position
+      const triggerCenterX = triggerRect.left + (triggerRect.width / 2);
+      const arrowX = triggerCenterX - tooltipLeft;
+      const arrowXPercent = (arrowX / tooltipWidth) * 100;
+      const clampedPercent = Math.max(10, Math.min(90, arrowXPercent));
+      
+      arrowStyle = `
+        [data-tooltip-id="${tooltipId}"]::after {
+          left: ${clampedPercent}% !important;
+          transform: translateX(-50%) !important;
+        }
+      `;
+    } else if (position === 'left' || position === 'right') {
+      // Vertical arrow position
+      const triggerCenterY = triggerRect.top + (triggerRect.height / 2);
+      const arrowY = triggerCenterY - tooltipTop;
+      const arrowYPercent = (arrowY / tooltipHeight) * 100;
+      const clampedPercent = Math.max(10, Math.min(90, arrowYPercent));
+      
+      arrowStyle = `
+        [data-tooltip-id="${tooltipId}"]::after {
+          top: ${clampedPercent}% !important;
+          transform: translateY(-50%) !important;
+        }
+      `;
+    }
+    
+    // Apply arrow style
+    if (arrowStyle) {
+      const styleElement = document.createElement('style');
+      styleElement.textContent = arrowStyle;
+      tooltipElement.appendChild(styleElement);
+    }
+  },
+  
+  // Start the hide timer (with generous delays to allow interaction)
+  startHideTimer(tooltipState, event = null) {
+    // Base delays: longer for wide-right tooltips since they're farther away
+    let delay = tooltipState.position === 'wide-right' ? 2000 : 1500;
+    
+    if (event && tooltipState.position !== 'wide-right') {
+      // Check if mouse is moving towards tooltip area (only for standard positioning)
+      const rect = tooltipState.triggerElement.getBoundingClientRect();
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+      
+      const isMovingTowardTooltip = this.isMouseMovingTowardTooltip(rect, mouseX, mouseY, tooltipState.position);
+      
+      // Generous delay to allow mouse movement to tooltip
+      delay = isMovingTowardTooltip ? 500 : 1500;
+    }
+    
+    // For wide-right tooltips, always use a generous delay
+    if (tooltipState.position === 'wide-right') {
+      delay = 2000;
+    }
+    
+    tooltipState.hideTimeout = setTimeout(() => {
+      this.hideTooltip(tooltipState);
+    }, delay);
+  },
+  
+  // Hide tooltip
+  hideTooltip(tooltipState) {
+    tooltipState.tooltipElement.classList.remove('tooltip-visible');
+    tooltipState.isVisible = false;
+    tooltipState.hideTimeout = null;
+  },
+  
+  // Close all tooltips except the specified one
+  closeAllTooltips(exceptElement = null) {
+    this.activeTooltips.forEach((tooltipState, element) => {
+      if (element !== exceptElement && tooltipState.isVisible) {
+        if (tooltipState.hideTimeout) {
+          clearTimeout(tooltipState.hideTimeout);
+          tooltipState.hideTimeout = null;
+        }
+        this.hideTooltip(tooltipState);
+      }
+    });
+  },
+  
+  // Check if mouse is moving toward tooltip area (for standard positioning)
+  isMouseMovingTowardTooltip(elementRect, mouseX, mouseY, position) {
+    if (position === 'wide-right') return false; // Not applicable for wide-right positioning
+    
+    const margin = 20; // Pixels of margin around tooltip area
+    
+    switch(position) {
+      case 'top':
+        return mouseY < elementRect.top && 
+               mouseX >= elementRect.left - margin && 
+               mouseX <= elementRect.right + margin;
+      case 'bottom':
+        return mouseY > elementRect.bottom && 
+               mouseX >= elementRect.left - margin && 
+               mouseX <= elementRect.right + margin;
+      case 'left':
+        return mouseX < elementRect.left && 
+               mouseY >= elementRect.top - margin && 
+               mouseY <= elementRect.bottom + margin;
+      case 'right':
+        return mouseX > elementRect.right && 
+               mouseY >= elementRect.top - margin && 
+               mouseY <= elementRect.bottom + margin;
+      default:
+        return false;
+    }
+  },
+  
+  // Remove tooltip from element
+  removeTooltip(element) {
+    if (!element) return;
+    
+    const tooltipState = this.activeTooltips.get(element);
+    if (tooltipState) {
+      if (tooltipState.hideTimeout) {
+        clearTimeout(tooltipState.hideTimeout);
+      }
+      
+      // Remove the tooltip element itself
+      if (tooltipState.tooltipElement && tooltipState.tooltipElement.parentNode) {
+        tooltipState.tooltipElement.parentNode.removeChild(tooltipState.tooltipElement);
+      }
+      
+      // Remove wide tooltip from document body if it exists
+      if (element._wideTooltip && element._wideTooltip.parentNode) {
+        element._wideTooltip.parentNode.removeChild(element._wideTooltip);
+        delete element._wideTooltip;
+      }
+      
+      if (tooltipState.cleanupListeners) {
+        tooltipState.cleanupListeners();
+      }
+      this.activeTooltips.delete(element);
+    }
+    
+    element.removeAttribute('data-tooltip');
+    element.removeAttribute('data-tooltip-position');
+    element.removeAttribute('data-tooltip-trigger');
+  },
+  
+  // Update existing tooltip text
+  updateTooltip(element, newText) {
+    if (!element || !element.hasAttribute('data-tooltip-trigger')) return;
+    
+    const tooltipState = this.activeTooltips.get(element);
+    if (tooltipState && tooltipState.tooltipElement) {
+      const cleanText = TooltipUtils.sanitizeText(newText);
+      tooltipState.tooltipElement.innerHTML = cleanText;
+    }
+  },
+  
+  // Handle window resize to reposition tooltips appropriately
+  handleResize() {
+    // Check if any tooltips need repositioning due to screen size change
+    this.activeTooltips.forEach((tooltipState, element) => {
+      const shouldBeWideRight = TooltipUtils.getOptimalPosition(element) === 'wide-right';
+      const isWideRight = tooltipState.position === 'wide-right';
+      
+      // If positioning should change, recreate the tooltip
+      if (shouldBeWideRight !== isWideRight) {
+        const htmlContent = tooltipState.tooltipElement.innerHTML;
+        this.removeTooltip(element);
+        this.addTooltip(element, htmlContent, 'auto');
+      }
+    });
+  }
+};
+
+// Handle window resize events
+window.addEventListener('resize', () => {
+  TooltipManager.handleResize();
+});
+
+/* -----------------------------------------------------------------------------
+   Automatic footnote detection and tooltip creation
+   ----------------------------------------------------------------------------- */
+
+// Footnote tooltip automation
+function initFootnoteTooltips() {
+  console.debug('Initializing footnote tooltips...');
+  
+  // Find all footnote references in the document
+  const footnoteRefs = document.querySelectorAll('.footnote-ref a[href^="#fn-"]');
+  let tooltipsAdded = 0;
+  
+  footnoteRefs.forEach(refLink => {
+    try {
+      // Extract footnote ID from href (e.g., "#fn-13" -> "fn-13")
+      const href = refLink.getAttribute('href');
+      if (!href || !href.startsWith('#fn-')) return;
+      
+      const footnoteId = href.substring(1); // Remove the '#'
+      
+      // Find the corresponding footnote element
+      const footnoteElement = document.getElementById(footnoteId);
+      if (!footnoteElement) {
+        console.debug(`Footnote element not found for ID: ${footnoteId}`);
+        return;
+      }
+      
+      // Extract clean HTML content from the footnote (preserving links)
+      const footnoteHtml = TooltipUtils.extractHtmlContent(footnoteElement);
+      const footnoteText = TooltipUtils.extractTextContent(footnoteElement);
+      
+      if (!footnoteText || footnoteText.length < 5) {
+        console.debug(`Footnote text too short or empty for ID: ${footnoteId}`);
+        return;
+      }
+      
+      // Truncate very long footnotes for tooltip display (preserve HTML structure)
+      const maxLength = 400; // Slightly longer for HTML content
+      let displayContent;
+      if (footnoteText.length > maxLength) {
+        // Create a truncated version while trying to preserve HTML structure
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = footnoteHtml;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        if (textContent.length > maxLength) {
+          // If still too long, truncate the text and add ellipsis
+          tempDiv.textContent = textContent.substring(0, maxLength) + '...';
+          displayContent = tempDiv.innerHTML;
+        } else {
+          displayContent = footnoteHtml;
+        }
+      } else {
+        displayContent = footnoteHtml;
+      }
+      
+      // Add tooltip to the footnote reference link
+      TooltipManager.addTooltip(refLink, displayContent, 'auto');
+      tooltipsAdded++;
+      
+      console.debug(`Added tooltip for footnote ${footnoteId}: "${footnoteText.substring(0, 50)}..."`);
+      
+    } catch (error) {
+      console.error('Error processing footnote reference:', refLink, error);
+    }
+  });
+  
+  console.debug(`Footnote tooltips initialized: ${tooltipsAdded} tooltips added`);
+  return tooltipsAdded;
+}
+
+// Enhanced initialization with error handling and debugging
+function initTooltips() {
+  console.debug('Starting tooltip initialization...');
+  
+  try {
+    // Initialize footnote tooltips
+    const footnoteCount = initFootnoteTooltips();
+    
+    // Add any other tooltip initialization here in the future
+    // e.g., initLinkPreviewTooltips(), initGlossaryTooltips(), etc.
+    
+    console.debug(`Tooltip initialization complete. Total footnote tooltips: ${footnoteCount}`);
+    
+  } catch (error) {
+    console.error('Error during tooltip initialization:', error);
+  }
+}
+
+// Initialize tooltips when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTooltips);
+} else {
+  // DOM is already loaded
+  initTooltips();
+} 
