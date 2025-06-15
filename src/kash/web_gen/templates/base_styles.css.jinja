@@ -68,6 +68,14 @@
 }
 {% endblock scrollbar_styles %}
 
+{% block html_styles %}
+/* Prevent horizontal overflow at the root level */
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+{% endblock html_styles %}
+
 {% block body_styles %}
 body {
   font-family: var(--font-serif);
@@ -541,8 +549,8 @@ sup {
     /* Need to compensate for both content margin AND long-text padding */
     margin-left: calc(-1 * (var(--content-margin-left) + var(--long-text-padding)));
     
-    /* Width from content's text edge (without padding) to 3rem from right viewport edge */
-    width: calc(100vw - var(--content-min-gap) - var(--toc-width) - var(--table-right-margin) - var(--long-text-padding));
+    /* Table bleeds wide as can fit */
+    width: calc(100vw - var(--content-text-viewport-left) - var(--table-right-margin));
     max-width: none;
   }
   

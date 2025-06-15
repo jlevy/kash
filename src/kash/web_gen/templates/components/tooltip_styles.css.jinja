@@ -32,6 +32,7 @@
   
   /* Mobile specific */
   --tooltip-mobile-padding: 0.75rem 1rem;
+  --tooltip-mobile-max-width: 48rem; /* Maximum width for mobile tooltips */
   
   /* Transitions */
   --tooltip-transition-duration: 0.6s;
@@ -289,6 +290,19 @@
   transform: none !important;
   margin: 0;
   
+  /* Width handled by JS (calc(100vw - 2rem)) */
+  box-sizing: border-box;
+  width: calc(100vw - 2rem) !important;
+  
+  /* Content constraints */
+  max-width: none !important;
+  /* Dynamic padding: at least 1rem, but increases to center content within 40rem max */
+  padding-left: max(1rem, calc((100% - 40rem) / 2)) !important;
+  padding-right: max(1rem, calc((100% - 40rem) / 2)) !important;
+  
+  /* Left align text for readability */
+  text-align: left;
+  
   /* Use same shadow as wide-right for consistency */
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -436,7 +450,7 @@
 }
 
 /* Medium screens - use standard positioning with constrained width */
-@media (min-width: 768px) and (max-width: 1199px) {
+@media (min-width: 641px) and (max-width: 1199px) {
   .tooltip-element {
     /* Constrain width to fit within content area */
     max-width: min(var(--tooltip-max-width), calc(100vw - 4rem));
@@ -448,8 +462,8 @@
   }
 }
 
-/* Small screens - mobile optimizations */
-@media (max-width: 767px) {
+/* Narrow screens - bottom-centered tooltips (640px and below) */
+@media (max-width: 640px) {
   .tooltip-element {
     /* Ensure readable font size on mobile */
     font-size: var(--font-size-small);
@@ -461,9 +475,8 @@
     box-sizing: border-box;
   }
   
-  /* Ensure footnote tooltips also respect mobile constraints */
-  .footnote-element {
+  /* Non-mobile-bottom tooltips should still be constrained on narrow screens */
+  .tooltip-element:not(.tooltip-mobile-bottom) {
     max-width: min(var(--tooltip-max-width), calc(100vw - 2rem)) !important;
-    min-width: var(--tooltip-min-width) !important;
   }
 } 

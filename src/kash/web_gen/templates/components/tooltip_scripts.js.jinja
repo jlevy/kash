@@ -27,11 +27,13 @@ const TOOLTIP_CONFIG = {
     defaultWidth: 320,   // Fallback tooltip width
     defaultHeight: 200,  // Fallback tooltip height
     minWideRightWidth: 320, // Minimum space needed for wide-right
+    mobileMaxWidth: 768, // Maximum width for mobile tooltips (48rem = 768px at 16px base)
   },
   
   // Breakpoints (match CSS breakpoints)
   breakpoints: {
-    mobile: 768,         // Mobile breakpoint
+    mobile: 640,         // Mobile breakpoint (actual mobile devices)
+    tablet: 768,         // Tablet breakpoint
     wide: 1200,          // Wide screen breakpoint
   },
   
@@ -131,10 +133,15 @@ const TooltipManager = {
     // Mark the trigger element
     element.setAttribute('data-tooltip-trigger', 'true');
     
+    // Determine if we should append to body
+    const viewportWidth = window.innerWidth;
+    const shouldAppendToBody = actualPosition === 'wide-right' || 
+                              viewportWidth <= TOOLTIP_CONFIG.breakpoints.mobile;
+    
     // Append tooltip to appropriate parent
-    if (actualPosition === 'wide-right') {
+    if (shouldAppendToBody) {
       document.body.appendChild(tooltipElement);
-      element._wideTooltip = tooltipElement; // Store reference for cleanup
+      element._bodyTooltip = tooltipElement; // Store reference for cleanup
     } else {
       element.appendChild(tooltipElement);
     }
@@ -346,9 +353,9 @@ const TooltipManager = {
     const dimensions = this.measureTooltip(tooltipElement);
     const triggerRect = triggerElement.getBoundingClientRect();
     
-    // Handle mobile vs medium screens
-    if (viewportWidth < TOOLTIP_CONFIG.breakpoints.mobile) {
-      this.positionMobileTooltip(tooltipElement, dimensions.width, viewportWidth);
+    // Use bottom-centered positioning for narrow screens
+    if (viewportWidth <= TOOLTIP_CONFIG.breakpoints.mobile) {
+      this.positionBottomCenteredTooltip(tooltipElement, dimensions.width, viewportWidth);
     } else {
       this.positionMediumTooltip(tooltipElement, triggerRect, dimensions, viewportWidth, viewportHeight);
     }
@@ -379,22 +386,19 @@ const TooltipManager = {
     return dimensions;
   },
   
-  // Position tooltip for mobile screens
-  positionMobileTooltip(tooltipElement, tooltipWidth, viewportWidth) {
-    const margin = TOOLTIP_CONFIG.spacing.viewportMargin;
-    const maxWidth = Math.min(tooltipWidth, viewportWidth - (2 * margin));
+  // Position tooltip at bottom center for narrow screens
+  positionBottomCenteredTooltip(tooltipElement, tooltipWidth, viewportWidth) {
+    // Simple approach: full viewport width minus margins
+    const margin = 16; // 1rem margin on all sides
     
-    if (tooltipWidth > maxWidth) {
-      tooltipElement.style.maxWidth = `${maxWidth}px`;
-    }
+    // Set tooltip to use viewport width minus margins
+    tooltipElement.style.width = `calc(100vw - ${2 * margin}px)`;
+    tooltipElement.style.maxWidth = 'none';
     
-    const finalWidth = Math.min(tooltipWidth, maxWidth);
-    const finalLeft = (viewportWidth - finalWidth) / 2;
-    
-    // Apply positioning
+    // Apply positioning - 1rem from left and bottom
     Object.assign(tooltipElement.style, {
       position: 'fixed',
-      left: `${finalLeft}px`,
+      left: `${margin}px`,
       right: 'auto',
       bottom: `${margin}px`,
       top: 'auto',
@@ -602,10 +606,10 @@ const TooltipManager = {
       tooltipState.tooltipElement.parentNode.removeChild(tooltipState.tooltipElement);
     }
     
-    // Remove wide tooltip reference
-    if (element._wideTooltip?.parentNode) {
-      element._wideTooltip.parentNode.removeChild(element._wideTooltip);
-      delete element._wideTooltip;
+    // Remove tooltip reference
+    if (element._bodyTooltip?.parentNode) {
+      element._bodyTooltip.parentNode.removeChild(element._bodyTooltip);
+      delete element._bodyTooltip;
     }
     
     // Cleanup listeners
