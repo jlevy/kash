@@ -147,6 +147,22 @@ Always use full type annotations, generics, and other modern practices.
     binary = "binary"
   ```
 
+## Guidelines for Formatting Literal strings
+
+- For multi-line strings NEVER put multi-line strings flush against the left margin.
+  ALWAYS use a `dedent()` function to make it more readable.
+  You may wish to add a `strip()` as well.
+  Example:
+  ```python
+  from textwrap import dedent
+  markdown_content = dedent("""
+      # Title 1
+      Some text.
+      ## Subtitle 1.1
+      More text.
+      """).strip()
+  ```
+
 ## Guidelines for Docstrings
 
 - Here is an example of the correct style for docstrings:

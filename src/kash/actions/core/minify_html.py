@@ -30,12 +30,12 @@ def minify_html(item: Item) -> Item:
     ws = current_ws()
     input_path = ws.base_dir / item.store_path
 
-    output_item = item.derived_copy(format=Format.html)
+    output_item = item.derived_copy(format=Format.html, body=None)
     output_path = ws.target_path_for(output_item)
 
     minify_tw_html(input_path, output_path)
 
-    # Indicate item is already saved.
-    output_item.external_path = str(output_path)
+    output_item.body = output_path.read_text()
+    output_item.external_path = str(output_path)  # Indicate item is already saved.
 
     return output_item
