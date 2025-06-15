@@ -88,9 +88,35 @@ function initTOC() {
     const tocBackdrop = document.getElementById('toc-backdrop');
     let scrollPosition = 0;
     
+    // Calculate scrollbar width
+    const getScrollbarWidth = () => {
+      // Create a temporary div with scrollbar
+      const outer = document.createElement('div');
+      outer.style.visibility = 'hidden';
+      outer.style.overflow = 'scroll';
+      outer.style.msOverflowStyle = 'scrollbar';
+      document.body.appendChild(outer);
+      
+      // Add inner div
+      const inner = document.createElement('div');
+      outer.appendChild(inner);
+      
+      // Calculate scrollbar width
+      const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+      
+      // Clean up
+      outer.parentNode.removeChild(outer);
+      
+      return scrollbarWidth;
+    };
+    
     const openTOC = () => {
       // Save current scroll position
       scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Calculate scrollbar width and add padding to prevent shift
+      const scrollbarWidth = getScrollbarWidth();
+      const hasVerticalScrollbar = document.documentElement.scrollHeight > window.innerHeight;
       
       // Add classes to show TOC and prevent body scroll
       tocContainer.classList.add('mobile-visible');
@@ -99,6 +125,11 @@ function initTOC() {
       
       // Set body position to maintain scroll position while fixed
       document.body.style.top = `-${scrollPosition}px`;
+      
+      // Add padding to compensate for scrollbar removal (only if there was a scrollbar)
+      if (hasVerticalScrollbar && scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
     };
     
     const closeTOC = () => {
@@ -109,6 +140,7 @@ function initTOC() {
       
       // Restore body position and scroll
       document.body.style.top = '';
+      document.body.style.paddingRight = '';
       window.scrollTo(0, scrollPosition);
     };
     
@@ -139,6 +171,37 @@ function initTOC() {
     tocContainer.addEventListener('touchmove', (e) => {
       e.stopPropagation();
     }, { passive: false });
+    
+    // Additional scroll prevention for iOS and other edge cases
+    let touchStartY = 0;
+    
+    // Track touch start position
+    tocContainer.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    // Prevent overscroll on TOC container
+    tocContainer.addEventListener('touchmove', (e) => {
+      const touchY = e.touches[0].clientY;
+      const scrollTop = tocContainer.scrollTop;
+      const scrollHeight = tocContainer.scrollHeight;
+      const height = tocContainer.clientHeight;
+      const isScrollingUp = touchY > touchStartY;
+      const isScrollingDown = touchY < touchStartY;
+      
+      // Prevent scroll when at boundaries
+      if ((isScrollingUp && scrollTop <= 0) || 
+          (isScrollingDown && scrollTop + height >= scrollHeight)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+    
+    // Prevent any scrolling on the backdrop
+    if (tocBackdrop) {
+      tocBackdrop.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+    }
   }
   
   // Add smooth scrolling and active state management

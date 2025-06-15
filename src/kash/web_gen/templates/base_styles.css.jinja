@@ -449,6 +449,9 @@ tbody tr:nth-child(even) {
   /* Default: center tables within their container */
   left: 50%;
   transform: translateX(-50%);
+  /* Prevent container from expanding beyond its content area */
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* When TOC is present, simplify table container positioning */
@@ -506,6 +509,9 @@ sup {
   }
   .table-container {
     width: calc(100vw - 6rem);
+    /* Ensure container doesn't expand beyond its width */
+    max-width: calc(100vw - 6rem);
+    contain: layout inline-size;
   }
   
   /* Apply shadow to long-text containers on larger screens */
@@ -551,7 +557,12 @@ sup {
     
     /* Table bleeds wide as can fit */
     width: calc(100vw - var(--content-text-viewport-left) - var(--table-right-margin));
-    max-width: none;
+    max-width: calc(100vw - var(--content-text-viewport-left) - var(--table-right-margin));
+    
+    /* Ensure horizontal scroll works properly without expanding container */
+    overflow-x: auto;
+    overflow-y: visible;
+    contain: layout inline-size;
   }
   
   .content-with-toc.has-toc table {
@@ -594,13 +605,18 @@ sup {
   
   /* Make table containers scrollable without affecting page layout */
   .table-container {
+    width: calc(100vw - 3rem);  /* Fixed width instead of max-width */
     max-width: calc(100vw - 3rem);
     overflow-x: auto;
+    overflow-y: visible;  /* Ensure vertical overflow is not hidden */
     transform: none;
     left: 0;
     position: relative;
     margin-left: auto;
     margin-right: auto;
+    /* Prevent container from expanding beyond its width */
+    box-sizing: border-box;
+    contain: layout inline-size;  /* CSS containment to prevent width expansion */
   }
   
   table {

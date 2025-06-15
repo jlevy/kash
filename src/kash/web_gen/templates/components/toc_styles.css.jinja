@@ -165,10 +165,32 @@ body.toc-open {
   overflow: hidden;
   position: fixed;
   width: 100%;
+  /* Prevent iOS bounce scrolling on body */
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
 }
 
 /* Mobile TOC Layout */
 @media (max-width: {{ toc_breakpoint | default(1200) - 1 }}px) {
+  /* TOC backdrop - semi-transparent overlay */
+  .toc-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 199; /* Below TOC container (200) but above everything else */
+    
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    
+    /* Smooth transition */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  }
+  
   /* Specific positioning and z-index for TOC toggle */
   .toc-toggle {
     left: 1rem;
@@ -189,6 +211,10 @@ body.toc-open {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    /* Prevent any scrolling or touch interaction on backdrop */
+    touch-action: none;
+    -webkit-overflow-scrolling: auto;
+    overflow: hidden;
   }
   
   /* Mobile TOC state: always rendered but hidden by default */
@@ -208,8 +234,12 @@ body.toc-open {
     
     /* Ensure TOC itself is scrollable */
     overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scroll */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     overscroll-behavior: contain; /* Prevent scroll chaining */
+    
+    /* Ensure touch scrolling works properly */
+    touch-action: pan-y;
     
     /* Initial hidden state for mobile FOUC and animation */
     opacity: 0;
