@@ -81,6 +81,12 @@ const TooltipUtils = {
   getOptimalPosition(element) {
     const viewportWidth = window.innerWidth;
     
+    // Check if element is inside a table - if so, always use bottom-right positioning
+    // Tables often bleed to the right edge, making wide-right positioning problematic
+    if (element.closest('table')) {
+      return 'bottom-right';
+    }
+    
     // On wide screens, try to use the sidebar on the right of the main content
     if (viewportWidth >= TOOLTIP_CONFIG.breakpoints.wide) {
       const mainContent = document.getElementById('main-content');
