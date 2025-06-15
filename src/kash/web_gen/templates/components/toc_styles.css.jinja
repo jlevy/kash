@@ -197,7 +197,10 @@ body.toc-open {
     z-index: 101;
     opacity: 0; /* Hidden by default */
     visibility: hidden; /* Start hidden for FOUC prevention on mobile */
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out, 
+                visibility 0.3s ease-in-out,
+                background-color 0.4s ease-in-out,
+                color 0.4s ease-in-out;
   }
   
   /* Show TOC toggle when user has scrolled past top */
