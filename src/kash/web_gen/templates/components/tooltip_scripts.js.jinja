@@ -103,7 +103,7 @@ const TooltipManager = {
       element.appendChild(tooltipElement);
     }
     
-    // Set up enhanced hover behavior
+    // Set up advanced hover behavior
     this.setupAdvancedHover(element, tooltipElement, actualPosition);
   },
   
@@ -129,20 +129,42 @@ const TooltipManager = {
       triggerElement: triggerElement,
       tooltipElement: tooltipElement,
       position: position,
+      showTimeout: null,  // Add show timeout
       hideTimeout: null,
       isVisible: false
     };
     
     this.activeTooltips.set(triggerElement, tooltipState);
     
-    // Show tooltip on trigger mouse enter
+    // Show tooltip after delay on trigger mouse enter
     triggerElement.addEventListener('mouseenter', (e) => {
-      this.showTooltip(tooltipState, e);
+      // Cancel any pending hide
+      if (tooltipState.hideTimeout) {
+        clearTimeout(tooltipState.hideTimeout);
+        tooltipState.hideTimeout = null;
+      }
+      
+      // Start show timer
+      if (!tooltipState.isVisible && !tooltipState.showTimeout) {
+        tooltipState.showTimeout = setTimeout(() => {
+          tooltipState.showTimeout = null;
+          this.showTooltip(tooltipState, e);
+        }, 500);
+      }
     });
     
-    // Start hide timer on trigger mouse leave
+    // Cancel show timer and start hide timer on trigger mouse leave
     triggerElement.addEventListener('mouseleave', (e) => {
-      this.startHideTimer(tooltipState, e);
+      // Cancel any pending show
+      if (tooltipState.showTimeout) {
+        clearTimeout(tooltipState.showTimeout);
+        tooltipState.showTimeout = null;
+      }
+      
+      // Start hide timer if tooltip is visible
+      if (tooltipState.isVisible) {
+        this.startHideTimer(tooltipState, e);
+      }
     });
     
     // Keep tooltip visible when hovering over tooltip itself
@@ -151,16 +173,14 @@ const TooltipManager = {
         clearTimeout(tooltipState.hideTimeout);
         tooltipState.hideTimeout = null;
       }
-      // Ensure tooltip stays visible while mouse is inside (avoid duplicate calls)
-      if (!tooltipState.isVisible) {
-        tooltipState.isVisible = true;
-        tooltipElement.classList.add('tooltip-visible');
-      }
+      // Note: Don't set isVisible here - let showTooltip handle that
     });
     
     // Hide tooltip when leaving tooltip
     tooltipElement.addEventListener('mouseleave', () => {
-      this.startHideTimer(tooltipState);
+      if (tooltipState.isVisible) {
+        this.startHideTimer(tooltipState);
+      }
     });
     
     // Ensure links within tooltips work properly
@@ -179,10 +199,10 @@ const TooltipManager = {
     });
   },
   
-  // Show tooltip immediately
+  // Show tooltip with coordination of other tooltips
   showTooltip(tooltipState, event = null) {
-    // Close any other open tooltips first (but not this one)
-    this.closeAllTooltips(tooltipState.triggerElement);
+    // Close any other open tooltips with delay
+    this.closeAllTooltipsWithDelay(tooltipState.triggerElement);
     
     if (tooltipState.hideTimeout) {
       clearTimeout(tooltipState.hideTimeout);
@@ -294,7 +314,47 @@ const TooltipManager = {
     const margin = 10; // Minimum distance from viewport edges
     const gap = 10; // Gap between trigger and tooltip
     
-    // For medium/narrow screens, always try bottom-right first
+    // Special handling for narrow screens (< 768px) - fixed bottom positioning
+    if (viewportWidth < 768) {
+      // Position at bottom of viewport, centered
+      const maxTooltipWidth = Math.min(tooltipWidth, viewportWidth - (2 * margin));
+      
+      // Update max-width if needed
+      if (tooltipWidth > maxTooltipWidth) {
+        tooltipElement.style.maxWidth = `${maxTooltipWidth}px`;
+      }
+      
+      // Calculate centered position
+      const finalWidth = Math.min(tooltipWidth, maxTooltipWidth);
+      const finalLeft = (viewportWidth - finalWidth) / 2;
+      const finalBottom = margin;
+      
+      // Apply fixed bottom positioning
+      tooltipElement.style.position = 'fixed';
+      tooltipElement.style.left = `${finalLeft}px`;
+      tooltipElement.style.right = 'auto';
+      tooltipElement.style.bottom = `${finalBottom}px`;
+      tooltipElement.style.top = 'auto';
+      tooltipElement.style.transform = 'none';
+      
+      // Remove all position classes and add mobile-specific class
+      const positionClasses = ['bottom-right', 'top-right', 'bottom-left', 'top-left', 'bottom', 'top', 'left', 'right'];
+      positionClasses.forEach(cls => {
+        tooltipElement.classList.remove(`tooltip-${cls}`);
+      });
+      tooltipElement.classList.add('tooltip-mobile-bottom');
+      
+      // No arrow for mobile bottom positioning
+      const existingStyle = tooltipElement.querySelector('style');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      
+      return; // Exit early for mobile
+    }
+    
+    // Medium screens (768px - 1199px) 
+    // For medium screens, always try bottom-right first
     let idealLeft = triggerRect.left; // Align left edge of tooltip with left edge of trigger
     let idealTop = triggerRect.bottom + gap;
     
@@ -324,7 +384,7 @@ const TooltipManager = {
     const actualPosition = fitsBelow ? 'bottom-right' : 'top-right';
     
     // Remove only position-related classes (bottom-right, top-right, etc.)
-    const positionClasses = ['bottom-right', 'top-right', 'bottom-left', 'top-left', 'bottom', 'top', 'left', 'right'];
+    const positionClasses = ['bottom-right', 'top-right', 'bottom-left', 'top-left', 'bottom', 'top', 'left', 'right', 'mobile-bottom'];
     positionClasses.forEach(cls => {
       tooltipElement.classList.remove(`tooltip-${cls}`);
     });
@@ -428,12 +488,18 @@ const TooltipManager = {
   
   // Hide tooltip
   hideTooltip(tooltipState) {
+    // Cancel any pending show
+    if (tooltipState.showTimeout) {
+      clearTimeout(tooltipState.showTimeout);
+      tooltipState.showTimeout = null;
+    }
+    
     tooltipState.tooltipElement.classList.remove('tooltip-visible');
     tooltipState.isVisible = false;
     tooltipState.hideTimeout = null;
   },
   
-  // Close all tooltips except the specified one
+  // Close all tooltips except the specified one (immediate - used for cleanup)
   closeAllTooltips(exceptElement = null) {
     this.activeTooltips.forEach((tooltipState, element) => {
       if (element !== exceptElement && tooltipState.isVisible) {
@@ -441,7 +507,31 @@ const TooltipManager = {
           clearTimeout(tooltipState.hideTimeout);
           tooltipState.hideTimeout = null;
         }
+        if (tooltipState.showTimeout) {
+          clearTimeout(tooltipState.showTimeout);
+          tooltipState.showTimeout = null;
+        }
         this.hideTooltip(tooltipState);
+      }
+    });
+  },
+  
+  // Close all tooltips with delay when showing a new one
+  closeAllTooltipsWithDelay(exceptElement = null) {
+    this.activeTooltips.forEach((tooltipState, element) => {
+      if (element !== exceptElement) {
+        // Cancel any pending show
+        if (tooltipState.showTimeout) {
+          clearTimeout(tooltipState.showTimeout);
+          tooltipState.showTimeout = null;
+        }
+        
+        // If visible, hide with delay
+        if (tooltipState.isVisible && !tooltipState.hideTimeout) {
+          tooltipState.hideTimeout = setTimeout(() => {
+            this.hideTooltip(tooltipState);
+          }, 500);
+        }
       }
     });
   },
@@ -449,6 +539,9 @@ const TooltipManager = {
   // Check if mouse is moving toward tooltip area (for standard positioning)
   isMouseMovingTowardTooltip(elementRect, mouseX, mouseY, position) {
     if (position === 'wide-right') return false; // Not applicable for wide-right positioning
+    
+    // For mobile bottom positioning, always return false since it's far from trigger
+    if (position === 'mobile-bottom') return false;
     
     const margin = 20; // Pixels of margin around tooltip area
     
@@ -472,8 +565,12 @@ const TooltipManager = {
     
     const tooltipState = this.activeTooltips.get(element);
     if (tooltipState) {
+      // Clear all timeouts
       if (tooltipState.hideTimeout) {
         clearTimeout(tooltipState.hideTimeout);
+      }
+      if (tooltipState.showTimeout) {
+        clearTimeout(tooltipState.showTimeout);
       }
       
       // Remove the tooltip element itself

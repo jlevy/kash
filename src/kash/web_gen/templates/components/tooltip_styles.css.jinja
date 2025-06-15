@@ -7,7 +7,7 @@
   position: relative;
 }
 
-/* Tooltip element (real DOM element) */
+/* Base tooltip element - ALL tooltips inherit these styles */
 .tooltip-element {
   position: absolute;
   visibility: hidden;
@@ -28,7 +28,7 @@
   font-size: var(--font-size-small);
   line-height: 1.4;
   padding: 0.5rem 0.75rem;
-  border-radius: 0;
+  border-radius: 0; /* Square corners for all tooltips */
   
   /* Sizing and text handling */
   width: max-content;
@@ -41,7 +41,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Tooltip arrow */
+/* Tooltip arrow - base styles */
 .tooltip-element::after {
   content: '';
   position: absolute;
@@ -237,7 +237,33 @@
 }
 
 /* -----------------------------------------------------------------------------
-   Footnote-Specific Tooltips
+   Mobile Bottom Positioning
+   ----------------------------------------------------------------------------- */
+
+/* Mobile-specific bottom positioning */
+.tooltip-element.tooltip-mobile-bottom {
+  /* Position handled by JS, but ensure fixed positioning */
+  position: fixed !important;
+  /* No transform needed */
+  transform: none !important;
+  margin: 0;
+  
+  /* Use same shadow as wide-right for consistency */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Remove arrow for mobile bottom tooltips */
+.tooltip-element.tooltip-mobile-bottom::after {
+  display: none;
+}
+
+/* Ensure mobile tooltips are visible when active */
+.tooltip-element.tooltip-mobile-bottom.tooltip-visible {
+  transform: none !important;
+}
+
+/* -----------------------------------------------------------------------------
+   Footnote-Specific Tooltips (extends base tooltip styling)
    ----------------------------------------------------------------------------- */
 
 /* Footnote reference styling */
@@ -249,7 +275,7 @@
   color: var(--color-primary-light);
 }
 
-/* Enhanced footnote tooltip styling */
+/* Enhanced footnote tooltip styling - only overrides what's different */
 .footnote-element {
   /* Larger max-width for footnote content */
   max-width: 25rem;
@@ -257,7 +283,6 @@
   /* Better typography for longer footnote text */
   line-height: 1.5;
   text-align: left;
-  /* Same styling as base tooltip - no additional overrides needed */
 }
 
 /* Footnote tooltip positioning adjustments */
@@ -270,28 +295,13 @@
   margin-top: -5px;
 }
 
-/* Links within footnote tooltips */
-.footnote-element a {
-  color: var(--color-primary);
-  text-decoration: underline;
-  overflow-wrap: break-word; /* Break long URLs only when necessary */
-  word-break: normal;
-  cursor: pointer;
-  transition: color 0.2s ease-in-out;
-}
-
-.footnote-element a:hover {
-  color: var(--color-primary-light);
-  text-decoration: underline;
-}
-
-/* Ensure all links in tooltips are properly styled and clickable */
+/* Links within tooltips - applies to ALL tooltips */
 .tooltip-element a {
   color: var(--color-primary);
   text-decoration: underline;
   cursor: pointer;
   pointer-events: auto;
-  overflow-wrap: break-word; /* Break long URLs only when necessary */
+  overflow-wrap: break-word;
   word-break: normal;
   transition: color 0.2s ease-in-out;
 }
@@ -306,7 +316,7 @@
   display: none;
 }
 
-/* Special handling for very long URLs or code that needs aggressive breaking */
+/* Text breaking rules for all tooltips */
 .tooltip-element .force-break,
 .tooltip-element code,
 .tooltip-element pre {
@@ -314,7 +324,6 @@
   overflow-wrap: break-word;
 }
 
-/* But keep normal word breaking for most text content */
 .tooltip-element p,
 .tooltip-element span,
 .tooltip-element div {
@@ -328,11 +337,10 @@
 
 /* Position tooltips to the right of main content on wide screens */
 @media (min-width: 1200px) {
-  /* Create a new positioning class for wide screen tooltips */
   .tooltip-element.tooltip-wide-right {
     /* Position absolutely to viewport for placement to right of main content */
     position: fixed;
-    /* Horizontal position now set dynamically via JavaScript */
+    /* Positioning handled by JS */
     left: auto;
     right: auto;
     top: auto;
@@ -341,13 +349,13 @@
     margin: 0;
     
     /* Larger size for side placement */
-    max-width: 22rem; /* Will be overridden by JS when needed */
+    max-width: 22rem;
     min-width: 16rem;
     /* Ensure text wraps properly when constrained */
     word-wrap: break-word;
     overflow-wrap: break-word;
     
-    /* Enhanced styling for sidebar placement */
+    /* Enhanced shadow for sidebar placement */
     box-shadow: 0 8px 25px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
   
@@ -370,17 +378,16 @@
     transform: translateX(0) translateY(-50%);
   }
   
-  /* Ensure footnote tooltips use this positioning on wide screens */
+  /* Ensure footnote tooltips use appropriate sizing on wide screens */
   .footnote-element.tooltip-wide-right {
     max-width: 24rem;
     min-width: 18rem;
   }
 }
 
-/* Extra wide screens - make tooltips even wider and adjust positioning */
+/* Extra wide screens - make tooltips even wider */
 @media (min-width: 1600px) {
   .tooltip-element.tooltip-wide-right {
-    left: calc(50% + 24rem + 2rem); /* Extra spacing on very wide screens */
     max-width: 28rem;
     min-width: 20rem;
   }
@@ -402,54 +409,24 @@
   .footnote-element {
     max-width: min(22rem, calc(100vw - 4rem));
   }
-  
-  /* Ensure tooltips don't overflow on medium screens */
-  .tooltip-element.tooltip-top,
-  .tooltip-element.tooltip-bottom {
-    /* Ensure centered tooltips stay within viewport */
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%) translateY(0.125rem);
-    max-width: min(20rem, calc(100vw - 4rem));
-  }
-  
-  .tooltip-element.tooltip-top.tooltip-visible,
-  .tooltip-element.tooltip-bottom.tooltip-visible {
-    transform: translateX(-50%) translateY(0);
-  }
 }
 
-/* Small screens - constrained positioning */
+/* Small screens - mobile optimizations */
 @media (max-width: 767px) {
   .tooltip-element {
-    /* Constrain all tooltips on mobile to fit within content area */
-    max-width: min(20rem, calc(100vw - 2rem)) !important;
-    min-width: 10rem !important;
+    /* Ensure readable font size on mobile */
+    font-size: var(--font-size-small);
+    
+    /* Better touch-friendly padding */
+    padding: 0.75rem 1rem;
+    
+    /* Let JS handle all positioning */
     box-sizing: border-box;
-    /* Remove any positioning overrides - let JS handle it */
-    position: fixed !important;
-    margin: 0 !important;
   }
   
   /* Ensure footnote tooltips also respect mobile constraints */
   .footnote-element {
     max-width: min(20rem, calc(100vw - 2rem)) !important;
     min-width: 10rem !important;
-  }
-}
-
-/* Additional constraints for better positioning */
-@media (min-width: 768px) and (max-width: 1199px) {
-  /* Ensure all tooltips use border-box for consistent sizing */
-  .tooltip-element {
-    box-sizing: border-box;
-  }
-  
-  /* Override any conflicting positioning - let JavaScript handle edge cases */
-  .tooltip-element.tooltip-top,
-  .tooltip-element.tooltip-bottom {
-    /* Reset any specific edge positioning to let JS handle it */
-    left: 50%;
-    right: auto;
   }
 } 
