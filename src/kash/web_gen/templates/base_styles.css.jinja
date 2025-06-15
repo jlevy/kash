@@ -514,14 +514,41 @@ sup {
 
 /* Handle TOC layouts specially - tables should bleed within their grid column */
 @media (min-width: 1200px) {
-  /* When TOC is present, tables should bleed within the content grid column */
-  .content-with-toc.has-toc table {
-    /* Calculate available width: full viewport minus TOC column width minus margins */
-    width: calc(100vw - var(--toc-width, 16rem) - 8rem);
+  .content-with-toc.has-toc {
+    /* Define reusable values for clarity */
+    --content-width: 48rem;
+    --content-min-gap: 2rem;
+    --table-right-margin: 2rem;
+    --long-text-padding: 4rem; /* md:px-16 = 4rem */
+    
+    /* Where content would be if centered in viewport */
+    --content-centered-left: calc((100vw - var(--content-width)) / 2);
+    
+    /* Content's left margin within its grid column */
+    --content-margin-left: max(var(--content-min-gap), calc(var(--content-centered-left) - var(--toc-width)));
+    
+    /* Content text's actual position from viewport left edge (excluding padding) */
+    --content-text-viewport-left: calc(var(--toc-width) + var(--content-margin-left));
+  }
+
+  /* When TOC is present, tables should align with main content and bleed right */
+  .content-with-toc.has-toc .table-container {
+    /* Remove default positioning */
+    left: 0;
+    transform: none;
+    
+    /* Pull table left to align with content's text position */
+    /* Need to compensate for both content margin AND long-text padding */
+    margin-left: calc(-1 * (var(--content-margin-left) + var(--long-text-padding)));
+    
+    /* Width from content's text edge (without padding) to 3rem from right viewport edge */
+    width: calc(100vw - var(--content-min-gap) - var(--toc-width) - var(--table-right-margin) - var(--long-text-padding));
     max-width: none;
   }
-  .content-with-toc.has-toc .table-container {
-    width: calc(100vw - var(--toc-width, 16rem) - 8rem);
+  
+  .content-with-toc.has-toc table {
+    /* Let table fill its container */
+    width: 100%;
     max-width: none;
   }
   
