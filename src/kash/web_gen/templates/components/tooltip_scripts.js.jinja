@@ -42,8 +42,6 @@ const TooltipUtils = {
   
   // Determine optimal tooltip position based on element location and screen size
   getOptimalPosition(element) {
-    const rect = element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
     // On wide screens (>=1200px), try to use the sidebar on the right of the
@@ -61,16 +59,9 @@ const TooltipUtils = {
       }
     }
     
-    // On medium and small screens, use traditional positioning logic
-    if (rect.top < viewportHeight / 3) {
-      return 'bottom';  // Not enough space above
-    } else if (rect.left < viewportWidth / 4) {
-      return 'right';   // Too close to left edge
-    } else if (rect.right > viewportWidth * 3/4) {
-      return 'left';    // Too close to right edge
-    }
-    
-    return 'top';  // Default position
+    // For medium and small screens, always start with bottom-right
+    // The actual positioning logic in ensureTooltipWithinBounds will handle adjustments
+    return 'bottom-right';
   }
 };
 
@@ -299,37 +290,29 @@ const TooltipManager = {
     // Get trigger element position
     const triggerRect = triggerElement.getBoundingClientRect();
     
-    // Universal positioning logic that works for all screen sizes
+    // Positioning constants
     const margin = 10; // Minimum distance from viewport edges
+    const gap = 10; // Gap between trigger and tooltip
     
-    // Calculate ideal position based on tooltip type
-    let idealLeft, idealTop;
+    // For medium/narrow screens, always try bottom-right first
+    let idealLeft = triggerRect.left; // Align left edge of tooltip with left edge of trigger
+    let idealTop = triggerRect.bottom + gap;
     
-    if (position === 'top' || position === 'bottom') {
-      // Center horizontally on trigger
-      idealLeft = triggerRect.left + (triggerRect.width / 2) - (tooltipWidth / 2);
-      
-      if (position === 'top') {
-        idealTop = triggerRect.top - tooltipHeight - 10; // 10px gap
-      } else {
-        idealTop = triggerRect.bottom + 10; // 10px gap
-      }
-    } else if (position === 'left' || position === 'right') {
-      // Center vertically on trigger
-      idealTop = triggerRect.top + (triggerRect.height / 2) - (tooltipHeight / 2);
-      
-      if (position === 'left') {
-        idealLeft = triggerRect.left - tooltipWidth - 10; // 10px gap
-      } else {
-        idealLeft = triggerRect.right + 10; // 10px gap
-      }
+    // Check if tooltip fits below
+    const fitsBelow = (idealTop + tooltipHeight + margin) <= viewportHeight;
+    
+    // If it doesn't fit below, position above
+    if (!fitsBelow) {
+      idealTop = triggerRect.top - tooltipHeight - gap;
     }
     
-    // Constrain to viewport bounds
+    // Constrain horizontal position to viewport
     let finalLeft = Math.max(margin, Math.min(idealLeft, viewportWidth - tooltipWidth - margin));
+    
+    // Constrain vertical position to viewport (safety check)
     let finalTop = Math.max(margin, Math.min(idealTop, viewportHeight - tooltipHeight - margin));
     
-    // Apply absolute positioning
+    // Apply positioning
     tooltipElement.style.position = 'fixed';
     tooltipElement.style.left = `${finalLeft}px`;
     tooltipElement.style.top = `${finalTop}px`;
@@ -337,8 +320,20 @@ const TooltipManager = {
     tooltipElement.style.bottom = 'auto';
     tooltipElement.style.transform = 'none';
     
+    // Update position class ONLY - preserve other classes
+    const actualPosition = fitsBelow ? 'bottom-right' : 'top-right';
+    
+    // Remove only position-related classes (bottom-right, top-right, etc.)
+    const positionClasses = ['bottom-right', 'top-right', 'bottom-left', 'top-left', 'bottom', 'top', 'left', 'right'];
+    positionClasses.forEach(cls => {
+      tooltipElement.classList.remove(`tooltip-${cls}`);
+    });
+    
+    // Add the new position class
+    tooltipElement.classList.add(`tooltip-${actualPosition}`);
+    
     // Update arrow position to point to trigger
-    this.updateArrowPosition(tooltipElement, triggerRect, finalLeft, finalTop, tooltipWidth, tooltipHeight, position);
+    this.updateArrowPosition(tooltipElement, triggerRect, finalLeft, finalTop, tooltipWidth, tooltipHeight, actualPosition);
   },
   
   // Update arrow position to point correctly at trigger
@@ -356,30 +351,42 @@ const TooltipManager = {
     // Calculate arrow position
     let arrowStyle = '';
     
-    if (position === 'top' || position === 'bottom') {
-      // Horizontal arrow position
-      const triggerCenterX = triggerRect.left + (triggerRect.width / 2);
-      const arrowX = triggerCenterX - tooltipLeft;
-      const arrowXPercent = (arrowX / tooltipWidth) * 100;
-      const clampedPercent = Math.max(10, Math.min(90, arrowXPercent));
-      
+    // Calculate horizontal arrow position - always point to center of trigger
+    const triggerCenterX = triggerRect.left + (triggerRect.width / 2);
+    const arrowX = triggerCenterX - tooltipLeft;
+    const arrowXPercent = (arrowX / tooltipWidth) * 100;
+    const clampedPercent = Math.max(10, Math.min(90, arrowXPercent));
+    
+    if (position === 'bottom-right' || position === 'bottom-left') {
+      // Arrow points up from top of tooltip
       arrowStyle = `
         [data-tooltip-id="${tooltipId}"]::after {
+          bottom: 100% !important;
+          top: auto !important;
           left: ${clampedPercent}% !important;
+          right: auto !important;
           transform: translateX(-50%) !important;
+          border-bottom-color: var(--color-border-hint) !important;
+          border-top-color: transparent !important;
+          border-left-color: transparent !important;
+          border-right-color: transparent !important;
+          margin-bottom: -5px !important;
         }
       `;
-    } else if (position === 'left' || position === 'right') {
-      // Vertical arrow position
-      const triggerCenterY = triggerRect.top + (triggerRect.height / 2);
-      const arrowY = triggerCenterY - tooltipTop;
-      const arrowYPercent = (arrowY / tooltipHeight) * 100;
-      const clampedPercent = Math.max(10, Math.min(90, arrowYPercent));
-      
+    } else if (position === 'top-right' || position === 'top-left') {
+      // Arrow points down from bottom of tooltip
       arrowStyle = `
         [data-tooltip-id="${tooltipId}"]::after {
-          top: ${clampedPercent}% !important;
-          transform: translateY(-50%) !important;
+          top: 100% !important;
+          bottom: auto !important;
+          left: ${clampedPercent}% !important;
+          right: auto !important;
+          transform: translateX(-50%) !important;
+          border-top-color: var(--color-border-hint) !important;
+          border-bottom-color: transparent !important;
+          border-left-color: transparent !important;
+          border-right-color: transparent !important;
+          margin-top: -5px !important;
         }
       `;
     }
@@ -445,26 +452,18 @@ const TooltipManager = {
     
     const margin = 20; // Pixels of margin around tooltip area
     
-    switch(position) {
-      case 'top':
-        return mouseY < elementRect.top && 
-               mouseX >= elementRect.left - margin && 
-               mouseX <= elementRect.right + margin;
-      case 'bottom':
-        return mouseY > elementRect.bottom && 
-               mouseX >= elementRect.left - margin && 
-               mouseX <= elementRect.right + margin;
-      case 'left':
-        return mouseX < elementRect.left && 
-               mouseY >= elementRect.top - margin && 
-               mouseY <= elementRect.bottom + margin;
-      case 'right':
-        return mouseX > elementRect.right && 
-               mouseY >= elementRect.top - margin && 
-               mouseY <= elementRect.bottom + margin;
-      default:
-        return false;
+    // For bottom-right/top-right positions, check if mouse is moving in the right direction
+    if (position === 'bottom-right' || position === 'bottom-left') {
+      return mouseY > elementRect.bottom && 
+             mouseX >= elementRect.left - margin && 
+             mouseX <= elementRect.right + margin;
+    } else if (position === 'top-right' || position === 'top-left') {
+      return mouseY < elementRect.top && 
+             mouseX >= elementRect.left - margin && 
+             mouseX <= elementRect.right + margin;
     }
+    
+    return false;
   },
   
   // Remove tooltip from element

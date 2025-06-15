@@ -153,6 +153,90 @@
 }
 
 /* -----------------------------------------------------------------------------
+   Diagonal Tooltip Positioning
+   ----------------------------------------------------------------------------- */
+
+/* Bottom-right positioning (default preference) */
+.tooltip-element.tooltip-bottom-right {
+  top: 100%;
+  left: 0;
+  transform: translateY(-0.125rem);
+  margin-top: 10px;
+}
+
+.tooltip-element.tooltip-bottom-right::after {
+  bottom: 100%;
+  left: 1rem;
+  transform: translateX(-50%);
+  border-bottom-color: var(--color-border-hint);
+  margin-bottom: -5px;
+}
+
+.tooltip-element.tooltip-bottom-right.tooltip-visible {
+  transform: translateY(0);
+}
+
+/* Bottom-left positioning */
+.tooltip-element.tooltip-bottom-left {
+  top: 100%;
+  right: 0;
+  transform: translateY(-0.125rem);
+  margin-top: 10px;
+}
+
+.tooltip-element.tooltip-bottom-left::after {
+  bottom: 100%;
+  right: 1rem;
+  transform: translateX(50%);
+  border-bottom-color: var(--color-border-hint);
+  margin-bottom: -5px;
+}
+
+.tooltip-element.tooltip-bottom-left.tooltip-visible {
+  transform: translateY(0);
+}
+
+/* Top-right positioning */
+.tooltip-element.tooltip-top-right {
+  bottom: 100%;
+  left: 0;
+  transform: translateY(0.125rem);
+  margin-bottom: 10px;
+}
+
+.tooltip-element.tooltip-top-right::after {
+  top: 100%;
+  left: 1rem;
+  transform: translateX(-50%);
+  border-top-color: var(--color-border-hint);
+  margin-top: -5px;
+}
+
+.tooltip-element.tooltip-top-right.tooltip-visible {
+  transform: translateY(0);
+}
+
+/* Top-left positioning */
+.tooltip-element.tooltip-top-left {
+  bottom: 100%;
+  right: 0;
+  transform: translateY(0.125rem);
+  margin-bottom: 10px;
+}
+
+.tooltip-element.tooltip-top-left::after {
+  top: 100%;
+  right: 1rem;
+  transform: translateX(50%);
+  border-top-color: var(--color-border-hint);
+  margin-top: -5px;
+}
+
+.tooltip-element.tooltip-top-left.tooltip-visible {
+  transform: translateY(0);
+}
+
+/* -----------------------------------------------------------------------------
    Footnote-Specific Tooltips
    ----------------------------------------------------------------------------- */
 
