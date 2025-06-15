@@ -1,4 +1,44 @@
 /* -----------------------------------------------------------------------------
+   Tooltip CSS Variables
+   ----------------------------------------------------------------------------- */
+
+:root {
+  /* Tooltip spacing */
+  --tooltip-viewport-margin: 10px;
+  --tooltip-gap: 10px;
+  --tooltip-mobile-top-margin: 20px;
+  --tooltip-arrow-size: 5px;
+  
+  /* Tooltip sizing */
+  --tooltip-max-width: 20rem;
+  --tooltip-min-width: 8rem;
+  --tooltip-padding: 0.5rem 0.75rem;
+  
+  /* Footnote tooltip sizing */
+  --footnote-tooltip-max-width: 25rem;
+  --footnote-tooltip-min-width: 12rem;
+  
+  /* Wide screen tooltip sizing */
+  --tooltip-wide-max-width: 22rem;
+  --tooltip-wide-min-width: 16rem;
+  --footnote-wide-max-width: 24rem;
+  --footnote-wide-min-width: 18rem;
+  
+  /* Extra wide screen sizing */
+  --tooltip-extra-wide-max-width: 28rem;
+  --tooltip-extra-wide-min-width: 20rem;
+  --footnote-extra-wide-max-width: 30rem;
+  --footnote-extra-wide-min-width: 22rem;
+  
+  /* Mobile specific */
+  --tooltip-mobile-padding: 0.75rem 1rem;
+  
+  /* Transitions */
+  --tooltip-transition-duration: 0.6s;
+  --tooltip-transition-timing: ease-in-out;
+}
+
+/* -----------------------------------------------------------------------------
    Real DOM Element Tooltip Foundation
    ----------------------------------------------------------------------------- */
 
@@ -14,7 +54,8 @@
   opacity: 0;
   pointer-events: none;
   /* Only transition opacity and visibility, not transform to avoid movement */
-  transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+  transition: opacity var(--tooltip-transition-duration) var(--tooltip-transition-timing), 
+              visibility var(--tooltip-transition-duration) var(--tooltip-transition-timing);
   /* Ensure no transition on positioning properties */
   transition-property: opacity, visibility;
   z-index: 1000;
@@ -27,13 +68,13 @@
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
   line-height: 1.4;
-  padding: 0.5rem 0.75rem;
+  padding: var(--tooltip-padding);
   border-radius: 0; /* Square corners for all tooltips */
   
   /* Sizing and text handling */
   width: max-content;
-  max-width: 20rem;
-  min-width: 8rem;
+  max-width: var(--tooltip-max-width);
+  min-width: var(--tooltip-min-width);
   white-space: normal;
   word-break: normal;
   overflow-wrap: break-word;
@@ -45,7 +86,7 @@
 .tooltip-element::after {
   content: '';
   position: absolute;
-  border: 5px solid transparent;
+  border: var(--tooltip-arrow-size) solid transparent;
   z-index: 1001;
 }
 
@@ -68,7 +109,7 @@
 }
 
 /* -----------------------------------------------------------------------------
-   General Tooltip Positioning
+   General Tooltip Positioning - Using margin variables
    ----------------------------------------------------------------------------- */
 
 /* Default: Top positioning */
@@ -76,7 +117,7 @@
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(0.125rem);
-  margin-bottom: 10px;
+  margin-bottom: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-top::after {
@@ -84,7 +125,7 @@
   left: 50%;
   transform: translateX(-50%);
   border-top-color: var(--color-border-hint);
-  margin-top: -5px;
+  margin-top: calc(-1 * var(--tooltip-arrow-size));
 }
 
 /* Active state overrides for top positioning */
@@ -97,7 +138,7 @@
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(-0.125rem);
-  margin-top: 10px;
+  margin-top: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-bottom::after {
@@ -105,7 +146,7 @@
   left: 50%;
   transform: translateX(-50%);
   border-bottom-color: var(--color-border-hint);
-  margin-bottom: -5px;
+  margin-bottom: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-bottom.tooltip-visible {
@@ -117,7 +158,7 @@
   right: 100%;
   top: 50%;
   transform: translateX(0.125rem) translateY(-50%);
-  margin-right: 10px;
+  margin-right: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-left::after {
@@ -125,7 +166,7 @@
   top: 50%;
   transform: translateY(-50%);
   border-left-color: var(--color-border-hint);
-  margin-left: -5px;
+  margin-left: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-left.tooltip-visible {
@@ -137,7 +178,7 @@
   left: 100%;
   top: 50%;
   transform: translateX(-0.125rem) translateY(-50%);
-  margin-left: 10px;
+  margin-left: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-right::after {
@@ -145,7 +186,7 @@
   top: 50%;
   transform: translateY(-50%);
   border-right-color: var(--color-border-hint);
-  margin-right: -5px;
+  margin-right: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-right.tooltip-visible {
@@ -161,7 +202,7 @@
   top: 100%;
   left: 0;
   transform: translateY(-0.125rem);
-  margin-top: 10px;
+  margin-top: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-bottom-right::after {
@@ -169,7 +210,7 @@
   left: 1rem;
   transform: translateX(-50%);
   border-bottom-color: var(--color-border-hint);
-  margin-bottom: -5px;
+  margin-bottom: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-bottom-right.tooltip-visible {
@@ -181,7 +222,7 @@
   top: 100%;
   right: 0;
   transform: translateY(-0.125rem);
-  margin-top: 10px;
+  margin-top: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-bottom-left::after {
@@ -189,7 +230,7 @@
   right: 1rem;
   transform: translateX(50%);
   border-bottom-color: var(--color-border-hint);
-  margin-bottom: -5px;
+  margin-bottom: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-bottom-left.tooltip-visible {
@@ -201,7 +242,7 @@
   bottom: 100%;
   left: 0;
   transform: translateY(0.125rem);
-  margin-bottom: 10px;
+  margin-bottom: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-top-right::after {
@@ -209,7 +250,7 @@
   left: 1rem;
   transform: translateX(-50%);
   border-top-color: var(--color-border-hint);
-  margin-top: -5px;
+  margin-top: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-top-right.tooltip-visible {
@@ -221,7 +262,7 @@
   bottom: 100%;
   right: 0;
   transform: translateY(0.125rem);
-  margin-bottom: 10px;
+  margin-bottom: var(--tooltip-gap);
 }
 
 .tooltip-element.tooltip-top-left::after {
@@ -229,7 +270,7 @@
   right: 1rem;
   transform: translateX(50%);
   border-top-color: var(--color-border-hint);
-  margin-top: -5px;
+  margin-top: calc(-1 * var(--tooltip-arrow-size));
 }
 
 .tooltip-element.tooltip-top-left.tooltip-visible {
@@ -278,8 +319,8 @@
 /* Enhanced footnote tooltip styling - only overrides what's different */
 .footnote-element {
   /* Larger max-width for footnote content */
-  max-width: 25rem;
-  min-width: 12rem;
+  max-width: var(--footnote-tooltip-max-width);
+  min-width: var(--footnote-tooltip-min-width);
   /* Better typography for longer footnote text */
   line-height: 1.5;
   text-align: left;
@@ -288,11 +329,7 @@
 /* Footnote tooltip positioning adjustments */
 .footnote-element.tooltip-top {
   /* Position slightly higher to avoid covering the link */
-  margin-bottom: 15px;
-}
-
-.footnote-element.tooltip-top::after {
-  margin-top: -5px;
+  margin-bottom: calc(var(--tooltip-gap) + 5px);
 }
 
 /* Links within tooltips - applies to ALL tooltips */
@@ -349,8 +386,8 @@
     margin: 0;
     
     /* Larger size for side placement */
-    max-width: 22rem;
-    min-width: 16rem;
+    max-width: var(--tooltip-wide-max-width);
+    min-width: var(--tooltip-wide-min-width);
     /* Ensure text wraps properly when constrained */
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -371,7 +408,7 @@
     border-bottom-color: transparent;
     border-left-color: transparent;
     margin: 0;
-    margin-right: -5px;
+    margin-right: calc(-1 * var(--tooltip-arrow-size));
   }
   
   .tooltip-element.tooltip-wide-right.tooltip-visible {
@@ -380,21 +417,21 @@
   
   /* Ensure footnote tooltips use appropriate sizing on wide screens */
   .footnote-element.tooltip-wide-right {
-    max-width: 24rem;
-    min-width: 18rem;
+    max-width: var(--footnote-wide-max-width);
+    min-width: var(--footnote-wide-min-width);
   }
 }
 
 /* Extra wide screens - make tooltips even wider */
 @media (min-width: 1600px) {
   .tooltip-element.tooltip-wide-right {
-    max-width: 28rem;
-    min-width: 20rem;
+    max-width: var(--tooltip-extra-wide-max-width);
+    min-width: var(--tooltip-extra-wide-min-width);
   }
   
   .footnote-element.tooltip-wide-right {
-    max-width: 30rem;
-    min-width: 22rem;
+    max-width: var(--footnote-extra-wide-max-width);
+    min-width: var(--footnote-extra-wide-min-width);
   }
 }
 
@@ -402,12 +439,12 @@
 @media (min-width: 768px) and (max-width: 1199px) {
   .tooltip-element {
     /* Constrain width to fit within content area */
-    max-width: min(20rem, calc(100vw - 4rem));
+    max-width: min(var(--tooltip-max-width), calc(100vw - 4rem));
     box-sizing: border-box;
   }
   
   .footnote-element {
-    max-width: min(22rem, calc(100vw - 4rem));
+    max-width: min(var(--footnote-tooltip-max-width), calc(100vw - 4rem));
   }
 }
 
@@ -418,7 +455,7 @@
     font-size: var(--font-size-small);
     
     /* Better touch-friendly padding */
-    padding: 0.75rem 1rem;
+    padding: var(--tooltip-mobile-padding);
     
     /* Let JS handle all positioning */
     box-sizing: border-box;
@@ -426,7 +463,7 @@
   
   /* Ensure footnote tooltips also respect mobile constraints */
   .footnote-element {
-    max-width: min(20rem, calc(100vw - 2rem)) !important;
-    min-width: 10rem !important;
+    max-width: min(var(--tooltip-max-width), calc(100vw - 2rem)) !important;
+    min-width: var(--tooltip-min-width) !important;
   }
 } 
