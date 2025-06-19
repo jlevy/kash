@@ -4,7 +4,14 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from inspect import Parameter
-from typing import Any, Union, cast, get_args, get_origin  # pyright: ignore[reportDeprecated]
+from typing import (
+    Any,
+    Literal,
+    Union,  # pyright: ignore[reportDeprecated]
+    cast,
+    get_args,
+    get_origin,
+)
 
 NO_DEFAULT = Parameter.empty  # Alias for clarity
 
@@ -89,6 +96,23 @@ def _resolve_type_details(annotation: Any) -> tuple[type | None, type | None, bo
         elif not non_none_args:  # Handles Union[NoneType] or just NoneType
             return (type(None), None, True)
         # If multiple non_none_args (e.g., int | str), current_annotation remains the Union for now.
+
+    # Handle Literal types
+    if origin is Literal:
+        if args:
+            # Determine the common type of all literal values
+            literal_types = {type(arg) for arg in args}
+            if len(literal_types) == 1:
+                # All literals are the same type
+                final_effective_type = literal_types.pop()
+            else:
+                # Mixed types, fall back to the most common base type or str if all are basic types
+                if all(isinstance(arg, (str, int, float, bool)) for arg in args):
+                    # For mixed basic types, use str as the effective type
+                    final_effective_type = str
+                else:
+                    final_effective_type = None
+            return final_effective_type, None, is_optional_flag
 
     #  Determine effective_type and inner_type from (potentially unwrapped) current_annotation
     final_effective_type: type | None = None
@@ -426,3 +450,75 @@ def test_inspect_function_parameters_updated():
             is_explicitly_optional=True,
         )
     ]
+
+
+def test_literal_types():
+    """Test Literal type support in function parameter inspection."""
+
+    # Test string literals
+    def func_string_literal(converter: Literal["markitdown", "marker"] = "markitdown"):
+        return converter
+
+    params = inspect_function_params(func_string_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "converter"
+    assert param.effective_type is str
+    assert param.default == "markitdown"
+    assert param.is_explicitly_optional is False
+
+    # Test integer literals
+    def func_int_literal(count: Literal[1, 2, 3] = 1):
+        return count
+
+    params = inspect_function_params(func_int_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "count"
+    assert param.effective_type is int
+    assert param.default == 1
+
+    # Test mixed type literals (should default to str)
+    def func_mixed_literal(value: Literal["auto", 42]):
+        return value
+
+    params = inspect_function_params(func_mixed_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "value"
+    assert param.effective_type is str
+    assert param.default == NO_DEFAULT
+
+    # Test Literal directly (without TypeAlias to avoid scope issues)
+    def func_direct_literal(converter: Literal["markitdown", "marker"] = "markitdown"):
+        return converter
+
+    params = inspect_function_params(func_direct_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "converter"
+    assert param.effective_type is str
+    assert param.default == "markitdown"
+
+    # Test optional literal
+    def func_optional_literal(mode: Literal["fast", "slow"] | None = None):
+        return mode
+
+    params = inspect_function_params(func_optional_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "mode"
+    assert param.effective_type is str
+    assert param.is_explicitly_optional is True
+    assert param.default is None
+
+    # Test boolean literals
+    def func_bool_literal(flag: Literal[True, False] = True):
+        return flag
+
+    params = inspect_function_params(func_bool_literal)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "flag"
+    assert param.effective_type is bool
+    assert param.default is True
