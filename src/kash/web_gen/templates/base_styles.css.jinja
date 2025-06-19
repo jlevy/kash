@@ -5,7 +5,8 @@
   --font-sans: "Source Sans 3 Variable", sans-serif, "Hack Nerd Font";
   --font-serif: "PT Serif", serif, "Hack Nerd Font";
   /* Source Sans 3 Variable better at these weights. */
-  --font-weight-sans-bold: 620;
+  --font-weight-sans-medium: 565;
+  --font-weight-sans-bold: 650;
   --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
 
   --font-size-large: 1.2rem;
@@ -117,7 +118,9 @@ a:hover {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   line-height: 1.2;
 }
 
@@ -128,7 +131,7 @@ h1 {
 }
 
 h2 {
-  font-size: 1.4rem;
+  font-size: 1.42rem;
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
@@ -142,14 +145,25 @@ h2 + h3 {
 }
 
 h3 {
-  font-size: 1.1rem;
-  margin-top: 1.3rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.18rem;
+  margin-top: 1.4rem;
+  margin-bottom: 0.7rem;
 }
 
 h4 {
+  font-size: 1.1rem;
   margin-top: 1rem;
   margin-bottom: 0.7rem;
+}
+
+h5, h6 {
+  font-size: 1rem;
+  margin-top: 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+h4+p, h5+p, h6+p {
+  margin-top: 0;
 }
 
 ul {
@@ -334,6 +348,7 @@ hr:before {
 {% endblock typography %}
 
 {% block long_text_styles %}
+
 /* Long text stylings, for nicely formatting blog post length or longer texts. */
 
 .long-text {
@@ -353,15 +368,26 @@ hr:before {
 
 .long-text h3 {
   font-family: var(--font-sans);
-  font-weight: var(--font-weight-sans-bold);
-  font-size: 1.1rem;
+  font-weight: 565;
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
 
 .long-text h4 {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.long-text h5 {
   font-family: var(--font-serif);
   font-weight: 700;
+}
+
+.long-text h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
 }
 
 .subtitle {
@@ -369,6 +395,8 @@ hr:before {
   font-style: italic;
   font-size: 1rem;
 }
+
+/* Adjustments to long text for pure sans-serif pages. */
 
 .long-text .sans-text {
   font-family: var(--font-sans);
@@ -420,6 +448,7 @@ table {
 }
 
 th {
+  font-weight: var(--font-weight-sans-bold);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-border-hint);
