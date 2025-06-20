@@ -15,19 +15,36 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 Kash (“Knowledge Agent SHell”) is an experiment in making software tasks more modular,
 exploratory, and flexible using Python and current AI tools.
 
-It's new and still has some rough edges, but it's working well enough it is feeling
-quite powerful. I now use it routinely to remix, combine, and interactively explore and
-then gradually automate complex tasks by composing AI tools, APIs, and libraries.
+The philosophy behind kash is similar to Unix shell tools: simple commands that can be
+combined in flexible and powerful ways.
+It operates on "items" such as URLs, files, or Markdown notes within a workspace
+directory.
 
 You can use Kash as an **interactive, AI-native command-line** shell for practical
 knowledge tasks. It's also **a Python library** that lets you convert a simple Python
 function into a command and an MCP tool, so it integrates with other tools like
 Anthropic Desktop or Cursor.
-You can think of it as a kind of hybrid of a classic shell like bash, an agent
-framework, and and a developer tool like Cursor or Claude Code.
+
+It's new and still has some rough edges, but it's now working well enough it is feeling
+quite powerful. It now serves as a replacement for my usual shell (previously bash or
+zsh). I use it routinely to remix, combine, and interactively explore and then gradually
+automate complex tasks by composing AI tools, APIs, and libraries.
+And last but not least, the same framework lets me build other tools (like
+[textpress](https://github.com/jlevy/textpress)).
 
 And of course, kash can read its own functionality and enhance itself by writing new
 actions.
+
+### Kash Packages
+
+The [kash-shell](https://github.com/jlevy/kash) package is the base package and includes
+the Python framework, a few core utilities, and the Kash command-line shell.
+
+Additional actions for handling more complex tasks like converting documents and
+transcribing, researching, or annotating videos, are in the
+[kash-docs](https://github.com/jlevy/kash-docs) and
+[kash-media](https://github.com/jlevy/kash-docs) packages, all available on PyPI and
+quick to install via uv.
 
 ### Key Concepts
 
@@ -104,8 +121,8 @@ visuals of a web app layered on the flexibility of a text-based terminal.
 
 ### Is Kash Mature?
 
-No. :) It's the result of a couple months of coding and experimentation, and it's in
-progress. Please help me make it better by sharing your ideas and feedback!
+No. :) It's the result of a couple months of coding and experimentation, and it's very
+much in progress. Please help me make it better by sharing your ideas and feedback!
 It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
 My contact info is at [github.com/jlevy](https://github.com/jlevy).
 

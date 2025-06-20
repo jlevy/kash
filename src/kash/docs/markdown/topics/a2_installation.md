@@ -2,9 +2,9 @@
 
 ### Running the Kash Shell
 
-Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with an LLM
-assistant and a variety of other enhanced commands and customizations.
-If you've used a bash or Python shell before, xonsh is very intuitive.
+Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with a bunch
+of enhanced commands and customizations.
+If you've used a bash or Python shell before, it should be very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
 You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
@@ -38,30 +38,17 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    Kash is easiest to use via [**uv**](https://docs.astral.sh/uv/), the new package
    manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
    etc. Installing `uv` also ensures you get a compatible version of Python.
-
-   If you don't have `uv` installed, a quick way to install it is:
-
+   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+   installation methods and platforms.
+   Usually you just want to run:
    ```shell
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-   For macOS, you prefer [brew](https://brew.sh/) you can install or upgrade uv with:
-
-   ```shell
-   brew update
-   brew install uv
-   ```
-   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
-   installation methods and platforms.
-
 2. **Install additional command-line tools:**
 
    In addition to Python, it's highly recommended to install a few other dependencies to
-   make more tools and commands work: `ripgrep` (for search), `bat` (for prettier file
-   display), `eza` (a much improved version of `ls`), `hexyl` (a much improved hex
-   viewer), `imagemagick` (for image display in modern terminals), `libmagic` (for file
-   type detection), `ffmpeg` (for audio and video conversions)
-
+   make more tools and commands work.
    For macOS, you can again use brew:
 
    ```shell
@@ -82,22 +69,22 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
    For Windows or other platforms, see the uv instructions.
 
+   Kash auto-detects and uses `ripgrep` (for search), `bat` (for prettier file display),
+   `eza` (a much improved version of `ls`), `hexyl` (a much improved hex viewer),
+   `imagemagick` (for image display in modern terminals), `libmagic` (for file type
+   detection), `ffmpeg` (for audio and video conversions)
+
 3. **Install kash or a kash kit:**
 
+   For a more meaningful demo, use an enhanced version of kash that also has various
+   media tools (like yt-dlp and Deepgram support):
+
    ```shell
-   uv tool install kash-media --python=3.13
+   uv tool install kash-media --upgrade --python=3.13
    ```
 
    Other versions of Python should work but 3.13 is recommended.
-   For a setup without the media tools, use `kash-shell` instead.
-
-   If you've installed an older version and want to be sure you have the latest shell,
-   you may want to add `--upgrade --force` to be sure you get the latest version of the
-   kit.
-
-   ```shell
-   uv tool install kash-media --python=3.13 --upgrade --force 
-   ```
+   For a setup without the media tools, just install `kash-shell` instead.
 
 4. **Set up API keys:**
 

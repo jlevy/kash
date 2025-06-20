@@ -3,35 +3,64 @@
 > “*Simple should be simple.
 > Complex should be possible.*” —Alan Kay
 
-Kash (“Knowledge Agent SHell”) is an **interactive, AI-native command-line** shell for
-practical knowledge tasks.
+Kash (“Knowledge Agent SHell”) is an experiment in making software tasks more modular,
+exploratory, and flexible using Python and current AI tools.
 
-It's also **a Python library** that lets you convert a simple Python function into a
-command and an MCP tool, so it integrates with other tools like Anthropic Desktop or
-Cursor.
+The philosophy behind kash is similar to Unix shell tools: simple commands that can be
+combined in flexible and powerful ways.
+It operates on "items" such as URLs, files, or Markdown notes within a workspace
+directory.
 
-You can think of it a kind of power-tool for technical users who want to use Python and
-APIs, a kind of hybrid between an AI assistant, a shell, and a developer tool like
-Cursor or Claude Code.
+You can use Kash as an **interactive, AI-native command-line** shell for practical
+knowledge tasks. It's also **a Python library** that lets you convert a simple Python
+function into a command and an MCP tool, so it integrates with other tools like
+Anthropic Desktop or Cursor.
 
-It's my attempt at finding a way to remix, combine, and interactively explore and then
-gradually automate complex tasks by composing AI tools, APIs, and libraries.
+It's new and still has some rough edges, but it's now working well enough it is feeling
+quite powerful. It now serves as a replacement for my usual shell (previously bash or
+zsh). I use it routinely to remix, combine, and interactively explore and then gradually
+automate complex tasks by composing AI tools, APIs, and libraries.
+And last but not least, the same framework lets me build other tools (like
+[textpress](https://github.com/jlevy/textpress)).
 
 And of course, kash can read its own functionality and enhance itself by writing new
 actions.
 
+### Kash Packages
+
+The [kash-shell](https://github.com/jlevy/kash) package is the base package and includes
+the Python framework, a few core utilities, and the Kash command-line shell.
+
+Additional actions for handling more complex tasks like converting documents and
+transcribing, researching, or annotating videos, are in the
+[kash-docs](https://github.com/jlevy/kash-docs) and
+[kash-media](https://github.com/jlevy/kash-docs) packages, all available on PyPI and
+quick to install via uv.
+
 ### Key Concepts
 
-- **Actions:** The core of Kash are **Kash actions**. By decorating a Python function,
-  you can turn it into an action, which makes it more flexible and powerful, able to
-  work with file inputs stored and outputs in a given directory, also called a
-  **workspace**.
+- **Actions:** The core of Kash are **actions**. By decorating a Python function with
+  `@kash_action`, you can turn it into an action, which makes it more flexible and
+  powerful. It can then be used like a command line command as well as a Python function
+  or an MCP tool.
+
+- **Workspaces:** A key element of Kash is that it does most nontrivial work in the
+  context of a **workspace**. A workspace is just a directory of files that have a few
+  conventions to make it easier to maintain context and perform actions.
+  A bit like how Git repos work, it has a `.kash/` directory that holds metadata and
+  cached content. The rest can be anything, but is typically directories of resources
+  (like .docx or .pdf or links to web pages) or content, typically Markdown files with
+  YAML frontmatter. All text files use
+  [frontmatter-format](https://github.com/jlevy/frontmatter-format) so have easy-to-read
+  YAML metadata that includes not just title or description, but also the names of the
+  actions that created it.
 
 - **Compositionality:** An action is composable with other actions simply as a Python
-  function, so complex (like transcribing and annotating a video) actions can be built
-  from simpler actions (like downloading and caching a YouTube video, identifying the
-  speakers in a transcript, etc.). The goal is to reduce the "interstitial complexity"
-  of combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
+  function, so complex operations (for example, transcribing and annotating a video and
+  publishing it on a website) actions can be built from simpler actions (say downloading
+  and caching a YouTube video, identifying the speakers in a transcript, formatting it
+  as pretty HTML, etc.). The goal is to reduce the "interstitial complexity" of
+  combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
   powerful ways.
 
 - **Command-line usage:** In addition to using the function in other libraries and
@@ -40,9 +69,6 @@ actions.
   video. In kash you have **smart tab completions**, **Python expressions**, and an **LLM
   assistant** built into the shell.
 
-- **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
-  in any MCP client, like Anthropic Desktop or Cursor.
-
 - **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
   You can use it with any models or APIs you like, and is already set up to use the APIs
@@ -50,6 +76,9 @@ actions.
   Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**,
   **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries.
   There is also some experimental support for **LlamaIndex** and **ChromaDB**.
+
+- **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
+  in any MCP client, like Anthropic Desktop or Cursor.
 
 ### What Can Kash Do?
 

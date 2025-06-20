@@ -15,25 +15,11 @@ Type `help` for the full documentation.
 The simplest way to illustrate how to use kash is by example.
 You can go through the commands below a few at a time, trying each one.
 
-This is a "real" example that uses a bunch of libraries.
+This is a "real" example that uses ffmpeg and a few other libraries.
 So to get it to work you must install not just the main shell but the kash "media kit"
 with extra dependencies.
-
-You need the following tools:
-
-```shell
-# On MacOS:
-brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
-# On Linux:
-apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg
-```
-
-Then install the `kash-media`, which includes kash-shell and many other libs like yt-dlp
-for YouTube handling:
-
-```shell
-uv tool install kash-media
-```
+This is discussed in [the installation instructions](#installation-steps).
+If you don't have these already installed, you can add these tools:
 
 Then run `kash` to start.
 
@@ -152,7 +138,7 @@ show_webpage
 show_webpage --help
 
 # And you can actually how this works by looking at its source:
-source_code show_webpage
+show_webpage --show_source
 
 # What if something isn't working right?
 # Sometimes we may want to browse more detailed system logs:
@@ -171,7 +157,7 @@ transcribe_format https://www.youtube.com/watch?v=_8djNYprRDI
 
 # Getting a little fancier, this one adds little paragraph annotations and
 # a nicer summary at the top:
-transcribe_annotate_summarize https://www.youtube.com/watch?v=_8djNYprRDI
+transcribe_annotate https://www.youtube.com/watch?v=_8djNYprRDI
 
 show_webpage
 ```
