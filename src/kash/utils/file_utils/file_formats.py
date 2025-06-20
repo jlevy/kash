@@ -16,7 +16,7 @@ def is_fullpage_html(content: str) -> bool:
     A full HTML document that is a full page (headers, footers, etc.) and
     so probably best rendered in a browser.
     """
-    return bool(re.search(r"<!DOCTYPE html>|<html>|<body>|<head>", content[:2048], re.IGNORECASE))
+    return bool(re.search(r"<!DOCTYPE html>|<html>|<body>|<head>", content, re.IGNORECASE))
 
 
 _yaml_header_pattern = re.compile(r"^---\n\w+:", re.MULTILINE)

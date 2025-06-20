@@ -14,9 +14,10 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 
 Kash (“Knowledge Agent SHell”) is an experiment in making software tasks more modular,
 exploratory, and flexible using Python and current AI tools.
-It's a little rough still but it's what I've found is a better way to remix, combine,
-and interactively explore and then gradually automate complex tasks by composing AI
-tools, APIs, and libraries.
+
+It's new and still has some rough edges, but it's working well enough it is feeling
+quite powerful. I now use it routinely to remix, combine, and interactively explore and
+then gradually automate complex tasks by composing AI tools, APIs, and libraries.
 
 You can use Kash as an **interactive, AI-native command-line** shell for practical
 knowledge tasks. It's also **a Python library** that lets you convert a simple Python

@@ -1,6 +1,7 @@
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
 from kash.exec import assemble_path_args, kash_command
+from kash.exec_model.shell_model import ShellResult
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import cprint
 from kash.shell.utils.native_utils import ViewMode, terminal_show_image, view_file_native
@@ -19,7 +20,8 @@ def show(
     thumbnail: bool = False,
     browser: bool = False,
     plain: bool = False,
-) -> None:
+    noselect: bool = False,
+) -> ShellResult:
     """
     Show the contents of a file if one is given, or the first file if multiple files
     are selected. Will try to use native apps or web browser to display the file if
@@ -33,6 +35,7 @@ def show(
     :param thumbnail: If there is a thumbnail image, show it too.
     :param browser: Force display with your default web browser.
     :param plain: Use plain view in the console (this is `bat`'s `plain` style).
+    :param noselect: Disable default behavior where `show` also will `select` the file.
     """
     view_mode = (
         ViewMode.console
@@ -63,9 +66,16 @@ def show(
             view_file_native(ws.base_dir / input_path, view_mode=view_mode, plain=plain)
         else:
             view_file_native(input_path, view_mode=view_mode, plain=plain)
+        if not noselect:
+            from kash.commands.workspace.selection_commands import select
+
+            select(input_path)
+            return ShellResult(show_selection=True)
     except (InvalidInput, InvalidState):
         if path:
             # If path is absolute or we couldbn't get a selection, just show the file.
             view_file_native(path, view_mode=view_mode)
         else:
             raise InvalidInput("No selection")
+
+    return ShellResult(show_selection=False)
