@@ -12,35 +12,46 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 > “*Simple should be simple.
 > Complex should be possible.*” —Alan Kay
 
-Kash (“Knowledge Agent SHell”) is an **interactive, AI-native command-line** shell for
-practical knowledge tasks.
+Kash (“Knowledge Agent SHell”) is an experiment in making software tasks more modular,
+exploratory, and flexible using Python and current AI tools.
+It's a little rough still but it's what I've found is a better way to remix, combine,
+and interactively explore and then gradually automate complex tasks by composing AI
+tools, APIs, and libraries.
 
-It's also **a Python library** that lets you convert a simple Python function into a
-command and an MCP tool, so it integrates with other tools like Anthropic Desktop or
-Cursor.
-
-You can think of it a kind of power-tool for technical users who want to use Python and
-APIs, a kind of hybrid between an AI assistant, a shell, and a developer tool like
-Cursor or Claude Code.
-
-It's my attempt at finding a way to remix, combine, and interactively explore and then
-gradually automate complex tasks by composing AI tools, APIs, and libraries.
+You can use Kash as an **interactive, AI-native command-line** shell for practical
+knowledge tasks. It's also **a Python library** that lets you convert a simple Python
+function into a command and an MCP tool, so it integrates with other tools like
+Anthropic Desktop or Cursor.
+You can think of it as a kind of hybrid of a classic shell like bash, an agent
+framework, and and a developer tool like Cursor or Claude Code.
 
 And of course, kash can read its own functionality and enhance itself by writing new
 actions.
 
 ### Key Concepts
 
-- **Actions:** The core of Kash are **Kash actions**. By decorating a Python function,
-  you can turn it into an action, which makes it more flexible and powerful, able to
-  work with file inputs stored and outputs in a given directory, also called a
-  **workspace**.
+- **Actions:** The core of Kash are **actions**. By decorating a Python function with
+  `@kash_action`, you can turn it into an action, which makes it more flexible and
+  powerful. It can then be used like a command line command as well as a Python function
+  or an MCP tool.
+
+- **Workspaces:** A key element of Kash is that it does most nontrivial work in the
+  context of a **workspace**. A workspace is just a directory of files that have a few
+  conventions to make it easier to maintain context and perform actions.
+  A bit like how Git repos work, it has a `.kash/` directory that holds metadata and
+  cached content. The rest can be anything, but is typically directories of resources
+  (like .docx or .pdf or links to web pages) or content, typically Markdown files with
+  YAML frontmatter. All text files use
+  [frontmatter-format](https://github.com/jlevy/frontmatter-format) so have easy-to-read
+  YAML metadata that includes not just title or description, but also the names of the
+  actions that created it.
 
 - **Compositionality:** An action is composable with other actions simply as a Python
-  function, so complex (like transcribing and annotating a video) actions can be built
-  from simpler actions (like downloading and caching a YouTube video, identifying the
-  speakers in a transcript, etc.). The goal is to reduce the "interstitial complexity"
-  of combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
+  function, so complex operations (for example, transcribing and annotating a video and
+  publishing it on a website) actions can be built from simpler actions (say downloading
+  and caching a YouTube video, identifying the speakers in a transcript, formatting it
+  as pretty HTML, etc.). The goal is to reduce the "interstitial complexity" of
+  combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
   powerful ways.
 
 - **Command-line usage:** In addition to using the function in other libraries and
@@ -49,9 +60,6 @@ actions.
   video. In kash you have **smart tab completions**, **Python expressions**, and an **LLM
   assistant** built into the shell.
 
-- **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
-  in any MCP client, like Anthropic Desktop or Cursor.
-
 - **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
   You can use it with any models or APIs you like, and is already set up to use the APIs
@@ -59,6 +67,9 @@ actions.
   Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**,
   **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries.
   There is also some experimental support for **LlamaIndex** and **ChromaDB**.
+
+- **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
+  in any MCP client, like Anthropic Desktop or Cursor.
 
 ### What Can Kash Do?
 
@@ -92,8 +103,8 @@ visuals of a web app layered on the flexibility of a text-based terminal.
 
 ### Is Kash Mature?
 
-No. :) It's the result of a couple months of coding and experimentation, and it's very
-much in progress. Please help me make it better by sharing your ideas and feedback!
+No. :) It's the result of a couple months of coding and experimentation, and it's in
+progress. Please help me make it better by sharing your ideas and feedback!
 It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
 My contact info is at [github.com/jlevy](https://github.com/jlevy).
 
@@ -104,9 +115,9 @@ ideas, feedback, or use cases for Kash!
 
 ### Running the Kash Shell
 
-Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with an LLM
-assistant and a variety of other enhanced commands and customizations.
-If you've used a bash or Python shell before, xonsh is very intuitive.
+Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with a bunch
+of enhanced commands and customizations.
+If you've used a bash or Python shell before, it should be very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
 You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
@@ -140,30 +151,17 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    Kash is easiest to use via [**uv**](https://docs.astral.sh/uv/), the new package
    manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
    etc. Installing `uv` also ensures you get a compatible version of Python.
-
-   If you don't have `uv` installed, a quick way to install it is:
-
+   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+   installation methods and platforms.
+   Usually you just want to run:
    ```shell
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-   For macOS, you prefer [brew](https://brew.sh/) you can install or upgrade uv with:
-
-   ```shell
-   brew update
-   brew install uv
-   ```
-   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
-   installation methods and platforms.
-
 2. **Install additional command-line tools:**
 
    In addition to Python, it's highly recommended to install a few other dependencies to
-   make more tools and commands work: `ripgrep` (for search), `bat` (for prettier file
-   display), `eza` (a much improved version of `ls`), `hexyl` (a much improved hex
-   viewer), `imagemagick` (for image display in modern terminals), `libmagic` (for file
-   type detection), `ffmpeg` (for audio and video conversions)
-
+   make more tools and commands work.
    For macOS, you can again use brew:
 
    ```shell
@@ -184,22 +182,22 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
    For Windows or other platforms, see the uv instructions.
 
+   Kash auto-detects and uses `ripgrep` (for search), `bat` (for prettier file display),
+   `eza` (a much improved version of `ls`), `hexyl` (a much improved hex viewer),
+   `imagemagick` (for image display in modern terminals), `libmagic` (for file type
+   detection), `ffmpeg` (for audio and video conversions)
+
 3. **Install kash or a kash kit:**
 
+   For a more meaningful demo, use an enhanced version of kash that also has various
+   media tools (like yt-dlp and Deepgram support):
+
    ```shell
-   uv tool install kash-media --python=3.13
+   uv tool install kash-media --upgrade --python=3.13
    ```
 
    Other versions of Python should work but 3.13 is recommended.
-   For a setup without the media tools, use `kash-shell` instead.
-
-   If you've installed an older version and want to be sure you have the latest shell,
-   you may want to add `--upgrade --force` to be sure you get the latest version of the
-   kit.
-
-   ```shell
-   uv tool install kash-media --python=3.13 --upgrade --force 
-   ```
+   For a setup without the media tools, just install `kash-shell` instead.
 
 4. **Set up API keys:**
 
@@ -291,25 +289,11 @@ Type `help` for the full documentation.
 The simplest way to illustrate how to use kash is by example.
 You can go through the commands below a few at a time, trying each one.
 
-This is a "real" example that uses a bunch of libraries.
+This is a "real" example that uses ffmpeg and a few other libraries.
 So to get it to work you must install not just the main shell but the kash "media kit"
 with extra dependencies.
-
-You need the following tools:
-
-```shell
-# On MacOS:
-brew install ripgrep bat eza hexyl imagemagick libmagic ffmpeg 
-# On Linux:
-apt install ripgrep bat eza hexyl imagemagick libmagic ffmpeg
-```
-
-Then install the `kash-media`, which includes kash-shell and many other libs like yt-dlp
-for YouTube handling:
-
-```shell
-uv tool install kash-media
-```
+This is discussed in [the installation instructions](#installation-steps).
+If you don't have these already installed, you can add these tools:
 
 Then run `kash` to start.
 
@@ -428,7 +412,7 @@ show_webpage
 show_webpage --help
 
 # And you can actually how this works by looking at its source:
-source_code show_webpage
+show_webpage --show_source
 
 # What if something isn't working right?
 # Sometimes we may want to browse more detailed system logs:
@@ -447,7 +431,7 @@ transcribe_format https://www.youtube.com/watch?v=_8djNYprRDI
 
 # Getting a little fancier, this one adds little paragraph annotations and
 # a nicer summary at the top:
-transcribe_annotate_summarize https://www.youtube.com/watch?v=_8djNYprRDI
+transcribe_annotate https://www.youtube.com/watch?v=_8djNYprRDI
 
 show_webpage
 ```
