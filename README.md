@@ -43,7 +43,7 @@ the Python framework, a few core utilities, and the Kash command-line shell.
 Additional actions for handling more complex tasks like converting documents and
 transcribing, researching, or annotating videos, are in the
 [kash-docs](https://github.com/jlevy/kash-docs) and
-[kash-media](https://github.com/jlevy/kash-docs) packages, all available on PyPI and
+[kash-media](https://github.com/jlevy/kash-media) packages, all available on PyPI and
 quick to install via uv.
 
 ### Key Concepts
