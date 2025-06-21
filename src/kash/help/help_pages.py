@@ -3,7 +3,6 @@ from rich.text import Text
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
 from kash.docs.all_docs import DocSelection, all_docs
-from kash.help.docstring_utils import parse_docstring
 from kash.shell.output.shell_formatting import format_name_and_value
 from kash.shell.output.shell_output import (
     PrintHooks,
@@ -12,6 +11,7 @@ from kash.shell.output.shell_output import (
     print_hrule,
     print_markdown,
 )
+from kash.utils.common.parse_docstring import parse_docstring
 
 log = get_logger(__name__)
 

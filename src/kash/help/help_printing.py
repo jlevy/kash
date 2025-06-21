@@ -6,7 +6,6 @@ from kash.docs.all_docs import DocSelection
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
 from kash.help.assistant import assist_preamble, assistance_unstructured
-from kash.help.docstring_utils import parse_docstring
 from kash.help.function_param_info import annotate_param_info
 from kash.help.help_lookups import look_up_faq
 from kash.help.tldr_help import tldr_help
@@ -22,6 +21,7 @@ from kash.shell.output.shell_output import (
     print_help,
     print_markdown,
 )
+from kash.utils.common.parse_docstring import parse_docstring
 from kash.utils.errors import InvalidInput, NoMatch
 from kash.utils.file_formats.chat_format import ChatHistory, ChatMessage, ChatRole
 
