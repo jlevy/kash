@@ -18,7 +18,10 @@ test:
 	uv run pytest
 
 test-full:
-	ENABLE_TESTS_LLM=1 ENABLE_TESTS_INTEGRATION=1 uv run pytest
+	ENABLE_TESTS_ONLINE=1 ENABLE_TESTS_INTEGRATION=1 uv run pytest
+
+run: install lint test
+	uv run kash
 
 upgrade:
 	uv sync --upgrade --all-extras --dev
