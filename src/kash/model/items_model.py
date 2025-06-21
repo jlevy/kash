@@ -675,9 +675,21 @@ class Item:
             raise FileFormatError(f"Config item is not YAML: {self.format}: {self}")
         return from_yaml_string(self.body)
 
+    def get_filename(self) -> str | None:
+        """
+        Get the store or external path filename of the item, including the
+        file extension.
+        """
+        if self.store_path:
+            return Path(self.store_path).name
+        elif self.external_path:
+            return Path(self.external_path).name
+        else:
+            return None
+
     def get_file_ext(self) -> FileExt:
         """
-        Get or infer file extension.
+        Get or infer the base file extension for the item.
         """
         if self.file_ext:
             return self.file_ext
@@ -688,7 +700,8 @@ class Item:
 
     def get_full_suffix(self) -> str:
         """
-        Get the full file extension suffix (e.g. "note.md") for this item.
+        Assemble the full file extension suffix (e.g. "resource.yml") for this item.
+        Without a leading dot.
         """
         if self.type == ItemType.extension:
             # Python files cannot have more than one . in them.
@@ -892,12 +905,14 @@ class Item:
 
     def fmt_loc(self) -> str:
         """
-        Formatted store path, external path, or title. For error messages etc.
+        Formatted store path, external path, URL, or title. Use for logging etc.
         """
         if self.store_path:
             return fmt_store_path(self.store_path)
         elif self.external_path:
             return fmt_loc(self.external_path)
+        elif self.url:
+            return fmt_loc(self.url)
         else:
             return repr(self.pick_title())
 

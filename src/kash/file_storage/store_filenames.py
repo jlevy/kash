@@ -30,6 +30,10 @@ def folder_for_type(item_type: ItemType) -> Path:
 
 
 def join_suffix(base_slug: str, full_suffix: str) -> str:
+    """
+    Create a store filename by joining a base slug and a full suffix, i.e. a filename
+    extension with or without an item type (`.html` or `.resource.html`, for example).
+    """
     return f"{base_slug}.{full_suffix.lstrip('.')}"
 
 

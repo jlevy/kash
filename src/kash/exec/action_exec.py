@@ -43,7 +43,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     URL or file resources, either finding them in the workspace or importing them.
     Also fetches metadata for URLs if they don't already have title and description.
     """
-    from kash.exec.fetch_url_metadata import fetch_url_item_metadata
+    from kash.exec.fetch_url_items import fetch_url_item_content
 
     ws = current_ws()
 
@@ -55,7 +55,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     if input_items:
         log.message("Assembling metadata for input items:\n%s", fmt_lines(input_items))
         input_items = [
-            fetch_url_item_metadata(item, refetch=refetch) if is_url_resource(item) else item
+            fetch_url_item_content(item, refetch=refetch) if is_url_resource(item) else item
             for item in input_items
         ]
 

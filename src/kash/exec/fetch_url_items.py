@@ -11,7 +11,9 @@ from kash.utils.errors import InvalidInput
 log = get_logger(__name__)
 
 
-def fetch_url_metadata(locator: Url | StorePath, refetch: bool = False) -> Item:
+def fetch_url_item(
+    locator: Url | StorePath, *, save_content: bool = True, refetch: bool = False
+) -> Item:
     from kash.workspaces import current_ws
 
     ws = current_ws()
@@ -26,16 +28,23 @@ def fetch_url_metadata(locator: Url | StorePath, refetch: bool = False) -> Item:
     else:
         raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
 
-    return fetch_url_item_metadata(item, refetch=refetch)
+    return fetch_url_item_content(item, save_content=save_content, refetch=refetch)
 
 
-def fetch_url_item_metadata(item: Item, refetch: bool = False) -> Item:
+def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bool = False) -> Item:
     """
-    Fetch metadata for a URL using a media service if we recognize the URL,
-    and otherwise fetching and extracting it from the web page HTML.
+    Fetch content and metadata for a URL using a media service if we
+    recognize the URL as a known media service. Otherwise, fetch and extract the
+    metadata and content from the web page and save it to the URL item.
+
+    If `save_content` is true, a copy of the content is also saved as
+    a resource item.
+
+    The content item is returned if content was saved. Otherwise, the updated
+    URL item is returned.
     """
     from kash.web_content.canon_url import canonicalize_url
-    from kash.web_content.web_extract import fetch_extract
+    from kash.web_content.web_extract import fetch_page_content
     from kash.workspaces import current_ws
 
     ws = current_ws()
@@ -54,28 +63,47 @@ def fetch_url_item_metadata(item: Item, refetch: bool = False) -> Item:
     # Prefer fetching metadata from media using the media service if possible.
     # Data is cleaner and YouTube for example often blocks regular scraping.
     media_metadata = get_media_metadata(url)
+    url_item: Item | None = None
+    content_item: Item | None = None
     if media_metadata:
-        fetched_item = Item.from_media_metadata(media_metadata)
+        url_item = Item.from_media_metadata(media_metadata)
         # Preserve and canonicalize any slice suffix on the URL.
         _base_url, slice = parse_url_slice(item.url)
         if slice:
             new_url = add_slice_to_url(media_metadata.url, slice)
             if new_url != item.url:
                 log.message("Updated URL from metadata and added slice: %s", new_url)
-            fetched_item.url = new_url
+            url_item.url = new_url
 
-        fetched_item = item.merged_copy(fetched_item)
+        url_item = item.merged_copy(url_item)
     else:
-        page_data = fetch_extract(url, refetch=refetch)
-        fetched_item = item.new_copy_with(
+        page_data = fetch_page_content(url, refetch=refetch, cache=save_content)
+        url_item = item.new_copy_with(
             title=page_data.title or item.title,
             description=page_data.description or item.description,
             thumbnail_url=page_data.thumbnail_url or item.thumbnail_url,
         )
+        if save_content:
+            assert page_data.saved_content
+            assert page_data.format_info
+            content_item = url_item.new_copy_with(
+                external_path=str(page_data.saved_content),
+                # Use the original filename, not the local cache filename (which has a hash suffix).
+                original_filename=item.get_filename(),
+                format=page_data.format_info.format,
+            )
+            ws.save(content_item)
 
-    if not fetched_item.title:
+    if not url_item.title:
         log.warning("Failed to fetch page data: title is missing: %s", item.url)
 
-    ws.save(fetched_item)
+    # Now save the updated URL item and also the content item if we have one.
+    ws.save(url_item)
+    assert url_item.store_path
+    log.debug("Saved URL item: %s", url_item.fmt_loc())
+    if content_item:
+        ws.save(content_item)
+        assert content_item.store_path
+        log.debug("Saved content item: %s", content_item.fmt_loc())
 
-    return fetched_item
+    return content_item or url_item

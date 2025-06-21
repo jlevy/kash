@@ -23,14 +23,12 @@ from kash.exec import (
     resolve_locator_arg,
 )
 from kash.exec.action_registry import get_all_actions_defaults
-from kash.exec.fetch_url_metadata import fetch_url_metadata
+from kash.exec.fetch_url_items import fetch_url_item
 from kash.exec.precondition_checks import actions_matching_paths
 from kash.exec.precondition_registry import get_all_preconditions
-from kash.exec.preconditions import is_url_resource
 from kash.exec_model.shell_model import ShellResult
 from kash.local_server.local_url_formatters import local_url_formatter
 from kash.media_base import media_tools
-from kash.media_base.media_services import is_media_url
 from kash.model.items_model import Item, ItemType
 from kash.model.params_model import GLOBAL_PARAMS
 from kash.model.paths_model import StorePath, fmt_store_path
@@ -54,12 +52,11 @@ from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.obj_replace import remove_values
 from kash.utils.common.parse_key_vals import parse_key_value
 from kash.utils.common.type_utils import not_none
-from kash.utils.common.url import Url, is_url, parse_http_url
+from kash.utils.common.url import Url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_formats.chat_format import tail_chat_history
 from kash.utils.file_utils.dir_info import is_nonempty_dir
 from kash.utils.file_utils.file_formats_model import Format
-from kash.utils.text_handling.doc_normalization import can_normalize
 from kash.web_content.file_cache_utils import cache_file
 from kash.workspaces import (
     current_ws,
@@ -187,85 +184,6 @@ def cache_content(*urls_or_paths: str, refetch: bool = False) -> None:
         cprint(f"{fmt_loc(url_or_path)}{cache_str}:", style=STYLE_EMPH, text_wrap=Wrap.NONE)
         cprint(f"{cache_result.content.path}", text_wrap=Wrap.INDENT_ONLY)
         PrintHooks.spacer()
-
-
-@kash_command
-def download(*urls_or_paths: str, refetch: bool = False, no_format: bool = False) -> ShellResult:
-    """
-    Download a URL or resource. Uses cached content if available, unless `refetch` is true.
-    Inputs can be URLs or paths to URL resources.
-    Creates both resource and document versions for text content.
-
-    :param no_format: If true, do not also normalize Markdown content.
-    """
-    ws = current_ws()
-    saved_paths = []
-
-    for url_or_path in urls_or_paths:
-        locator = resolve_locator_arg(url_or_path)
-        url: Url | None = None
-
-        # Get the URL from the locator
-        if not isinstance(locator, Path) and is_url(locator):
-            url = Url(locator)
-        elif isinstance(locator, StorePath):
-            url_item = ws.load(locator)
-            if is_url_resource(url_item):
-                url = url_item.url
-
-        if not url:
-            raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
-
-        # Handle media URLs differently
-        if is_media_url(url):
-            log.message(
-                "URL is a media URL, so adding as a resource and will cache media: %s", fmt_loc(url)
-            )
-            store_path = ws.import_item(url, as_type=ItemType.resource, reimport=refetch)
-            saved_paths.append(store_path)
-            media_tools.cache_media(url)
-        else:
-            # Cache the content first
-            expiration_sec = 0 if refetch else None
-            cache_result = cache_file(url, expiration_sec=expiration_sec)
-            original_filename = Path(parse_http_url(url).path).name
-            mime_type = cache_result.content.headers and cache_result.content.headers.mime_type
-
-            # Create a resource item
-            resource_item = Item.from_external_path(
-                cache_result.content.path,
-                ItemType.resource,
-                url=url,
-                mime_type=mime_type,
-                original_filename=original_filename,
-            )
-            # For initial content, do not format or add frontmatter.
-            store_path = ws.save(resource_item, no_frontmatter=True, no_format=True)
-            saved_paths.append(store_path)
-            select(store_path)
-
-            # Also create a doc version for text content if we want to normalize formatting.
-            if resource_item.format and can_normalize(resource_item.format) and not no_format:
-                doc_item = Item.from_external_path(
-                    cache_result.content.path,
-                    ItemType.doc,
-                    url=url,
-                    mime_type=mime_type,
-                    original_filename=original_filename,
-                )
-                # Now use default formatting and frontmatter.
-                doc_store_path = ws.save(doc_item)
-                saved_paths.append(doc_store_path)
-                select(doc_store_path)
-
-    print_status(
-        "Downloaded %s %s:\n%s",
-        len(saved_paths),
-        plural("item", len(saved_paths)),
-        fmt_lines(saved_paths),
-    )
-
-    return ShellResult(show_selection=True)
 
 
 @kash_command
@@ -536,10 +454,14 @@ def save_clipboard(
 
 
 @kash_command
-def fetch_metadata(*files_or_urls: str, refetch: bool = False) -> ShellResult:
+def fetch_url(*files_or_urls: str, refetch: bool = False) -> ShellResult:
     """
-    Fetch metadata for the given URLs or resources. Imports new URLs and saves back
-    the fetched metadata for existing resources.
+    Fetch content and metadata for the given URLs or resources, saving to the
+    current workspace.
+
+    Imports new URLs and saves back the fetched metadata for existing resources.
+    Also saves a resource item with the content of the URL, either HTML, text, or
+    of any other type.
 
     Skips items that already have a title and description, unless `refetch` is true.
     Skips (with a warning) items that are not URL resources.
@@ -552,7 +474,7 @@ def fetch_metadata(*files_or_urls: str, refetch: bool = False) -> ShellResult:
     store_paths = []
     for locator in locators:
         try:
-            fetched_item = fetch_url_metadata(locator, refetch=refetch)
+            fetched_item = fetch_url_item(locator, refetch=refetch)
             store_paths.append(fetched_item.store_path)
         except InvalidInput as e:
             log.warning(

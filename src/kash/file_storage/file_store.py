@@ -405,6 +405,7 @@ class FileStore(Workspace):
         # If external path already exists and is within the workspace, the file was
         # already saved (e.g. by an action that wrote the item directly to the store).
         external_path = item.external_path and Path(item.external_path).resolve()
+        skipped_save = False
         if external_path and self._is_in_store(external_path):
             log.info("Item with external_path already saved: %s", fmt_loc(external_path))
             rel_path = external_path.relative_to(self.base_dir)
@@ -480,12 +481,17 @@ class FileStore(Workspace):
                     )
                     os.unlink(full_path)
                     store_path = old_store_path
+                    skipped_save = True
 
         # Update in-memory store_path only after successful save.
         item.store_path = str(store_path)
         self._id_index_item(store_path)
 
-        log.message("%s Saved item: %s", EMOJI_SAVED, fmt_loc(store_path))
+        if not skipped_save:
+            log.message("%s Saved item: %s", EMOJI_SAVED, fmt_loc(store_path))
+        else:
+            log.info("%s Already saved: %s", EMOJI_SAVED, fmt_loc(store_path))
+
         return store_path
 
     @log_calls(level="debug")
