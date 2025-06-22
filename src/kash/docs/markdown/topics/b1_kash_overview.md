@@ -165,48 +165,37 @@ works on readable text such as Markdown.
 This catches errors and allows you to find actions that might apply to a given selected
 set of items using `suggest_actions`.
 
-### Programmatic Use
+### Programmatic Usage
 
-Since commands and actions are really just Python functions.
+Kash can be used entirely programmatically, so that actions are called just like
+functions from Python, but the additional functionality of the items model, saving files
+to a workspace, and so on, are all automatic.
 
-### Useful Features
+This means you can use Kash to build your own CLI apps much more quickly.
 
-Kash makes a few kinds of messy text manipulations easier:
+For an example of this, see [textpress](https://github.com/jlevy/textpress), which wraps
+quite a few kash actions to allow clean publishing of docx or PDF files on
+[textpress.md](https://textpress.md/).
 
-- Reusable LLM actions: A common kind of action is to invoke an LLM (like GPT-4o or o1)
-  on a text item, with a given system and user prompt template.
-  New LLM actions can be added with a few lines of Python by subclassing an action base
-  class, typically `Action`, `CachedItemAction` (for any action that doesn't need to be
-  rerun if it has the same single output), `CachedLLMAction` (if it also is performing
-  an LLM-based transform), or `ChunkedLLMAction` (if it will be processing a document
-  broken into <div class="chunk"> elements).
+### Utilities and Supporting Libraries
 
-- Sliding window transformations: LLMs can have trouble processing large inputs, not
-  just because of context window and because they may make more mistakes when making
-  lots of changes at once.
-  Kash supports running actions in a sliding window across the document, then stitching
-  the results back together when done.
+Kash includes a number of utility libraries to help with common tasks, either in the
+base `kash-shell` package or or smaller dependencies:
 
-- Checking and enforcing changes: LLMs do not reliably do what they are asked to do.
-  So a key part of making them useful is to save outputs at each step of the way and
-  have a way to review their outputs or provide guardrails on what they can do with
-  content.
+- See [frontmatter-format](https://github.com/jlevy/frontmatter-format) for the spec and
+  implementation we use of frontmatter YAML format.
 
-- Fine-grainded diffs with word tokens: Documents can be represented at the word level,
-  using “word tokens” to represent words and normalized whitespace (word, sentence, and
-  paragraph breaks, but not line breaks).
-  This allows diffs of similar documents regardless of formatting.
-  For example, it is possible to ask an LLM only to add paragraph breaks, then drop any
-  other changes it makes to other words.
-  You can use this intelligent matching of words to “backfill” specific content from one
-  doc into an edited document, such as pulling timestamps from a full transcript back
-  into an edited transcript or summary.
+- See
+  [utils/file_utils](https://github.com/jlevy/kash/tree/main/src/kash/utils/file_utils)
+  for file format detection, conversion, filename handling, etc.
 
-- Paragraph and sentence operations: A lot of operations within actions should be done
-  in chunks at the paragraph or sentence level.
-  Kash offers simple tools to subdivide documents into paragraphs and sentences and
-  these can be used together with sliding windows to process large documents.
+- See [chopdiff](https://github.com/jlevy/chopdiff) for a simple text doc data model
+  that includes sentences and paragraphs and fairly advanced diffing, filtered diffing,
+  and windowed transformations of text via LLM calls.
 
-In addition, there are built-in kash commands that are part of the kash tool itself.
-These allow you to list items in the workspace, see or change the current selection,
-archive items, view logs, etc.
+- See [clideps](https://github.com/jlevy/clideps) for utilities for helping with dot-env
+  files, API key setup, and dependency checks.
+
+- See [utils/common](https://github.com/jlevy/kash/tree/main/src/kash/utils/common) the
+  rest of [utils/](https://github.com/jlevy/kash/tree/main/src/kash/utils) for a variety
+  of other general utilities.

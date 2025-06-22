@@ -5,6 +5,28 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 
+class RetryException(RuntimeError):
+    """
+    Base exception class for retry-related errors.
+    """
+
+
+class RetryExhaustedException(RetryException):
+    """
+    Retries exhausted (this is not retriable).
+    """
+
+    def __init__(self, original_exception: Exception, max_retries: int, total_time: float):
+        self.original_exception = original_exception
+        self.max_retries = max_retries
+        self.total_time = total_time
+
+        super().__init__(
+            f"Max retries ({max_retries}) exhausted after {total_time:.1f}s. "
+            f"Final error: {type(original_exception).__name__}: {original_exception}"
+        )
+
+
 def default_is_retriable(exception: Exception) -> bool:
     """
     Default retriable exception checker for common rate limit patterns.
@@ -15,7 +37,7 @@ def default_is_retriable(exception: Exception) -> bool:
     Returns:
         True if the exception should be retried with backoff
     """
-    # Check for LiteLLM specific exceptions first
+    # Check for LiteLLM specific exceptions first, as a soft dependency.
     try:
         import litellm.exceptions
 
@@ -37,6 +59,7 @@ def default_is_retriable(exception: Exception) -> bool:
     rate_limit_indicators = [
         "rate limit",
         "too many requests",
+        "try again later",
         "429",
         "quota exceeded",
         "throttled",
@@ -45,6 +68,53 @@ def default_is_retriable(exception: Exception) -> bool:
     ]
 
     return any(indicator in exception_str for indicator in rate_limit_indicators)
+
+
+@dataclass(frozen=True)
+class RetrySettings:
+    """
+    Retry behavior when handling concurrent requests.
+    """
+
+    max_task_retries: int
+    """Maximum retries per individual task (0 = no retries)"""
+
+    max_total_retries: int | None = None
+    """Maximum retries across all tasks combined (None = no global limit)"""
+
+    initial_backoff: float = 1.0
+    """Base backoff time in seconds"""
+
+    max_backoff: float = 128.0
+    """Maximum backoff time in seconds"""
+
+    backoff_factor: float = 2.0
+    """Exponential backoff multiplier"""
+
+    is_retriable: Callable[[Exception], bool] = default_is_retriable
+    """Function to determine if an exception should be retried"""
+
+
+DEFAULT_RETRIES = RetrySettings(
+    max_task_retries=10,
+    max_total_retries=100,
+    initial_backoff=1.0,
+    max_backoff=128.0,
+    backoff_factor=2.0,
+    is_retriable=default_is_retriable,
+)
+"""Reasonable default retry settings with both per-task and global limits."""
+
+
+NO_RETRIES = RetrySettings(
+    max_task_retries=0,
+    max_total_retries=0,
+    initial_backoff=0.0,
+    max_backoff=0.0,
+    backoff_factor=1.0,
+    is_retriable=lambda _: False,
+)
+"""Disable retries completely."""
 
 
 def extract_retry_after(exception: Exception) -> float | None:
@@ -107,118 +177,129 @@ def calculate_backoff(
     # Exponential backoff: initial_backoff * (backoff_factor ^ attempt)
     exponential_backoff = initial_backoff * (backoff_factor**attempt)
 
-    # Add jitter (±25% randomization)
-    jitter_factor = 1 + (random.random() - 0.5) * 0.5
+    # Add significant jitter (±50% randomization) to prevent thundering herd
+    jitter_factor = 1 + (random.random() - 0.5) * 1.0
     backoff_with_jitter = exponential_backoff * jitter_factor
+    # Add a small random base delay (0 to 50% of initial_backoff) to further spread out retries
+    base_delay = random.random() * (initial_backoff * 0.5)
+    total_backoff = backoff_with_jitter + base_delay
 
-    return min(backoff_with_jitter, max_backoff)
-
-
-@dataclass(frozen=True)
-class RetrySettings:
-    """
-    Configuration for retry behavior in rate-limited operations.
-    """
-
-    max_retries: int
-    initial_backoff: float
-    max_backoff: float
-    backoff_factor: float = 2.0
-    is_retriable: Callable[[Exception], bool] = default_is_retriable
-
-
-DEFAULT_RETRY_SETTINGS = RetrySettings(
-    max_retries=3,
-    initial_backoff=1.0,
-    max_backoff=60.0,
-    backoff_factor=2.0,
-    is_retriable=default_is_retriable,
-)
-"""Reasonable default retry settings."""
+    return min(total_backoff, max_backoff)
 
 
 ## Tests
 
 
-def test_default_is_retriable_string_patterns():
+def test_default_is_retriable():
     """Test string-based rate limit detection."""
-    # Test positive cases
+    # Positive cases
     assert default_is_retriable(Exception("Rate limit exceeded"))
     assert default_is_retriable(Exception("Too many requests"))
     assert default_is_retriable(Exception("HTTP 429 error"))
-    assert default_is_retriable(Exception("Quota exceeded for your organization"))
-    assert default_is_retriable(Exception("Request throttled"))
-    assert default_is_retriable(Exception("rate_limit_error occurred"))
-    assert default_is_retriable(Exception("RateLimitError: something went wrong"))
+    assert default_is_retriable(Exception("Quota exceeded"))
+    assert default_is_retriable(Exception("throttled"))
+    assert default_is_retriable(Exception("RateLimitError"))
 
-    # Test negative cases
+    # Negative cases
     assert not default_is_retriable(Exception("Authentication failed"))
     assert not default_is_retriable(Exception("Invalid API key"))
-    assert not default_is_retriable(Exception("Network connection error"))
+    assert not default_is_retriable(Exception("Network error"))
 
 
-def test_default_is_retriable_with_litellm():
-    """Test LiteLLM exception detection when available."""
+def test_default_is_retriable_litellm():
+    """Test LiteLLM exception detection if available."""
     try:
         import litellm.exceptions
 
-        # Test LiteLLM specific exceptions
-        rate_limit_error = litellm.exceptions.RateLimitError(
-            message="Rate limit exceeded",
-            model="test-model",
-            llm_provider="test-provider",
+        # Test retriable LiteLLM exceptions
+        rate_error = litellm.exceptions.RateLimitError(
+            message="Rate limit", model="test", llm_provider="test"
         )
-        assert default_is_retriable(rate_limit_error)
-
         api_error = litellm.exceptions.APIError(
-            message="API error occurred",
-            model="test-model",
-            llm_provider="test-provider",
-            status_code=500,
+            message="API error", model="test", llm_provider="test", status_code=500
         )
+        assert default_is_retriable(rate_error)
         assert default_is_retriable(api_error)
 
-        # Test non-retriable LiteLLM exception
+        # Test non-retriable exception
         auth_error = litellm.exceptions.AuthenticationError(
-            message="Authentication failed",
-            model="test-model",
-            llm_provider="test-provider",
+            message="Auth failed", model="test", llm_provider="test"
         )
         assert not default_is_retriable(auth_error)
 
     except ImportError:
-        # LiteLLM not available, skip this test
+        # LiteLLM not available, skip
         pass
 
 
-def test_calculate_backoff_with_retry_after():
-    """Test backoff calculation with retry-after header."""
+def test_extract_retry_after():
+    """Test retry-after header extraction."""
 
-    # Mock exception with retry_after attribute
+    class MockResponse:
+        def __init__(self, headers):
+            self.headers = headers
+
+    class MockException(Exception):
+        def __init__(self, response=None, retry_after=None):
+            self.response = response
+            if retry_after is not None:
+                self.retry_after = retry_after
+            super().__init__()
+
+    # Test response header
+    response = MockResponse({"retry-after": "30"})
+    assert extract_retry_after(MockException(response=response)) == 30.0
+
+    # Test retry_after attribute
+    assert extract_retry_after(MockException(retry_after=45.0)) == 45.0
+
+    # Test no retry info
+    assert extract_retry_after(MockException()) is None
+
+    # Test invalid values
+    invalid_response = MockResponse({"retry-after": "invalid"})
+    assert extract_retry_after(MockException(response=invalid_response)) is None
+
+
+def test_calculate_backoff():
+    """Test backoff calculation."""
+
     class MockException(Exception):
         def __init__(self, retry_after=None):
             self.retry_after = retry_after
-            super().__init__("Mock exception")
+            super().__init__()
 
-    # Test with retry_after
-    exception_with_retry = MockException(retry_after=30.0)
+    # Test with retry_after header
+    exception = MockException(retry_after=30.0)
+    assert (
+        calculate_backoff(
+            attempt=1,
+            exception=exception,
+            initial_backoff=1.0,
+            max_backoff=60.0,
+            backoff_factor=2.0,
+        )
+        == 30.0
+    )
+
+    # Test exponential backoff with increased jitter and base delay
+    exception = MockException()
     backoff = calculate_backoff(
         attempt=1,
-        exception=exception_with_retry,
+        exception=exception,
         initial_backoff=1.0,
         max_backoff=60.0,
         backoff_factor=2.0,
     )
-    assert backoff == 30.0
+    # 2.0 base * (±50% jitter) + (0-50% of initial_backoff) = range ~1.0 to 3.5
+    assert 1.0 <= backoff <= 3.5
 
-    # Test without retry_after (should use exponential backoff)
-    exception_without_retry = MockException()
-    backoff = calculate_backoff(
-        attempt=1,
-        exception=exception_without_retry,
+    # Test max_backoff cap
+    high_backoff = calculate_backoff(
+        attempt=10,
+        exception=exception,
         initial_backoff=1.0,
-        max_backoff=60.0,
+        max_backoff=5.0,
         backoff_factor=2.0,
     )
-    # Should be around 2.0 * jitter_factor (between 1.5 and 2.5)
-    assert 1.5 <= backoff <= 2.5
+    assert high_backoff <= 5.0
