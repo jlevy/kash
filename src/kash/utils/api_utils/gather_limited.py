@@ -4,7 +4,8 @@ import asyncio
 import inspect
 import logging
 from collections.abc import Callable, Coroutine
-from typing import Any, TypeAlias, TypeVar, overload
+from dataclasses import dataclass, field
+from typing import Any, TypeAlias, TypeVar, cast, overload
 
 from aiolimiter import AsyncLimiter
 
@@ -21,10 +22,24 @@ T = TypeVar("T")
 
 log = logging.getLogger(__name__)
 
-# Type alias for coroutine specification
-CoroSpec: TypeAlias = Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T]
-# Type alias for sync function specification
-SyncSpec: TypeAlias = Callable[[], T]
+
+@dataclass(frozen=True)
+class FuncTask:
+    """
+    A task described as an unevaluated function with args and kwargs.
+    This task format allows you to use args and kwargs in the Labeler.
+    """
+
+    func: Callable[..., Any]
+    args: tuple[Any, ...] = ()
+    kwargs: dict[str, Any] = field(default_factory=dict)
+
+
+# Type aliases for coroutine and sync specifications, including unevaluated function specs
+CoroSpec: TypeAlias = (
+    Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T] | FuncTask
+)
+SyncSpec: TypeAlias = Callable[[], T] | FuncTask
 
 # Specific labeler types using the generic Labeler pattern
 CoroLabeler: TypeAlias = Labeler[CoroSpec[T]]
@@ -58,7 +73,7 @@ class RetryCounter:
 
 
 @overload
-async def gather_limited(
+async def gather_limited_async(
     *coro_specs: CoroSpec[T],
     max_concurrent: int = DEFAULT_MAX_CONCURRENT,
     max_rps: float = DEFAULT_MAX_RPS,
@@ -70,7 +85,7 @@ async def gather_limited(
 
 
 @overload
-async def gather_limited(
+async def gather_limited_async(
     *coro_specs: CoroSpec[T],
     max_concurrent: int = DEFAULT_MAX_CONCURRENT,
     max_rps: float = DEFAULT_MAX_RPS,
@@ -81,7 +96,7 @@ async def gather_limited(
 ) -> list[T | BaseException]: ...
 
 
-async def gather_limited(
+async def gather_limited_async(
     *coro_specs: CoroSpec[T],
     max_concurrent: int = DEFAULT_MAX_CONCURRENT,
     max_rps: float = DEFAULT_MAX_RPS,
@@ -100,9 +115,10 @@ async def gather_limited(
 
     Can optionally display live progress with retry indicators using TaskStatus.
 
-    Accepts either:
+    Accepts:
     - Callables that return coroutines: `lambda: some_async_func(arg)` (recommended for retries)
     - Coroutines directly: `some_async_func(arg)` (only if retries disabled)
+    - FuncSpec objects: `FuncSpec(some_async_func, (arg1, arg2), {"kwarg": value})` (args accessible to labeler)
 
     Examples:
         ```python
@@ -176,7 +192,10 @@ async def gather_limited(
 
         async def executor() -> T:
             # Create a fresh coroutine for each attempt
-            if callable(coro_spec):
+            if isinstance(coro_spec, FuncTask):
+                # FuncSpec format: FuncSpec(func, args, kwargs)
+                coro = coro_spec.func(*coro_spec.args, **coro_spec.kwargs)
+            elif callable(coro_spec):
                 coro = coro_spec()
             else:
                 # Direct coroutine - only valid if retries disabled
@@ -254,7 +273,7 @@ async def gather_limited_sync(
     - Global retries: max_total_retries attempts across all tasks (prevents cascade failures)
 
     Args:
-        *sync_specs: Callables that return values (not coroutines)
+        *sync_specs: Callables that return values (not coroutines) or FuncSpec objects
         max_concurrent: Maximum number of concurrent executions
         max_rps: Maximum requests per second
         return_exceptions: If True, exceptions are returned as results
@@ -301,7 +320,13 @@ async def gather_limited_sync(
 
         async def executor() -> T:
             # Call sync function via asyncio.to_thread, handling retry at this level
-            result = await asyncio.to_thread(sync_spec)
+            if isinstance(sync_spec, FuncTask):
+                # FuncSpec format: FuncSpec(func, args, kwargs)
+                result = await asyncio.to_thread(
+                    sync_spec.func, *sync_spec.args, **sync_spec.kwargs
+                )
+            else:
+                result = await asyncio.to_thread(sync_spec)
             # Check if the callable returned a coroutine (which would be a bug)
             if inspect.iscoroutine(result):
                 # Clean up the coroutine we accidentally created
@@ -311,7 +336,7 @@ async def gather_limited_sync(
                     "gather_limited_sync() is for synchronous functions only. "
                     "Use gather_limited() for async functions."
                 )
-            return result
+            return cast(T, result)
 
         try:
             result = await _execute_with_retry(
@@ -396,9 +421,7 @@ async def _execute_with_retry(
                 f"{global_retry_counter.count}/{global_retry_counter.max_total_retries or '∞'} total) "
                 f"backing off for {backoff_time:.2f}s"
             )
-            exception_msg = (
-                f"Rate limit exception: {type(last_exception).__name__}: {last_exception}"
-            )
+            exception_msg = f"Rate limit exception: {type(last_exception).__name__}: {last_exception}"
 
             if use_debug_level:
                 log.debug(rate_limit_msg)
@@ -427,7 +450,9 @@ async def _execute_with_retry(
                         f"Max task retries ({retry_settings.max_task_retries}) exhausted after {total_time:.1f}s. "
                         f"Final attempt failed with: {type(e).__name__}: {e}"
                     )
-                    raise RetryExhaustedException(e, retry_settings.max_task_retries, total_time)
+                    raise RetryExhaustedException(
+                        e, retry_settings.max_task_retries, total_time
+                    )
 
             # Check if this is a retriable exception
             if retry_settings.is_retriable(e):
@@ -435,7 +460,9 @@ async def _execute_with_retry(
                 continue
             else:
                 # Non-retriable exception, log and re-raise immediately
-                log.warning("Non-retriable exception (not retrying): %s", e, exc_info=True)
+                log.warning(
+                    "Non-retriable exception (not retrying): %s", e, exc_info=True
+                )
                 raise
 
     # This should never be reached, but satisfy type checker
@@ -516,7 +543,7 @@ def test_gather_limited_async_basic():
             return value * 3
 
         # Test with callables (recommended pattern)
-        results = await gather_limited(
+        results = await gather_limited_async(
             lambda: async_func(1),
             lambda: async_func(2),
             lambda: async_func(3),
@@ -540,7 +567,7 @@ def test_gather_limited_direct_coroutines():
             return value * 4
 
         # Test with direct coroutines (only works when retries disabled)
-        results = await gather_limited(
+        results = await gather_limited_async(
             async_func(1),
             async_func(2),
             async_func(3),
@@ -562,7 +589,7 @@ def test_gather_limited_coroutine_retry_validation():
 
         # Should raise ValueError when trying to use coroutines with retries
         try:
-            await gather_limited(
+            await gather_limited_async(
                 async_func(1),  # Direct coroutine
                 lambda: async_func(2),  # Callable
                 retry_settings=RetrySettings(
@@ -596,7 +623,7 @@ def test_gather_limited_async_with_retries():
             return "async_success"
 
         # Should succeed after retry using callable
-        results = await gather_limited(
+        results = await gather_limited_async(
             lambda: flaky_async_func(),
             retry_settings=RetrySettings(
                 max_task_retries=2,
@@ -696,7 +723,7 @@ def test_gather_limited_return_exceptions():
             return "async_success"
 
         # Test async version with exceptions returned
-        async_results = await gather_limited(
+        async_results = await gather_limited_async(
             lambda: success_async(),
             lambda: failing_async(),
             return_exceptions=True,
@@ -744,10 +771,70 @@ def test_gather_limited_global_retry_limit():
         total_retries = (retry_counts["task1"] - 1) + (
             retry_counts["task2"] - 1
         )  # -1 for initial attempts
-        assert total_retries <= 3, f"Total retries {total_retries} exceeded global limit of 3"
+        assert total_retries <= 3, (
+            f"Total retries {total_retries} exceeded global limit of 3"
+        )
 
         # Verify that both tasks were attempted at least once
         assert retry_counts["task1"] >= 1
         assert retry_counts["task2"] >= 1
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_funcspec_format():
+    """Test gather_limited with FuncSpec format and custom labeler accessing args."""
+    import asyncio
+
+    async def run_test():
+        def sync_func(name: str, value: int, multiplier: int = 2) -> str:
+            """Sync function that takes args and kwargs."""
+            return f"{name}: {value * multiplier}"
+
+        async def async_func(name: str, value: int, multiplier: int = 2) -> str:
+            """Async function that takes args and kwargs."""
+            await asyncio.sleep(0.01)
+            return f"{name}: {value * multiplier}"
+
+        captured_labels = []
+
+        def custom_labeler(i: int, spec: Any) -> str:
+            if isinstance(spec, FuncTask):
+                # Extract meaningful info from args for labeling
+                if spec.args and len(spec.args) > 0:
+                    label = f"Processing {spec.args[0]}"
+                else:
+                    label = f"Task {i}"
+            else:
+                label = f"Task {i}"
+            captured_labels.append(label)
+            return label
+
+        # Test sync version with FuncSpec format and custom labeler
+        sync_results = await gather_limited_sync(
+            FuncTask(sync_func, ("user1", 100), {"multiplier": 3}),  # user1: 300
+            FuncTask(sync_func, ("user2", 50)),  # user2: 100 (default multiplier)
+            labeler=custom_labeler,
+            retry_settings=NO_RETRIES,
+        )
+
+        assert sync_results == ["user1: 300", "user2: 100"]
+        assert captured_labels == ["Processing user1", "Processing user2"]
+
+        # Reset labels for async test
+        captured_labels.clear()
+
+        # Test async version with FuncSpec format and custom labeler
+        async_results = await gather_limited_async(
+            FuncTask(async_func, ("api_call", 10), {"multiplier": 4}),  # api_call: 40
+            FuncTask(
+                async_func, ("data_fetch", 5)
+            ),  # data_fetch: 10 (default multiplier)
+            labeler=custom_labeler,
+            retry_settings=NO_RETRIES,
+        )
+
+        assert async_results == ["api_call: 40", "data_fetch: 10"]
+        assert captured_labels == ["Processing api_call", "Processing data_fetch"]
 
     asyncio.run(run_test())

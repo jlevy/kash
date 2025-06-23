@@ -42,6 +42,65 @@ class TaskInfo:
     label: str = ""
 
 
+@dataclass(frozen=True)
+class TaskSummary:
+    """Summary of task completion states."""
+
+    task_states: list[TaskState]
+
+    @property
+    def completed(self) -> int:
+        """Number of completed tasks."""
+        return sum(1 for state in self.task_states if state == TaskState.COMPLETED)
+
+    @property
+    def failed(self) -> int:
+        """Number of failed tasks."""
+        return sum(1 for state in self.task_states if state == TaskState.FAILED)
+
+    @property
+    def skipped(self) -> int:
+        """Number of skipped tasks."""
+        return sum(1 for state in self.task_states if state == TaskState.SKIPPED)
+
+    @property
+    def total(self) -> int:
+        """Total number of tasks."""
+        return len(self.task_states)
+
+    @property
+    def no_failures(self) -> bool:
+        """Whether no tasks failed."""
+        return self.failed == 0
+
+    @property
+    def all_failed(self) -> bool:
+        """Whether all tasks failed."""
+        return self.failed == self.total
+
+    def summary_str(self) -> str:
+        """
+        Generate summary message based on task completion states.
+        """
+        if not self.task_states:
+            return "No tasks to process"
+
+        if self.no_failures:
+            return "All tasks finished successfully"
+        elif self.all_failed:
+            return "All tasks failed!"
+        else:
+            parts = []
+            if self.completed > 0:
+                parts.append(f"{self.completed} tasks completed")
+            if self.failed > 0:
+                parts.append(f"{self.failed} tasks failed")
+            if self.skipped > 0:
+                parts.append(f"{self.skipped} tasks skipped")
+
+            return ", ".join(parts)
+
+
 class ProgressTracker(Protocol[TaskID]):
     """
     Protocol for progress tracking that gather_limited can depend on.
@@ -213,36 +272,5 @@ class SimpleProgressContext:
         if self.verbose and self._tracker:
             # Generate automatic summary
             task_states = [info.state for info in self._tracker._tasks.values()]
-            summary = generate_task_summary(task_states)
-            print(summary)
-
-
-def generate_task_summary(task_states: list[TaskState]) -> str:
-    """
-    Generate summary message based on task completion states.
-    """
-    if not task_states:
-        return f"{EMOJI_SUCCESS} No tasks to process"
-
-    completed = sum(1 for state in task_states if state == TaskState.COMPLETED)
-    failed = sum(1 for state in task_states if state == TaskState.FAILED)
-    skipped = sum(1 for state in task_states if state == TaskState.SKIPPED)
-    total = len(task_states)
-
-    if failed == 0:
-        # All successful
-        return f"{EMOJI_SUCCESS} All tasks finished successfully"
-    elif failed == total:
-        # All failed
-        return f"{EMOJI_FAILURE} All tasks failed!"
-    else:
-        # Mixed results
-        parts = []
-        if completed > 0:
-            parts.append(f"{completed} tasks completed")
-        if failed > 0:
-            parts.append(f"{failed} tasks failed")
-        if skipped > 0:
-            parts.append(f"{skipped} tasks skipped")
-
-        return f"{EMOJI_WARN} {', '.join(parts)}"
+            summary = TaskSummary(task_states=task_states)
+            print(summary.summary_str())

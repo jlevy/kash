@@ -24,7 +24,7 @@ from kash.utils.api_utils.progress_protocol import (
     SPINNER_NAME,
     TaskInfo,
     TaskState,
-    generate_task_summary,
+    TaskSummary,
 )
 
 T = TypeVar("T")
@@ -441,7 +441,8 @@ class TaskStatus(AbstractAsyncContextManager):
 
     def get_summary(self) -> str:
         """Generate summary message based on current task states."""
-        return generate_task_summary(self.get_task_states())
+        summary = TaskSummary(task_states=self.get_task_states())
+        return f"Tasks done: {summary}"
 
     @property
     def console_for_output(self) -> Console:

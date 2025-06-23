@@ -6,7 +6,7 @@ import time
 from typing import Any
 
 from kash.utils.api_utils.api_retries import RetrySettings
-from kash.utils.api_utils.gather_limited import gather_limited, gather_limited_sync
+from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
 from kash.utils.rich_custom.task_status import StatusSettings, TaskStatus
 
@@ -46,7 +46,7 @@ async def task_status_demo() -> dict[str, Any]:
         return f"simple_result_{value}"
 
     async with SimpleProgressContext(verbose=True) as simple_status:
-        simple_results = await gather_limited(
+        simple_results = await gather_limited_async(
             lambda: simple_task(1),
             lambda: simple_task(2),
             lambda: simple_task(3),
@@ -83,7 +83,7 @@ async def task_status_demo() -> dict[str, Any]:
         return f"success_{endpoint}"
 
     async with TaskStatus() as status:
-        api_results = await gather_limited(
+        api_results = await gather_limited_async(
             lambda: mock_api_call("api1", should_fail_times=0),  # Immediate success
             lambda: mock_api_call("api2", should_fail_times=1),  # single retry
             lambda: mock_api_call("api3", should_fail_times=2),  # two retries
@@ -103,7 +103,6 @@ async def task_status_demo() -> dict[str, Any]:
 
     results["api_calls"] = {"results": api_results, "call_counts": call_counts.copy()}
 
-    # Demo: Sync functions with different symbols
     print("\nDemo: Sync Functions with Custom Symbols")
 
     sync_call_counts = {"task1": 0, "task2": 0, "task3": 0}
@@ -136,6 +135,58 @@ async def task_status_demo() -> dict[str, Any]:
         )
 
     results["sync_tasks"] = {"results": sync_results, "call_counts": sync_call_counts.copy()}
+
+    # Demo: FuncSpec format with custom labeler extracting args
+    print("\nDemo: FuncSpec Format with Custom Labeler")
+
+    task_call_count = 0
+
+    async def process_task(input_data: str) -> str:
+        """Simple task that takes input data and sleeps."""
+        nonlocal task_call_count
+        task_call_count += 1
+        await asyncio.sleep(random.uniform(0.1, 0.4))
+
+        # Simulate occasional failure on first call
+        if task_call_count == 1 and len(input_data) > 20:
+            raise SimulatedRateLimitError("Rate limit processing large input")
+
+        return f"processed_{input_data[:10]}"
+
+    def simple_labeler(i: int, spec: Any) -> str:
+        """Custom labeler that shows input data from args."""
+        if isinstance(spec, FuncTask):
+            if spec.args and len(spec.args) > 0:
+                input_data = str(spec.args[0])
+                # Truncate long inputs for display
+                truncated = input_data[:30] + "..." if len(input_data) > 30 else input_data
+                return f"Processing: {truncated}"
+
+        # Fallback for non-FuncSpec specs
+        return f"Task {i + 1}"
+
+    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+        funcspec_results = await gather_limited_async(
+            FuncTask(process_task, ("short_input",)),  # Should succeed
+            FuncTask(
+                process_task, ("this_is_a_very_long_input_string_that_will_trigger_retry",)
+            ),  # Should retry
+            FuncTask(process_task, ("medium_length_input_data",)),  # Should succeed
+            status=status,
+            labeler=simple_labeler,
+            retry_settings=RetrySettings(
+                max_task_retries=2,
+                initial_backoff=0.1,
+                max_backoff=0.5,
+                is_retriable=lambda e: isinstance(e, (SimulatedAPIError, SimulatedRateLimitError)),
+            ),
+            max_concurrent=2,
+        )
+
+    results["funcspec_format"] = {
+        "results": funcspec_results,
+        "call_count": task_call_count,
+    }
 
     # Demo: Manual task control with progress bars
     print("\nDemo: Manual Task Control & Progress Bars")
@@ -231,7 +282,7 @@ async def task_status_demo() -> dict[str, Any]:
             success_symbol="✨", failure_symbol="💀", retry_symbol="🔥", transient=False
         )
     ) as status:
-        mixed_results = await gather_limited(
+        mixed_results = await gather_limited_async(
             recoverable_task,
             unrecoverable_task,
             status=status,
@@ -263,6 +314,7 @@ def test_comprehensive_task_status_demo():
     # Basic sanity checks
     assert "api_calls" in demo_results
     assert "sync_tasks" in demo_results
+    assert "funcspec_format" in demo_results
     assert "manual_tasks" in demo_results
     assert "simple_tracker" in demo_results
     assert "mixed_scenarios" in demo_results
@@ -283,6 +335,14 @@ def test_comprehensive_task_status_demo():
     sync_data = demo_results["sync_tasks"]
     assert len(sync_data["results"]) == 3
     assert all("sync_complete_" in result for result in sync_data["results"])
+
+    # Check FuncSpec format demo
+    funcspec_data = demo_results["funcspec_format"]
+    assert len(funcspec_data["results"]) == 3
+    # Verify results contain expected patterns
+    results = funcspec_data["results"]
+    assert all("processed_" in result for result in results)
+    assert funcspec_data["call_count"] >= 3  # At least one call per task, plus potential retries
 
     # Check manual task info
     manual_data = demo_results["manual_tasks"]
