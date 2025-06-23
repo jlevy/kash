@@ -6,18 +6,13 @@ from dataclasses import dataclass
 from types import TracebackType
 from typing import TYPE_CHECKING, TypeVar
 
+from typing_extensions import override
+
 if TYPE_CHECKING:
     from rich.progress import ProgressColumn
 
 from rich.console import Console, RenderableType
-from rich.progress import (
-    BarColumn,
-    Progress,
-    ProgressColumn,
-    Task,
-    TaskID,
-    TextColumn,
-)
+from rich.progress import BarColumn, Progress, ProgressColumn, Task, TaskID, TextColumn
 from rich.spinner import Spinner
 from rich.text import Text
 
@@ -29,6 +24,7 @@ from kash.utils.api_utils.progress_protocol import (
     SPINNER_NAME,
     TaskInfo,
     TaskState,
+    generate_task_summary,
 )
 
 T = TypeVar("T")
@@ -70,7 +66,7 @@ class StatusSettings:
     final message.
     """
 
-    show_progress: bool = True
+    show_progress: bool = False
     progress_width: int = DEFAULT_PROGRESS_WIDTH
     label_width: int = DEFAULT_LABEL_WIDTH
     transient: bool = True
@@ -102,7 +98,7 @@ class SpinnerStatusColumn(ProgressColumn):
         skip_style: str = "yellow",
     ):
         super().__init__()
-        self.spinner = Spinner(spinner_name)
+        self.spinner: Spinner = Spinner(spinner_name)
         self.success_symbol: str = success_symbol
         self.failure_symbol: str = failure_symbol
         self.skip_symbol: str = skip_symbol
@@ -111,13 +107,14 @@ class SpinnerStatusColumn(ProgressColumn):
         self.skip_style: str = skip_style
 
         # Calculate fixed width for consistent column sizing
-        self.column_width = max(
+        self.column_width: int = max(
             _get_spinner_width(spinner_name),
             len(success_symbol),
             len(failure_symbol),
             len(skip_symbol),
         )
 
+    @override
     def render(self, task: Task) -> Text:
         """Render spinner when running, status symbol when complete."""
         # Get task info from fields
@@ -161,9 +158,10 @@ class ErrorIndicatorColumn(ProgressColumn):
         retry_style: str = RETRY_STYLE,
     ):
         super().__init__()
-        self.retry_symbol = retry_symbol
-        self.retry_style = retry_style
+        self.retry_symbol: str = retry_symbol
+        self.retry_style: str = retry_style
 
+    @override
     def render(self, task: Task) -> Text:
         """Render retry indicators and last error message."""
         # Get task info from fields
@@ -193,8 +191,9 @@ class CustomProgressColumn(ProgressColumn):
 
     def __init__(self, field_name: str = "progress_display"):
         super().__init__()
-        self.field_name = field_name
+        self.field_name: str = field_name
 
+    @override
     def render(self, task: Task) -> RenderableType:
         """Render custom progress element from task fields."""
         progress_display = task.fields.get(self.field_name)
@@ -203,7 +202,8 @@ class CustomProgressColumn(ProgressColumn):
 
 class TaskStatus(AbstractAsyncContextManager):
     """
-    Live progress dashboard with uv/pnpm-style layout.
+    Context manager for live progress status reporting of multiple tasks, a bit like
+    uv or pnpm status output when installing packages.
 
     Layout: [Spinner/Status] [Label] [Progress] [Error indicators + message]
 
@@ -238,21 +238,21 @@ class TaskStatus(AbstractAsyncContextManager):
         self,
         *,
         console: Console | None = None,
-        final_message: str = "",
         settings: StatusSettings | None = None,
+        auto_summary: bool = True,
     ):
         """
         Initialize TaskStatus display.
 
         Args:
             console: Rich Console instance, or None for default
-            final_message: Message to show after clearing (if transient=True)
             settings: Display configuration settings
+            auto_summary: Generate automatic summary message when exiting (if transient=True)
         """
-        self.console = console or Console()
-        self.final_message = final_message
-        self.settings = settings or StatusSettings()
-        self._lock = asyncio.Lock()
+        self.console: Console = console or Console()
+        self.settings: StatusSettings = settings or StatusSettings()
+        self.auto_summary: bool = auto_summary
+        self._lock: asyncio.Lock = asyncio.Lock()
         self._task_info: dict[TaskID, TaskInfo] = {}
 
         # Create columns
@@ -295,7 +295,7 @@ class TaskStatus(AbstractAsyncContextManager):
         # Add error indicators (retry dots + error messages)
         columns.append(error_column)
 
-        self._progress = Progress(
+        self._progress: Progress = Progress(
             *columns,
             console=self.console,
             transient=self.settings.transient,
@@ -307,23 +307,26 @@ class TaskStatus(AbstractAsyncContextManager):
         """Rich-based tracker manages its own display and suppresses standard logging."""
         return True
 
+    @override
     async def __aenter__(self) -> TaskStatus:
         """Start the live display."""
         self._progress.__enter__()
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        """Stop the live display and optionally show final message."""
+        """Stop the live display and show automatic summary if enabled."""
         self._progress.__exit__(exc_type, exc_val, exc_tb)
 
-        # Show final message if provided and display was transient
-        if self.final_message and self.settings.transient:
-            self.console.print(self.final_message)
+        # Show automatic summary if enabled
+        if self.auto_summary:
+            summary = self.get_summary()
+            self.console.print(summary)
 
     async def add(self, label: str, total: int | None = None) -> TaskID:
         """
@@ -432,6 +435,14 @@ class TaskStatus(AbstractAsyncContextManager):
         """Get additional task information."""
         return self._task_info.get(task_id)
 
+    def get_task_states(self) -> list[TaskState]:
+        """Get list of all task states for custom summary generation."""
+        return [info.state for info in self._task_info.values()]
+
+    def get_summary(self) -> str:
+        """Generate summary message based on current task states."""
+        return generate_task_summary(self.get_task_states())
+
     @property
     def console_for_output(self) -> Console:
         """Get console instance for additional output above progress."""
@@ -448,7 +459,6 @@ def test_task_status_basic():
     async def _test_impl():
         async with TaskStatus(
             settings=StatusSettings(show_progress=False),
-            final_message=f"{TEST_SUCCESS_PREFIX} Basic test completed",
         ) as status:
             # Simple task without progress
             task1 = await status.add("Simple task")
@@ -473,7 +483,6 @@ def test_task_status_with_progress():
     async def _test_impl():
         async with TaskStatus(
             settings=StatusSettings(show_progress=True),
-            final_message=f"{TEST_SUCCESS_PREFIX} Progress test completed",
         ) as status:
             # Traditional progress bar
             download_task = await status.add("Downloading", total=100)
@@ -509,7 +518,6 @@ def test_task_status_mixed():
     async def _test_impl():
         async with TaskStatus(
             settings=StatusSettings(show_progress=True, transient=True),
-            final_message=TEST_COMPLETION_MESSAGE,
         ) as status:
             # Multiple concurrent tasks
             install_task = await status.add("Installing packages", total=50)

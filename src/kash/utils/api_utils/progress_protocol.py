@@ -16,6 +16,7 @@ Labeler: TypeAlias = Callable[[int, TaskSpec], str]
 EMOJI_SUCCESS = "[✔︎]"
 EMOJI_FAILURE = "[✘]"
 EMOJI_SKIP = "[-]"
+EMOJI_WARN = "[∆]"
 EMOJI_RETRY = "▵"
 
 # Spinner configuration
@@ -209,5 +210,39 @@ class SimpleProgressContext:
     async def __aexit__(
         self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
     ) -> None:
-        if self.verbose:
-            print("All tasks completed.")
+        if self.verbose and self._tracker:
+            # Generate automatic summary
+            task_states = [info.state for info in self._tracker._tasks.values()]
+            summary = generate_task_summary(task_states)
+            print(summary)
+
+
+def generate_task_summary(task_states: list[TaskState]) -> str:
+    """
+    Generate summary message based on task completion states.
+    """
+    if not task_states:
+        return f"{EMOJI_SUCCESS} No tasks to process"
+
+    completed = sum(1 for state in task_states if state == TaskState.COMPLETED)
+    failed = sum(1 for state in task_states if state == TaskState.FAILED)
+    skipped = sum(1 for state in task_states if state == TaskState.SKIPPED)
+    total = len(task_states)
+
+    if failed == 0:
+        # All successful
+        return f"{EMOJI_SUCCESS} All tasks finished successfully"
+    elif failed == total:
+        # All failed
+        return f"{EMOJI_FAILURE} All tasks failed!"
+    else:
+        # Mixed results
+        parts = []
+        if completed > 0:
+            parts.append(f"{completed} tasks completed")
+        if failed > 0:
+            parts.append(f"{failed} tasks failed")
+        if skipped > 0:
+            parts.append(f"{skipped} tasks skipped")
+
+        return f"{EMOJI_WARN} {', '.join(parts)}"

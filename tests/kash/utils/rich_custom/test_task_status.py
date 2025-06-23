@@ -140,7 +140,7 @@ async def task_status_demo() -> dict[str, Any]:
     # Demo: Manual task control with progress bars
     print("\nDemo: Manual Task Control & Progress Bars")
 
-    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+    async with TaskStatus(settings=StatusSettings(transient=False, show_progress=True)) as status:
         # Create tasks with different progress patterns
         task1 = await status.add("Data Processing", total=10)
         task2 = await status.add("File Upload", total=5)
