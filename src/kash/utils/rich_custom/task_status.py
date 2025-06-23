@@ -119,10 +119,9 @@ class SpinnerStatusColumn(ProgressColumn):
         """Render spinner when running, status symbol when complete."""
         # Get task info from fields
         task_info: TaskInfo | None = task.fields.get("task_info")
-        if not task_info:
+        if not task_info or task_info.state == TaskState.QUEUED:
             return Text(" " * self.column_width)
 
-            # Show appropriate content based on state
         if task_info.state == TaskState.COMPLETED:
             text = Text(self.success_symbol, style=self.success_style)
         elif task_info.state == TaskState.FAILED:
@@ -130,9 +129,8 @@ class SpinnerStatusColumn(ProgressColumn):
         elif task_info.state == TaskState.SKIPPED:
             text = Text(self.skip_symbol, style=self.skip_style)
         else:
-            # Running - show spinner
+            # Running: show spinner
             spinner_result = self.spinner.render(task.get_time())
-            # Ensure we have a Text object
             if isinstance(spinner_result, Text):
                 text = spinner_result
             else:
@@ -253,7 +251,9 @@ class TaskStatus(AbstractAsyncContextManager):
         self.settings: StatusSettings = settings or StatusSettings()
         self.auto_summary: bool = auto_summary
         self._lock: asyncio.Lock = asyncio.Lock()
-        self._task_info: dict[TaskID, TaskInfo] = {}
+        self._task_info: dict[int, TaskInfo] = {}
+        self._next_id: int = 1
+        self._rich_task_ids: dict[int, TaskID] = {}  # Map our IDs to Rich Progress IDs
 
         # Create columns
         spinner_status_column = SpinnerStatusColumn(
@@ -328,9 +328,9 @@ class TaskStatus(AbstractAsyncContextManager):
             summary = self.get_summary()
             self.console.print(summary)
 
-    async def add(self, label: str, total: int | None = None) -> TaskID:
+    async def add(self, label: str, total: int | None = None) -> int:
         """
-        Add a new task to the display.
+        Add a new task to the display. Task won't appear until start() is called.
 
         Args:
             label: Human-readable task description
@@ -340,18 +340,39 @@ class TaskStatus(AbstractAsyncContextManager):
             Task ID for subsequent updates
         """
         async with self._lock:
-            task_info = TaskInfo(label=label)
-            task_id = self._progress.add_task(
-                "",
-                total=total or 1,
-                label=label,
-                task_info=task_info,
-                progress_display=None,
-            )
+            # Generate our own task ID: don't add to Rich Progress yet
+            task_id: int = self._next_id
+            self._next_id += 1
+
+            task_info = TaskInfo(label=label, total=total or 1)
             self._task_info[task_id] = task_info
             return task_id
 
-    async def set_progress_display(self, task_id: TaskID, display: RenderableType) -> None:
+    async def start(self, task_id: int) -> None:
+        """
+        Mark task as started (after rate limiting/queuing) and add to Rich display.
+
+        Args:
+            task_id: Task ID from add()
+        """
+        async with self._lock:
+            if task_id not in self._task_info:
+                return
+
+            task_info = self._task_info[task_id]
+            task_info.state = TaskState.RUNNING
+
+            # Now add to Rich Progress display
+            rich_task_id = self._progress.add_task(
+                "",
+                total=task_info.total,
+                label=task_info.label,
+                task_info=task_info,
+                progress_display=None,
+            )
+            self._rich_task_ids[task_id] = rich_task_id
+
+    async def set_progress_display(self, task_id: int, display: RenderableType) -> None:
         """
         Set custom progress display (percentage, text, etc.).
 
@@ -363,11 +384,14 @@ class TaskStatus(AbstractAsyncContextManager):
             return
 
         async with self._lock:
-            self._progress.update(task_id, progress_display=display)
+            # Only update if task has been started (added to Rich Progress)
+            rich_task_id = self._rich_task_ids.get(task_id)
+            if rich_task_id is not None:
+                self._progress.update(rich_task_id, progress_display=display)
 
     async def update(
         self,
-        task_id: TaskID,
+        task_id: int,
         *,
         progress: int | None = None,
         label: str | None = None,
@@ -387,25 +411,28 @@ class TaskStatus(AbstractAsyncContextManager):
                 return
 
             task_info = self._task_info[task_id]
+            rich_task_id = self._rich_task_ids.get(task_id)
 
             # Update label if provided
             if label is not None:
                 task_info.label = label
-                self._progress.update(task_id, label=label, task_info=task_info)
+                if rich_task_id is not None:
+                    self._progress.update(rich_task_id, label=label, task_info=task_info)
 
             # Advance progress if provided
-            if progress is not None:
-                self._progress.advance(task_id, advance=progress)
+            if progress is not None and rich_task_id is not None:
+                self._progress.advance(rich_task_id, advance=progress)
 
             # Record retry if error message provided
             if error_msg is not None:
                 task_info.retry_count += 1
                 task_info.failures.append(error_msg)
-                self._progress.update(task_id, task_info=task_info)
+                if rich_task_id is not None:
+                    self._progress.update(rich_task_id, task_info=task_info)
 
     async def finish(
         self,
-        task_id: TaskID,
+        task_id: int,
         state: TaskState,
         message: str = "",
     ) -> None:
@@ -423,15 +450,27 @@ class TaskStatus(AbstractAsyncContextManager):
 
             task_info = self._task_info[task_id]
             task_info.state = state
+            rich_task_id = self._rich_task_ids.get(task_id)
 
             if message:
                 task_info.failures.append(message)
 
             # Complete the progress bar and stop spinner
-            total = self._progress.tasks[task_id].total or 1
-            self._progress.update(task_id, completed=total, task_info=task_info)
+            if rich_task_id is not None:
+                total = self._progress.tasks[rich_task_id].total or 1
+                self._progress.update(rich_task_id, completed=total, task_info=task_info)
+            else:
+                # Task was never started, but we still need to add it to show completion
+                rich_task_id = self._progress.add_task(
+                    "",
+                    total=task_info.total,
+                    label=task_info.label,
+                    completed=task_info.total,
+                    task_info=task_info,
+                )
+                self._rich_task_ids[task_id] = rich_task_id
 
-    def get_task_info(self, task_id: TaskID) -> TaskInfo | None:
+    def get_task_info(self, task_id: int) -> TaskInfo | None:
         """Get additional task information."""
         return self._task_info.get(task_id)
 
@@ -442,7 +481,7 @@ class TaskStatus(AbstractAsyncContextManager):
     def get_summary(self) -> str:
         """Generate summary message based on current task states."""
         summary = TaskSummary(task_states=self.get_task_states())
-        return f"Tasks done: {summary}"
+        return f"Tasks done: {summary.summary_str()}"
 
     @property
     def console_for_output(self) -> Console:

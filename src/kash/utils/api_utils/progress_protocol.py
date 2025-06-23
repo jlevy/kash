@@ -26,6 +26,7 @@ SPINNER_NAME = "dots12"
 class TaskState(Enum):
     """Task execution states."""
 
+    QUEUED = "queued"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
@@ -36,10 +37,11 @@ class TaskState(Enum):
 class TaskInfo:
     """Track additional task information beyond basic progress."""
 
-    state: TaskState = TaskState.RUNNING
+    state: TaskState = TaskState.QUEUED
     retry_count: int = 0
     failures: list[str] = field(default_factory=list)
     label: str = ""
+    total: int = 1
 
 
 @dataclass(frozen=True)
@@ -47,6 +49,16 @@ class TaskSummary:
     """Summary of task completion states."""
 
     task_states: list[TaskState]
+
+    @property
+    def queued(self) -> int:
+        """Number of queued tasks."""
+        return sum(1 for state in self.task_states if state == TaskState.QUEUED)
+
+    @property
+    def running(self) -> int:
+        """Number of running tasks."""
+        return sum(1 for state in self.task_states if state == TaskState.RUNNING)
 
     @property
     def completed(self) -> int:
@@ -121,6 +133,10 @@ class ProgressTracker(Protocol[TaskID]):
         """Add a new task to track."""
         ...
 
+    async def start(self, task_id: TaskID) -> None:
+        """Mark task as started (after rate limiting/queuing)."""
+        ...
+
     async def update(
         self,
         task_id: TaskID,
@@ -177,8 +193,9 @@ class SimpleProgressTracker:
     Useful for testing or when Rich is not available.
     """
 
-    def __init__(self, *, verbose: bool = True):
+    def __init__(self, *, verbose: bool = True, print_fn: Callable[[str], None] = print):
         self.verbose = verbose
+        self.print_fn = print_fn
         self._next_id = 1
         self._tasks: dict[int, TaskInfo] = {}
 
@@ -194,9 +211,20 @@ class SimpleProgressTracker:
         self._tasks[task_id] = TaskInfo(label=label)
 
         if self.verbose:
-            print(f"Started: {label}")
+            self.print_fn(f"Queued: {label}")
 
         return task_id
+
+    async def start(self, task_id: int) -> None:
+        """Mark task as started (after rate limiting/queuing)."""
+        task_info = self._tasks.get(task_id)
+        if not task_info:
+            return
+
+        task_info.state = TaskState.RUNNING
+
+        if self.verbose:
+            self.print_fn(f"Started: {task_info.label}")
 
     async def update(
         self,
@@ -221,7 +249,7 @@ class SimpleProgressTracker:
 
             if self.verbose:
                 retry_indicator = EMOJI_RETRY * task_info.retry_count
-                print(f"Retry {retry_indicator} {task_info.label}: {error_msg}")
+                self.print_fn(f"Retry {retry_indicator} {task_info.label}: {error_msg}")
 
     async def finish(
         self,
@@ -250,7 +278,7 @@ class SimpleProgressTracker:
             )
 
             message_info = f": {message}" if message else ""
-            print(f"{symbol} {task_info.label}{retry_info}{message_info}")
+            self.print_fn(f"{symbol} {task_info.label}{retry_info}{message_info}")
 
 
 class SimpleProgressContext:
@@ -258,12 +286,13 @@ class SimpleProgressContext:
     Simple async context manager for SimpleProgressTracker.
     """
 
-    def __init__(self, *, verbose: bool = True):
+    def __init__(self, *, verbose: bool = True, print_fn: Callable[[str], None] = print):
         self.verbose = verbose
+        self.print_fn = print_fn
         self._tracker: SimpleProgressTracker | None = None
 
     async def __aenter__(self) -> SimpleProgressTracker:
-        self._tracker = SimpleProgressTracker(verbose=self.verbose)
+        self._tracker = SimpleProgressTracker(verbose=self.verbose, print_fn=self.print_fn)
         return self._tracker
 
     async def __aexit__(
@@ -273,4 +302,4 @@ class SimpleProgressContext:
             # Generate automatic summary
             task_states = [info.state for info in self._tracker._tasks.values()]
             summary = TaskSummary(task_states=task_states)
-            print(summary.summary_str())
+            self.print_fn(summary.summary_str())

@@ -36,9 +36,7 @@ class FuncTask:
 
 
 # Type aliases for coroutine and sync specifications, including unevaluated function specs
-CoroSpec: TypeAlias = (
-    Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T] | FuncTask
-)
+CoroSpec: TypeAlias = Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T] | FuncTask
 SyncSpec: TypeAlias = Callable[[], T] | FuncTask
 
 # Specific labeler types using the generic Labeler pattern
@@ -421,7 +419,9 @@ async def _execute_with_retry(
                 f"{global_retry_counter.count}/{global_retry_counter.max_total_retries or '∞'} total) "
                 f"backing off for {backoff_time:.2f}s"
             )
-            exception_msg = f"Rate limit exception: {type(last_exception).__name__}: {last_exception}"
+            exception_msg = (
+                f"Rate limit exception: {type(last_exception).__name__}: {last_exception}"
+            )
 
             if use_debug_level:
                 log.debug(rate_limit_msg)
@@ -434,6 +434,9 @@ async def _execute_with_retry(
         try:
             # Acquire semaphore and rate limiter right before making the call
             async with semaphore, rate_limiter:
+                # Mark task as started now that we've passed rate limiting
+                if status and task_id is not None and attempt == 0:
+                    await status.start(task_id)
                 return await executor()
         except Exception as e:
             last_exception = e  # Always store the exception
@@ -450,9 +453,7 @@ async def _execute_with_retry(
                         f"Max task retries ({retry_settings.max_task_retries}) exhausted after {total_time:.1f}s. "
                         f"Final attempt failed with: {type(e).__name__}: {e}"
                     )
-                    raise RetryExhaustedException(
-                        e, retry_settings.max_task_retries, total_time
-                    )
+                    raise RetryExhaustedException(e, retry_settings.max_task_retries, total_time)
 
             # Check if this is a retriable exception
             if retry_settings.is_retriable(e):
@@ -460,9 +461,7 @@ async def _execute_with_retry(
                 continue
             else:
                 # Non-retriable exception, log and re-raise immediately
-                log.warning(
-                    "Non-retriable exception (not retrying): %s", e, exc_info=True
-                )
+                log.warning("Non-retriable exception (not retrying): %s", e, exc_info=True)
                 raise
 
     # This should never be reached, but satisfy type checker
@@ -771,9 +770,7 @@ def test_gather_limited_global_retry_limit():
         total_retries = (retry_counts["task1"] - 1) + (
             retry_counts["task2"] - 1
         )  # -1 for initial attempts
-        assert total_retries <= 3, (
-            f"Total retries {total_retries} exceeded global limit of 3"
-        )
+        assert total_retries <= 3, f"Total retries {total_retries} exceeded global limit of 3"
 
         # Verify that both tasks were attempted at least once
         assert retry_counts["task1"] >= 1
@@ -827,9 +824,7 @@ def test_gather_limited_funcspec_format():
         # Test async version with FuncSpec format and custom labeler
         async_results = await gather_limited_async(
             FuncTask(async_func, ("api_call", 10), {"multiplier": 4}),  # api_call: 40
-            FuncTask(
-                async_func, ("data_fetch", 5)
-            ),  # data_fetch: 10 (default multiplier)
+            FuncTask(async_func, ("data_fetch", 5)),  # data_fetch: 10 (default multiplier)
             labeler=custom_labeler,
             retry_settings=NO_RETRIES,
         )

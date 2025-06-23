@@ -305,6 +305,134 @@ async def task_status_demo() -> dict[str, Any]:
     return results
 
 
+async def text_chunk_processing_demo(total_chunks: int = 50) -> dict[str, Any]:
+    """
+    Demo for processing text chunks with concurrency 5 and 5 QPS,
+    showing chunk progress and first few words in status labels.
+
+    Args:
+        total_chunks: Number of chunks to process (default 50)
+    """
+    print(f"\nDemo: Text Chunk Processing ({total_chunks} chunks, concurrency=5, 5 QPS)")
+
+    # Base text chunks to randomly select from
+    base_text_chunks = [
+        "The quick brown fox jumps over the lazy dog in the meadow during a beautiful sunny afternoon.",
+        "Machine learning algorithms require large datasets to train effectively and produce accurate predictions.",
+        "Climate change poses significant challenges to global ecosystems and requires immediate action from governments.",
+        "Artificial intelligence is transforming industries by automating complex tasks and improving efficiency.",
+        "Space exploration continues to push the boundaries of human knowledge and technological capabilities.",
+        "Digital transformation is reshaping how businesses operate and interact with customers.",
+        "Renewable energy sources are becoming more cost-effective than fossil fuels.",
+    ]
+
+    # Randomly select chunks, allowing duplicates if total_chunks > len(base_text_chunks)
+    text_chunks = random.choices(base_text_chunks, k=total_chunks)
+
+    # Simulate processing with some chunks failing initially
+    call_counts = {}
+
+    async def process_text_chunk(chunk_text: str, chunk_index: int) -> str:
+        """Process a text chunk, with some chunks failing initially to show retries."""
+        chunk_key = f"chunk_{chunk_index}"
+        call_counts[chunk_key] = call_counts.get(chunk_key, 0) + 1
+        current_call = call_counts[chunk_key]
+
+        # Simulate variable processing time
+        await asyncio.sleep(random.uniform(0.2, 0.8))
+
+        # Make some chunks fail initially to demonstrate retries
+        # Use percentages of total chunks to make failures work with any chunk count
+        fail_once_indices = [
+            total_chunks // 8,  # ~12.5% through
+            total_chunks // 4,  # ~25% through
+            total_chunks // 2,  # ~50% through
+            3 * total_chunks // 4,  # ~75% through
+        ]
+        fail_twice_index = total_chunks - 5  # Near the end
+
+        should_fail = False
+        if chunk_index in fail_once_indices and current_call == 1:
+            should_fail = True
+        elif chunk_index == fail_twice_index and current_call <= 2:
+            should_fail = True
+
+        if should_fail:
+            if chunk_index == 30:
+                raise SimulatedRateLimitError(
+                    f"Rate limit exceeded processing chunk {chunk_index + 1}"
+                )
+            else:
+                raise SimulatedAPIError(f"Temporary processing error for chunk {chunk_index + 1}")
+
+        # Return processed result
+        word_count = len(chunk_text.split())
+        return f"processed_chunk_{chunk_index + 1}_{word_count}_words"
+
+    def chunk_labeler(i: int, spec: Any) -> str:
+        """Custom labeler showing chunk number and first few words."""
+        if isinstance(spec, FuncTask) and spec.args:
+            chunk_text = spec.args[0]  # First arg is the chunk text
+            chunk_index = spec.args[1]  # Second arg is the chunk index
+
+            # Get first few words (up to 4 words or 30 chars)
+            words = chunk_text.split()[:4]
+            preview = " ".join(words)
+            if len(preview) > 30:
+                preview = preview[:27] + "..."
+
+            return f'Chunk {chunk_index + 1}/{total_chunks}: "{preview}..."'
+
+        # Fallback
+        return f"Chunk {i + 1}/{total_chunks}"
+
+    # Create FuncTask specs for all chunks
+    chunk_specs = [
+        FuncTask(process_text_chunk, (chunk_text, i)) for i, chunk_text in enumerate(text_chunks)
+    ]
+
+    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+        chunk_results = await gather_limited_async(
+            *chunk_specs,
+            max_concurrent=5,  # Your specified concurrency
+            max_rps=5.0,  # Your specified QPS
+            status=status,
+            labeler=chunk_labeler,
+            retry_settings=RetrySettings(
+                max_task_retries=3,
+                max_total_retries=20,  # Reasonable global limit
+                initial_backoff=0.2,
+                max_backoff=2.0,
+                backoff_factor=1.5,
+                is_retriable=lambda e: isinstance(e, (SimulatedAPIError, SimulatedRateLimitError)),
+            ),
+        )
+
+    # Analyze results
+    successful_chunks = [r for r in chunk_results if r.startswith("processed_chunk_")]
+    failed_chunks = [r for r in chunk_results if not r.startswith("processed_chunk_")]
+
+    total_calls = sum(call_counts.values())
+    total_retries = total_calls - len(text_chunks)  # Original calls vs retries
+
+    results = {
+        "total_chunks": len(text_chunks),
+        "successful_chunks": len(successful_chunks),
+        "failed_chunks": len(failed_chunks),
+        "total_calls": total_calls,
+        "total_retries": total_retries,
+        "call_counts": call_counts.copy(),
+        "sample_results": chunk_results[:5],  # First 5 results for verification
+    }
+
+    print(f"Processed {len(successful_chunks)}/{len(text_chunks)} chunks successfully")
+    print(
+        f"Total API calls: {total_calls} (original: {len(text_chunks)}, retries: {total_retries})"
+    )
+
+    return results
+
+
 def test_comprehensive_task_status_demo():
     """Simple pytest wrapper for the demo with basic sanity checks."""
 
@@ -371,5 +499,60 @@ def test_comprehensive_task_status_demo():
     print("All sanity checks passed!")
 
 
+def test_text_chunk_processing_demo():
+    """Test the text chunk processing demo with default 50 chunks."""
+
+    # Run the chunk processing demo with default 50 chunks
+    chunk_results = asyncio.run(text_chunk_processing_demo())
+
+    # Verify basic structure
+    assert "total_chunks" in chunk_results
+    assert "successful_chunks" in chunk_results
+    assert "failed_chunks" in chunk_results
+    assert "total_calls" in chunk_results
+    assert "total_retries" in chunk_results
+    assert "call_counts" in chunk_results
+    assert "sample_results" in chunk_results
+
+    # Check that we processed 50 chunks by default
+    total_chunks = chunk_results["total_chunks"]
+    assert total_chunks == 50
+
+    # All chunks should succeed (after retries)
+    assert chunk_results["successful_chunks"] == total_chunks
+    assert chunk_results["failed_chunks"] == 0
+
+    # Calculate expected failure indices based on the formula in the demo
+    fail_once_indices = [
+        total_chunks // 8,  # ~12.5% through
+        total_chunks // 4,  # ~25% through
+        total_chunks // 2,  # ~50% through
+        3 * total_chunks // 4,  # ~75% through
+    ]
+    fail_twice_index = total_chunks - 5  # Near the end
+
+    # Should have some retries (4 chunks retry once, 1 chunk retries twice)
+    expected_retries = len(fail_once_indices) + 2  # 4 single retries + 2 double retries = 6
+    assert chunk_results["total_retries"] == expected_retries
+    assert chunk_results["total_calls"] == total_chunks + expected_retries
+
+    # Verify specific retry counts for chunks that should fail initially
+    call_counts = chunk_results["call_counts"]
+    for idx in fail_once_indices:
+        assert call_counts[f"chunk_{idx}"] == 2  # Failed once, succeeded on retry
+    assert call_counts[f"chunk_{fail_twice_index}"] == 3  # Failed twice, succeeded on third try
+
+    # Check sample results format
+    sample_results = chunk_results["sample_results"]
+    assert len(sample_results) == 5
+    for result in sample_results:
+        assert result.startswith("processed_chunk_")
+        assert "_words" in result
+
+    print("Text chunk processing demo test passed!")
+
+
 if __name__ == "__main__":
+    # Run both demos
     asyncio.run(task_status_demo())
+    asyncio.run(text_chunk_processing_demo())
