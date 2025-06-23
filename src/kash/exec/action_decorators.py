@@ -105,7 +105,10 @@ def kash_action_class(cls: type[A]) -> type[A]:
 
 
 def _register_dynamic_action(
-    action_cls: type[A], action_name: str, action_description: str, source_path: Path | None
+    action_cls: type[A],
+    action_name: str,
+    action_description: str,
+    source_path: Path | None,
 ) -> type[A]:
     # Set class fields for name and description for convenience.
     action_cls.name = action_name
@@ -206,6 +209,7 @@ def kash_action(
     run_per_item: bool | None = None,
     uses_selection: bool = True,
     interactive_input: bool = False,
+    live_output: bool = False,
     mcp_tool: bool = False,
     title_template: TitleTemplate = TitleTemplate("{title}"),
     llm_options: LLMOptions = LLMOptions(),
@@ -235,13 +239,17 @@ def kash_action(
     def decorator(orig_func: AF) -> AF:
         if hasattr(orig_func, "__action_class__"):
             log.warning(
-                "Function `%s` is already decorated with `@kash_action`", orig_func.__name__
+                "Function `%s` is already decorated with `@kash_action`",
+                orig_func.__name__,
             )
             return orig_func
 
         # Inspect and sanity check the formal params.
         func_params = inspect_function_params(orig_func)
-        if len(func_params) == 0 or func_params[0].effective_type not in (ActionInput, Item):
+        if len(func_params) == 0 or func_params[0].effective_type not in (
+            ActionInput,
+            Item,
+        ):
             raise InvalidDefinition(
                 f"Decorator `@kash_action` requires exactly one positional parameter, "
                 f"`input` of type `ActionInput` or `Item` on function `{orig_func.__name__}` but "
@@ -311,6 +319,7 @@ def kash_action(
                 self.uses_selection = uses_selection
                 self.output_type = output_type
                 self.interactive_input = interactive_input
+                self.live_output = live_output
                 self.mcp_tool = mcp_tool
                 self.title_template = title_template
                 self.llm_options = llm_options
@@ -332,8 +341,14 @@ def kash_action(
                         kw_args[fp.name] = self.get_param(fp.name)
 
                 if self.params:
-                    log.info("Action function param declarations:\n%s", fmt_lines(self.params))
-                    log.info("Action function param values:\n%s", self.param_value_summary_str())
+                    log.info(
+                        "Action function param declarations:\n%s",
+                        fmt_lines(self.params),
+                    )
+                    log.info(
+                        "Action function param values:\n%s",
+                        self.param_value_summary_str(),
+                    )
                 else:
                     log.info("Action function has no declared params")
 

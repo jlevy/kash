@@ -56,7 +56,7 @@ class ShellCallableAction:
 
             log.info("Action shell args: %s", shell_args)
             explicit_values = RawParamValues(shell_args.options)
-            if not action.interactive_input:
+            if not action.interactive_input and not action.live_output:
                 with get_console().status(f"Running action {action.name}…", spinner=SPINNER):
                     result = run_action_with_shell_context(
                         action_cls,

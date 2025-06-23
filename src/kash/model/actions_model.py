@@ -270,6 +270,12 @@ class Action(ABC):
     Does this action ask for input interactively?
     """
 
+    live_output: bool = False
+    """
+    Does this action have live output (e.g., progress bars, spinners)?
+    If True, the shell should not show its own status spinner.
+    """
+
     mcp_tool: bool = False
     """
     If True, this action is published as an MCP tool.
