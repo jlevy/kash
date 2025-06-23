@@ -11,6 +11,7 @@ from typing import (
     cast,
     get_args,
     get_origin,
+    get_type_hints,
 )
 
 NO_DEFAULT = Parameter.empty  # Alias for clarity
@@ -150,10 +151,19 @@ def inspect_function_params(func: Callable[..., Any], unwrap: bool = True) -> li
     unwrapped_func = inspect.unwrap(func) if unwrap else func
     signature = inspect.signature(unwrapped_func)
 
+    # Get resolved type hints to handle string annotations from __future__ annotations
+    try:
+        type_hints = get_type_hints(unwrapped_func)
+    except (NameError, AttributeError, TypeError):
+        # If we can't resolve type hints (missing imports, etc.), fall back to raw annotations
+        type_hints = {}
+
     param_infos: list[FuncParam] = []
 
     for i, (param_name, param_obj) in enumerate(signature.parameters.items()):
-        effective_type, inner_type, is_optional = _resolve_type_details(param_obj.annotation)
+        # Use resolved type hint if available, otherwise fall back to raw annotation
+        resolved_annotation = type_hints.get(param_name, param_obj.annotation)
+        effective_type, inner_type, is_optional = _resolve_type_details(resolved_annotation)
 
         # Fallback: if type is not resolved from annotation, try to infer from default value.
         if (
@@ -522,3 +532,58 @@ def test_literal_types():
     assert param.name == "flag"
     assert param.effective_type is bool
     assert param.default is True
+
+
+def test_string_annotations():
+    """Test string annotations (from __future__ import annotations) are properly resolved."""
+
+    class Item:  # pyright: ignore[reportUnusedClass]
+        pass
+
+    # Create a function with string annotations to simulate the __future__ annotations behavior
+    def func_with_string_annotations(item):
+        return item
+
+    # Manually set the annotation to a string to simulate __future__ annotations
+    func_with_string_annotations.__annotations__ = {"item": "Item"}
+
+    # This should NOT raise an error and should resolve the type properly
+    params = inspect_function_params(func_with_string_annotations)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "item"
+    # The annotation should be preserved as a string
+    assert param.annotation == "Item"
+    # effective_type might be None if "Item" can't be resolved due to scope issues
+    # but the important thing is that it doesn't crash
+    # Note: get_type_hints() can't resolve local classes defined in test functions
+
+    # Test with a known built-in type as a string
+    def func_with_builtin_string_annotation(value):
+        return str(value)
+
+    # Manually set string annotations
+    func_with_builtin_string_annotation.__annotations__ = {"value": "int"}
+
+    params = inspect_function_params(func_with_builtin_string_annotation)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "value"
+    assert param.annotation == "int"
+    # This should resolve to the actual int type
+    assert param.effective_type is int
+
+    # Test with a complex type annotation as string
+    def func_with_complex_string_annotation(items):
+        return items
+
+    func_with_complex_string_annotation.__annotations__ = {"items": "list[str]"}
+
+    params = inspect_function_params(func_with_complex_string_annotation)
+    assert len(params) == 1
+    param = params[0]
+    assert param.name == "items"
+    assert param.annotation == "list[str]"
+    # This should resolve to list with inner type str
+    assert param.effective_type is list
+    assert param.inner_type is str
