@@ -291,7 +291,7 @@ def test_calculate_backoff():
         max_backoff=60.0,
         backoff_factor=2.0,
     )
-    # 2.0 base * (±50% jitter) + (0-50% of initial_backoff) = range ~1.0 to 3.5
+    # base factor * (±50% jitter) + (0-50% of initial_backoff) = range calculation
     assert 1.0 <= backoff <= 3.5
 
     # Test max_backoff cap

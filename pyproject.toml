@@ -225,6 +225,7 @@ reportMissingParameterType = false
 reportUnannotatedClassAttribute = false
 reportUninitializedInstanceVariable = false
 reportCallInDefaultInitializer = false
+reportUntypedBaseClass = false
 # Make ignoring easier:
 reportIgnoreCommentWithoutRule = false
 reportUnnecessaryTypeIgnoreComment = false

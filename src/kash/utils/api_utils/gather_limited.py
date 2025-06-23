@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import logging
 from collections.abc import Callable, Coroutine
-from typing import TypeAlias, TypeVar, overload
+from typing import Any, TypeAlias, TypeVar, overload
 
 from aiolimiter import AsyncLimiter
 
@@ -15,6 +15,7 @@ from kash.utils.api_utils.api_retries import (
     RetrySettings,
     calculate_backoff,
 )
+from kash.utils.api_utils.progress_protocol import Labeler, ProgressTracker, TaskState
 
 T = TypeVar("T")
 
@@ -25,6 +26,9 @@ CoroSpec: TypeAlias = Callable[[], Coroutine[None, None, T]] | Coroutine[None, N
 # Type alias for sync function specification
 SyncSpec: TypeAlias = Callable[[], T]
 
+# Specific labeler types using the generic Labeler pattern
+CoroLabeler: TypeAlias = Labeler[CoroSpec[T]]
+SyncLabeler: TypeAlias = Labeler[SyncSpec[T]]
 
 DEFAULT_MAX_CONCURRENT: int = 5
 DEFAULT_MAX_RPS: float = 5.0
@@ -60,6 +64,8 @@ async def gather_limited(
     max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: CoroLabeler[T] | None = None,
 ) -> list[T]: ...
 
 
@@ -70,6 +76,8 @@ async def gather_limited(
     max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = True,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: CoroLabeler[T] | None = None,
 ) -> list[T | BaseException]: ...
 
 
@@ -79,14 +87,18 @@ async def gather_limited(
     max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: CoroLabeler[T] | None = None,
 ) -> list[T] | list[T | BaseException]:
     """
-    Rate-limited version of `asyncio.gather()` with retry logic for rate limit exceptions.
+    Rate-limited version of `asyncio.gather()` with retry logic and optional progress display.
     Uses the aiolimiter leaky-bucket algorithm with exponential backoff on failures.
 
     Supports two levels of retry limits:
     - Per-task retries: max_task_retries attempts per individual task
     - Global retries: max_total_retries attempts across all tasks (prevents cascade failures)
+
+    Can optionally display live progress with retry indicators using TaskStatus.
 
     Accepts either:
     - Callables that return coroutines: `lambda: some_async_func(arg)` (recommended for retries)
@@ -94,19 +106,25 @@ async def gather_limited(
 
     Examples:
         ```python
-        # With retries (recommended) - use callables:
+        # With progress display and custom labeling:
+        from kash.utils.rich_custom.task_status import TaskStatus
+
+        async with TaskStatus() as status:
+            await gather_limited(
+                lambda: fetch_url("http://example.com"),
+                lambda: process_data(data),
+                status=status,
+                labeler=lambda i, spec: f"Task {i+1}",
+                retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
+            )
+
+        # Without progress display:
         await gather_limited(
             lambda: fetch_url("http://example.com"),
             lambda: process_data(data),
             retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
         )
 
-        # Without retries - coroutines work fine:
-        await gather_limited(
-            fetch_url("http://example.com"),
-            process_data(data),
-            retry_settings=None  # Uses NO_RETRIES
-        )
         ```
 
     Args:
@@ -115,6 +133,8 @@ async def gather_limited(
         max_rps: Maximum requests per second
         return_exceptions: If True, exceptions are returned as results
         retry_settings: Configuration for retry behavior, or None to disable retries
+        status: Optional ProgressTracker instance for progress display
+        labeler: Optional function to generate labels: labeler(index, spec) -> str
 
     Returns:
         List of results in the same order as input specifications
@@ -149,7 +169,11 @@ async def gather_limited(
     # Global retry counter (shared across all tasks)
     global_retry_counter = RetryCounter(retry_settings.max_total_retries)
 
-    async def rate_limited_coro_with_retry(coro_spec: CoroSpec[T]) -> T:
+    async def rate_limited_coro_with_retry(i: int, coro_spec: CoroSpec[T]) -> T:
+        # Generate label for this task
+        label = labeler(i, coro_spec) if labeler else f"task:{i}"
+        task_id = await status.add(label) if status else None
+
         async def executor() -> T:
             # Create a fresh coroutine for each attempt
             if callable(coro_spec):
@@ -159,12 +183,31 @@ async def gather_limited(
                 coro = coro_spec
             return await coro
 
-        return await _execute_with_retry(
-            executor, retry_settings, semaphore, rate_limiter, global_retry_counter
-        )
+        try:
+            result = await _execute_with_retry(
+                executor,
+                retry_settings,
+                semaphore,
+                rate_limiter,
+                global_retry_counter,
+                status,
+                task_id,
+            )
+
+            # Mark as completed successfully
+            if status and task_id is not None:
+                await status.finish(task_id, TaskState.COMPLETED)
+
+            return result
+
+        except Exception as e:
+            # Mark as failed
+            if status and task_id is not None:
+                await status.finish(task_id, TaskState.FAILED, str(e))
+            raise
 
     return await asyncio.gather(
-        *[rate_limited_coro_with_retry(spec) for spec in coro_specs],
+        *[rate_limited_coro_with_retry(i, spec) for i, spec in enumerate(coro_specs)],
         return_exceptions=return_exceptions,
     )
 
@@ -172,10 +215,12 @@ async def gather_limited(
 @overload
 async def gather_limited_sync(
     *sync_specs: SyncSpec[T],
-    max_concurrent: int = 5,
-    max_rps: float = 5.0,
+    max_concurrent: int = DEFAULT_MAX_CONCURRENT,
+    max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: SyncLabeler[T] | None = None,
 ) -> list[T]: ...
 
 
@@ -186,6 +231,8 @@ async def gather_limited_sync(
     max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = True,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: SyncLabeler[T] | None = None,
 ) -> list[T | BaseException]: ...
 
 
@@ -195,6 +242,8 @@ async def gather_limited_sync(
     max_rps: float = DEFAULT_MAX_RPS,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
+    status: ProgressTracker | None = None,
+    labeler: SyncLabeler[T] | None = None,
 ) -> list[T] | list[T | BaseException]:
     """
     Rate-limited version of `asyncio.gather()` for sync functions with retry logic.
@@ -210,6 +259,8 @@ async def gather_limited_sync(
         max_rps: Maximum requests per second
         return_exceptions: If True, exceptions are returned as results
         retry_settings: Configuration for retry behavior, or None to disable retries
+        status: Optional ProgressTracker instance for progress display
+        labeler: Optional function to generate labels: labeler(index, spec) -> str
 
     Returns:
         List of results in the same order as input specifications
@@ -243,7 +294,11 @@ async def gather_limited_sync(
     # Global retry counter (shared across all tasks)
     global_retry_counter = RetryCounter(retry_settings.max_total_retries)
 
-    async def rate_limited_sync_with_retry(sync_spec: SyncSpec[T]) -> T:
+    async def rate_limited_sync_with_retry(i: int, sync_spec: SyncSpec[T]) -> T:
+        # Generate label for this task
+        label = labeler(i, sync_spec) if labeler else f"sync_task:{i}"
+        task_id = await status.add(label) if status else None
+
         async def executor() -> T:
             # Call sync function via asyncio.to_thread, handling retry at this level
             result = await asyncio.to_thread(sync_spec)
@@ -258,12 +313,31 @@ async def gather_limited_sync(
                 )
             return result
 
-        return await _execute_with_retry(
-            executor, retry_settings, semaphore, rate_limiter, global_retry_counter
-        )
+        try:
+            result = await _execute_with_retry(
+                executor,
+                retry_settings,
+                semaphore,
+                rate_limiter,
+                global_retry_counter,
+                status,
+                task_id,
+            )
+
+            # Mark as completed successfully
+            if status and task_id is not None:
+                await status.finish(task_id, TaskState.COMPLETED)
+
+            return result
+
+        except Exception as e:
+            # Mark as failed
+            if status and task_id is not None:
+                await status.finish(task_id, TaskState.FAILED, str(e))
+            raise
 
     return await asyncio.gather(
-        *[rate_limited_sync_with_retry(spec) for spec in sync_specs],
+        *[rate_limited_sync_with_retry(i, spec) for i, spec in enumerate(sync_specs)],
         return_exceptions=return_exceptions,
     )
 
@@ -274,6 +348,8 @@ async def _execute_with_retry(
     semaphore: asyncio.Semaphore,
     rate_limiter: AsyncLimiter,
     global_retry_counter: RetryCounter,
+    status: ProgressTracker | None = None,
+    task_id: Any | None = None,
 ) -> T:
     import time
 
@@ -298,16 +374,38 @@ async def _execute_with_retry(
                 max_backoff=retry_settings.max_backoff,
                 backoff_factor=retry_settings.backoff_factor,
             )
-            log.warning(
+
+            # Record retry in status display and log appropriately
+            if status and task_id is not None:
+                # Include retry attempt info and backoff time in the status display
+                retry_info = (
+                    f"Attempt {attempt}/{retry_settings.max_task_retries} "
+                    f"(waiting {backoff_time:.1f}s): {type(last_exception).__name__}: {last_exception}"
+                )
+                await status.update(task_id, error_msg=retry_info)
+
+                # Use debug level for Rich trackers, warning/info for console trackers
+                use_debug_level = status.suppress_logs
+            else:
+                # No status display: use full logging
+                use_debug_level = False
+
+            # Log retry information at appropriate level
+            rate_limit_msg = (
                 f"Rate limit hit (attempt {attempt}/{retry_settings.max_task_retries} "
                 f"{global_retry_counter.count}/{global_retry_counter.max_total_retries or '∞'} total) "
                 f"backing off for {backoff_time:.2f}s"
             )
-            log.info(
-                "Rate limit exception: %s: %s",
-                type(last_exception).__name__,
-                last_exception,
+            exception_msg = (
+                f"Rate limit exception: {type(last_exception).__name__}: {last_exception}"
             )
+
+            if use_debug_level:
+                log.debug(rate_limit_msg)
+                log.debug(exception_msg)
+            else:
+                log.warning(rate_limit_msg)
+                log.info(exception_msg)
             await asyncio.sleep(backoff_time)
 
         try:

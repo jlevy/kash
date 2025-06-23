@@ -68,7 +68,7 @@ def escape_html_tags(
 def test_escape_html_tags():
     """Tests the escape_html_tags function with various cases."""
 
-    # 1. Basic Whitelist Check (Default)
+    # Basic Whitelist Check (Default)
     assert escape_html_tags("<div>Test</div>") == "<div>Test</div>"
     assert escape_html_tags("<span>Test</span>") == "<span>Test</span>"
     assert escape_html_tags("<br>") == "<br>"
@@ -77,21 +77,21 @@ def test_escape_html_tags():
         == "<details><summary>Sum</summary>Det</details>"
     )
 
-    # 2. Basic Escape Check
+    # Basic Escape Check
     assert escape_html_tags("<p>Test</p>") == "&lt;p>Test&lt;/p>"
     assert escape_html_tags("<script>alert('x');</script>") == "&lt;script>alert('x');&lt;/script>"
     assert escape_html_tags("<img>") == "&lt;img>"
 
-    # 3. Case Insensitivity
+    # Case Insensitivity
     assert escape_html_tags("<DiV>Case</DiV>") == "<DiV>Case</DiV>"  # Whitelisted
     assert escape_html_tags("<P>Test</P>") == "&lt;P>Test&lt;/P>"  # Escaped
 
-    # 4. Self-closing tags
+    # Self-closing tags
     assert escape_html_tags("<br/>") == "<br/>"  # Whitelisted
     assert escape_html_tags("<br />") == "<br />"  # Whitelisted
     assert escape_html_tags("<img/>") == "&lt;img/>"  # Escaped
 
-    # 5. Tags with Attributes
+    # Tags with Attributes
     assert (
         escape_html_tags('<div class="foo">Test</div>') == '<div class="foo">Test</div>'
     )  # Whitelisted
@@ -102,7 +102,7 @@ def test_escape_html_tags():
     assert escape_html_tags('<p class="foo">Test</p>') == '&lt;p class="foo">Test&lt;/p>'  # Escaped
     assert escape_html_tags('<img src="a.jpg"/>') == '&lt;img src="a.jpg"/>'  # Escaped
 
-    # 6. Markdown URL Handling
+    # Markdown URL Handling
     url_md = "Check <https://example.com> and <http://test.org/path>"
     assert escape_html_tags(url_md, allow_bare_md_urls=True) == url_md
     assert (
@@ -127,7 +127,7 @@ def test_escape_html_tags():
         == "&lt;/https://example.com>"
     )  # Closing URL-like is escaped
 
-    # 7. Nested/Malformed '<' and Edge Cases
+    # Nested/Malformed '<' and Edge Cases
     assert escape_html_tags("<<script>>") == "&lt;&lt;script>>"  # Escaped non-tag <
     assert escape_html_tags("<div><p>nested</p></div>") == "<div>&lt;p>nested&lt;/p></div>"
     assert escape_html_tags("<div<span") == "&lt;div&lt;span"  # Incomplete tags are escaped
@@ -140,7 +140,7 @@ def test_escape_html_tags():
     assert escape_html_tags("< >") == "&lt; >"
     assert escape_html_tags("< / div >") == "< / div >"  # Whitelisted closing tag with spaces
 
-    # 8. Mixed Content Combination
+    # Mixed Content Combination
     complex_html = "<DiV class='A'>Hello <Br/> <p>World</p> <https://link.com> </DiV>"
     expected_complex_allowed = (
         "<DiV class='A'>Hello <Br/> &lt;p>World&lt;/p> <https://link.com> </DiV>"
@@ -151,6 +151,6 @@ def test_escape_html_tags():
     assert escape_html_tags(complex_html, allow_bare_md_urls=True) == expected_complex_allowed
     assert escape_html_tags(complex_html, allow_bare_md_urls=False) == expected_complex_disallowed
 
-    # 9. Empty/No Tags
+    # Empty/No Tags
     assert escape_html_tags("") == ""
     assert escape_html_tags("Just plain text, no tags.") == "Just plain text, no tags."
