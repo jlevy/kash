@@ -183,7 +183,7 @@ async def gather_limited_async(
     # Global retry counter (shared across all tasks)
     global_retry_counter = RetryCounter(retry_settings.max_total_retries)
 
-    async def rate_limited_coro_with_retry(i: int, coro_spec: CoroSpec[T]) -> T:
+    async def run_task_with_retry(i: int, coro_spec: CoroSpec[T]) -> T:
         # Generate label for this task
         label = labeler(i, coro_spec) if labeler else f"task:{i}"
         task_id = await status.add(label) if status else None
@@ -223,9 +223,9 @@ async def gather_limited_async(
                 await status.finish(task_id, TaskState.FAILED, str(e))
             raise
 
-    return await asyncio.gather(
-        *[rate_limited_coro_with_retry(i, spec) for i, spec in enumerate(coro_specs)],
-        return_exceptions=return_exceptions,
+    return await _gather_with_interrupt_handling(
+        [run_task_with_retry(i, spec) for i, spec in enumerate(coro_specs)],
+        return_exceptions,
     )
 
 
@@ -311,9 +311,9 @@ async def gather_limited_sync(
     # Global retry counter (shared across all tasks)
     global_retry_counter = RetryCounter(retry_settings.max_total_retries)
 
-    async def rate_limited_sync_with_retry(i: int, sync_spec: SyncSpec[T]) -> T:
+    async def run_task_with_retry(i: int, sync_spec: SyncSpec[T]) -> T:
         # Generate label for this task
-        label = labeler(i, sync_spec) if labeler else f"sync_task:{i}"
+        label = labeler(i, sync_spec) if labeler else f"task:{i}"
         task_id = await status.add(label) if status else None
 
         async def executor() -> T:
@@ -359,10 +359,56 @@ async def gather_limited_sync(
                 await status.finish(task_id, TaskState.FAILED, str(e))
             raise
 
-    return await asyncio.gather(
-        *[rate_limited_sync_with_retry(i, spec) for i, spec in enumerate(sync_specs)],
-        return_exceptions=return_exceptions,
+    return await _gather_with_interrupt_handling(
+        [run_task_with_retry(i, spec) for i, spec in enumerate(sync_specs)],
+        return_exceptions,
     )
+
+
+async def _gather_with_interrupt_handling(
+    tasks: list[Coroutine[None, None, T]], return_exceptions: bool = False
+) -> list[T] | list[T | BaseException]:
+    """
+    Execute asyncio.gather with graceful KeyboardInterrupt handling.
+
+    Args:
+        tasks: List of coroutine functions to create tasks from
+        return_exceptions: Whether to return exceptions as results
+
+    Returns:
+        Results from asyncio.gather
+
+    Raises:
+        KeyboardInterrupt: Re-raised after graceful cancellation
+    """
+    # Create tasks from coroutines so we can cancel them properly
+    async_tasks = [asyncio.create_task(task) for task in tasks]
+
+    try:
+        return await asyncio.gather(*async_tasks, return_exceptions=return_exceptions)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        # Handle both KeyboardInterrupt and CancelledError (which is what tasks actually receive)
+        log.warning("Interrupt received, cancelling %d tasks...", len(async_tasks))
+
+        # Cancel all running tasks
+        cancelled_count = 0
+        for task in async_tasks:
+            if not task.done():
+                task.cancel()
+                cancelled_count += 1
+
+        # Wait briefly for tasks to cancel
+        if cancelled_count > 0:
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(*async_tasks, return_exceptions=True), timeout=1.0
+                )
+            except (TimeoutError, asyncio.CancelledError):
+                log.warning("Some tasks did not cancel within timeout")
+
+        log.info("Task cancellation completed (%d tasks cancelled)", cancelled_count)
+        # Always raise KeyboardInterrupt for consistent behavior
+        raise KeyboardInterrupt("User interrupted operation")
 
 
 async def _execute_with_retry(
@@ -586,10 +632,12 @@ def test_gather_limited_coroutine_retry_validation():
         async def async_func(value: int) -> int:
             return value
 
+        coro = async_func(1)  # Direct coroutine
+
         # Should raise ValueError when trying to use coroutines with retries
         try:
             await gather_limited_async(
-                async_func(1),  # Direct coroutine
+                coro,  # Direct coroutine
                 lambda: async_func(2),  # Callable
                 retry_settings=RetrySettings(
                     max_task_retries=1,
@@ -600,6 +648,7 @@ def test_gather_limited_coroutine_retry_validation():
             )
             raise AssertionError("Expected ValueError")
         except ValueError as e:
+            coro.close()  # Close the unused coroutine to prevent RuntimeWarning
             assert "position 0" in str(e)
             assert "cannot be retried" in str(e)
 

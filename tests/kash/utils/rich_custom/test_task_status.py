@@ -8,6 +8,7 @@ from typing import Any
 from kash.utils.api_utils.api_retries import RetrySettings
 from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
+from kash.utils.common.testing import enable_if
 from kash.utils.rich_custom.task_status import StatusSettings, TaskStatus
 
 
@@ -433,6 +434,7 @@ async def text_chunk_processing_demo(total_chunks: int = 50) -> dict[str, Any]:
     return results
 
 
+@enable_if("integration")
 def test_comprehensive_task_status_demo():
     """Simple pytest wrapper for the demo with basic sanity checks."""
 
@@ -499,6 +501,7 @@ def test_comprehensive_task_status_demo():
     print("All sanity checks passed!")
 
 
+@enable_if("integration")
 def test_text_chunk_processing_demo():
     """Test the text chunk processing demo with default 50 chunks."""
 

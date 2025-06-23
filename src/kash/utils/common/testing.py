@@ -3,16 +3,19 @@ from __future__ import annotations
 import os
 from collections.abc import Callable
 from functools import wraps
-from typing import Literal, TypeAlias
+from typing import Literal, ParamSpec, TypeAlias, TypeVar, cast
 
-TestMarker: TypeAlias = Literal["online", "integration"]
+P = ParamSpec("P")
+T = TypeVar("T")
+
+TestMarker: TypeAlias = Literal["online", "integration", "slow"]
 """
 Valid markers for tests. Currently just marking online tests (e.g. LLM APIs that
 that require keys) and more complex integration tests.
 """
 
 
-def enable_if(marker: TestMarker) -> Callable:
+def enable_if(marker: TestMarker) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """
     Mark a test as having external dependencies.
 
@@ -34,13 +37,13 @@ def enable_if(marker: TestMarker) -> Callable:
     ```
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             env_var = f"ENABLE_TESTS_{marker.upper()}"
             if not os.getenv(env_var):
                 print(f"Skipping test function: {func.__name__} (set {env_var}=1 to enable)")
-                return
+                return cast(T, None)
             return func(*args, **kwargs)
 
         # Set pytest markers automatically if pytest is available
@@ -53,6 +56,6 @@ def enable_if(marker: TestMarker) -> Callable:
             # Pytest not available, which is fine for non-test runs
             pass
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator
