@@ -9,7 +9,7 @@ from kash.utils.api_utils.api_retries import RetrySettings
 from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
 from kash.utils.common.testing import enable_if
-from kash.utils.rich_custom.task_status import StatusSettings, TaskStatus
+from kash.utils.rich_custom.task_status import StatusSettings, StatusStyles, TaskStatus
 
 
 class SimulatedAPIError(Exception):
@@ -280,7 +280,8 @@ async def task_status_demo() -> dict[str, Any]:
 
     async with TaskStatus(
         settings=StatusSettings(
-            success_symbol="✨", failure_symbol="💀", retry_symbol="🔥", transient=False
+            styles=StatusStyles(success_symbol="✨", failure_symbol="💀", retry_symbol="🔥"),
+            transient=False,
         )
     ) as status:
         mixed_results = await gather_limited_async(

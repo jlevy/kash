@@ -80,16 +80,6 @@ class TaskSummary:
         """Total number of tasks."""
         return len(self.task_states)
 
-    @property
-    def no_failures(self) -> bool:
-        """Whether no tasks failed."""
-        return self.failed == 0
-
-    @property
-    def all_failed(self) -> bool:
-        """Whether all tasks failed."""
-        return self.failed == self.total
-
     def summary_str(self) -> str:
         """
         Generate summary message based on task completion states.
@@ -97,20 +87,27 @@ class TaskSummary:
         if not self.task_states:
             return "No tasks to process"
 
-        if self.no_failures:
-            return "All tasks finished successfully"
-        elif self.all_failed:
-            return "All tasks failed!"
+        if self.completed == self.total:
+            return f"All tasks successful: {self.completed}/{self.total} completed"
+        elif self.completed + self.skipped == self.total:
+            return f"All tasks successful: {self.completed}/{self.total} completed, {self.skipped} skipped"
+        elif self.failed == self.total:
+            return f"All tasks failed: {self.failed}/{self.total} failed"
         else:
             parts = []
             if self.completed > 0:
-                parts.append(f"{self.completed} tasks completed")
+                parts.append(f"{self.completed}/{self.total} tasks completed")
             if self.failed > 0:
                 parts.append(f"{self.failed} tasks failed")
             if self.skipped > 0:
                 parts.append(f"{self.skipped} tasks skipped")
+            if self.queued > 0:
+                parts.append(f"{self.queued} tasks not yet run")
 
-            return ", ".join(parts)
+            if self.queued > 0:
+                return "Tasks were interrupted: " + ", ".join(parts)
+            else:
+                return "Tasks had errors: " + ", ".join(parts)
 
 
 class ProgressTracker(Protocol[TaskID]):

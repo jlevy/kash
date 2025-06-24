@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from types import TracebackType
 from typing import TYPE_CHECKING, TypeVar
 
+from strif import abbrev_str, single_line
 from typing_extensions import override
 
 if TYPE_CHECKING:
     from rich.progress import ProgressColumn
 
 from rich.console import Console, RenderableType
-from rich.progress import BarColumn, Progress, ProgressColumn, Task, TaskID, TextColumn
+from rich.progress import BarColumn, Progress, ProgressColumn, Task, TaskID
 from rich.spinner import Spinner
 from rich.text import Text
 
@@ -29,15 +30,37 @@ from kash.utils.api_utils.progress_protocol import (
 
 T = TypeVar("T")
 
+
+@dataclass(frozen=True)
+class StatusStyles:
+    """
+    All emojis and styles used in TaskStatus display.
+    Centralized for easy customization and consistency.
+    """
+
+    # Emoji symbols
+    success_symbol: str = EMOJI_SUCCESS
+    failure_symbol: str = EMOJI_FAILURE
+    skip_symbol: str = EMOJI_SKIP
+    retry_symbol: str = EMOJI_RETRY
+
+    # Status styles
+    retry_style: str = "red"
+    success_style: str = "green"
+    failure_style: str = "red"
+    skip_style: str = "yellow"
+    running_style: str = "blue"
+    error_style: str = "dim red"
+
+    # Progress bar styles
+    progress_complete_style: str = "green"
+
+
+# Default styles instance
+DEFAULT_STYLES = StatusStyles()
+
 # Display symbols
 RUNNING_SYMBOL = ""
-
-# Display styles
-RETRY_STYLE = "red"
-SUCCESS_STYLE = "green"
-FAILURE_STYLE = "red"
-SKIP_STYLE = "yellow"
-RUNNING_STYLE = "blue"
 
 # Layout constants
 DEFAULT_LABEL_WIDTH = 40
@@ -71,14 +94,7 @@ class StatusSettings:
     label_width: int = DEFAULT_LABEL_WIDTH
     transient: bool = True
     refresh_per_second: float = 10
-    success_symbol: str = EMOJI_SUCCESS
-    failure_symbol: str = EMOJI_FAILURE
-    skip_symbol: str = EMOJI_SKIP
-    retry_symbol: str = EMOJI_RETRY
-    retry_style: str = RETRY_STYLE
-    success_style: str = SUCCESS_STYLE
-    failure_style: str = FAILURE_STYLE
-    skip_style: str = "yellow"
+    styles: StatusStyles = DEFAULT_STYLES
 
 
 class SpinnerStatusColumn(ProgressColumn):
@@ -90,28 +106,18 @@ class SpinnerStatusColumn(ProgressColumn):
         self,
         *,
         spinner_name: str = SPINNER_NAME,
-        success_symbol: str = EMOJI_SUCCESS,
-        failure_symbol: str = EMOJI_FAILURE,
-        skip_symbol: str = EMOJI_SKIP,
-        success_style: str = SUCCESS_STYLE,
-        failure_style: str = FAILURE_STYLE,
-        skip_style: str = "yellow",
+        styles: StatusStyles = DEFAULT_STYLES,
     ):
         super().__init__()
         self.spinner: Spinner = Spinner(spinner_name)
-        self.success_symbol: str = success_symbol
-        self.failure_symbol: str = failure_symbol
-        self.skip_symbol: str = skip_symbol
-        self.success_style: str = success_style
-        self.failure_style: str = failure_style
-        self.skip_style: str = skip_style
+        self.styles = styles
 
         # Calculate fixed width for consistent column sizing
         self.column_width: int = max(
             _get_spinner_width(spinner_name),
-            len(success_symbol),
-            len(failure_symbol),
-            len(skip_symbol),
+            len(styles.success_symbol),
+            len(styles.failure_symbol),
+            len(styles.skip_symbol),
         )
 
     @override
@@ -123,11 +129,11 @@ class SpinnerStatusColumn(ProgressColumn):
             return Text(" " * self.column_width)
 
         if task_info.state == TaskState.COMPLETED:
-            text = Text(self.success_symbol, style=self.success_style)
+            text = Text(self.styles.success_symbol, style=self.styles.success_style)
         elif task_info.state == TaskState.FAILED:
-            text = Text(self.failure_symbol, style=self.failure_style)
+            text = Text(self.styles.failure_symbol, style=self.styles.failure_style)
         elif task_info.state == TaskState.SKIPPED:
-            text = Text(self.skip_symbol, style=self.skip_style)
+            text = Text(self.styles.skip_symbol, style=self.styles.skip_style)
         else:
             # Running: show spinner
             spinner_result = self.spinner.render(task.get_time())
@@ -152,12 +158,13 @@ class ErrorIndicatorColumn(ProgressColumn):
     def __init__(
         self,
         *,
-        retry_symbol: str = EMOJI_RETRY,
-        retry_style: str = RETRY_STYLE,
+        styles: StatusStyles = DEFAULT_STYLES,
+        min_error_length: int = 20,
     ):
         super().__init__()
-        self.retry_symbol: str = retry_symbol
-        self.retry_style: str = retry_style
+        self.styles = styles
+        self.min_error_length: int = min_error_length
+        self._current_max_length: int = min_error_length
 
     @override
     def render(self, task: Task) -> Text:
@@ -170,14 +177,19 @@ class ErrorIndicatorColumn(ProgressColumn):
         text = Text()
 
         # Add retry indicators (red dots for each failure)
-        retry_text = self.retry_symbol * task_info.retry_count
-        text.append(retry_text, style=self.retry_style)
+        retry_text = self.styles.retry_symbol * task_info.retry_count
+        text.append(retry_text, style=self.styles.retry_style)
 
         # Add last error message if available
         if task_info.failures:
             text.append(" ")
             last_error = task_info.failures[-1]
-            text.append(last_error, style="dim red")
+
+            # Ensure single line and truncate to max length
+            text.append(
+                abbrev_str(single_line(last_error), max_len=self._current_max_length),
+                style=self.styles.error_style,
+            )
 
         return text
 
@@ -196,6 +208,26 @@ class CustomProgressColumn(ProgressColumn):
         """Render custom progress element from task fields."""
         progress_display = task.fields.get(self.field_name)
         return progress_display if progress_display is not None else ""
+
+
+class TruncatedLabelColumn(ProgressColumn):
+    """
+    Column that shows task labels truncated to half console width.
+    """
+
+    def __init__(self, console_width: int):
+        super().__init__()
+        # Reserve half the console width for labels/status messages
+        self.max_label_width = console_width // 2
+
+    @override
+    def render(self, task: Task) -> Text:
+        """Render task label truncated to max width."""
+        label = task.fields.get("label", "")
+        if isinstance(label, str):
+            truncated_label = abbrev_str(single_line(label), max_len=self.max_label_width)
+            return Text(truncated_label)
+        return Text(str(label))
 
 
 class TaskStatus(AbstractAsyncContextManager):
@@ -255,29 +287,29 @@ class TaskStatus(AbstractAsyncContextManager):
         self._next_id: int = 1
         self._rich_task_ids: dict[int, TaskID] = {}  # Map our IDs to Rich Progress IDs
 
+        # Calculate spinner width for consistent spacing
+        self._spinner_width = _get_spinner_width(SPINNER_NAME)
+
         # Create columns
         spinner_status_column = SpinnerStatusColumn(
             spinner_name=SPINNER_NAME,
-            success_symbol=self.settings.success_symbol,
-            failure_symbol=self.settings.failure_symbol,
-            skip_symbol=self.settings.skip_symbol,
-            success_style=self.settings.success_style,
-            failure_style=self.settings.failure_style,
-            skip_style=self.settings.skip_style,
+            styles=self.settings.styles,
         )
 
         error_column = ErrorIndicatorColumn(
-            retry_symbol=self.settings.retry_symbol,
-            retry_style=self.settings.retry_style,
+            styles=self.settings.styles,
         )
+
+        label_column = TruncatedLabelColumn(console_width=self.console.size.width)
+
+        # Store references to columns so we can update them with console info
+        self._error_column = error_column
+        self._label_column = label_column
 
         # Build column layout: Spinner/Status | Label | [Progress] | Error indicators
         columns: list[ProgressColumn] = [
             spinner_status_column,
-            TextColumn(
-                "[bold blue]{task.fields[label]}",
-                justify="left",
-            ),
+            label_column,
         ]
 
         # Add optional progress column
@@ -286,8 +318,8 @@ class TaskStatus(AbstractAsyncContextManager):
             columns.append(
                 BarColumn(
                     bar_width=self.settings.progress_width,
-                    complete_style="green",
-                    finished_style="green",
+                    complete_style=self.settings.styles.progress_complete_style,
+                    finished_style=self.settings.styles.progress_complete_style,
                 )
             )
             columns.append(CustomProgressColumn("progress_display"))
@@ -301,6 +333,20 @@ class TaskStatus(AbstractAsyncContextManager):
             transient=self.settings.transient,
             refresh_per_second=self.settings.refresh_per_second,
         )
+
+        # Now that we have console access, update columns with proper max lengths
+        self._update_column_widths()
+
+    def _update_column_widths(self) -> None:
+        """Update column widths based on console width - half for labels, half for errors."""
+        console_width = self.console.size.width
+
+        self._error_column._current_max_length = max(
+            self._error_column.min_error_length, console_width // 2
+        )
+
+        # Update label column max width (half console width)
+        self._label_column.max_label_width = console_width // 2
 
     @property
     def suppress_logs(self) -> bool:

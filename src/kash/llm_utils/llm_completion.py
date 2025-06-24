@@ -173,7 +173,7 @@ def llm_template_completion(
     )
 
     if check_no_results and is_no_results(result.content):
-        log.message("No results for LLM transform, will ignore: %r", result.content)
+        log.info("No results for LLM transform, will ignore: %r", result.content)
         result.content = ""
 
     return result

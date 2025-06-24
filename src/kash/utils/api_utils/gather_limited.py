@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
+import threading
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from typing import Any, TypeAlias, TypeVar, cast, overload
@@ -45,6 +46,7 @@ SyncLabeler: TypeAlias = Labeler[SyncSpec[T]]
 
 DEFAULT_MAX_CONCURRENT: int = 5
 DEFAULT_MAX_RPS: float = 5.0
+DEFAULT_CANCEL_TIMEOUT: float = 1.0
 
 
 class RetryCounter:
@@ -238,6 +240,8 @@ async def gather_limited_sync(
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
     status: ProgressTracker | None = None,
     labeler: SyncLabeler[T] | None = None,
+    cancel_event: threading.Event | None = None,
+    cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T]: ...
 
 
@@ -250,6 +254,8 @@ async def gather_limited_sync(
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
     status: ProgressTracker | None = None,
     labeler: SyncLabeler[T] | None = None,
+    cancel_event: threading.Event | None = None,
+    cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T | BaseException]: ...
 
 
@@ -261,6 +267,8 @@ async def gather_limited_sync(
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
     status: ProgressTracker | None = None,
     labeler: SyncLabeler[T] | None = None,
+    cancel_event: threading.Event | None = None,
+    cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T] | list[T | BaseException]:
     """
     Rate-limited version of `asyncio.gather()` for sync functions with retry logic.
@@ -268,29 +276,42 @@ async def gather_limited_sync(
 
     Supports two levels of retry limits:
     - Per-task retries: max_task_retries attempts per individual task
-    - Global retries: max_total_retries attempts across all tasks (prevents cascade failures)
+    - Global retries: max_total_retries attempts across all tasks
+
+    Supports cooperative cancellation and graceful thread termination on interruption.
 
     Args:
-        *sync_specs: Callables that return values (not coroutines) or FuncSpec objects
+        *sync_specs: Callables that return values (not coroutines) or FuncTask objects
         max_concurrent: Maximum number of concurrent executions
         max_rps: Maximum requests per second
         return_exceptions: If True, exceptions are returned as results
         retry_settings: Configuration for retry behavior, or None to disable retries
         status: Optional ProgressTracker instance for progress display
         labeler: Optional function to generate labels: labeler(index, spec) -> str
+        cancel_event: Optional threading.Event that will be set on cancellation
+        cancel_timeout: Max seconds to wait for threads to terminate on cancellation
 
     Returns:
         List of results in the same order as input specifications
 
     Example:
         ```python
-        # Sync functions with retries
+        # Without cooperative cancellation
         results = await gather_limited_sync(
             lambda: some_sync_function(arg1),
             lambda: another_sync_function(arg2),
             max_concurrent=3,
             max_rps=2.0,
             retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
+        )
+
+        # With cooperative cancellation
+        cancel_event = threading.Event()
+        results = await gather_limited_sync(
+            lambda: cancellable_sync_function(cancel_event, arg1),
+            lambda: another_cancellable_function(cancel_event, arg2),
+            cancel_event=cancel_event,
+            cancel_timeout=5.0,
         )
         ```
     """
@@ -362,11 +383,16 @@ async def gather_limited_sync(
     return await _gather_with_interrupt_handling(
         [run_task_with_retry(i, spec) for i, spec in enumerate(sync_specs)],
         return_exceptions,
+        cancel_event=cancel_event,
+        cancel_timeout=cancel_timeout,
     )
 
 
 async def _gather_with_interrupt_handling(
-    tasks: list[Coroutine[None, None, T]], return_exceptions: bool = False
+    tasks: list[Coroutine[None, None, T]],
+    return_exceptions: bool = False,
+    cancel_event: threading.Event | None = None,
+    cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T] | list[T | BaseException]:
     """
     Execute asyncio.gather with graceful KeyboardInterrupt handling.
@@ -374,6 +400,8 @@ async def _gather_with_interrupt_handling(
     Args:
         tasks: List of coroutine functions to create tasks from
         return_exceptions: Whether to return exceptions as results
+        cancel_event: Optional threading.Event to signal cancellation to sync functions
+        cancel_timeout: Max seconds to wait for threads to terminate on cancellation
 
     Returns:
         Results from asyncio.gather
@@ -386,9 +414,14 @@ async def _gather_with_interrupt_handling(
 
     try:
         return await asyncio.gather(*async_tasks, return_exceptions=return_exceptions)
-    except (KeyboardInterrupt, asyncio.CancelledError):
+    except (KeyboardInterrupt, asyncio.CancelledError) as e:
         # Handle both KeyboardInterrupt and CancelledError (which is what tasks actually receive)
         log.warning("Interrupt received, cancelling %d tasks...", len(async_tasks))
+
+        # Signal cancellation to sync functions if event provided
+        if cancel_event is not None:
+            cancel_event.set()
+            log.debug("Cancellation event set for cooperative sync function termination")
 
         # Cancel all running tasks
         cancelled_count = 0
@@ -401,14 +434,29 @@ async def _gather_with_interrupt_handling(
         if cancelled_count > 0:
             try:
                 await asyncio.wait_for(
-                    asyncio.gather(*async_tasks, return_exceptions=True), timeout=1.0
+                    asyncio.gather(*async_tasks, return_exceptions=True), timeout=cancel_timeout
                 )
             except (TimeoutError, asyncio.CancelledError):
                 log.warning("Some tasks did not cancel within timeout")
 
+        # Wait for threads to terminate gracefully
+        loop = asyncio.get_running_loop()
+        try:
+            log.debug("Waiting up to %.1fs for thread pool termination...", cancel_timeout)
+            await asyncio.wait_for(
+                loop.shutdown_default_executor(),
+                timeout=cancel_timeout,
+            )
+            log.info("Thread pool shutdown completed")
+        except TimeoutError:
+            log.warning(
+                "Thread pool shutdown timed out after %.1fs: some sync functions may still be running",
+                cancel_timeout,
+            )
+
         log.info("Task cancellation completed (%d tasks cancelled)", cancelled_count)
         # Always raise KeyboardInterrupt for consistent behavior
-        raise KeyboardInterrupt("User interrupted operation")
+        raise KeyboardInterrupt("User cancellation") from e
 
 
 async def _execute_with_retry(
@@ -880,5 +928,60 @@ def test_gather_limited_funcspec_format():
 
         assert async_results == ["api_call: 40", "data_fetch: 10"]
         assert captured_labels == ["Processing api_call", "Processing data_fetch"]
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_sync_cooperative_cancellation():
+    """Test gather_limited_sync with cooperative cancellation via threading.Event."""
+    import asyncio
+    import time
+
+    async def run_test():
+        cancel_event = threading.Event()
+        call_counts = {"task1": 0, "task2": 0}
+
+        def cancellable_sync_func(task_name: str, work_duration: float) -> str:
+            """Sync function that checks cancellation event periodically."""
+            call_counts[task_name] += 1
+            start_time = time.time()
+
+            while time.time() - start_time < work_duration:
+                if cancel_event.is_set():
+                    return f"{task_name}: cancelled"
+                time.sleep(0.01)  # Small sleep to allow cancellation check
+
+            return f"{task_name}: completed"
+
+        # Test cooperative cancellation - tasks should respect the cancel_event
+        results = await gather_limited_sync(
+            lambda: cancellable_sync_func("task1", 0.1),  # Short duration
+            lambda: cancellable_sync_func("task2", 0.1),  # Short duration
+            cancel_event=cancel_event,
+            cancel_timeout=1.0,
+            retry_settings=NO_RETRIES,
+        )
+
+        # Should complete normally since cancel_event wasn't set
+        assert results == ["task1: completed", "task2: completed"]
+        assert call_counts["task1"] == 1
+        assert call_counts["task2"] == 1
+
+        # Test that cancel_event can be used independently
+        cancel_event.set()  # Set cancellation signal
+
+        results2 = await gather_limited_sync(
+            lambda: cancellable_sync_func("task1", 1.0),  # Would take long if not cancelled
+            lambda: cancellable_sync_func("task2", 1.0),  # Would take long if not cancelled
+            cancel_event=cancel_event,
+            cancel_timeout=1.0,
+            retry_settings=NO_RETRIES,
+        )
+
+        # Should be cancelled quickly since cancel_event is already set
+        assert results2 == ["task1: cancelled", "task2: cancelled"]
+        # Call counts should increment
+        assert call_counts["task1"] == 2
+        assert call_counts["task2"] == 2
 
     asyncio.run(run_test())

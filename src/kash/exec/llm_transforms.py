@@ -68,7 +68,7 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
             diff_filter=options.diff_filter,
         ).reassemble()
     else:
-        log.message(
+        log.info(
             "Running simple LLM transform action %s with model %s",
             options.op_name,
             options.model.litellm_name,
