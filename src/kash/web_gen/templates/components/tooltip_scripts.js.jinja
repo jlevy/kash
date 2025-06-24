@@ -79,6 +79,14 @@ const TooltipUtils = {
     return this.extractContent(element, true);
   },
   
+  // Add footnote navigation button to tooltip content
+  addFootnoteNavigationButton(content, footnoteId) {
+    const navButton = `<span class="footnote-nav-container">
+      <a href="#${footnoteId}" class="footnote" data-footnote-id="${footnoteId}" title="Go to footnote">&nbsp;↓&nbsp;</a>
+    </span>`;
+    return content + navButton;
+  },
+  
   // Determine optimal tooltip position based on element location and screen size
   getOptimalPosition(element) {
     const viewportWidth = window.innerWidth;
@@ -107,6 +115,69 @@ const TooltipUtils = {
 };
 
 /* -----------------------------------------------------------------------------
+   Mobile tap-outside-to-close functionality
+   ----------------------------------------------------------------------------- */
+
+// Mobile interaction manager
+const MobileInteractionManager = {
+  isActive: false,
+  
+  // Initialize mobile interaction handling
+  init() {
+    if (this.isActive) return;
+    
+    // Only activate on mobile screens
+    if (window.innerWidth <= TOOLTIP_CONFIG.breakpoints.mobile) {
+      this.activate();
+    }
+    
+    // Listen for resize events to activate/deactivate
+    window.addEventListener('resize', () => {
+      if (window.innerWidth <= TOOLTIP_CONFIG.breakpoints.mobile) {
+        this.activate();
+      } else {
+        this.deactivate();
+      }
+    });
+  },
+  
+  // Activate mobile interaction handling
+  activate() {
+    if (this.isActive) return;
+    this.isActive = true;
+    document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+    console.debug('Mobile interaction manager activated');
+  },
+  
+  // Deactivate mobile interaction handling
+  deactivate() {
+    if (!this.isActive) return;
+    this.isActive = false;
+    document.removeEventListener('touchstart', this.handleTouchStart.bind(this));
+    console.debug('Mobile interaction manager deactivated');
+  },
+  
+  // Handle touch start events
+  handleTouchStart(event) {
+    // Check if any tooltip is visible
+    const hasVisibleTooltips = Array.from(TooltipManager.activeTooltips.values())
+      .some(state => state.isVisible);
+    
+    if (!hasVisibleTooltips) return;
+    
+    // Check if touch is outside all tooltips
+    const touchedElement = event.target;
+    const isInsideTooltip = touchedElement.closest('.tooltip-element');
+    const isTooltipTrigger = touchedElement.closest('[data-tooltip-trigger]');
+    
+    if (!isInsideTooltip && !isTooltipTrigger) {
+      // Close all tooltips
+      TooltipManager.closeAllTooltips();
+    }
+  }
+};
+
+/* -----------------------------------------------------------------------------
    Generic tooltip creation and management functions
    ----------------------------------------------------------------------------- */
 
@@ -115,7 +186,7 @@ const TooltipManager = {
   activeTooltips: new Map(), // Track active tooltip states
   
   // Add tooltip to any element with HTML content
-  addTooltip(element, htmlContent, position = 'auto') {
+  addTooltip(element, htmlContent, position = 'auto', options = {}) {
     if (!element || !htmlContent) return;
     
     // Check if tooltip already exists for this element
@@ -128,7 +199,7 @@ const TooltipManager = {
       TooltipUtils.getOptimalPosition(element) : position;
     
     // Create real DOM tooltip element
-    const tooltipElement = this.createTooltipElement(htmlContent, actualPosition);
+    const tooltipElement = this.createTooltipElement(htmlContent, actualPosition, options);
     
     // Mark the trigger element
     element.setAttribute('data-tooltip-trigger', 'true');
@@ -147,29 +218,62 @@ const TooltipManager = {
     }
     
     // Set up enhanced hover behavior
-    this.setupAdvancedHover(element, tooltipElement, actualPosition);
+    this.setupAdvancedHover(element, tooltipElement, actualPosition, options);
   },
   
   // Create a real DOM tooltip element
-  createTooltipElement(htmlContent, position) {
+  createTooltipElement(htmlContent, position, options = {}) {
     const tooltip = document.createElement('div');
     tooltip.className = `tooltip-element tooltip-${position}`;
     
     // Add footnote-specific class if content contains footnote or links
-    if (htmlContent.includes('footnote') || htmlContent.includes('<a')) {
+    if (htmlContent.includes('footnote') || htmlContent.includes('<a') || options.isFootnote) {
       tooltip.classList.add('footnote-element');
     }
     
     tooltip.innerHTML = htmlContent;
+    
+    // Set up footnote navigation button if present
+    if (options.isFootnote) {
+      this.setupFootnoteNavigation(tooltip, options.footnoteId);
+    }
+    
     return tooltip;
   },
   
+  // Set up footnote navigation link functionality
+  setupFootnoteNavigation(tooltipElement, footnoteId) {
+    const navLink = tooltipElement.querySelector('.footnote-nav-container .footnote');
+    if (navLink) {
+      navLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Navigate to the footnote
+        const footnoteElement = document.getElementById(footnoteId);
+        if (footnoteElement) {
+          footnoteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Close tooltip after navigation
+          setTimeout(() => {
+            const tooltipState = Array.from(this.activeTooltips.values())
+              .find(state => state.tooltipElement === tooltipElement);
+            if (tooltipState) {
+              this.hideTooltip(tooltipState);
+            }
+          }, TOOLTIP_CONFIG.delays.hideLinkClick);
+        }
+      });
+    }
+  },
+  
   // Set up advanced hover behavior with delays and mouse tracking
-  setupAdvancedHover(triggerElement, tooltipElement, position) {
+  setupAdvancedHover(triggerElement, tooltipElement, position, options = {}) {
     const tooltipState = {
       triggerElement,
       tooltipElement,
       position,
+      options,
       showTimeout: null,
       hideTimeout: null,
       isVisible: false
@@ -242,14 +346,17 @@ const TooltipManager = {
   
   // Handle clicks within tooltip
   handleTooltipClick(tooltipState, event) {
-    // Allow clicks on links within tooltips
-    if (event.target.tagName === 'A') {
+    // Allow clicks on all links and buttons within tooltips
+    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON' || 
+        event.target.closest('a') || event.target.closest('button')) {
       event.stopPropagation();
-      // Keep tooltip open briefly after clicking a link
-      this.clearTimeout(tooltipState, 'hideTimeout');
-      tooltipState.hideTimeout = setTimeout(() => {
-        this.hideTooltip(tooltipState);
-      }, TOOLTIP_CONFIG.delays.hideLinkClick);
+      // Keep tooltip open briefly after clicking a link (except footnote nav link)
+      if (!event.target.closest('.footnote-nav-container')) {
+        this.clearTimeout(tooltipState, 'hideTimeout');
+        tooltipState.hideTimeout = setTimeout(() => {
+          this.hideTooltip(tooltipState);
+        }, TOOLTIP_CONFIG.delays.hideLinkClick);
+      }
     }
   },
   
@@ -632,8 +739,9 @@ const TooltipManager = {
       
       if (shouldBeWideRight !== isWideRight) {
         const htmlContent = tooltipState.tooltipElement.innerHTML;
+        const options = tooltipState.options;
         this.removeTooltip(element);
-        this.addTooltip(element, htmlContent, 'auto');
+        this.addTooltip(element, htmlContent, 'auto', options);
       }
     });
   }
@@ -667,6 +775,18 @@ function initFootnoteTooltips() {
         return;
       }
       
+      // Prevent default action immediately for all footnote reference links
+      refLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        return false;
+      });
+      
+      // Also prevent default on touch events for mobile
+      refLink.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        return false;
+      });
+      
       // Extract and validate content
       const footnoteHtml = TooltipUtils.extractHtmlContent(footnoteElement);
       const footnoteText = TooltipUtils.extractTextContent(footnoteElement);
@@ -677,10 +797,16 @@ function initFootnoteTooltips() {
       }
       
       // Truncate if needed
-      const displayContent = truncateFootnoteContent(footnoteHtml, footnoteText);
+      let displayContent = truncateFootnoteContent(footnoteHtml, footnoteText);
       
-      // Add tooltip
-      TooltipManager.addTooltip(refLink, displayContent, 'auto');
+      // Add footnote navigation button
+      displayContent = TooltipUtils.addFootnoteNavigationButton(displayContent, footnoteId);
+      
+      // Add tooltip with footnote options
+      TooltipManager.addTooltip(refLink, displayContent, 'auto', {
+        isFootnote: true,
+        footnoteId: footnoteId
+      });
       tooltipsAdded++;
       
       console.debug(`Added tooltip for footnote ${footnoteId}: "${footnoteText.substring(0, 50)}..."`);
@@ -715,6 +841,9 @@ function initTooltips() {
   console.debug('Starting tooltip initialization...');
   
   try {
+    // Initialize mobile interaction manager
+    MobileInteractionManager.init();
+    
     const footnoteCount = initFootnoteTooltips();
     console.debug(`Tooltip initialization complete. Total footnote tooltips: ${footnoteCount}`);
   } catch (error) {

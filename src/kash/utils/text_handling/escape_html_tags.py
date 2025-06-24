@@ -1,8 +1,13 @@
 import re
 from collections.abc import Set
 
-HTML_IN_MD_TAGS = frozenset(["div", "span", "sup", "sub", "br", "details", "summary"])
-"""These are tags that have reasonable usage in Markdown so typically would be preserved."""
+HTML_IN_MD_TAGS = frozenset(
+    ["div", "span", "i", "b", "em", "sup", "sub", "br", "details", "summary"]
+)
+"""
+These are tags that have reasonable usage in Markdown so typically would be preserved.
+Note we want `<i>` because it's used for icons like `<i data-feather="list"></i>`.
+"""
 
 ALLOWED_BARE_PROTOS = frozenset(["http://", "https://", "file://"])
 

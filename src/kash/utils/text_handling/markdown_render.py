@@ -33,6 +33,7 @@ MARKO_GFM = marko.Markdown(
 
 
 FOOTNOTE_UP_ARROW = "&nbsp;↑&nbsp;"
+FOOTNOTE_DOWN_ARROW = "&nbsp;↓&nbsp;"
 
 
 def html_postprocess(html: str) -> str:

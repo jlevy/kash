@@ -367,6 +367,16 @@
   display: none;
 }
 
+/* But show our navigation footnote link */
+.footnote-element .footnote-nav-container .footnote {
+  display: inline;
+  text-decoration: none !important;
+}
+
+.footnote-element .footnote-nav-container .footnote:hover {
+  text-decoration: none !important;
+}
+
 /* Text breaking rules for all tooltips */
 .tooltip-element .force-break,
 .tooltip-element code,
@@ -479,4 +489,14 @@
   .tooltip-element:not(.tooltip-mobile-bottom) {
     max-width: min(var(--tooltip-max-width), calc(100vw - 2rem)) !important;
   }
+}
+
+/* -----------------------------------------------------------------------------
+   Footnote Navigation Button Styles
+   ----------------------------------------------------------------------------- */
+
+/* Container for footnote navigation link */
+.footnote-nav-container {
+  float: right;
+  margin-left: 0.5rem;
 } 
