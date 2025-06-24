@@ -28,6 +28,7 @@ from kash.config.text_styles import (
     STYLE_HINT,
 )
 from kash.shell.output.kmarkdown import KMarkdown
+from kash.utils.rich_custom.multitask_status import MultiTaskStatus, StatusSettings
 from kash.utils.rich_custom.rich_indent import Indent
 from kash.utils.rich_custom.rich_markdown_fork import Markdown
 
@@ -78,6 +79,20 @@ def console_pager(use_pager: bool = True):
         yield
 
     PrintHooks.after_pager()
+
+
+def multitask_status(
+    settings: StatusSettings | None = None, *, auto_summary: bool = True
+) -> MultiTaskStatus:
+    """
+    Create a `MultiTaskStatus` context manager for displaying multiple task progress
+    using the global shell console.
+    """
+    return MultiTaskStatus(
+        console=get_console(),
+        settings=settings,
+        auto_summary=auto_summary,
+    )
 
 
 null_style = rich.style.Style.null()

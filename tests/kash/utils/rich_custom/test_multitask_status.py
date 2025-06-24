@@ -9,7 +9,7 @@ from kash.utils.api_utils.api_retries import RetrySettings
 from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
 from kash.utils.common.testing import enable_if
-from kash.utils.rich_custom.multitask_status import StatusSettings, StatusStyles, TaskStatus
+from kash.utils.rich_custom.multitask_status import MultiTaskStatus, StatusSettings, StatusStyles
 
 
 class SimulatedAPIError(Exception):
@@ -83,7 +83,7 @@ async def task_status_demo() -> dict[str, Any]:
 
         return f"success_{endpoint}"
 
-    async with TaskStatus() as status:
+    async with MultiTaskStatus() as status:
         api_results = await gather_limited_async(
             lambda: mock_api_call("api1", should_fail_times=0),  # Immediate success
             lambda: mock_api_call("api2", should_fail_times=1),  # single retry
@@ -120,7 +120,7 @@ async def task_status_demo() -> dict[str, Any]:
 
         return f"sync_complete_{name}"
 
-    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+    async with MultiTaskStatus(settings=StatusSettings(transient=False)) as status:
         sync_results = await gather_limited_sync(
             lambda: mock_sync_work("task1", fail_times=0),
             lambda: mock_sync_work("task2", fail_times=1),
@@ -166,7 +166,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Fallback for non-FuncSpec specs
         return f"Task {i + 1}"
 
-    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+    async with MultiTaskStatus(settings=StatusSettings(transient=False)) as status:
         funcspec_results = await gather_limited_async(
             FuncTask(process_task, ("short_input",)),  # Should succeed
             FuncTask(
@@ -192,7 +192,9 @@ async def task_status_demo() -> dict[str, Any]:
     # Demo: Manual task control with progress bars
     print("\nDemo: Manual Task Control & Progress Bars")
 
-    async with TaskStatus(settings=StatusSettings(transient=False, show_progress=True)) as status:
+    async with MultiTaskStatus(
+        settings=StatusSettings(transient=False, show_progress=True)
+    ) as status:
         # Create tasks with different progress patterns
         task1 = await status.add("Data Processing", total=10)
         task2 = await status.add("File Upload", total=5)
@@ -278,7 +280,7 @@ async def task_status_demo() -> dict[str, Any]:
         await asyncio.sleep(0.05)
         raise SimulatedAPIError("Permanent system failure")
 
-    async with TaskStatus(
+    async with MultiTaskStatus(
         settings=StatusSettings(
             styles=StatusStyles(success_symbol="✨", failure_symbol="💀", retry_symbol="🔥"),
             transient=False,
@@ -393,7 +395,7 @@ async def text_chunk_processing_demo(total_chunks: int = 50) -> dict[str, Any]:
         FuncTask(process_text_chunk, (chunk_text, i)) for i, chunk_text in enumerate(text_chunks)
     ]
 
-    async with TaskStatus(settings=StatusSettings(transient=False)) as status:
+    async with MultiTaskStatus(settings=StatusSettings(transient=False)) as status:
         chunk_results = await gather_limited_async(
             *chunk_specs,
             max_concurrent=5,  # Your specified concurrency

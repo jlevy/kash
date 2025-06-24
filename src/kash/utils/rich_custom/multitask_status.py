@@ -230,7 +230,7 @@ class TruncatedLabelColumn(ProgressColumn):
         return Text(str(label))
 
 
-class TaskStatus(AbstractAsyncContextManager):
+class MultiTaskStatus(AbstractAsyncContextManager):
     """
     Context manager for live progress status reporting of multiple tasks, a bit like
     uv or pnpm status output when installing packages.
@@ -354,7 +354,7 @@ class TaskStatus(AbstractAsyncContextManager):
         return True
 
     @override
-    async def __aenter__(self) -> TaskStatus:
+    async def __aenter__(self) -> MultiTaskStatus:
         """Start the live display."""
         self._progress.__enter__()
         return self
@@ -543,7 +543,7 @@ def test_task_status_basic():
     print("Testing TaskStatus...")
 
     async def _test_impl():
-        async with TaskStatus(
+        async with MultiTaskStatus(
             settings=StatusSettings(show_progress=False),
         ) as status:
             # Simple task without progress
@@ -567,7 +567,7 @@ def test_task_status_with_progress():
     print("Testing TaskStatus with progress...")
 
     async def _test_impl():
-        async with TaskStatus(
+        async with MultiTaskStatus(
             settings=StatusSettings(show_progress=True),
         ) as status:
             # Traditional progress bar
@@ -602,7 +602,7 @@ def test_task_status_mixed():
     print("Testing TaskStatus mixed scenarios...")
 
     async def _test_impl():
-        async with TaskStatus(
+        async with MultiTaskStatus(
             settings=StatusSettings(show_progress=True, transient=True),
         ) as status:
             # Multiple concurrent tasks
