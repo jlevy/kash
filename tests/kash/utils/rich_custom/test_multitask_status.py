@@ -9,7 +9,7 @@ from kash.utils.api_utils.api_retries import RetrySettings
 from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
 from kash.utils.common.testing import enable_if
-from kash.utils.rich_custom.task_status import StatusSettings, StatusStyles, TaskStatus
+from kash.utils.rich_custom.multitask_status import StatusSettings, StatusStyles, TaskStatus
 
 
 class SimulatedAPIError(Exception):
