@@ -5,7 +5,7 @@
   --font-sans: "Source Sans 3 Variable", sans-serif, "Hack Nerd Font";
   --font-serif: "PT Serif", serif, "Hack Nerd Font";
   /* Source Sans 3 Variable better at these weights. */
-  --font-weight-sans-medium: 565;
+  --font-weight-sans-medium: 550;
   --font-weight-sans-bold: 650;
   --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
 
@@ -156,7 +156,13 @@ h4 {
   margin-bottom: 0.7rem;
 }
 
-h5, h6 {
+h5 {
+  font-size: 1rem;
+  margin-top: 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+h6 {
   font-size: 1rem;
   margin-top: 0.7rem;
   margin-bottom: 0.5rem;
@@ -368,15 +374,15 @@ hr:before {
 
 .long-text h3 {
   font-family: var(--font-sans);
-  font-weight: 565;
+  font-weight: 550;
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
 
 .long-text h4 {
-  font-family: var(--font-sans);
-  font-weight: 650;
-  letter-spacing: 0.02em;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
 }
 
 .long-text h5 {
@@ -480,7 +486,12 @@ tbody tr:nth-child(even) {
   transform: translateX(-50%);
   /* Prevent container from expanding beyond its content area */
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden; /* Whole height of table shown, no vertical scrolling. */
+}
+
+.table-container table {
+  /* Tricky: Need this to prevent bogus extra horizontal scroll while keeping normal sizing */
+  contain: content;
 }
 
 /* When TOC is present, simplify table container positioning */
@@ -540,7 +551,6 @@ sup {
     width: calc(100vw - 6rem);
     /* Ensure container doesn't expand beyond its width */
     max-width: calc(100vw - 6rem);
-    contain: layout inline-size;
   }
   
   /* Apply shadow to long-text containers on larger screens */
@@ -590,8 +600,6 @@ sup {
     
     /* Ensure horizontal scroll works properly without expanding container */
     overflow-x: auto;
-    overflow-y: visible;
-    contain: layout inline-size;
   }
   
   .content-with-toc.has-toc table {
@@ -634,20 +642,17 @@ sup {
   
   /* Make table containers scrollable without affecting page layout */
   .table-container {
-    width: calc(100vw - 3rem);  /* Fixed width instead of max-width */
-    max-width: calc(100vw - 3rem);
     overflow-x: auto;
-    overflow-y: visible;  /* Ensure vertical overflow is not hidden */
     transform: none;
     left: 0;
     position: relative;
     margin-left: auto;
-    margin-right: auto;
+    margin-right: 0; /* Extend to right edge */
     /* Prevent container from expanding beyond its width */
     box-sizing: border-box;
-    contain: layout inline-size;  /* CSS containment to prevent width expansion */
+    width: calc(100vw - 1.5rem); /* Full width minus left margin */
   }
-  
+
   table {
     font-size: var(--font-size-smaller);
     /* Tables can be wider than container on mobile */

@@ -22,13 +22,15 @@ from kash.utils.api_utils.progress_protocol import (
     EMOJI_RETRY,
     EMOJI_SKIP,
     EMOJI_SUCCESS,
-    SPINNER_NAME,
     TaskInfo,
     TaskState,
     TaskSummary,
 )
 
 T = TypeVar("T")
+
+# Spinner configuration
+SPINNER_NAME = "dots12"
 
 
 @dataclass(frozen=True)

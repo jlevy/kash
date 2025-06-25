@@ -277,6 +277,8 @@ EMOJI_HELP = "?"
 
 EMOJI_ACTION = "⛭"
 
+EMOJI_TASK = "⚒"
+
 EMOJI_COMMAND = "⧁"  # More ideas: ⦿⧁⧀⦿⦾⟐⦊⟡
 
 EMOJI_SHELL = "⦊"

@@ -19,9 +19,6 @@ EMOJI_SKIP = "[-]"
 EMOJI_WARN = "[∆]"
 EMOJI_RETRY = "▵"
 
-# Spinner configuration
-SPINNER_NAME = "dots12"
-
 
 class TaskState(Enum):
     """Task execution states."""
