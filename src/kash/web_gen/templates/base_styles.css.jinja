@@ -441,6 +441,10 @@ hr:before {
 {% endblock long_text_styles %}
 
 {% block table_styles %}
+table, th, td, tbody tr {
+  transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out;
+}
+
 table {
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
@@ -459,16 +463,13 @@ th {
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-border-hint);
   line-height: 1.2;
+  background-color: var(--color-bg-alt-solid);
 }
 
 th, td {
   padding: 0.3rem 0.6rem;
   max-width: 40rem;
   min-width: 6rem;
-}
-
-th {
-  background-color: var(--color-bg-alt-solid);
 }
 
 tbody tr:nth-child(even) {

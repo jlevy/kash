@@ -7,8 +7,8 @@ const TOOLTIP_CONFIG = {
   // Timing delays (in milliseconds)
   delays: {
     show: 500,           // Delay before showing tooltip
-    hide: 1500,          // Default delay before hiding tooltip
-    hideWideRight: 2000, // Delay for wide-right tooltips (farther away)
+    hide: 2500,          // Default delay before hiding tooltip
+    hideWideRight: 4000, // Delay for wide-right tooltips (farther away)
     hideMovingToward: 500, // Shorter delay when mouse moving toward tooltip
     hideLinkClick: 300,  // Delay after clicking a link in tooltip
   },
@@ -285,6 +285,7 @@ const TooltipManager = {
     const handlers = {
       triggerEnter: (e) => this.handleTriggerEnter(tooltipState, e),
       triggerLeave: (e) => this.handleTriggerLeave(tooltipState, e),
+      triggerTouch: (e) => this.handleTriggerTouch(tooltipState, e),
       tooltipEnter: () => this.handleTooltipEnter(tooltipState),
       tooltipLeave: () => this.handleTooltipLeave(tooltipState),
       tooltipClick: (e) => this.handleTooltipClick(tooltipState, e)
@@ -293,6 +294,7 @@ const TooltipManager = {
     // Add event listeners
     triggerElement.addEventListener('mouseenter', handlers.triggerEnter);
     triggerElement.addEventListener('mouseleave', handlers.triggerLeave);
+    triggerElement.addEventListener('touchstart', handlers.triggerTouch, { passive: false });
     tooltipElement.addEventListener('mouseenter', handlers.tooltipEnter);
     tooltipElement.addEventListener('mouseleave', handlers.tooltipLeave);
     tooltipElement.addEventListener('click', handlers.tooltipClick);
@@ -301,6 +303,7 @@ const TooltipManager = {
     tooltipState.cleanupListeners = () => {
       triggerElement.removeEventListener('mouseenter', handlers.triggerEnter);
       triggerElement.removeEventListener('mouseleave', handlers.triggerLeave);
+      triggerElement.removeEventListener('touchstart', handlers.triggerTouch);
       tooltipElement.removeEventListener('mouseenter', handlers.tooltipEnter);
       tooltipElement.removeEventListener('mouseleave', handlers.tooltipLeave);
       tooltipElement.removeEventListener('click', handlers.tooltipClick);
@@ -330,6 +333,26 @@ const TooltipManager = {
     if (tooltipState.isVisible) {
       this.startHideTimer(tooltipState, event);
     }
+  },
+  
+  // Handle touch events on trigger elements (mobile)
+  handleTriggerTouch(tooltipState, event) {
+    // Prevent default to avoid triggering mouse events and navigation
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // If tooltip is already visible, hide it
+    if (tooltipState.isVisible) {
+      this.hideTooltip(tooltipState);
+      return;
+    }
+    
+    // Cancel any pending timers
+    this.clearTimeout(tooltipState, 'hideTimeout');
+    this.clearTimeout(tooltipState, 'showTimeout');
+    
+    // Show tooltip immediately on touch (no delay like hover)
+    this.showTooltip(tooltipState, event);
   },
   
   // Handle tooltip mouse enter

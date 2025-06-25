@@ -62,10 +62,10 @@
   z-index: 1000;
   
   /* Tooltip styling - matching TOC active item */
-  background: var(--color-bg-selected);
+  background: var(--color-bg-meta-solid);
   border: 1px solid var(--color-border-hint);
   border-left: 2px solid var(--color-primary);
-  color: var(--color-secondary);
+  color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
   line-height: 1.4;
@@ -102,11 +102,6 @@
 /* Ensure tooltip content is interactive when visible */
 .tooltip-element.tooltip-visible * {
   pointer-events: auto;
-}
-
-/* Tooltip hover state */
-.tooltip-element:hover {
-  background: var(--color-hover-bg);
 }
 
 /* -----------------------------------------------------------------------------
@@ -323,7 +318,7 @@
 
 /* Footnote reference styling */
 .footnote-ref a[data-tooltip-trigger] {
-  transition: color 0.4s ease-in-out;
+  transition: color 0.2s ease-in-out;
 }
 
 .footnote-ref a[data-tooltip-trigger]:hover {
