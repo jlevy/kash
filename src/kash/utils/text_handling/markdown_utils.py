@@ -6,7 +6,7 @@ from typing import Any, TypeAlias
 import marko
 import regex
 from marko.block import Heading, ListItem
-from marko.inline import Link
+from marko.inline import AutoLink, Link
 
 from kash.utils.common.url import Url
 
@@ -62,6 +62,9 @@ def _tree_links(element, include_internal=False):
     def _find_links(element):
         match element:
             case Link():
+                if include_internal or not element.dest.startswith("#"):
+                    links.append(element.dest)
+            case AutoLink():
                 if include_internal or not element.dest.startswith("#"):
                     links.append(element.dest)
             case _:
@@ -710,3 +713,157 @@ def test_markdown_utils_exceptions() -> None:
     result_with_internal = extract_links(content, include_internal=True)
     assert "https://example.com" in result_with_internal
     assert "#section" in result_with_internal
+
+
+def test_extract_links_comprehensive() -> None:
+    """Test extract_links with various link formats including bare links and footnotes."""
+
+    # Test regular markdown links
+    regular_links = "Check out [this link](https://example.com) and [another](https://test.com)"
+    result = extract_links(regular_links)
+    assert "https://example.com" in result
+    assert "https://test.com" in result
+    assert len(result) == 2
+
+    # Test bare/autolinks in angle brackets
+    bare_links = "Visit <https://google.com> and also <https://github.com>"
+    result_bare = extract_links(bare_links)
+    assert "https://google.com" in result_bare
+    assert "https://github.com" in result_bare
+    assert len(result_bare) == 2
+
+    # Test autolinks without brackets (expected to not work with standard markdown)
+    auto_links = "Visit https://stackoverflow.com or http://reddit.com"
+    result_auto = extract_links(auto_links)
+    assert (
+        result_auto == []
+    )  # Plain URLs without brackets aren't parsed as links in standard markdown
+
+    # Test GFM footnotes (the original issue)
+    footnote_content = """
+[^109]: What Is The Future Of Ketamine Therapy For Mental Health Treatment?
+    - The Ko-Op, accessed June 28, 2025,
+      <https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/>
+"""
+    result_footnote = extract_links(footnote_content)
+    assert (
+        "https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/"
+        in result_footnote
+    )
+    assert len(result_footnote) == 1
+
+    # Test mixed content with all types (excluding reference-style which has parsing conflicts with footnotes)
+    mixed_content = """
+# Header
+
+Regular link: [Example](https://example.com)
+Bare link: <https://bare-link.com>
+Auto link: https://auto-link.com
+
+[^1]: Footnote with [regular link](https://footnote-regular.com)
+[^2]: Footnote with bare link <https://footnote-bare.com>
+"""
+    result_mixed = extract_links(mixed_content)
+    expected_links = [
+        "https://example.com",  # Regular link
+        "https://bare-link.com",  # Bare link
+        "https://footnote-regular.com",  # Link in footnote
+        "https://footnote-bare.com",  # Bare link in footnote
+    ]
+    for link in expected_links:
+        assert link in result_mixed, f"Missing expected link: {link}"
+    # Should not include plain auto link (https://auto-link.com) as it's not in angle brackets
+    assert "https://auto-link.com" not in result_mixed
+    assert len(result_mixed) == len(expected_links)
+
+
+def test_extract_bare_links() -> None:
+    """Test extraction of bare links in angle brackets."""
+    content = "Visit <https://example.com> and <https://github.com/user/repo> for more info"
+    result = extract_links(content)
+    assert "https://example.com" in result
+    assert "https://github.com/user/repo" in result
+    assert len(result) == 2
+
+
+def test_extract_footnote_links() -> None:
+    """Test extraction of links within footnotes."""
+    content = dedent("""
+        Main text with reference[^1].
+        
+        [^1]: This footnote has a [regular link](https://example.com) and <https://bare-link.com>
+        """)
+    result = extract_links(content)
+    assert "https://example.com" in result
+    assert "https://bare-link.com" in result
+    assert len(result) == 2
+
+
+def test_extract_reference_style_links() -> None:
+    """Test extraction of reference-style links."""
+    content = dedent("""
+        Check out [this article][ref1] and [this other one][ref2].
+        
+        [ref1]: https://example.com/article1
+        [ref2]: https://example.com/article2
+        """)
+    result = extract_links(content)
+    assert "https://example.com/article1" in result
+    assert "https://example.com/article2" in result
+    assert len(result) == 2
+
+
+def test_extract_links_with_internal_fragments() -> None:
+    """Test that internal fragment links are excluded by default but included when requested."""
+    content = dedent("""
+        See [this section](#introduction) and [external link](https://example.com).
+        Also check [another section](#conclusion) here.
+        """)
+
+    # Default behavior: exclude internal links
+    result = extract_links(content)
+    assert "https://example.com" in result
+    assert "#introduction" not in result
+    assert "#conclusion" not in result
+    assert len(result) == 1
+
+    # Include internal links
+    result_with_internal = extract_links(content, include_internal=True)
+    assert "https://example.com" in result_with_internal
+    assert "#introduction" in result_with_internal
+    assert "#conclusion" in result_with_internal
+    assert len(result_with_internal) == 3
+
+
+def test_extract_links_mixed_real_world() -> None:
+    """Test with a realistic mixed document containing various link types."""
+    content = dedent("""
+        # Research Article
+        
+        This study examines ketamine therapy[^109] and references multiple sources.
+        
+        ## Methods
+        
+        We reviewed literature from [PubMed](https://pubmed.ncbi.nlm.nih.gov) 
+        and other databases <https://scholar.google.com>.
+        
+        For protocol details, see [our methodology][methodology].
+        
+        [methodology]: https://research.example.com/protocol
+        
+        [^109]: What Is The Future Of Ketamine Therapy For Mental Health Treatment?
+            - The Ko-Op, accessed June 28, 2025,
+              <https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/>
+        """)
+
+    result = extract_links(content)
+    expected_links = [
+        "https://pubmed.ncbi.nlm.nih.gov",
+        "https://scholar.google.com",
+        "https://research.example.com/protocol",
+        "https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/",
+    ]
+
+    for link in expected_links:
+        assert link in result, f"Missing expected link: {link}"
+    assert len(result) == len(expected_links)
