@@ -6,7 +6,12 @@ import time
 from typing import Any
 
 from kash.utils.api_utils.api_retries import RetrySettings
-from kash.utils.api_utils.gather_limited import FuncTask, gather_limited_async, gather_limited_sync
+from kash.utils.api_utils.gather_limited import (
+    FuncTask,
+    Limit,
+    gather_limited_async,
+    gather_limited_sync,
+)
 from kash.utils.api_utils.progress_protocol import SimpleProgressContext, TaskState
 from kash.utils.common.testing import enable_if
 from kash.utils.rich_custom.multitask_status import MultiTaskStatus, StatusSettings, StatusStyles
@@ -89,6 +94,7 @@ async def task_status_demo() -> dict[str, Any]:
             lambda: mock_api_call("api2", should_fail_times=1),  # single retry
             lambda: mock_api_call("api3", should_fail_times=2),  # two retries
             lambda: mock_api_call("api4", should_fail_times=3),  # three retries
+            global_limit=Limit(concurrency=2, rps=5.0),
             status=status,
             labeler=lambda i, spec: f"API Endpoint {chr(ord('A') + i)}",
             retry_settings=RetrySettings(
@@ -98,8 +104,6 @@ async def task_status_demo() -> dict[str, Any]:
                 backoff_factor=1.5,
                 is_retriable=lambda e: isinstance(e, (SimulatedAPIError, SimulatedRateLimitError)),
             ),
-            max_concurrent=2,
-            max_rps=5.0,
         )
 
     results["api_calls"] = {"results": api_results, "call_counts": call_counts.copy()}
@@ -173,6 +177,7 @@ async def task_status_demo() -> dict[str, Any]:
                 process_task, ("this_is_a_very_long_input_string_that_will_trigger_retry",)
             ),  # Should retry
             FuncTask(process_task, ("medium_length_input_data",)),  # Should succeed
+            global_limit=Limit(concurrency=2, rps=5.0),
             status=status,
             labeler=simple_labeler,
             retry_settings=RetrySettings(
@@ -181,7 +186,6 @@ async def task_status_demo() -> dict[str, Any]:
                 max_backoff=0.5,
                 is_retriable=lambda e: isinstance(e, (SimulatedAPIError, SimulatedRateLimitError)),
             ),
-            max_concurrent=2,
         )
 
     results["funcspec_format"] = {
@@ -398,8 +402,7 @@ async def text_chunk_processing_demo(total_chunks: int = 50) -> dict[str, Any]:
     async with MultiTaskStatus(settings=StatusSettings(transient=False)) as status:
         chunk_results = await gather_limited_async(
             *chunk_specs,
-            max_concurrent=5,  # Your specified concurrency
-            max_rps=5.0,  # Your specified QPS
+            global_limit=Limit(concurrency=5, rps=5.0),  # Your specified limits
             status=status,
             labeler=chunk_labeler,
             retry_settings=RetrySettings(
