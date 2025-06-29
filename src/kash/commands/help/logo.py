@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 
 from rich.box import SQUARE
-from rich.console import Group
+from rich.console import Group, RenderableType
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.text import Text
 
@@ -62,7 +63,13 @@ def color_logo() -> Group:
     )
 
 
-def branded_box(content: Group | None, version: str | None = None) -> Panel:
+def simple_box(content: RenderableType) -> Panel:
+    return Panel(
+        content, border_style=COLOR_HINT, padding=(0, 1), width=CONSOLE_WRAP_WIDTH, box=SQUARE
+    )
+
+
+def logo_box(content: Group | None = None) -> Padding:
     panel_width = CONSOLE_WRAP_WIDTH
 
     logo_lines = LOGO_LARGE.split("\n")
@@ -70,29 +77,17 @@ def branded_box(content: Group | None, version: str | None = None) -> Panel:
     tagline_offset = (panel_width - 4 - len(TAGLINE_STYLED)) // 2
 
     colored_lines = [logo_colorize_line(line, " ", rest_offset) for line in logo_lines]
-    header = None
-    if version:
-        footer = Text(version, style=COLOR_HINT, justify="right")
-    else:
-        footer = None
 
     body = ["", content] if content else []
 
-    return Panel(
+    return Padding(
         Group(
             Text.assemble(" " * tagline_offset, LOGO_SPACER),
             *colored_lines,
             Text.assemble(" " * tagline_offset, TAGLINE_STYLED),
             *body,
         ),
-        title=header,
-        title_align="center",
-        subtitle=footer,
-        subtitle_align="right",
-        border_style=COLOR_HINT,
-        padding=(0, 1),
-        width=panel_width,
-        box=SQUARE,
+        pad=(1, 1),
     )
 
 
@@ -101,7 +96,7 @@ def kash_logo(box: bool = False, svg_out: str | None = None, html_out: str | Non
     """
     Show the kash logo.
     """
-    logo = branded_box(None) if box else color_logo()
+    logo = logo_box(None) if box else color_logo()
 
     cprint(logo)
 

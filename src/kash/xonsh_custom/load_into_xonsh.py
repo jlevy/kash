@@ -15,7 +15,6 @@ from kash.config.settings import RECOMMENDED_PKGS, check_kerm_code_support
 from kash.config.text_styles import LOGO_NAME, STYLE_HINT
 from kash.mcp.mcp_server_commands import start_mcp_server
 from kash.shell.output.shell_output import PrintHooks, cprint
-from kash.shell.version import get_version_tag
 from kash.workspaces import current_ws
 from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
 from kash.xonsh_custom.shell_load_commands import (
@@ -109,5 +108,3 @@ def load_into_xonsh():
 
     else:
         reload_shell_commands_and_actions()
-
-    log.info("kash %s loaded", get_version_tag())

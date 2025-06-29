@@ -4,7 +4,7 @@ Output to the shell UI. These are for user interaction, not logging.
 
 import contextvars
 from collections.abc import Callable
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from enum import Enum, auto
 
 import rich
@@ -82,12 +82,16 @@ def console_pager(use_pager: bool = True):
 
 
 def multitask_status(
-    settings: StatusSettings | None = None, *, auto_summary: bool = True
-) -> MultiTaskStatus:
+    settings: StatusSettings | None = None, *, auto_summary: bool = True, enabled: bool = True
+) -> MultiTaskStatus | nullcontext:
     """
     Create a `MultiTaskStatus` context manager for displaying multiple task progress
-    using the global shell console.
+    using the global shell console. If disabled, returns a null context, so it's convenient
+    to disable status display.
     """
+    if not enabled:
+        return nullcontext()
+
     return MultiTaskStatus(
         console=get_console(),
         settings=settings,

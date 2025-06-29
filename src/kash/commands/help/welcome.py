@@ -2,7 +2,7 @@ from rich.box import SQUARE
 from rich.console import Group
 from rich.panel import Panel
 
-from kash.commands.help.logo import branded_box
+from kash.commands.help.logo import logo_box, simple_box
 from kash.config.text_styles import (
     COLOR_HINT,
 )
@@ -20,14 +20,15 @@ def welcome() -> None:
     """
 
     help_topics = all_docs.help_topics
-    version = get_full_version_name()
+
     # Create header with logo and right-justified version
 
     PrintHooks.before_welcome()
+    cprint(logo_box())
     cprint(
-        branded_box(
+        simple_box(
             Group(Markdown(help_topics.welcome)),
-            version,
         )
     )
     cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=COLOR_HINT))
+    cprint("%s", get_full_version_name())
