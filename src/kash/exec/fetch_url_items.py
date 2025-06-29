@@ -48,9 +48,10 @@ def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bo
     from kash.workspaces import current_ws
 
     ws = current_ws()
-    if not refetch and item.title and item.description:
+    if not refetch and item.title and item.description and item.body:
         log.message(
-            "Already have title and description, will not fetch metadata: %s", item.fmt_loc()
+            "Already have title, description, and body, will not fetch: %s",
+            item.fmt_loc(),
         )
         return item
 
@@ -100,10 +101,11 @@ def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bo
     # Now save the updated URL item and also the content item if we have one.
     ws.save(url_item)
     assert url_item.store_path
-    log.debug("Saved URL item: %s", url_item.fmt_loc())
     if content_item:
         ws.save(content_item)
         assert content_item.store_path
-        log.debug("Saved content item: %s", content_item.fmt_loc())
+        log.info("Saved content item: %s", content_item.fmt_loc())
+    else:
+        log.info("Saved URL item: %s", url_item.fmt_loc())
 
     return content_item or url_item
