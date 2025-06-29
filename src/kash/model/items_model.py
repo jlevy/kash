@@ -55,7 +55,8 @@ class ItemType(Enum):
     concept = "concept"
     resource = "resource"
     asset = "asset"
-    config = "config"
+    data = "data"
+    table = "table"
     export = "export"
     chat = "chat"
     extension = "extension"
@@ -86,7 +87,9 @@ class ItemType(Enum):
             Format.diff: ItemType.doc,
             Format.python: ItemType.extension,
             Format.json: ItemType.doc,
-            Format.csv: ItemType.doc,
+            Format.csv: ItemType.table,
+            Format.xlsx: ItemType.table,
+            Format.npz: ItemType.table,
             Format.log: ItemType.log,
             Format.pdf: ItemType.resource,
             Format.jpeg: ItemType.asset,
@@ -646,7 +649,7 @@ class Item:
         body_text = abbrev_str(self.body_text(), max_len)
 
         # Just for aesthetics, especially for titles of chat files.
-        if self.type in [ItemType.chat, ItemType.config] or self.format == Format.yaml:
+        if self.type in [ItemType.chat, ItemType.data] or self.format == Format.yaml:
             try:
                 yaml_obj = list(new_yaml().load_all(self.body_text()))
                 if len(yaml_obj) > 0:
@@ -663,16 +666,16 @@ class Item:
         """
         return bool(self.body and self.body.strip())
 
-    def read_as_config(self) -> Any:
+    def read_as_data(self) -> Any:
         """
-        If it is a config Item, return the parsed YAML.
+        If it is a data Item, return the parsed YAML.
         """
-        if not self.type == ItemType.config:
-            raise FileFormatError(f"Item is not a config: {self}")
+        if not self.type == ItemType.data:
+            raise FileFormatError(f"Item is not a data item: {self}")
         if not self.body:
-            raise FileFormatError(f"Config item has no body: {self}")
+            raise FileFormatError(f"Data item has no body: {self}")
         if self.format != Format.yaml:
-            raise FileFormatError(f"Config item is not YAML: {self.format}: {self}")
+            raise FileFormatError(f"Data item is not YAML: {self.format}: {self}")
         return from_yaml_string(self.body)
 
     def get_filename(self) -> str | None:
@@ -709,8 +712,8 @@ class Item:
         elif self.type == ItemType.script:
             # Same for kash/xonsh scripts.
             return f"{self.type.value}.{FileExt.xsh.value}"
-        elif self.type == ItemType.export:
-            # For exports, skip the item type to keep it maximally compatible for external tools.
+        elif self.type in [ItemType.export, ItemType.data, ItemType.table]:
+            # For exports, data, and tables, skip the item type to keep it maximally compatible for external tools.
             return f"{self.get_file_ext().value}"
         else:
             return f"{self.type.value}.{self.get_file_ext().value}"

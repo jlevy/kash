@@ -48,8 +48,13 @@ def is_concept(item: Item) -> bool:
 
 
 @kash_precondition
-def is_config(item: Item) -> bool:
-    return item.type == ItemType.config
+def is_data(item: Item) -> bool:
+    return item.type == ItemType.data
+
+
+@kash_precondition
+def is_table(item: Item) -> bool:
+    return item.type == ItemType.table
 
 
 @kash_precondition

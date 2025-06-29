@@ -82,7 +82,7 @@ def tabbed_webpage_config(
 
     config_item = Item(
         title=f"{title} (config)",
-        type=ItemType.config,
+        type=ItemType.data,
         format=Format.yaml,
         body=to_yaml_string(asdict(config)),
     )
@@ -108,7 +108,7 @@ def tabbed_webpage_generate(
     """
     Generate a web page using the supplied config.
     """
-    config = config_item.read_as_config()
+    config = config_item.read_as_data()
     tabbed_webpage = as_dataclass(config, TabbedWebpage)  # Checks the format.
 
     _load_tab_content(tabbed_webpage)
