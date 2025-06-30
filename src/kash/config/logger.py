@@ -254,9 +254,10 @@ def _do_logging_setup(log_settings: LogSettings):
         _console_handler = basic_stderr_handler(log_settings.log_console_level)
 
     # Manually adjust logging for a few packages, removing previous verbose default handlers.
-
+    # Set root logger to most permissive level so handlers can do the filtering
+    root_level = min(log_settings.log_console_level.value, log_settings.log_file_level.value)
     log_levels = {
-        None: INFO,
+        None: root_level,
         "LiteLLM": INFO,
         "LiteLLM Router": INFO,
         "LiteLLM Proxy": INFO,
