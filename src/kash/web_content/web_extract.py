@@ -17,19 +17,22 @@ def fetch_page_content(
     text_extractor: PageExtractor = extract_text_justext,
 ) -> WebPageData:
     """
-    Fetches a URL and extracts the title, description, and content.
-    Always uses the content cache, at least temporarily.
+    Fetches a URL and extracts the title, description, and content,
+    with optional caching.
+
+    Always uses the content cache for fetching. Cached file path is
+    returned in the content, unless `cache` is false, in which case
+    the cached content is deleted.
 
     Force re-fetching and updating the cache by setting `refetch` to true.
-    Cached file path is returned in the content, unless `cache` is false,
-    in case the cached content is deleted.
+
 
     For HTML and other text files, uses the `text_extractor` to extract
     clean text and page metadata.
     """
     expiration_sec = 0 if refetch else None
-
-    path = cache_file(url, expiration_sec=expiration_sec).content.path
+    cache_result = cache_file(url, expiration_sec=expiration_sec)
+    path = cache_result.content.path
     format_info = file_format_info(path)
 
     content = None
@@ -40,13 +43,14 @@ def fetch_page_content(
         page_data = WebPageData(url)
 
     # Add file format info (for both HTML/text and all other file types).
-
     page_data.format_info = format_info
 
     # Add a thumbnail, if known for this URL.
     page_data.thumbnail_url = thumbnail_url(url)
 
-    # Return the local cache path if we will be keeping it.
+    # Return whether this is from cache and the local cache path
+    # if we will be keeping it.
+    page_data.cache_result = cache_result
     if cache:
         page_data.saved_content = path
     else:

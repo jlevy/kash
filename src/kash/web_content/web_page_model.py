@@ -6,6 +6,7 @@ from pydantic.dataclasses import dataclass
 
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import FileFormatInfo
+from kash.web_content.local_file_cache import CacheResult
 
 
 @dataclass
@@ -18,6 +19,9 @@ class WebPageData:
     The `clean_html` field should be a clean HTML version of the page, if available.
     The `saved_content` is optional but can be used to reference the original content,
     especially for large or non-text content.
+
+    Optionally exposes the cache result for the content, so the client can have
+    information about headers and whether it was cached.
     """
 
     locator: Url | Path
@@ -29,6 +33,7 @@ class WebPageData:
     saved_content: Path | None = None
     format_info: FileFormatInfo | None = None
     thumbnail_url: Url | None = None
+    cache_result: CacheResult | None = None
 
     def __repr__(self):
         return abbrev_obj(self)

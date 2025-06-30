@@ -1,14 +1,29 @@
+from dataclasses import dataclass
+
 from kash.config.logger import get_logger
 from kash.exec.preconditions import is_url_resource
-from kash.media_base.media_services import get_media_metadata
 from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, is_url
 from kash.utils.common.url_slice import add_slice_to_url, parse_url_slice
 from kash.utils.errors import InvalidInput
+from kash.web_content.web_page_model import WebPageData
 
 log = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class FetchItemResult:
+    """
+    Result of fetching a URL item.
+    """
+
+    item: Item
+
+    page_data: WebPageData | None = None
+    """If the item was fetched from a URL via the web content cache,
+    this will hold additional metadata, including whether it was cached."""
 
 
 def fetch_url_item(
@@ -17,7 +32,7 @@ def fetch_url_item(
     save_content: bool = True,
     refetch: bool = False,
     cache: bool = True,
-) -> Item:
+) -> FetchItemResult:
     from kash.workspaces import current_ws
 
     ws = current_ws()
@@ -37,7 +52,7 @@ def fetch_url_item(
 
 def fetch_url_item_content(
     item: Item, *, save_content: bool = True, refetch: bool = False, cache: bool = True
-) -> Item:
+) -> FetchItemResult:
     """
     Fetch content and metadata for a URL using a media service if we
     recognize the URL as a known media service. Otherwise, fetch and extract the
@@ -51,6 +66,7 @@ def fetch_url_item_content(
     The content item is returned if content was saved. Otherwise, the updated
     URL item is returned.
     """
+    from kash.media_base.media_services import get_media_metadata
     from kash.web_content.canon_url import canonicalize_url
     from kash.web_content.web_extract import fetch_page_content
     from kash.workspaces import current_ws
@@ -61,7 +77,7 @@ def fetch_url_item_content(
             "Already have title, description, and body, will not fetch: %s",
             item.fmt_loc(),
         )
-        return item
+        return FetchItemResult(item, None)
 
     if not item.url:
         raise InvalidInput(f"No URL for item: {item.fmt_loc()}")
@@ -74,6 +90,8 @@ def fetch_url_item_content(
     media_metadata = get_media_metadata(url)
     url_item: Item | None = None
     content_item: Item | None = None
+    page_data: WebPageData | None = None
+
     if media_metadata:
         url_item = Item.from_media_metadata(media_metadata)
         # Preserve and canonicalize any slice suffix on the URL.
@@ -101,7 +119,6 @@ def fetch_url_item_content(
                 original_filename=item.get_filename(),
                 format=page_data.format_info.format,
             )
-            ws.save(content_item)
 
     if not url_item.title:
         log.warning("Failed to fetch page data: title is missing: %s", item.url)
@@ -112,8 +129,10 @@ def fetch_url_item_content(
     if content_item:
         ws.save(content_item)
         assert content_item.store_path
-        log.info("Saved content item: %s", content_item.fmt_loc())
+        log.info(
+            "Saved both URL and content item: %s, %s", url_item.fmt_loc(), content_item.fmt_loc()
+        )
     else:
-        log.info("Saved URL item: %s", url_item.fmt_loc())
+        log.info("Saved URL item (no content): %s", url_item.fmt_loc())
 
-    return content_item or url_item
+    return FetchItemResult(content_item or url_item, page_data)

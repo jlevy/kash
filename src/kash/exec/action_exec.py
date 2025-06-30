@@ -55,7 +55,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     if input_items:
         log.message("Assembling metadata for input items:\n%s", fmt_lines(input_items))
         input_items = [
-            fetch_url_item_content(item, refetch=refetch) if is_url_resource(item) else item
+            fetch_url_item_content(item, refetch=refetch).item if is_url_resource(item) else item
             for item in input_items
         ]
 

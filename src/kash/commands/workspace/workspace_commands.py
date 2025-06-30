@@ -474,8 +474,8 @@ def fetch_url(*files_or_urls: str, refetch: bool = False) -> ShellResult:
     store_paths = []
     for locator in locators:
         try:
-            fetched_item = fetch_url_item(locator, refetch=refetch)
-            store_paths.append(fetched_item.store_path)
+            fetch_result = fetch_url_item(locator, refetch=refetch)
+            store_paths.append(fetch_result.item.store_path)
         except InvalidInput as e:
             log.warning(
                 "Not a URL or URL resource, will not fetch metadata: %s: %s", fmt_loc(locator), e

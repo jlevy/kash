@@ -70,7 +70,7 @@ class Embeddings:
         init_litellm()
 
         data = {}
-        log.message(
+        log.info(
             "Embedding %d texts (model %s, batch size %s)…",
             len(keyvals),
             model.litellm_name,
