@@ -45,6 +45,7 @@ class FuncTask:
     """
     A task described as an unevaluated function with args and kwargs.
     This task format allows you to use args and kwargs in the Labeler.
+    It also allows specifying a bucket for rate limiting.
     """
 
     func: Callable[..., Any]
@@ -60,6 +61,31 @@ SyncSpec: TypeAlias = Callable[[], T] | FuncTask
 # Specific labeler types using the generic Labeler pattern
 CoroLabeler: TypeAlias = Labeler[CoroSpec[T]]
 SyncLabeler: TypeAlias = Labeler[SyncSpec[T]]
+
+
+def _get_bucket_limits(
+    bucket: str,
+    bucket_semaphores: dict[str, asyncio.Semaphore],
+    bucket_rate_limiters: dict[str, AsyncLimiter],
+) -> tuple[asyncio.Semaphore | None, AsyncLimiter | None]:
+    """
+    Get bucket-specific limits with fallback to "*" wildcard.
+
+    Checks for exact bucket match first, then falls back to "*" if available.
+    Returns (None, None) if neither exact match nor "*" fallback exists.
+    """
+    # Try exact bucket match first
+    bucket_semaphore = bucket_semaphores.get(bucket)
+    bucket_rate_limiter = bucket_rate_limiters.get(bucket)
+
+    if bucket_semaphore is not None and bucket_rate_limiter is not None:
+        return bucket_semaphore, bucket_rate_limiter
+
+    # Fall back to "*" wildcard if available
+    bucket_semaphore = bucket_semaphores.get("*")
+    bucket_rate_limiter = bucket_rate_limiters.get("*")
+
+    return bucket_semaphore, bucket_rate_limiter
 
 
 class RetryCounter:
@@ -144,7 +170,7 @@ async def gather_limited_async(
         from kash.utils.rich_custom.task_status import TaskStatus
 
         async with TaskStatus() as status:
-            await gather_limited(
+            await gather_limited_async(
                 lambda: fetch_url("http://example.com"),
                 lambda: process_data(data),
                 status=status,
@@ -153,18 +179,31 @@ async def gather_limited_async(
             )
 
         # Without progress display:
-        await gather_limited(
+        await gather_limited_async(
             lambda: fetch_url("http://example.com"),
             lambda: process_data(data),
             retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
+        )
+
+        # With bucket-specific limits and "*" fallback:
+        await gather_limited_async(
+            FuncTask(fetch_api, ("data1",), bucket="api1"),
+            FuncTask(fetch_api, ("data2",), bucket="api2"),
+            FuncTask(fetch_api, ("data3",), bucket="api3"),
+            global_limit=Limit(rps=100, concurrency=50),
+            bucket_limits={
+                "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
+                "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
+            }
         )
 
         ```
 
     Args:
         *coro_specs: Callables or coroutines to execute
-        max_concurrent: Maximum number of concurrent executions
-        max_rps: Maximum requests per second
+        global_limit: Global limits applied to all tasks regardless of bucket
+        bucket_limits: Optional per-bucket limits. Tasks use their bucket field to determine limits.
+                      Use "*" as a fallback limit for buckets without specific limits.
         return_exceptions: If True, exceptions are returned as results
         retry_settings: Configuration for retry behavior, or None to disable retries
         status: Optional ProgressTracker instance for progress display
@@ -224,8 +263,9 @@ async def gather_limited_async(
             bucket = coro_spec.bucket
 
         # Get bucket-specific limits if available
-        bucket_semaphore = bucket_semaphores.get(bucket)
-        bucket_rate_limiter = bucket_rate_limiters.get(bucket)
+        bucket_semaphore, bucket_rate_limiter = _get_bucket_limits(
+            bucket, bucket_semaphores, bucket_rate_limiters
+        )
 
         async def executor() -> T:
             # Create a fresh coroutine for each attempt
@@ -328,6 +368,7 @@ async def gather_limited_sync(
         *sync_specs: Callables that return values (not coroutines) or FuncTask objects
         global_limit: Global limits applied to all tasks regardless of bucket
         bucket_limits: Optional per-bucket limits. Tasks use their bucket field to determine limits.
+                      Use "*" as a fallback limit for buckets without specific limits.
         return_exceptions: If True, exceptions are returned as results
         retry_settings: Configuration for retry behavior, or None to disable retries
         status: Optional ProgressTracker instance for progress display
@@ -348,14 +389,15 @@ async def gather_limited_sync(
             retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
         )
 
-        # With bucket-specific limits
+        # With bucket-specific limits and "*" fallback
         results = await gather_limited_sync(
             FuncTask(fetch_from_api, ("data1",), bucket="api1"),
             FuncTask(fetch_from_api, ("data2",), bucket="api2"),
+            FuncTask(fetch_from_api, ("data3",), bucket="api3"),
             global_limit=Limit(rps=100, concurrency=50),
             bucket_limits={
-                "api1": Limit(rps=20, concurrency=10),
-                "api2": Limit(rps=30, concurrency=15),
+                "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
+                "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
             }
         )
         ```
@@ -398,8 +440,9 @@ async def gather_limited_sync(
             bucket = sync_spec.bucket
 
         # Get bucket-specific limits if available
-        bucket_semaphore = bucket_semaphores.get(bucket)
-        bucket_rate_limiter = bucket_rate_limiters.get(bucket)
+        bucket_semaphore, bucket_rate_limiter = _get_bucket_limits(
+            bucket, bucket_semaphores, bucket_rate_limiters
+        )
 
         async def executor() -> T:
             # Call sync function via asyncio.to_thread, handling retry at this level

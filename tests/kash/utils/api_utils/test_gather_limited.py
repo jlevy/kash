@@ -616,3 +616,264 @@ def test_gather_limited_bucket_backward_compatibility():
         assert mixed_results == [10, 12]
 
     asyncio.run(run_test())
+
+
+def test_gather_limited_bucket_fallback_star():
+    """Test "*" fallback bucket limits when specific bucket limits are not provided."""
+    import time
+
+    async def run_test():
+        call_times = {"api1": [], "api2": [], "api3": []}
+
+        def track_api_call(bucket: str, delay: float = 0.05) -> str:
+            """Sync function that tracks call times per bucket."""
+            call_times[bucket].append(time.time())
+            time.sleep(delay)
+            return f"{bucket}_result"
+
+        # Test with "*" fallback - api2 and api3 should use "*" limits
+        results = await gather_limited_sync(
+            FuncTask(track_api_call, ("api1",), bucket="api1"),
+            FuncTask(track_api_call, ("api1",), bucket="api1"),
+            FuncTask(track_api_call, ("api2",), bucket="api2"),  # Should use "*" fallback
+            FuncTask(track_api_call, ("api2",), bucket="api2"),  # Should use "*" fallback
+            FuncTask(track_api_call, ("api3",), bucket="api3"),  # Should use "*" fallback
+            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            bucket_limits={
+                "api1": Limit(concurrency=1, rps=10),  # Specific limit for api1
+                "*": Limit(concurrency=1, rps=10),  # Fallback for api2, api3
+            },
+            retry_settings=NO_RETRIES,
+        )
+
+        # Verify results
+        assert results == [
+            "api1_result",
+            "api1_result",
+            "api2_result",
+            "api2_result",
+            "api3_result",
+        ]
+
+        # Verify that api1 calls were serialized (concurrency=1 from specific limit)
+        api1_times = call_times["api1"]
+        assert len(api1_times) == 2
+        assert api1_times[1] >= api1_times[0] + 0.04  # Second call after first finishes
+
+        # Verify that api2 calls were also serialized (concurrency=1 from "*" fallback)
+        api2_times = call_times["api2"]
+        assert len(api2_times) == 2
+        assert api2_times[1] >= api2_times[0] + 0.04  # Second call after first finishes
+
+        # Verify that api3 used "*" fallback (only one call, but still good to check)
+        api3_times = call_times["api3"]
+        assert len(api3_times) == 1
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_bucket_fallback_star_async():
+    """Test "*" fallback bucket limits with async functions."""
+    import time
+
+    async def run_test():
+        call_times = {"service1": [], "service2": [], "service3": []}
+
+        async def track_async_call(bucket: str, delay: float = 0.02) -> str:
+            """Async function that tracks call times per bucket."""
+            call_times[bucket].append(time.time())
+            await asyncio.sleep(delay)
+            return f"{bucket}_async_result"
+
+        # Test with "*" fallback for async functions
+        results = await gather_limited_async(
+            FuncTask(track_async_call, ("service1",), bucket="service1"),
+            FuncTask(track_async_call, ("service1",), bucket="service1"),
+            FuncTask(track_async_call, ("service2",), bucket="service2"),  # Should use "*" fallback
+            FuncTask(track_async_call, ("service3",), bucket="service3"),  # Should use "*" fallback
+            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            bucket_limits={
+                "service1": Limit(concurrency=2, rps=20),  # Specific limit for service1
+                "*": Limit(concurrency=1, rps=10),  # Fallback for service2, service3
+            },
+            retry_settings=NO_RETRIES,
+        )
+
+        # Verify results
+        assert results == [
+            "service1_async_result",
+            "service1_async_result",
+            "service2_async_result",
+            "service3_async_result",
+        ]
+
+        # Verify that service1 calls could run concurrently (concurrency=2)
+        service1_times = call_times["service1"]
+        assert len(service1_times) == 2
+        assert abs(service1_times[1] - service1_times[0]) < 0.01  # Should start close together
+
+        # Verify that service2 and service3 used "*" fallback
+        service2_times = call_times["service2"]
+        service3_times = call_times["service3"]
+        assert len(service2_times) == 1
+        assert len(service3_times) == 1
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_bucket_priority_over_star():
+    """Test that specific bucket limits take priority over "*" fallback."""
+    import time
+
+    async def run_test():
+        call_times = {"priority_api": [], "fallback_api": []}
+
+        def track_api_call(bucket: str, delay: float = 0.06) -> str:
+            """Sync function that tracks call times per bucket."""
+            call_times[bucket].append(time.time())
+            time.sleep(delay)
+            return f"{bucket}_result"
+
+        # Test priority: specific bucket limits should override "*" fallback
+        results = await gather_limited_sync(
+            FuncTask(track_api_call, ("priority_api",), bucket="priority_api"),
+            FuncTask(track_api_call, ("priority_api",), bucket="priority_api"),
+            FuncTask(track_api_call, ("priority_api",), bucket="priority_api"),
+            FuncTask(track_api_call, ("fallback_api",), bucket="fallback_api"),  # Uses "*"
+            FuncTask(track_api_call, ("fallback_api",), bucket="fallback_api"),  # Uses "*"
+            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            bucket_limits={
+                "priority_api": Limit(concurrency=2, rps=20),  # Specific: allows 2 concurrent
+                "*": Limit(concurrency=1, rps=10),  # Fallback: allows 1 concurrent
+            },
+            retry_settings=NO_RETRIES,
+        )
+
+        # Verify results
+        assert results == [
+            "priority_api_result",
+            "priority_api_result",
+            "priority_api_result",
+            "fallback_api_result",
+            "fallback_api_result",
+        ]
+
+        # Verify that priority_api used specific limits (concurrency=2)
+        priority_times = call_times["priority_api"]
+        assert len(priority_times) == 3
+        # First two should start close together due to concurrency=2
+        assert abs(priority_times[1] - priority_times[0]) < 0.02
+        # Third should start after one of the first two finishes
+        assert priority_times[2] >= priority_times[0] + 0.05
+
+        # Verify that fallback_api used "*" limits (concurrency=1)
+        fallback_times = call_times["fallback_api"]
+        assert len(fallback_times) == 2
+        # Second call should start after first finishes due to concurrency=1
+        assert fallback_times[1] >= fallback_times[0] + 0.05
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_bucket_star_only():
+    """Test bucket limits with only "*" fallback and no specific buckets."""
+    import time
+
+    async def run_test():
+        call_times = {"bucket1": [], "bucket2": [], "bucket3": []}
+
+        def track_api_call(bucket: str, delay: float = 0.05) -> str:
+            """Sync function that tracks call times per bucket."""
+            call_times[bucket].append(time.time())
+            time.sleep(delay)
+            return f"{bucket}_result"
+
+        # Test with only "*" fallback - all buckets should use same limits
+        results = await gather_limited_sync(
+            FuncTask(track_api_call, ("bucket1",), bucket="bucket1"),
+            FuncTask(track_api_call, ("bucket1",), bucket="bucket1"),
+            FuncTask(track_api_call, ("bucket2",), bucket="bucket2"),
+            FuncTask(track_api_call, ("bucket3",), bucket="bucket3"),
+            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            bucket_limits={
+                "*": Limit(concurrency=1, rps=10),  # All buckets use this fallback
+            },
+            retry_settings=NO_RETRIES,
+        )
+
+        # Verify results
+        assert results == [
+            "bucket1_result",
+            "bucket1_result",
+            "bucket2_result",
+            "bucket3_result",
+        ]
+
+        # All buckets should use "*" limits (concurrency=1)
+        # Verify bucket1 calls were serialized
+        bucket1_times = call_times["bucket1"]
+        assert len(bucket1_times) == 2
+        assert bucket1_times[1] >= bucket1_times[0] + 0.04
+
+        # Verify other buckets used the same fallback limits
+        bucket2_times = call_times["bucket2"]
+        bucket3_times = call_times["bucket3"]
+        assert len(bucket2_times) == 1
+        assert len(bucket3_times) == 1
+
+    asyncio.run(run_test())
+
+
+def test_gather_limited_bucket_no_star_fallback():
+    """Test that buckets without specific limits and no "*" fallback use global limits."""
+    import time
+
+    async def run_test():
+        call_times = {"fast_api": [], "slow_api": [], "unlimited_api": []}
+
+        def track_api_call(bucket: str, delay: float = 0.03) -> str:
+            """Sync function that tracks call times per bucket."""
+            call_times[bucket].append(time.time())
+            time.sleep(delay)
+            return f"{bucket}_result"
+
+        # Test without "*" fallback - unlimited_api should use global limits
+        results = await gather_limited_sync(
+            FuncTask(track_api_call, ("fast_api",), bucket="fast_api"),
+            FuncTask(track_api_call, ("slow_api",), bucket="slow_api"),
+            FuncTask(track_api_call, ("slow_api",), bucket="slow_api"),
+            FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
+            FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
+            FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
+            global_limit=Limit(concurrency=5, rps=50),  # Generous global limits
+            bucket_limits={
+                "fast_api": Limit(concurrency=3, rps=30),
+                "slow_api": Limit(concurrency=1, rps=5),
+                # No "*" fallback - unlimited_api uses global limits
+            },
+            retry_settings=NO_RETRIES,
+        )
+
+        # Verify results
+        assert results == [
+            "fast_api_result",
+            "slow_api_result",
+            "slow_api_result",
+            "unlimited_api_result",
+            "unlimited_api_result",
+            "unlimited_api_result",
+        ]
+
+        # Verify slow_api was constrained (concurrency=1)
+        slow_times = call_times["slow_api"]
+        assert len(slow_times) == 2
+        assert slow_times[1] >= slow_times[0] + 0.025
+
+        # Verify unlimited_api could run concurrently (using global concurrency=5)
+        unlimited_times = call_times["unlimited_api"]
+        assert len(unlimited_times) == 3
+        # All three should start close together since global concurrency=5 > 3 tasks
+        time_diffs = [abs(unlimited_times[i] - unlimited_times[0]) for i in range(1, 3)]
+        assert all(diff < 0.05 for diff in time_diffs)  # More reasonable tolerance
+
+    asyncio.run(run_test())
