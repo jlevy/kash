@@ -272,26 +272,14 @@ class RetrySettings:
 
 
 DEFAULT_RETRIES = RetrySettings(
-    max_task_retries=10,
-    max_total_retries=100,
+    max_task_retries=15,
+    max_total_retries=1000,
     initial_backoff=1.0,
-    max_backoff=128.0,
-    backoff_factor=2.0,
+    max_backoff=60.0,
+    backoff_factor=1.5,
     is_retriable=default_is_retriable,
 )
 """Reasonable default retry settings with both per-task and global limits."""
-
-
-# Preset configurations for different use cases
-AGGRESSIVE_RETRIES = RetrySettings(
-    max_task_retries=15,
-    max_total_retries=200,
-    initial_backoff=0.5,
-    max_backoff=64.0,
-    backoff_factor=1.8,
-)
-"""Aggressive retry settings - retry more often with shorter initial backoff."""
-
 
 # Conservative retry settings use a custom retry map that excludes conservative retries
 _CONSERVATIVE_HTTP_RETRY_MAP = {

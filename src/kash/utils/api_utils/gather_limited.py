@@ -157,6 +157,11 @@ async def gather_limited_async(
     - Configurable handling of conditional status codes like 403 Forbidden
     - Defaults to return_exceptions=True for resilient batch operations
 
+    Prevents API flooding during rate limit backoffs:
+    - Semaphore slots are held during entire retry cycles, including backoff periods
+    - New tasks cannot start while existing tasks are backing off from rate limits
+    - Rate limiters are only acquired during actual execution attempts
+
     Can optionally display live progress with retry indicators using TaskStatus.
 
     Accepts:
@@ -350,38 +355,33 @@ async def gather_limited_sync(
     cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T] | list[T | BaseException]:
     """
-    Rate-limited version of `asyncio.gather()` for sync functions with HTTP-aware retry logic.
-    Handles the asyncio.to_thread() boundary correctly for consistent exception propagation.
+    Sync version of `gather_limited_async()` that executes synchronous functions with the same
+    rate limiting, retry logic, and progress tracking capabilities.
+    See `gather_limited_async()` for details.
 
-    Supports two levels of retry limits:
-    - Per-task retries: max_task_retries attempts per individual task
-    - Global retries: max_total_retries attempts across all tasks
+    Sync-specific differences:
 
-    Features HTTP-aware retry classification:
-    - Automatically detects HTTP status codes (403, 429, 500, etc.) and applies appropriate retry behavior
-    - Configurable handling of conditional status codes like 403 Forbidden
-    - Defaults to return_exceptions=True for resilient batch operations
+    **Function Execution**: Runs sync functions via `asyncio.to_thread()` instead of executing
+    coroutines directly. Validates that callables don't accidentally return coroutines.
 
-    Supports cooperative cancellation and graceful thread termination on interruption.
+    **Cancellation Support**: Provides cooperative cancellation for long-running sync functions
+    through optional `cancel_event` and graceful thread termination.
+
+    **Input Validation**: Ensures sync functions don't return coroutines, which would indicate
+    incorrect usage (async functions should use `gather_limited_async()`).
 
     Args:
         *sync_specs: Callables that return values (not coroutines) or FuncTask objects
-        global_limit: Global limits applied to all tasks regardless of bucket
-        bucket_limits: Optional per-bucket limits. Tasks use their bucket field to determine limits.
-                      Use "*" as a fallback limit for buckets without specific limits.
-        return_exceptions: If True, exceptions are returned as results
-        retry_settings: Configuration for retry behavior, or None to disable retries
-        status: Optional ProgressTracker instance for progress display
-        labeler: Optional function to generate labels: labeler(index, spec) -> str
         cancel_event: Optional threading.Event that will be set on cancellation
         cancel_timeout: Max seconds to wait for threads to terminate on cancellation
+        (All other args identical to gather_limited_async())
 
     Returns:
         List of results in the same order as input specifications
 
     Example:
         ```python
-        # Without bucket limits (backward compatible)
+        # Basic usage with sync functions
         results = await gather_limited_sync(
             lambda: some_sync_function(arg1),
             lambda: another_sync_function(arg2),
@@ -580,6 +580,53 @@ async def _execute_with_retry(
     status: ProgressTracker | None = None,
     task_id: Any | None = None,
 ) -> T:
+    """
+    Execute a task with retry logic, holding semaphores for the entire retry cycle.
+
+    Semaphores are held during backoff periods to prevent API flooding when tasks
+    are already backing off from rate limits. Only rate limiters are acquired/released
+    for each execution attempt.
+    """
+    # Acquire semaphores once for the entire retry cycle (including backoff periods)
+    async with global_semaphore:
+        if bucket_semaphore is not None:
+            async with bucket_semaphore:
+                return await _execute_with_retry_inner(
+                    executor,
+                    retry_settings,
+                    global_rate_limiter,
+                    bucket_rate_limiter,
+                    global_retry_counter,
+                    status,
+                    task_id,
+                )
+        else:
+            return await _execute_with_retry_inner(
+                executor,
+                retry_settings,
+                global_rate_limiter,
+                None,
+                global_retry_counter,
+                status,
+                task_id,
+            )
+
+
+async def _execute_with_retry_inner(
+    executor: Callable[[], Coroutine[None, None, T]],
+    retry_settings: RetrySettings,
+    global_rate_limiter: AsyncLimiter,
+    bucket_rate_limiter: AsyncLimiter | None,
+    global_retry_counter: RetryCounter,
+    status: ProgressTracker | None = None,
+    task_id: Any | None = None,
+) -> T:
+    """
+    Inner retry logic that handles rate limiting and backoff.
+
+    This function assumes semaphores are already held by the caller and only
+    manages rate limiters for each execution attempt.
+    """
     import time
 
     start_time = time.time()
@@ -599,7 +646,7 @@ async def _execute_with_retry(
         return True
 
     for attempt in range(retry_settings.max_task_retries + 1):
-        # Handle backoff before acquiring any resources
+        # Handle backoff before acquiring rate limiters (semaphores remain held)
         if attempt > 0 and last_exception:
             # Try to increment global retry counter
             if not await global_retry_counter.try_increment():
@@ -651,13 +698,15 @@ async def _execute_with_retry(
             else:
                 log.warning(rate_limit_msg)
                 log.info(exception_msg)
+
+            # Sleep during backoff while holding semaphore slots
             await asyncio.sleep(backoff_time)
 
         try:
-            # Acquire global limits first, then bucket-specific limits if present
-            async with global_semaphore, global_rate_limiter:
-                if bucket_semaphore is not None and bucket_rate_limiter is not None:
-                    async with bucket_semaphore, bucket_rate_limiter:
+            # Acquire rate limiters for actual execution (semaphores already held)
+            async with global_rate_limiter:
+                if bucket_rate_limiter is not None:
+                    async with bucket_rate_limiter:
                         # Mark task as started now that we've passed rate limiting
                         if status and task_id is not None and attempt == 0:
                             await status.start(task_id)
@@ -687,7 +736,7 @@ async def _execute_with_retry(
 
             # Check if this is a retriable exception using our HTTP-aware function
             if is_retriable_for_task(e):
-                # Continue to next retry attempt (global limits will be checked at top of loop)
+                # Continue to next retry attempt (semaphores remain held for backoff)
                 continue
             else:
                 # Non-retriable exception, log and re-raise immediately
@@ -695,9 +744,12 @@ async def _execute_with_retry(
                 status_info = f" (HTTP {status_code})" if status_code else ""
 
                 log.warning(
-                    "Non-retriable exception%s (not retrying): %s", status_info, e, exc_info=True
+                    "Non-retriable exception%s (not retrying): %s",
+                    status_info,
+                    e,
+                    exc_info=True,
                 )
                 raise
 
     # This should never be reached, but satisfy type checker
-    raise RuntimeError("Unexpected code path in _execute_with_retry")
+    raise RuntimeError("Unexpected code path in _execute_with_retry_inner")
