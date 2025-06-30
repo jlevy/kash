@@ -6,7 +6,7 @@ import logging
 import threading
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import Any, TypeAlias, TypeVar, cast, overload
+from typing import Any, Generic, TypeAlias, TypeVar, cast, overload
 
 from aiolimiter import AsyncLimiter
 
@@ -41,22 +41,40 @@ class Limit:
 
 
 @dataclass(frozen=True)
-class FuncTask:
+class TaskResult(Generic[T]):
+    """
+    Optional wrapper for task results that can signal rate limiting behavior.
+    Use this to wrap results that should bypass rate limiting (e.g., cache hits).
+    """
+
+    value: T
+    disable_limits: bool = False
+
+
+@dataclass(frozen=True)
+class FuncTask(Generic[T]):
     """
     A task described as an unevaluated function with args and kwargs.
     This task format allows you to use args and kwargs in the Labeler.
     It also allows specifying a bucket for rate limiting.
+
+    For async functions: The function should return a coroutine that yields either `T` or `TaskResult[T]`.
+    For sync functions: The function should return either `T` or `TaskResult[T]` directly.
+
+    Using `TaskResult[T]` allows controlling rate limiting behavior (e.g., cache hits can bypass rate limits).
     """
 
-    func: Callable[..., Any]
+    func: Callable[..., Any]  # Keep as Any since it can be sync or async
     args: tuple[Any, ...] = ()
     kwargs: dict[str, Any] = field(default_factory=dict)
     bucket: str = "default"
 
 
 # Type aliases for coroutine and sync specifications, including unevaluated function specs
-CoroSpec: TypeAlias = Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T] | FuncTask
-SyncSpec: TypeAlias = Callable[[], T] | FuncTask
+CoroSpec: TypeAlias = (
+    Callable[[], Coroutine[None, None, T]] | Coroutine[None, None, T] | FuncTask[T]
+)
+SyncSpec: TypeAlias = Callable[[], T] | FuncTask[T]
 
 # Specific labeler types using the generic Labeler pattern
 CoroLabeler: TypeAlias = Labeler[CoroSpec[T]]
@@ -167,7 +185,12 @@ async def gather_limited_async(
     Accepts:
     - Callables that return coroutines: `lambda: some_async_func(arg)` (recommended for retries)
     - Coroutines directly: `some_async_func(arg)` (only if retries disabled)
-    - FuncSpec objects: `FuncSpec(some_async_func, (arg1, arg2), {"kwarg": value})` (args accessible to labeler)
+    - FuncTask objects: `FuncTask(some_async_func, (arg1, arg2), {"kwarg": value})` (args accessible to labeler)
+
+    Functions can return `TaskResult[T]` to bypass rate limiting for specific results:
+    - `TaskResult(value, disable_limits=True)`: bypass rate limiting (e.g., cache hits)
+    - `TaskResult(value, disable_limits=False)`: apply normal rate limiting
+    - `value` directly: apply normal rate limiting
 
     Examples:
         ```python
@@ -200,6 +223,22 @@ async def gather_limited_async(
                 "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
                 "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
             }
+        )
+
+        # With cache bypass using TaskResult:
+        async def fetch_with_cache(url: str) -> TaskResult[dict] | dict:
+            cached_data = await cache.get(url)
+            if cached_data:
+                return TaskResult(cached_data, disable_limits=True)  # Cache hit: no rate limit
+
+            data = await fetch_api(url)  # Will be rate limited
+            await cache.set(url, data)
+            return data
+
+        await gather_limited_async(
+            lambda: fetch_with_cache("http://api.com/data1"),
+            lambda: fetch_with_cache("http://api.com/data2"),
+            global_limit=Limit(rps=10, concurrency=5)  # Cache hits bypass these limits
         )
 
         ```
@@ -280,7 +319,7 @@ async def gather_limited_async(
             elif callable(coro_spec):
                 coro = coro_spec()
             else:
-                # Direct coroutine - only valid if retries disabled
+                # Direct coroutine: only valid if retries disabled
                 coro = coro_spec
             return await coro
 
@@ -371,7 +410,8 @@ async def gather_limited_sync(
     incorrect usage (async functions should use `gather_limited_async()`).
 
     Args:
-        *sync_specs: Callables that return values (not coroutines) or FuncTask objects
+        *sync_specs: Callables that return values (not coroutines) or FuncTask objects.
+                    Functions can return `TaskResult[T]` to control rate limiting behavior.
         cancel_event: Optional threading.Event that will be set on cancellation
         cancel_timeout: Max seconds to wait for threads to terminate on cancellation
         (All other args identical to gather_limited_async())
@@ -399,6 +439,22 @@ async def gather_limited_sync(
                 "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
                 "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
             }
+        )
+
+        # With cache bypass using TaskResult
+        def sync_fetch_with_cache(url: str) -> TaskResult[dict] | dict:
+            cached_data = cache.get_sync(url)
+            if cached_data:
+                return TaskResult(cached_data, disable_limits=True)  # Cache hit: no rate limit
+
+            data = requests.get(url).json()  # Will be rate limited
+            cache.set_sync(url, data)
+            return data
+
+        results = await gather_limited_sync(
+            lambda: sync_fetch_with_cache("http://api.com/data1"),
+            lambda: sync_fetch_with_cache("http://api.com/data2"),
+            global_limit=Limit(rps=5, concurrency=3)  # Cache hits bypass these limits
         )
         ```
     """
@@ -703,19 +759,36 @@ async def _execute_with_retry_inner(
             await asyncio.sleep(backoff_time)
 
         try:
-            # Acquire rate limiters for actual execution (semaphores already held)
+            # Execute task to check for potential rate limit bypass
+            raw_result = await executor()
+
+            # Check if result indicates limits should be disabled (e.g., cache hit)
+            if isinstance(raw_result, TaskResult):
+                if raw_result.disable_limits:
+                    # Bypass rate limiting, mark as started, and return immediately
+                    if status and task_id is not None and attempt == 0:
+                        await status.start(task_id)
+                    return cast(T, raw_result.value)
+                else:
+                    # Wrapped but limits enabled: extract value for rate limiting
+                    result_value = cast(T, raw_result.value)
+            else:
+                # Unwrapped result: apply normal rate limiting
+                result_value = cast(T, raw_result)
+
+            # Apply rate limiting for non-bypassed results
             async with global_rate_limiter:
                 if bucket_rate_limiter is not None:
                     async with bucket_rate_limiter:
                         # Mark task as started now that we've passed rate limiting
                         if status and task_id is not None and attempt == 0:
                             await status.start(task_id)
-                        return await executor()
+                        return result_value
                 else:
                     # Mark task as started now that we've passed rate limiting
                     if status and task_id is not None and attempt == 0:
                         await status.start(task_id)
-                    return await executor()
+                    return result_value
 
         except Exception as e:
             last_exception = e  # Always store the exception
@@ -723,10 +796,10 @@ async def _execute_with_retry_inner(
             if attempt == retry_settings.max_task_retries:
                 # Final attempt failed
                 if retry_settings.max_task_retries == 0:
-                    # No retries configured - raise original exception directly
+                    # No retries configured: raise original exception directly
                     raise
                 else:
-                    # Retries were attempted but exhausted - wrap with context
+                    # Retries were attempted but exhausted: wrap with context
                     total_time = time.time() - start_time
                     log.error(
                         f"Max task retries ({retry_settings.max_task_retries}) exhausted after {total_time:.1f}s. "

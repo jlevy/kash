@@ -12,6 +12,7 @@ from kash.utils.api_utils.api_retries import (
 from kash.utils.api_utils.gather_limited import (
     FuncTask,
     Limit,
+    TaskResult,
     gather_limited_async,
     gather_limited_sync,
 )
@@ -875,5 +876,47 @@ def test_gather_limited_bucket_no_star_fallback():
         # All three should start close together since global concurrency=5 > 3 tasks
         time_diffs = [abs(unlimited_times[i] - unlimited_times[0]) for i in range(1, 3)]
         assert all(diff < 0.05 for diff in time_diffs)  # More reasonable tolerance
+
+    asyncio.run(run_test())
+
+
+def test_task_result_disable_limits():
+    """Test TaskResult can bypass rate limiting for cache hits."""
+    import asyncio
+    import time
+
+    async def run_test():
+        # Track which tasks actually hit rate limiting
+        rate_limited = []
+
+        async def cached_task(value: str) -> TaskResult[str]:
+            """Simulates a cache hit that should bypass rate limiting."""
+            return TaskResult(f"cached:{value}", disable_limits=True)
+
+        async def fetched_task(value: str) -> str:
+            """Simulates a fetch that should go through rate limiting."""
+            rate_limited.append(value)
+            return f"fetched:{value}"
+
+        # Mix cached and fetched tasks
+        start_time = time.time()
+        results = await gather_limited_async(
+            lambda: cached_task("1"),
+            lambda: fetched_task("2"),
+            lambda: cached_task("3"),
+            lambda: fetched_task("4"),
+            global_limit=Limit(rps=2.0, concurrency=2),  # Very restrictive limits
+            retry_settings=NO_RETRIES,
+        )
+        elapsed = time.time() - start_time
+
+        # All results should be returned correctly
+        assert results == ["cached:1", "fetched:2", "cached:3", "fetched:4"]
+
+        # Only fetched tasks should have been rate-limited
+        assert sorted(rate_limited) == ["2", "4"]
+
+        # Should complete quickly because cached tasks bypass rate limiting
+        assert elapsed < 2.0  # Without bypassing, this would take ~3 seconds
 
     asyncio.run(run_test())

@@ -21,9 +21,13 @@ class FetchItemResult:
 
     item: Item
 
+    was_cached: bool
+    """Whether this item was already present in cache (or if we skipped the fetch
+    because we already had the data)."""
+
     page_data: WebPageData | None = None
     """If the item was fetched from a URL via the web content cache,
-    this will hold additional metadata, including whether it was cached."""
+    this will hold additional metadata whether it was cached."""
 
 
 def fetch_url_item(
@@ -77,7 +81,7 @@ def fetch_url_item_content(
             "Already have title, description, and body, will not fetch: %s",
             item.fmt_loc(),
         )
-        return FetchItemResult(item, None)
+        return FetchItemResult(item, was_cached=True)
 
     if not item.url:
         raise InvalidInput(f"No URL for item: {item.fmt_loc()}")
@@ -130,9 +134,14 @@ def fetch_url_item_content(
         ws.save(content_item)
         assert content_item.store_path
         log.info(
-            "Saved both URL and content item: %s, %s", url_item.fmt_loc(), content_item.fmt_loc()
+            "Saved both URL and content item: %s, %s",
+            url_item.fmt_loc(),
+            content_item.fmt_loc(),
         )
     else:
         log.info("Saved URL item (no content): %s", url_item.fmt_loc())
 
-    return FetchItemResult(content_item or url_item, page_data)
+    was_cached = bool(
+        not page_data or (page_data.cache_result and page_data.cache_result.was_cached)
+    )
+    return FetchItemResult(content_item or url_item, was_cached=was_cached, page_data=page_data)
