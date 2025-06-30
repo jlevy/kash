@@ -816,12 +816,8 @@ async def _execute_with_retry_inner(
                 status_code = extract_http_status_code(e)
                 status_info = f" (HTTP {status_code})" if status_code else ""
 
-                log.warning(
-                    "Non-retriable exception%s (not retrying): %s",
-                    status_info,
-                    e,
-                    exc_info=True,
-                )
+                log.warning("Non-retriable exception%s (not retrying): %s", status_info, e)
+                log.debug("Exception traceback:", exc_info=True)
                 raise
 
     # This should never be reached, but satisfy type checker
