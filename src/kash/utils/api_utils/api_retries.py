@@ -3,6 +3,41 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import Enum
+
+
+class HTTPRetryBehavior(Enum):
+    """HTTP status code retry behavior classification."""
+
+    FULL = "full"
+    """Fully retry these status codes (e.g., 429, 500, 502, 503, 504)"""
+
+    CONSERVATIVE = "conservative"
+    """Retry conservatively: may indicate rate limiting or temporary issues (e.g., 403, 408)"""
+
+    NEVER = "never"
+    """Never retry these status codes (e.g., 400, 401, 404, 410)"""
+
+
+# Default HTTP status code retry classifications
+DEFAULT_HTTP_RETRY_MAP: dict[int, HTTPRetryBehavior] = {
+    # Fully retriable: server errors and explicit rate limiting
+    429: HTTPRetryBehavior.FULL,  # Too Many Requests
+    500: HTTPRetryBehavior.FULL,  # Internal Server Error
+    502: HTTPRetryBehavior.FULL,  # Bad Gateway
+    503: HTTPRetryBehavior.FULL,  # Service Unavailable
+    504: HTTPRetryBehavior.FULL,  # Gateway Timeout
+    # Conservatively retriable: might be temporary
+    403: HTTPRetryBehavior.CONSERVATIVE,  # Forbidden (could be rate limiting)
+    408: HTTPRetryBehavior.CONSERVATIVE,  # Request Timeout
+    # Never retriable: client errors
+    400: HTTPRetryBehavior.NEVER,  # Bad Request
+    401: HTTPRetryBehavior.NEVER,  # Unauthorized
+    404: HTTPRetryBehavior.NEVER,  # Not Found
+    405: HTTPRetryBehavior.NEVER,  # Method Not Allowed
+    410: HTTPRetryBehavior.NEVER,  # Gone
+    422: HTTPRetryBehavior.NEVER,  # Unprocessable Entity
+}
 
 
 class RetryException(RuntimeError):
@@ -27,9 +62,54 @@ class RetryExhaustedException(RetryException):
         )
 
 
+def extract_http_status_code(exception: Exception) -> int | None:
+    """
+    Extract HTTP status code from various exception types.
+
+    Args:
+        exception: The exception to extract status code from
+
+    Returns:
+        HTTP status code or None if not found
+    """
+    # Check for httpx.HTTPStatusError and requests.HTTPError
+    if hasattr(exception, "response"):
+        response = getattr(exception, "response", None)
+        if response and hasattr(response, "status_code"):
+            return getattr(response, "status_code", None)
+
+    # Check for aiohttp errors
+    if hasattr(exception, "status"):
+        return getattr(exception, "status", None)
+
+    # Parse from exception message as fallback
+    exception_str = str(exception)
+
+    # Try to find status code patterns in the message
+    import re
+
+    # Pattern for "403 Forbidden", "HTTP 429", etc.
+    status_patterns = [
+        r"\b(\d{3})\s+(?:Forbidden|Unauthorized|Not Found|Too Many Requests|Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout)\b",
+        r"\bHTTP\s+(\d{3})\b",
+        r"\b(\d{3})\s+error\b",
+        r"status\s*(?:code)?:\s*(\d{3})\b",
+    ]
+
+    for pattern in status_patterns:
+        match = re.search(pattern, exception_str, re.IGNORECASE)
+        if match:
+            try:
+                return int(match.group(1))
+            except (ValueError, IndexError):
+                continue
+
+    return None
+
+
 def default_is_retriable(exception: Exception) -> bool:
     """
-    Default retriable exception checker for common rate limit patterns.
+    Default retriable exception checker with HTTP status code awareness.
 
     Args:
         exception: The exception to check
@@ -51,12 +131,22 @@ def default_is_retriable(exception: Exception) -> bool:
         ):
             return True
     except ImportError:
-        # LiteLLM not available, fall back to string-based detection
+        # LiteLLM not available, fall back to other detection methods
         pass
 
-    # Fallback to string-based detection for general patterns
+    # Try to extract HTTP status code for more precise handling
+    status_code = extract_http_status_code(exception)
+    if status_code is not None:
+        return is_http_status_retriable(status_code, DEFAULT_HTTP_RETRY_MAP)
+
+    # Fallback to string-based detection for transient errors
     exception_str = str(exception).lower()
-    rate_limit_indicators = [
+
+    # Check exception type names for common transient network errors
+    exception_type = type(exception).__name__.lower()
+
+    transient_error_indicators = [
+        # Rate limiting and quota errors
         "rate limit",
         "too many requests",
         "try again later",
@@ -65,9 +155,92 @@ def default_is_retriable(exception: Exception) -> bool:
         "throttled",
         "rate_limit_error",
         "ratelimiterror",
+        # Server errors
+        "server error",
+        "service unavailable",
+        "bad gateway",
+        "gateway timeout",
+        "internal server error",
+        "502",
+        "503",
+        "504",
+        "500",
+        # Network connectivity errors
+        "connection timeout",
+        "connection timed out",
+        "read timeout",
+        "timeout error",
+        "timed out",
+        "connection reset",
+        "connection refused",
+        "connection aborted",
+        "connection error",
+        "network error",
+        "network unreachable",
+        "network is unreachable",
+        "no route to host",
+        "temporary failure",
+        "name resolution failed",
+        "dns",
+        "resolver",
+        # SSL/TLS transient errors
+        "ssl error",
+        "certificate verify failed",
+        "handshake timeout",
+        # Common transient exception types
+        "connectionerror",
+        "timeouterror",
+        "connecttimeout",
+        "readtimeout",
+        "httperror",
+        "requestexception",
     ]
 
-    return any(indicator in exception_str for indicator in rate_limit_indicators)
+    # Check both exception message and type name
+    return any(indicator in exception_str for indicator in transient_error_indicators) or any(
+        indicator in exception_type for indicator in transient_error_indicators
+    )
+
+
+def is_http_status_retriable(
+    status_code: int,
+    retry_map: dict[int, HTTPRetryBehavior] | None = None,
+) -> bool:
+    """
+    Determine if an HTTP status code should be retried.
+
+    Args:
+        status_code: HTTP status code
+        retry_map: Custom retry behavior map (uses default if None)
+
+    Returns:
+        True if the status code should be retried
+    """
+    if retry_map is None:
+        retry_map = DEFAULT_HTTP_RETRY_MAP
+
+    behavior = retry_map.get(status_code)
+
+    if behavior == HTTPRetryBehavior.FULL:
+        return True
+    elif behavior == HTTPRetryBehavior.CONSERVATIVE:
+        return True  # Conservative retries are enabled by default
+    elif behavior == HTTPRetryBehavior.NEVER:
+        return False
+
+    # Unknown status code: use heuristics
+    if 500 <= status_code <= 599:
+        # Server errors are generally retriable
+        return True
+    elif status_code == 429:
+        # Rate limiting is always retriable
+        return True
+    elif 400 <= status_code <= 499:
+        # Client errors are generally not retriable, except for specific cases
+        return False
+
+    # Default to not retriable for unknown codes
+    return False
 
 
 @dataclass(frozen=True)
@@ -94,6 +267,9 @@ class RetrySettings:
     is_retriable: Callable[[Exception], bool] = default_is_retriable
     """Function to determine if an exception should be retried"""
 
+    http_retry_map: dict[int, HTTPRetryBehavior] | None = None
+    """Custom HTTP status code retry behavior (None = use defaults)"""
+
 
 DEFAULT_RETRIES = RetrySettings(
     max_task_retries=10,
@@ -104,6 +280,48 @@ DEFAULT_RETRIES = RetrySettings(
     is_retriable=default_is_retriable,
 )
 """Reasonable default retry settings with both per-task and global limits."""
+
+
+# Preset configurations for different use cases
+AGGRESSIVE_RETRIES = RetrySettings(
+    max_task_retries=15,
+    max_total_retries=200,
+    initial_backoff=0.5,
+    max_backoff=64.0,
+    backoff_factor=1.8,
+)
+"""Aggressive retry settings - retry more often with shorter initial backoff."""
+
+
+# Conservative retry settings use a custom retry map that excludes conservative retries
+_CONSERVATIVE_HTTP_RETRY_MAP = {
+    # Fully retriable: server errors and explicit rate limiting
+    429: HTTPRetryBehavior.FULL,
+    500: HTTPRetryBehavior.FULL,
+    502: HTTPRetryBehavior.FULL,
+    503: HTTPRetryBehavior.FULL,
+    504: HTTPRetryBehavior.FULL,
+    # Conservative codes become NEVER for conservative mode
+    403: HTTPRetryBehavior.NEVER,
+    408: HTTPRetryBehavior.NEVER,
+    # Never retriable: client errors
+    400: HTTPRetryBehavior.NEVER,
+    401: HTTPRetryBehavior.NEVER,
+    404: HTTPRetryBehavior.NEVER,
+    405: HTTPRetryBehavior.NEVER,
+    410: HTTPRetryBehavior.NEVER,
+    422: HTTPRetryBehavior.NEVER,
+}
+
+CONSERVATIVE_RETRIES = RetrySettings(
+    max_task_retries=5,
+    max_total_retries=50,
+    initial_backoff=2.0,
+    max_backoff=60.0,
+    backoff_factor=2.5,
+    http_retry_map=_CONSERVATIVE_HTTP_RETRY_MAP,
+)
+"""Conservative retry settings - fewer retries, longer backoff, no conservative HTTP retries."""
 
 
 NO_RETRIES = RetrySettings(
@@ -190,9 +408,97 @@ def calculate_backoff(
 ## Tests
 
 
+def test_extract_http_status_code():
+    """Test HTTP status code extraction from various exception types."""
+
+    class MockHTTPXResponse:
+        def __init__(self, status_code):
+            self.status_code = status_code
+
+    class MockHTTPXException(Exception):
+        def __init__(self, status_code):
+            self.response = MockHTTPXResponse(status_code)
+            super().__init__(f"HTTP {status_code} error")
+
+    class MockAioHTTPException(Exception):
+        def __init__(self, status):
+            self.status = status
+            super().__init__(f"HTTP {status} error")
+
+    # Test httpx-style exceptions
+    assert extract_http_status_code(MockHTTPXException(403)) == 403
+    assert extract_http_status_code(MockHTTPXException(429)) == 429
+
+    # Test aiohttp-style exceptions
+    assert extract_http_status_code(MockAioHTTPException(500)) == 500
+
+    # Test string parsing fallback
+    assert extract_http_status_code(Exception("Client error '403 Forbidden'")) == 403
+    assert extract_http_status_code(Exception("HTTP 429 Too Many Requests")) == 429
+    assert extract_http_status_code(Exception("500 error occurred")) == 500
+
+    # Test no status code
+    assert extract_http_status_code(Exception("Network error")) is None
+
+
+def test_is_http_status_retriable():
+    """Test HTTP status code retry logic."""
+
+    # Fully retriable
+    assert is_http_status_retriable(429)  # Too Many Requests
+    assert is_http_status_retriable(500)  # Internal Server Error
+    assert is_http_status_retriable(502)  # Bad Gateway
+    assert is_http_status_retriable(503)  # Service Unavailable
+    assert is_http_status_retriable(504)  # Gateway Timeout
+
+    # Conservative retriable (enabled by default)
+    assert is_http_status_retriable(403)  # Forbidden
+    assert is_http_status_retriable(408)  # Request Timeout
+
+    # Conservative retriable with custom conservative map (disabled)
+    assert not is_http_status_retriable(403, _CONSERVATIVE_HTTP_RETRY_MAP)
+    assert not is_http_status_retriable(408, _CONSERVATIVE_HTTP_RETRY_MAP)
+
+    # Never retriable
+    assert not is_http_status_retriable(400)  # Bad Request
+    assert not is_http_status_retriable(401)  # Unauthorized
+    assert not is_http_status_retriable(404)  # Not Found
+    assert not is_http_status_retriable(410)  # Gone
+
+    # Unknown status codes - use heuristics
+    assert is_http_status_retriable(599)  # Unknown 5xx - retriable
+    assert not is_http_status_retriable(499)  # Unknown 4xx - not retriable
+    assert not is_http_status_retriable(299)  # Unknown 2xx - not retriable
+
+
+def test_default_is_retriable_with_http():
+    """Test enhanced default_is_retriable with HTTP status code awareness."""
+
+    class MockHTTPXResponse:
+        def __init__(self, status_code):
+            self.status_code = status_code
+
+    class MockHTTPXException(Exception):
+        def __init__(self, status_code):
+            self.response = MockHTTPXResponse(status_code)
+            super().__init__(f"HTTP {status_code} error")
+
+    # Test HTTP exceptions with known status codes
+    assert default_is_retriable(MockHTTPXException(429))  # Rate limit - retriable
+    assert default_is_retriable(MockHTTPXException(500))  # Server error - retriable
+    assert default_is_retriable(MockHTTPXException(403))  # Conditional - retriable by default
+    assert not default_is_retriable(MockHTTPXException(404))  # Not found - not retriable
+    assert not default_is_retriable(MockHTTPXException(401))  # Unauthorized - not retriable
+
+    # Test string-based fallback still works
+    assert default_is_retriable(Exception("Rate limit exceeded"))
+    assert default_is_retriable(Exception("503 Service Unavailable"))
+    assert not default_is_retriable(Exception("Authentication failed"))
+
+
 def test_default_is_retriable():
-    """Test string-based rate limit detection."""
-    # Positive cases
+    """Test string-based transient error detection."""
+    # Rate limiting cases
     assert default_is_retriable(Exception("Rate limit exceeded"))
     assert default_is_retriable(Exception("Too many requests"))
     assert default_is_retriable(Exception("HTTP 429 error"))
@@ -200,10 +506,30 @@ def test_default_is_retriable():
     assert default_is_retriable(Exception("throttled"))
     assert default_is_retriable(Exception("RateLimitError"))
 
-    # Negative cases
+    # Network connectivity cases
+    assert default_is_retriable(Exception("Network error"))
+    assert default_is_retriable(Exception("Connection timeout"))
+    assert default_is_retriable(Exception("Connection timed out"))
+    assert default_is_retriable(Exception("Connection refused"))
+    assert default_is_retriable(Exception("Network unreachable"))
+    assert default_is_retriable(Exception("DNS resolution failed"))
+    assert default_is_retriable(Exception("SSL error"))
+
+    # Exception type-based detection
+    class ConnectionError(Exception):
+        pass
+
+    class TimeoutError(Exception):
+        pass
+
+    assert default_is_retriable(ConnectionError("Some connection issue"))
+    assert default_is_retriable(TimeoutError("Operation timed out"))
+
+    # Non-retriable cases
     assert not default_is_retriable(Exception("Authentication failed"))
     assert not default_is_retriable(Exception("Invalid API key"))
-    assert not default_is_retriable(Exception("Network error"))
+    assert not default_is_retriable(Exception("Permission denied"))
+    assert not default_is_retriable(Exception("File not found"))
 
 
 def test_default_is_retriable_litellm():

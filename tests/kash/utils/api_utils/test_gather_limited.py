@@ -143,6 +143,7 @@ def test_gather_limited_coroutine_retry_validation():
                     max_backoff=1.0,
                     backoff_factor=2.0,
                 ),
+                return_exceptions=False,  # Explicitly request exceptions to be raised
             )
             raise AssertionError("Expected ValueError")
         except ValueError as e:
@@ -198,6 +199,7 @@ def test_gather_limited_sync_coroutine_validation():
             await gather_limited_sync(
                 lambda: async_func(1),  # Returns coroutine - should be rejected
                 retry_settings=NO_RETRIES,
+                return_exceptions=False,  # Explicitly request exceptions to be raised
             )
             raise AssertionError("Expected ValueError")
         except ValueError as e:
@@ -230,6 +232,7 @@ def test_gather_limited_retry_exhaustion():
                     max_backoff=0.1,
                     backoff_factor=2.0,
                 ),
+                return_exceptions=False,  # Explicitly request exceptions to be raised
             )
             raise AssertionError("Expected RetryExhaustedException")
         except RetryExhaustedException as e:

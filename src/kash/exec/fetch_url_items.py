@@ -12,7 +12,11 @@ log = get_logger(__name__)
 
 
 def fetch_url_item(
-    locator: Url | StorePath, *, save_content: bool = True, refetch: bool = False
+    locator: Url | StorePath,
+    *,
+    save_content: bool = True,
+    refetch: bool = False,
+    cache: bool = True,
 ) -> Item:
     from kash.workspaces import current_ws
 
@@ -28,17 +32,21 @@ def fetch_url_item(
     else:
         raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
 
-    return fetch_url_item_content(item, save_content=save_content, refetch=refetch)
+    return fetch_url_item_content(item, save_content=save_content, refetch=refetch, cache=cache)
 
 
-def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bool = False) -> Item:
+def fetch_url_item_content(
+    item: Item, *, save_content: bool = True, refetch: bool = False, cache: bool = True
+) -> Item:
     """
     Fetch content and metadata for a URL using a media service if we
     recognize the URL as a known media service. Otherwise, fetch and extract the
     metadata and content from the web page and save it to the URL item.
 
-    If `save_content` is true, a copy of the content is also saved as
-    a resource item.
+    If `save_content` is true, a copy of the content is also saved to the workspace
+    as a resource item.
+
+    If `cache` is true, the content is also cached in the local file cache.
 
     The content item is returned if content was saved. Otherwise, the updated
     URL item is returned.
@@ -49,7 +57,7 @@ def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bo
 
     ws = current_ws()
     if not refetch and item.title and item.description and item.body:
-        log.message(
+        log.info(
             "Already have title, description, and body, will not fetch: %s",
             item.fmt_loc(),
         )
@@ -59,7 +67,7 @@ def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bo
         raise InvalidInput(f"No URL for item: {item.fmt_loc()}")
 
     url = canonicalize_url(item.url)
-    log.message("No metadata for URL, will fetch: %s", url)
+    log.info("No metadata for URL, will fetch: %s", url)
 
     # Prefer fetching metadata from media using the media service if possible.
     # Data is cleaner and YouTube for example often blocks regular scraping.
@@ -73,12 +81,12 @@ def fetch_url_item_content(item: Item, *, save_content: bool = True, refetch: bo
         if slice:
             new_url = add_slice_to_url(media_metadata.url, slice)
             if new_url != item.url:
-                log.message("Updated URL from metadata and added slice: %s", new_url)
+                log.info("Updated URL from metadata and added slice: %s", new_url)
             url_item.url = new_url
 
         url_item = item.merged_copy(url_item)
     else:
-        page_data = fetch_page_content(url, refetch=refetch, cache=save_content)
+        page_data = fetch_page_content(url, refetch=refetch, cache=cache)
         url_item = item.new_copy_with(
             title=page_data.title or item.title,
             description=page_data.description or item.description,

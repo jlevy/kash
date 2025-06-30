@@ -289,7 +289,7 @@ class FileStore(Workspace):
                 if self.exists(default_path):
                     old_item = self.load(default_path)
                     if old_item.item_id() == item_id:
-                        log.message(
+                        log.info(
                             "Item with the same id already saved (disk check):\n%s",
                             fmt_lines([fmt_loc(default_path), item_id]),
                         )
@@ -297,7 +297,7 @@ class FileStore(Workspace):
                         self.id_map[item_id] = default_path
                         return default_path
             if store_path and self.exists(store_path):
-                log.message(
+                log.info(
                     "Item with the same id already saved (disk check):\n%s",
                     fmt_lines([fmt_loc(store_path), item_id]),
                 )
@@ -536,7 +536,7 @@ class FileStore(Workspace):
             item = Item(item_type, url=url, format=Format.url)
             previous_store_path = self.find_by_id(item)
             if previous_store_path and not reimport:
-                log.message(
+                log.info(
                     "Workspace already has this URL:\n%s",
                     fmt_lines([fmt_loc(previous_store_path), url]),
                 )

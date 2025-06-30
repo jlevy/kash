@@ -16,6 +16,8 @@ from kash.utils.api_utils.api_retries import (
     RetryExhaustedException,
     RetrySettings,
     calculate_backoff,
+    extract_http_status_code,
+    is_http_status_retriable,
 )
 from kash.utils.api_utils.progress_protocol import Labeler, ProgressTracker, TaskState
 
@@ -111,18 +113,23 @@ async def gather_limited_async(
     *coro_specs: CoroSpec[T],
     global_limit: Limit = Limit(),
     bucket_limits: dict[str, Limit] | None = None,
-    return_exceptions: bool = False,
+    return_exceptions: bool = True,  # Default to True for resilient batch operations
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
     status: ProgressTracker | None = None,
     labeler: CoroLabeler[T] | None = None,
 ) -> list[T] | list[T | BaseException]:
     """
-    Rate-limited version of `asyncio.gather()` with retry logic and optional progress display.
+    Rate-limited version of `asyncio.gather()` with HTTP-aware retry logic and optional progress display.
     Uses the aiolimiter leaky-bucket algorithm with exponential backoff on failures.
 
     Supports two levels of retry limits:
     - Per-task retries: max_task_retries attempts per individual task
     - Global retries: max_total_retries attempts across all tasks (prevents cascade failures)
+
+    Features HTTP-aware retry classification:
+    - Automatically detects HTTP status codes (403, 429, 500, etc.) and applies appropriate retry behavior
+    - Configurable handling of conditional status codes like 403 Forbidden
+    - Defaults to return_exceptions=True for resilient batch operations
 
     Can optionally display live progress with retry indicators using TaskStatus.
 
@@ -295,7 +302,7 @@ async def gather_limited_sync(
     *sync_specs: SyncSpec[T],
     global_limit: Limit = Limit(),
     bucket_limits: dict[str, Limit] | None = None,
-    return_exceptions: bool = False,
+    return_exceptions: bool = True,  # Default to True for resilient batch operations
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
     status: ProgressTracker | None = None,
     labeler: SyncLabeler[T] | None = None,
@@ -303,12 +310,17 @@ async def gather_limited_sync(
     cancel_timeout: float = DEFAULT_CANCEL_TIMEOUT,
 ) -> list[T] | list[T | BaseException]:
     """
-    Rate-limited version of `asyncio.gather()` for sync functions with retry logic.
+    Rate-limited version of `asyncio.gather()` for sync functions with HTTP-aware retry logic.
     Handles the asyncio.to_thread() boundary correctly for consistent exception propagation.
 
     Supports two levels of retry limits:
     - Per-task retries: max_task_retries attempts per individual task
     - Global retries: max_total_retries attempts across all tasks
+
+    Features HTTP-aware retry classification:
+    - Automatically detects HTTP status codes (403, 429, 500, etc.) and applies appropriate retry behavior
+    - Configurable handling of conditional status codes like 403 Forbidden
+    - Defaults to return_exceptions=True for resilient batch operations
 
     Supports cooperative cancellation and graceful thread termination on interruption.
 
@@ -530,9 +542,22 @@ async def _execute_with_retry(
     start_time = time.time()
     last_exception: Exception | None = None
 
+    # Create HTTP-aware is_retriable function based on settings
+    def is_retriable_for_task(exception: Exception) -> bool:
+        # First check the main is_retriable function
+        if not retry_settings.is_retriable(exception):
+            return False
+
+        status_code = extract_http_status_code(exception)
+        if status_code:
+            return is_http_status_retriable(status_code, retry_settings.http_retry_map)
+
+        # Not an HTTP error, use the main is_retriable result
+        return True
+
     for attempt in range(retry_settings.max_task_retries + 1):
         # Handle backoff before acquiring any resources
-        if attempt > 0 and last_exception is not None:
+        if attempt > 0 and last_exception:
             # Try to increment global retry counter
             if not await global_retry_counter.try_increment():
                 log.error(
@@ -550,7 +575,7 @@ async def _execute_with_retry(
             )
 
             # Record retry in status display and log appropriately
-            if status and task_id is not None:
+            if status and task_id:
                 # Include retry attempt info and backoff time in the status display
                 retry_info = (
                     f"Attempt {attempt}/{retry_settings.max_task_retries} "
@@ -565,8 +590,11 @@ async def _execute_with_retry(
                 use_debug_level = False
 
             # Log retry information at appropriate level
+            status_code = extract_http_status_code(last_exception)
+            status_info = f" (HTTP {status_code})" if status_code else ""
+
             rate_limit_msg = (
-                f"Rate limit hit (attempt {attempt}/{retry_settings.max_task_retries} "
+                f"Rate limit hit{status_info} (attempt {attempt}/{retry_settings.max_task_retries} "
                 f"{global_retry_counter.count}/{global_retry_counter.max_total_retries or '∞'} total) "
                 f"backing off for {backoff_time:.2f}s"
             )
@@ -614,13 +642,18 @@ async def _execute_with_retry(
                     )
                     raise RetryExhaustedException(e, retry_settings.max_task_retries, total_time)
 
-            # Check if this is a retriable exception
-            if retry_settings.is_retriable(e):
+            # Check if this is a retriable exception using our HTTP-aware function
+            if is_retriable_for_task(e):
                 # Continue to next retry attempt (global limits will be checked at top of loop)
                 continue
             else:
                 # Non-retriable exception, log and re-raise immediately
-                log.warning("Non-retriable exception (not retrying): %s", e, exc_info=True)
+                status_code = extract_http_status_code(e)
+                status_info = f" (HTTP {status_code})" if status_code else ""
+
+                log.warning(
+                    "Non-retriable exception%s (not retrying): %s", status_info, e, exc_info=True
+                )
                 raise
 
     # This should never be reached, but satisfy type checker

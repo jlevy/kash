@@ -8,7 +8,7 @@ from kash.web_content.web_extract_justext import extract_text_justext
 from kash.web_content.web_page_model import PageExtractor, WebPageData
 
 
-@log_calls(level="message")
+@log_calls(level="info")
 def fetch_page_content(
     url: Url,
     *,
