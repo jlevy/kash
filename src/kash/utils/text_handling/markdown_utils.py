@@ -78,13 +78,23 @@ def _tree_links(element, include_internal=False):
 
 def extract_links(content: str, include_internal=False) -> list[str]:
     """
-    Extract all links from Markdown content.
+    Extract all links from Markdown content. Deduplicates and
+    preserves order.
 
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
     document = marko.parse(content)
-    return _tree_links(document, include_internal)
+    all_links = _tree_links(document, include_internal)
+
+    # Deduplicate while preserving order
+    seen: dict[str, None] = {}
+    result = []
+    for link in all_links:
+        if link not in seen:
+            seen[link] = None
+            result.append(link)
+    return result
 
 
 def extract_file_links(file_path: Path, include_internal=False) -> list[str]:
@@ -813,11 +823,12 @@ def test_extract_reference_style_links() -> None:
     assert len(result) == 2
 
 
-def test_extract_links_with_internal_fragments() -> None:
+def test_extract_links_and_dups() -> None:
     """Test that internal fragment links are excluded by default but included when requested."""
     content = dedent("""
         See [this section](#introduction) and [external link](https://example.com).
         Also check [another section](#conclusion) here.
+        Adding a [duplicate](https://example.com).
         """)
 
     # Default behavior: exclude internal links
