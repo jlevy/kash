@@ -107,7 +107,7 @@ def llm_completion(
 
     total_input_len = sum(len(m["content"]) for m in messages)
     speed = len(content) / elapsed
-    log.message(
+    log.info(
         f"{EMOJI_TIMING} LLM completion from {model.litellm_name} in {format_duration(elapsed)}: "
         f"input {total_input_len} chars in {len(messages)} messages, output {len(content)} chars "
         f"({speed:.0f} char/s)"
