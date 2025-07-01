@@ -136,13 +136,18 @@ class SpinnerStatusColumn(ProgressColumn):
             text = Text(self.styles.failure_symbol, style=self.styles.failure_style)
         elif task_info.state == TaskState.SKIPPED:
             text = Text(self.styles.skip_symbol, style=self.styles.skip_style)
-        else:
+        elif task_info.state == TaskState.RETRY_WAIT:
+            text = Text(self.styles.retry_symbol, style=self.styles.retry_style)
+        elif task_info.state == TaskState.RUNNING:
             # Running: show spinner
             spinner_result = self.spinner.render(task.get_time())
             if isinstance(spinner_result, Text):
                 text = spinner_result
             else:
                 text = Text(str(spinner_result))
+        else:
+            # Should not happen, but return empty space
+            return Text(" " * self.column_width)
 
         # Ensure consistent width
         current_len = len(text.plain)
@@ -376,13 +381,13 @@ class MultiTaskStatus(AbstractAsyncContextManager):
             summary = self.get_summary()
             self.console.print(summary)
 
-    async def add(self, label: str, total: int | None = None) -> int:
+    async def add(self, label: str, steps_total: int | None = None) -> int:
         """
         Add a new task to the display. Task won't appear until start() is called.
 
         Args:
             label: Human-readable task description
-            total: Total steps for progress bar (None for no default bar)
+            steps_total: Total steps for progress bar (None for no default bar)
 
         Returns:
             Task ID for subsequent updates
@@ -392,7 +397,7 @@ class MultiTaskStatus(AbstractAsyncContextManager):
             task_id: int = self._next_id
             self._next_id += 1
 
-            task_info = TaskInfo(label=label, total=total or 1)
+            task_info = TaskInfo(label=label, steps_total=steps_total or 1)
             self._task_info[task_id] = task_info
             return task_id
 
@@ -413,7 +418,7 @@ class MultiTaskStatus(AbstractAsyncContextManager):
             # Now add to Rich Progress display
             rich_task_id = self._progress.add_task(
                 "",
-                total=task_info.total,
+                total=task_info.steps_total,
                 label=task_info.label,
                 task_info=task_info,
                 progress_display=None,
@@ -440,8 +445,9 @@ class MultiTaskStatus(AbstractAsyncContextManager):
     async def update(
         self,
         task_id: int,
+        state: TaskState | None = None,
         *,
-        progress: int | None = None,
+        steps_done: int | None = None,
         label: str | None = None,
         error_msg: str | None = None,
     ) -> None:
@@ -450,7 +456,8 @@ class MultiTaskStatus(AbstractAsyncContextManager):
 
         Args:
             task_id: Task ID from add()
-            progress: Steps to advance (None = no change)
+            state: New task state (None = no change)
+            steps_done: Steps to advance (None = no change)
             label: New label (None = no change)
             error_msg: Error message to record as retry (None = no retry)
         """
@@ -461,6 +468,12 @@ class MultiTaskStatus(AbstractAsyncContextManager):
             task_info = self._task_info[task_id]
             rich_task_id = self._rich_task_ids.get(task_id)
 
+            # Update state if provided
+            if state is not None:
+                task_info.state = state
+                if rich_task_id is not None:
+                    self._progress.update(rich_task_id, task_info=task_info)
+
             # Update label if provided
             if label is not None:
                 task_info.label = label
@@ -468,8 +481,8 @@ class MultiTaskStatus(AbstractAsyncContextManager):
                     self._progress.update(rich_task_id, label=label, task_info=task_info)
 
             # Advance progress if provided
-            if progress is not None and rich_task_id is not None:
-                self._progress.advance(rich_task_id, advance=progress)
+            if steps_done is not None and rich_task_id is not None:
+                self._progress.advance(rich_task_id, advance=steps_done)
 
             # Record retry if error message provided
             if error_msg is not None:
@@ -511,9 +524,9 @@ class MultiTaskStatus(AbstractAsyncContextManager):
                 # Task was never started, but we still need to add it to show completion
                 rich_task_id = self._progress.add_task(
                     "",
-                    total=task_info.total,
+                    total=task_info.steps_total,
                     label=task_info.label,
-                    completed=task_info.total,
+                    completed=task_info.steps_total,
                     task_info=task_info,
                 )
                 self._rich_task_ids[task_id] = rich_task_id
@@ -573,9 +586,9 @@ def test_task_status_with_progress():
             settings=StatusSettings(show_progress=True),
         ) as status:
             # Traditional progress bar
-            download_task = await status.add("Downloading", total=100)
+            download_task = await status.add("Downloading", steps_total=100)
             for i in range(0, 101, 10):
-                await status.update(download_task, progress=10)
+                await status.update(download_task, steps_done=10)
                 await asyncio.sleep(0.1)
             await status.finish(download_task, TaskState.COMPLETED)
 
@@ -608,14 +621,14 @@ def test_task_status_mixed():
             settings=StatusSettings(show_progress=True, transient=True),
         ) as status:
             # Multiple concurrent tasks
-            install_task = await status.add("Installing packages", total=50)
+            install_task = await status.add("Installing packages", steps_total=50)
             test_task = await status.add("Running tests")
             build_task = await status.add("Building project")
             optional_task = await status.add("Optional feature")
 
             # Simulate concurrent work
             for i in range(5):
-                await status.update(install_task, progress=10)
+                await status.update(install_task, steps_done=10)
                 await status.set_progress_display(test_task, f"Test {i + 1}/10")
                 await status.set_progress_display(build_task, Text(f"Step {i + 1}", style="blue"))
                 await asyncio.sleep(0.2)
@@ -627,5 +640,39 @@ def test_task_status_mixed():
 
             # Skip the fourth task to demonstrate skip functionality
             await status.finish(optional_task, TaskState.SKIPPED, "Feature disabled in config")
+
+    asyncio.run(_test_impl())
+
+
+def test_task_status_retry_states():
+    """Test TaskStatus with retry wait states."""
+    print("Testing TaskStatus with retry wait states...")
+
+    async def _test_impl():
+        async with MultiTaskStatus(
+            settings=StatusSettings(show_progress=False, transient=True),
+        ) as status:
+            # Task that will demonstrate retry wait state
+            retry_task = await status.add("API call with retries")
+            await status.start(retry_task)
+
+            # Simulate retry cycle
+            await status.update(
+                retry_task, error_msg="Connection timeout", state=TaskState.RETRY_WAIT
+            )
+            await asyncio.sleep(1.0)  # Simulate backoff
+
+            await status.update(retry_task, state=TaskState.RUNNING)
+            await asyncio.sleep(0.5)  # Simulate execution
+
+            await status.update(
+                retry_task, error_msg="Rate limit exceeded", state=TaskState.RETRY_WAIT
+            )
+            await asyncio.sleep(1.0)  # Simulate longer backoff
+
+            await status.update(retry_task, state=TaskState.RUNNING)
+            await asyncio.sleep(0.5)  # Simulate final execution
+
+            await status.finish(retry_task, TaskState.COMPLETED)
 
     asyncio.run(_test_impl())

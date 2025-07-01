@@ -34,7 +34,7 @@ def test_gather_limited_sync():
             lambda: sync_func(1),
             lambda: sync_func(2),
             lambda: sync_func(3),
-            global_limit=Limit(concurrency=2, rps=10.0),
+            limit=Limit(concurrency=2, rps=10.0),
             retry_settings=NO_RETRIES,
         )
 
@@ -62,6 +62,7 @@ def test_gather_limited_sync_with_retries():
         # Should succeed after retry
         results = await gather_limited_sync(
             lambda: flaky_sync_func(),
+            limit=None,
             retry_settings=RetrySettings(
                 max_task_retries=2,
                 initial_backoff=0.1,
@@ -92,7 +93,7 @@ def test_gather_limited_async_basic():
             lambda: async_func(1),
             lambda: async_func(2),
             lambda: async_func(3),
-            global_limit=Limit(concurrency=2, rps=10.0),
+            limit=Limit(concurrency=2, rps=10.0),
             retry_settings=NO_RETRIES,
         )
 
@@ -115,6 +116,7 @@ def test_gather_limited_direct_coroutines():
             async_func(1),
             async_func(2),
             async_func(3),
+            limit=None,
             retry_settings=NO_RETRIES,  # Required for direct coroutines
         )
 
@@ -138,6 +140,7 @@ def test_gather_limited_coroutine_retry_validation():
             await gather_limited_async(
                 coro,  # Direct coroutine
                 lambda: async_func(2),  # Callable
+                limit=None,
                 retry_settings=RetrySettings(
                     max_task_retries=1,
                     initial_backoff=0.1,
@@ -173,6 +176,7 @@ def test_gather_limited_async_with_retries():
         # Should succeed after retry using callable
         results = await gather_limited_async(
             lambda: flaky_async_func(),
+            limit=None,
             retry_settings=RetrySettings(
                 max_task_retries=2,
                 initial_backoff=0.1,
@@ -199,6 +203,7 @@ def test_gather_limited_sync_coroutine_validation():
         try:
             await gather_limited_sync(
                 lambda: async_func(1),  # Returns coroutine - should be rejected
+                limit=None,
                 retry_settings=NO_RETRIES,
                 return_exceptions=False,  # Explicitly request exceptions to be raised
             )
@@ -227,6 +232,7 @@ def test_gather_limited_retry_exhaustion():
         try:
             await gather_limited_sync(
                 lambda: always_fails(),
+                limit=None,
                 retry_settings=RetrySettings(
                     max_task_retries=2,
                     initial_backoff=0.01,
@@ -260,6 +266,7 @@ def test_gather_limited_return_exceptions():
         sync_results = await gather_limited_sync(
             lambda: "success",
             lambda: failing_sync(),
+            limit=None,
             return_exceptions=True,
             retry_settings=NO_RETRIES,
         )
@@ -276,6 +283,7 @@ def test_gather_limited_return_exceptions():
         async_results = await gather_limited_async(
             lambda: success_async(),
             lambda: failing_async(),
+            limit=None,
             return_exceptions=True,
             retry_settings=NO_RETRIES,
         )
@@ -305,6 +313,7 @@ def test_gather_limited_global_retry_limit():
             await gather_limited_sync(
                 lambda: flaky_task("task1"),
                 lambda: flaky_task("task2"),
+                limit=None,
                 retry_settings=RetrySettings(
                     max_task_retries=5,  # Each task could retry up to 5 times
                     max_total_retries=3,  # But only 3 total retries across all tasks
@@ -362,6 +371,7 @@ def test_gather_limited_funcspec_format():
         sync_results = await gather_limited_sync(
             FuncTask(sync_func, ("user1", 100), {"multiplier": 3}),  # user1: 300
             FuncTask(sync_func, ("user2", 50)),  # user2: 100 (default multiplier)
+            limit=Limit(rps=5.0, concurrency=5),
             labeler=custom_labeler,
             retry_settings=NO_RETRIES,
         )
@@ -376,6 +386,7 @@ def test_gather_limited_funcspec_format():
         async_results = await gather_limited_async(
             FuncTask(async_func, ("api_call", 10), {"multiplier": 4}),  # api_call: 40
             FuncTask(async_func, ("data_fetch", 5)),  # data_fetch: 10 (default multiplier)
+            limit=None,
             labeler=custom_labeler,
             retry_settings=NO_RETRIES,
         )
@@ -411,6 +422,7 @@ def test_gather_limited_sync_cooperative_cancellation():
         results = await gather_limited_sync(
             lambda: cancellable_sync_func("task1", 0.1),  # Short duration
             lambda: cancellable_sync_func("task2", 0.1),  # Short duration
+            limit=Limit(rps=5.0, concurrency=5),
             cancel_event=cancel_event,
             cancel_timeout=1.0,
             retry_settings=NO_RETRIES,
@@ -427,6 +439,7 @@ def test_gather_limited_sync_cooperative_cancellation():
         results2 = await gather_limited_sync(
             lambda: cancellable_sync_func("task1", 1.0),  # Would take long if not cancelled
             lambda: cancellable_sync_func("task2", 1.0),  # Would take long if not cancelled
+            limit=None,
             cancel_event=cancel_event,
             cancel_timeout=1.0,
             retry_settings=NO_RETRIES,
@@ -461,7 +474,7 @@ def test_gather_limited_bucket_limits():
             FuncTask(track_api_call, ("api2",), bucket="api2"),
             FuncTask(track_api_call, ("api2",), bucket="api2"),
             FuncTask(track_api_call, ("default",)),  # Uses default bucket
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "api1": Limit(concurrency=1, rps=10),  # Very restricted
                 "api2": Limit(concurrency=2, rps=20),  # Less restricted
@@ -518,7 +531,7 @@ def test_gather_limited_bucket_limits_async():
             FuncTask(track_async_call, ("fast_api",), bucket="fast_api"),
             FuncTask(track_async_call, ("slow_api",), bucket="slow_api"),
             FuncTask(track_async_call, ("slow_api",), bucket="slow_api"),
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "fast_api": Limit(concurrency=2, rps=50),  # Can run both concurrently
                 "slow_api": Limit(concurrency=1, rps=10),  # Must run serially
@@ -564,7 +577,7 @@ def test_gather_limited_mixed_buckets():
             lambda: bucket_func(1),  # Regular callable, uses default bucket
             FuncTask(bucket_func, (2,), bucket="special"),  # Custom bucket
             lambda: bucket_func(3),  # Regular callable, uses default bucket
-            global_limit=Limit(concurrency=5, rps=20),
+            limit=Limit(concurrency=5, rps=20),
             bucket_limits={
                 "special": Limit(concurrency=1, rps=5),
                 # default bucket uses global limits
@@ -593,7 +606,7 @@ def test_gather_limited_bucket_backward_compatibility():
         sync_results = await gather_limited_sync(
             lambda: simple_sync(1),
             lambda: simple_sync(2),
-            global_limit=Limit(concurrency=2, rps=10),
+            limit=Limit(concurrency=2, rps=10),
             retry_settings=NO_RETRIES,
         )
         assert sync_results == [2, 4]
@@ -602,7 +615,7 @@ def test_gather_limited_bucket_backward_compatibility():
         async_results = await gather_limited_async(
             lambda: simple_async(1),
             lambda: simple_async(2),
-            global_limit=Limit(concurrency=2, rps=10),
+            limit=Limit(concurrency=2, rps=10),
             retry_settings=NO_RETRIES,
         )
         assert async_results == [3, 6]
@@ -611,7 +624,7 @@ def test_gather_limited_bucket_backward_compatibility():
         mixed_results = await gather_limited_sync(
             FuncTask(simple_sync, (5,)),  # Uses default bucket
             lambda: simple_sync(6),  # Also uses default bucket
-            global_limit=Limit(concurrency=2, rps=10),
+            limit=Limit(concurrency=2, rps=10),
             retry_settings=NO_RETRIES,
         )
         assert mixed_results == [10, 12]
@@ -639,7 +652,7 @@ def test_gather_limited_bucket_fallback_star():
             FuncTask(track_api_call, ("api2",), bucket="api2"),  # Should use "*" fallback
             FuncTask(track_api_call, ("api2",), bucket="api2"),  # Should use "*" fallback
             FuncTask(track_api_call, ("api3",), bucket="api3"),  # Should use "*" fallback
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "api1": Limit(concurrency=1, rps=10),  # Specific limit for api1
                 "*": Limit(concurrency=1, rps=10),  # Fallback for api2, api3
@@ -692,7 +705,7 @@ def test_gather_limited_bucket_fallback_star_async():
             FuncTask(track_async_call, ("service1",), bucket="service1"),
             FuncTask(track_async_call, ("service2",), bucket="service2"),  # Should use "*" fallback
             FuncTask(track_async_call, ("service3",), bucket="service3"),  # Should use "*" fallback
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "service1": Limit(concurrency=2, rps=20),  # Specific limit for service1
                 "*": Limit(concurrency=1, rps=10),  # Fallback for service2, service3
@@ -742,7 +755,7 @@ def test_gather_limited_bucket_priority_over_star():
             FuncTask(track_api_call, ("priority_api",), bucket="priority_api"),
             FuncTask(track_api_call, ("fallback_api",), bucket="fallback_api"),  # Uses "*"
             FuncTask(track_api_call, ("fallback_api",), bucket="fallback_api"),  # Uses "*"
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "priority_api": Limit(concurrency=2, rps=20),  # Specific: allows 2 concurrent
                 "*": Limit(concurrency=1, rps=10),  # Fallback: allows 1 concurrent
@@ -795,7 +808,7 @@ def test_gather_limited_bucket_star_only():
             FuncTask(track_api_call, ("bucket1",), bucket="bucket1"),
             FuncTask(track_api_call, ("bucket2",), bucket="bucket2"),
             FuncTask(track_api_call, ("bucket3",), bucket="bucket3"),
-            global_limit=Limit(concurrency=10, rps=100),  # High global limits
+            limit=Limit(concurrency=10, rps=100),  # High global limits
             bucket_limits={
                 "*": Limit(concurrency=1, rps=10),  # All buckets use this fallback
             },
@@ -846,7 +859,7 @@ def test_gather_limited_bucket_no_star_fallback():
             FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
             FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
             FuncTask(track_api_call, ("unlimited_api",), bucket="unlimited_api"),
-            global_limit=Limit(concurrency=5, rps=50),  # Generous global limits
+            limit=Limit(concurrency=5, rps=50),  # Generous global limits
             bucket_limits={
                 "fast_api": Limit(concurrency=3, rps=30),
                 "slow_api": Limit(concurrency=1, rps=5),
@@ -905,7 +918,7 @@ def test_task_result_disable_limits():
             lambda: fetched_task("2"),
             lambda: cached_task("3"),
             lambda: fetched_task("4"),
-            global_limit=Limit(rps=2.0, concurrency=2),  # Very restrictive limits
+            limit=Limit(rps=2.0, concurrency=2),  # Very restrictive limits
             retry_settings=NO_RETRIES,
         )
         elapsed = time.time() - start_time

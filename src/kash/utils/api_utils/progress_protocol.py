@@ -16,8 +16,8 @@ Labeler: TypeAlias = Callable[[int, TaskSpec], str]
 EMOJI_SUCCESS = "[✔︎]"
 EMOJI_FAILURE = "[✘]"
 EMOJI_SKIP = "[-]"
-EMOJI_WARN = "[∆]"
-EMOJI_RETRY = "▵"
+EMOJI_WARN = "∆"
+EMOJI_RETRY = "⟲"
 
 
 class TaskState(Enum):
@@ -25,6 +25,7 @@ class TaskState(Enum):
 
     QUEUED = "queued"
     RUNNING = "running"
+    RETRY_WAIT = "retry_wait"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -38,7 +39,7 @@ class TaskInfo:
     retry_count: int = 0
     failures: list[str] = field(default_factory=list)
     label: str = ""
-    total: int = 1
+    steps_total: int = 1
 
 
 @dataclass(frozen=True)
@@ -47,30 +48,9 @@ class TaskSummary:
 
     task_states: list[TaskState]
 
-    @property
-    def queued(self) -> int:
-        """Number of queued tasks."""
-        return sum(1 for state in self.task_states if state == TaskState.QUEUED)
-
-    @property
-    def running(self) -> int:
-        """Number of running tasks."""
-        return sum(1 for state in self.task_states if state == TaskState.RUNNING)
-
-    @property
-    def completed(self) -> int:
-        """Number of completed tasks."""
-        return sum(1 for state in self.task_states if state == TaskState.COMPLETED)
-
-    @property
-    def failed(self) -> int:
-        """Number of failed tasks."""
-        return sum(1 for state in self.task_states if state == TaskState.FAILED)
-
-    @property
-    def skipped(self) -> int:
-        """Number of skipped tasks."""
-        return sum(1 for state in self.task_states if state == TaskState.SKIPPED)
+    def count(self, state: TaskState) -> int:
+        """Count the number of tasks in a given state."""
+        return sum(1 for s in self.task_states if s == state)
 
     @property
     def total(self) -> int:
@@ -84,24 +64,29 @@ class TaskSummary:
         if not self.task_states:
             return "No tasks to process"
 
-        if self.completed == self.total:
-            return f"All tasks successful: {self.completed}/{self.total} completed"
-        elif self.completed + self.skipped == self.total:
-            return f"All tasks successful: {self.completed}/{self.total} completed, {self.skipped} skipped"
-        elif self.failed == self.total:
-            return f"All tasks failed: {self.failed}/{self.total} failed"
+        completed = self.count(TaskState.COMPLETED)
+        skipped = self.count(TaskState.SKIPPED)
+        failed = self.count(TaskState.FAILED)
+        queued = self.count(TaskState.QUEUED)
+
+        if completed == self.total:
+            return f"All tasks successful: {completed}/{self.total} completed"
+        elif completed + skipped == self.total:
+            return f"All tasks successful: {completed}/{self.total} completed, {skipped} skipped"
+        elif failed == self.total:
+            return f"All tasks failed: {failed}/{self.total} failed"
         else:
             parts = []
-            if self.completed > 0:
-                parts.append(f"{self.completed}/{self.total} tasks completed")
-            if self.failed > 0:
-                parts.append(f"{self.failed} tasks failed")
-            if self.skipped > 0:
-                parts.append(f"{self.skipped} tasks skipped")
-            if self.queued > 0:
-                parts.append(f"{self.queued} tasks not yet run")
+            if completed > 0:
+                parts.append(f"{completed}/{self.total} tasks completed")
+            if failed > 0:
+                parts.append(f"{failed} tasks failed")
+            if skipped > 0:
+                parts.append(f"{skipped} tasks skipped")
+            if queued > 0:
+                parts.append(f"{queued} tasks not yet run")
 
-            if self.queued > 0:
+            if queued > 0:
                 return "Tasks were interrupted: " + ", ".join(parts)
             else:
                 return "Tasks had errors: " + ", ".join(parts)
@@ -123,7 +108,7 @@ class ProgressTracker(Protocol[TaskID]):
         """
         ...
 
-    async def add(self, label: str, total: int = 1) -> TaskID:
+    async def add(self, label: str, steps_total: int = 1) -> TaskID:
         """Add a new task to track."""
         ...
 
@@ -134,8 +119,9 @@ class ProgressTracker(Protocol[TaskID]):
     async def update(
         self,
         task_id: TaskID,
+        state: TaskState | None = None,
         *,
-        progress: int | None = None,
+        steps_done: int | None = None,
         label: str | None = None,
         error_msg: str | None = None,
     ) -> None:
@@ -144,7 +130,8 @@ class ProgressTracker(Protocol[TaskID]):
 
         Args:
             task_id: Task ID from add()
-            progress: Steps to advance (None = no change)
+            state: New task state (None = no change)
+            steps_done: Steps to advance (None = no change)
             label: New label (None = no change)
             error_msg: Error message to record as retry (None = no retry)
         """
@@ -198,11 +185,11 @@ class SimpleProgressTracker:
         """Console-based tracker works with standard logging."""
         return False
 
-    async def add(self, label: str, total: int = 1) -> int:  # pyright: ignore[reportUnusedParameter]
+    async def add(self, label: str, steps_total: int = 1) -> int:  # pyright: ignore[reportUnusedParameter]
         task_id = self._next_id
         self._next_id += 1
 
-        self._tasks[task_id] = TaskInfo(label=label)
+        self._tasks[task_id] = TaskInfo(label=label, steps_total=steps_total)
 
         if self.verbose:
             self.print_fn(f"Queued: {label}")
@@ -223,14 +210,19 @@ class SimpleProgressTracker:
     async def update(
         self,
         task_id: int,
+        state: TaskState | None = None,
         *,
-        progress: int | None = None,  # pyright: ignore[reportUnusedParameter]
+        steps_done: int | None = None,  # pyright: ignore[reportUnusedParameter]
         label: str | None = None,
         error_msg: str | None = None,
     ) -> None:
         task_info = self._tasks.get(task_id)
         if not task_info:
             return
+
+        # Update state if provided
+        if state is not None:
+            task_info.state = state
 
         # Update label if provided
         if label is not None:

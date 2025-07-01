@@ -56,6 +56,7 @@ async def task_status_demo() -> dict[str, Any]:
             lambda: simple_task(1),
             lambda: simple_task(2),
             lambda: simple_task(3),
+            limit=Limit(rps=5.0, concurrency=5),
             status=simple_status,
             labeler=lambda i, spec: f"Simple Task {i + 1}",
             retry_settings=RetrySettings(
@@ -94,7 +95,7 @@ async def task_status_demo() -> dict[str, Any]:
             lambda: mock_api_call("api2", should_fail_times=1),  # single retry
             lambda: mock_api_call("api3", should_fail_times=2),  # two retries
             lambda: mock_api_call("api4", should_fail_times=3),  # three retries
-            global_limit=Limit(concurrency=2, rps=5.0),
+            limit=Limit(concurrency=2, rps=5.0),
             status=status,
             labeler=lambda i, spec: f"API Endpoint {chr(ord('A') + i)}",
             retry_settings=RetrySettings(
@@ -129,6 +130,7 @@ async def task_status_demo() -> dict[str, Any]:
             lambda: mock_sync_work("task1", fail_times=0),
             lambda: mock_sync_work("task2", fail_times=1),
             lambda: mock_sync_work("task3", fail_times=2),
+            limit=None,
             status=status,
             labeler=lambda i, spec: f"Sync Job {chr(ord('A') + i)}",
             retry_settings=RetrySettings(
@@ -177,7 +179,7 @@ async def task_status_demo() -> dict[str, Any]:
                 process_task, ("this_is_a_very_long_input_string_that_will_trigger_retry",)
             ),  # Should retry
             FuncTask(process_task, ("medium_length_input_data",)),  # Should succeed
-            global_limit=Limit(concurrency=2, rps=5.0),
+            limit=Limit(concurrency=2, rps=5.0),
             status=status,
             labeler=simple_labeler,
             retry_settings=RetrySettings(
@@ -200,9 +202,9 @@ async def task_status_demo() -> dict[str, Any]:
         settings=StatusSettings(transient=False, show_progress=True)
     ) as status:
         # Create tasks with different progress patterns
-        task1 = await status.add("Data Processing", total=10)
-        task2 = await status.add("File Upload", total=5)
-        task3 = await status.add("Analytics", total=8)
+        task1 = await status.add("Data Processing", steps_total=10)
+        task2 = await status.add("File Upload", steps_total=5)
+        task3 = await status.add("Analytics", steps_total=8)
 
         # Simulate complex work patterns
         tasks_info = []
@@ -210,7 +212,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Task: Steady progress with one retry
         for i in range(5):
             await asyncio.sleep(0.2)
-            await status.update(task1, progress=1)
+            await status.update(task1, steps_done=1)
             await status.update(task1, label=f"Processing batch {i + 1}/10")
 
         # Simulate retry on task
@@ -220,7 +222,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Complete task
         for i in range(5, 10):
             await asyncio.sleep(0.15)
-            await status.update(task1, progress=1)
+            await status.update(task1, steps_done=1)
             await status.update(task1, label=f"Processing batch {i + 1}/10")
 
         await status.finish(task1, TaskState.COMPLETED)
@@ -229,7 +231,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Upload task with multiple retries then success
         for i in range(2):
             await asyncio.sleep(0.2)
-            await status.update(task2, progress=1)
+            await status.update(task2, steps_done=1)
 
         # Multiple retries
         await status.update(task2, error_msg="Connection reset")
@@ -240,7 +242,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Complete upload
         for i in range(2, 5):
             await asyncio.sleep(0.15)
-            await status.update(task2, progress=1)
+            await status.update(task2, steps_done=1)
 
         await status.finish(task2, TaskState.COMPLETED)
         tasks_info.append(status.get_task_info(task2))
@@ -248,7 +250,7 @@ async def task_status_demo() -> dict[str, Any]:
         # Analytics task that fails after retries
         for i in range(4):
             await asyncio.sleep(0.1)
-            await status.update(task3, progress=1)
+            await status.update(task3, steps_done=1)
             if i == 2:
                 await status.update(task3, error_msg="Temporary server error")
                 await asyncio.sleep(0.2)
@@ -293,6 +295,7 @@ async def task_status_demo() -> dict[str, Any]:
         mixed_results = await gather_limited_async(
             recoverable_task,
             unrecoverable_task,
+            limit=Limit(rps=5.0, concurrency=5),
             status=status,
             labeler=lambda i, spec: f"Mixed Task {chr(ord('A') + i)}",
             retry_settings=RetrySettings(
@@ -402,7 +405,7 @@ async def text_chunk_processing_demo(total_chunks: int = 50) -> dict[str, Any]:
     async with MultiTaskStatus(settings=StatusSettings(transient=False)) as status:
         chunk_results = await gather_limited_async(
             *chunk_specs,
-            global_limit=Limit(concurrency=5, rps=5.0),  # Your specified limits
+            limit=Limit(concurrency=5, rps=5.0),  # Your specified limits
             status=status,
             labeler=chunk_labeler,
             retry_settings=RetrySettings(

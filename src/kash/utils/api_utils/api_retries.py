@@ -92,7 +92,7 @@ def default_is_retriable(exception: Exception) -> bool:
         pass
 
     # Try to extract HTTP status code for more precise handling
-    status_code = extract_http_status_code(exception)  # noqa: F821
+    status_code = extract_http_status_code(exception)
     if status_code is not None:
         return is_http_status_retriable(status_code, DEFAULT_HTTP_RETRY_MAP)
 
@@ -161,22 +161,22 @@ def default_is_retriable(exception: Exception) -> bool:
 
 def is_http_status_retriable(
     status_code: int,
-    retry_map: dict[int, HTTPRetryBehavior] | None = None,
+    retry_policy: dict[int, HTTPRetryBehavior] | None = None,
 ) -> bool:
     """
     Determine if an HTTP status code should be retried.
 
     Args:
         status_code: HTTP status code
-        retry_map: Custom retry behavior map (uses default if None)
+        retry_policy: Custom retry behavior policy (uses default if None)
 
     Returns:
         True if the status code should be retried
     """
-    if retry_map is None:
-        retry_map = DEFAULT_HTTP_RETRY_MAP
+    if retry_policy is None:
+        retry_policy = DEFAULT_HTTP_RETRY_MAP
 
-    behavior = retry_map.get(status_code)
+    behavior = retry_policy.get(status_code)
 
     if behavior == HTTPRetryBehavior.FULL:
         return True
@@ -222,10 +222,32 @@ class RetrySettings:
     """Exponential backoff multiplier"""
 
     is_retriable: Callable[[Exception], bool] = default_is_retriable
-    """Function to determine if an exception should be retried"""
+    """Function to determine if non-HTTP exceptions should be retried (network errors, timeouts, etc.)"""
 
-    http_retry_map: dict[int, HTTPRetryBehavior] | None = None
-    """Custom HTTP status code retry behavior (None = use defaults)"""
+    http_retry_policy: dict[int, HTTPRetryBehavior] | None = None
+    """Custom HTTP status code retry behavior policy (None = use defaults)"""
+
+    def should_retry(self, exception: Exception) -> bool:
+        """
+        Determine if an exception should be retried.
+
+        First checks for HTTP status codes and uses http_retry_policy if present.
+        For non-HTTP exceptions, uses the is_retriable function to determine
+        if other exception types (network errors, timeouts, etc.) should be retried.
+        """
+        # First check if this is an HTTP exception with a status code
+        status_code = extract_http_status_code(exception)
+        if status_code:
+            retry_policy = (
+                self.http_retry_policy
+                if self.http_retry_policy is not None
+                else DEFAULT_HTTP_RETRY_MAP
+            )
+            return is_http_status_retriable(status_code, retry_policy)
+
+        # Not an HTTP error - use is_retriable for other exception types
+        # (network errors, timeouts, connection issues, etc.)
+        return self.is_retriable(exception)
 
 
 DEFAULT_RETRIES = RetrySettings(
@@ -238,8 +260,8 @@ DEFAULT_RETRIES = RetrySettings(
 )
 """Reasonable default retry settings with both per-task and global limits."""
 
-# Conservative retry settings use a custom retry map that excludes conservative retries
-_CONSERVATIVE_HTTP_RETRY_MAP = {
+# Conservative retry settings use a custom retry policy that excludes conservative retries
+_CONSERVATIVE_HTTP_RETRY_POLICY = {
     # Fully retriable: server errors and explicit rate limiting
     429: HTTPRetryBehavior.FULL,
     500: HTTPRetryBehavior.FULL,
@@ -264,7 +286,7 @@ CONSERVATIVE_RETRIES = RetrySettings(
     initial_backoff=2.0,
     max_backoff=60.0,
     backoff_factor=2.5,
-    http_retry_map=_CONSERVATIVE_HTTP_RETRY_MAP,
+    http_retry_policy=_CONSERVATIVE_HTTP_RETRY_POLICY,
 )
 """Conservative retry settings - fewer retries, longer backoff, no conservative HTTP retries."""
 
@@ -400,9 +422,9 @@ def test_is_http_status_retriable():
     assert is_http_status_retriable(403)  # Forbidden
     assert is_http_status_retriable(408)  # Request Timeout
 
-    # Conservative retriable with custom conservative map (disabled)
-    assert not is_http_status_retriable(403, _CONSERVATIVE_HTTP_RETRY_MAP)
-    assert not is_http_status_retriable(408, _CONSERVATIVE_HTTP_RETRY_MAP)
+    # Conservative retriable with custom conservative policy (disabled)
+    assert not is_http_status_retriable(403, _CONSERVATIVE_HTTP_RETRY_POLICY)
+    assert not is_http_status_retriable(408, _CONSERVATIVE_HTTP_RETRY_POLICY)
 
     # Never retriable
     assert not is_http_status_retriable(400)  # Bad Request
@@ -574,3 +596,44 @@ def test_calculate_backoff():
         backoff_factor=2.0,
     )
     assert high_backoff <= 5.0
+
+
+def test_retry_settings_should_retry():
+    """Test RetrySettings.should_retry method with custom HTTP maps."""
+
+    class MockHTTPXResponse:
+        def __init__(self, status_code):
+            self.status_code = status_code
+
+    class MockHTTPXException(Exception):
+        def __init__(self, status_code):
+            self.response = MockHTTPXResponse(status_code)
+            super().__init__(f"HTTP {status_code} error")
+
+    # Test with default settings (conservative retries enabled)
+    default_settings = RetrySettings(max_task_retries=3)
+    assert default_settings.should_retry(MockHTTPXException(429))  # Rate limit - retriable
+    assert default_settings.should_retry(MockHTTPXException(500))  # Server error - retriable
+    assert default_settings.should_retry(
+        MockHTTPXException(403)
+    )  # Conservative - retriable by default
+    assert not default_settings.should_retry(MockHTTPXException(404))  # Not found - not retriable
+
+    # Test with conservative settings (conservative retries disabled)
+    conservative_settings = CONSERVATIVE_RETRIES
+    assert conservative_settings.should_retry(
+        MockHTTPXException(429)
+    )  # Rate limit - still retriable
+    assert conservative_settings.should_retry(
+        MockHTTPXException(500)
+    )  # Server error - still retriable
+    assert not conservative_settings.should_retry(
+        MockHTTPXException(403)
+    )  # Conservative - now not retriable
+    assert not conservative_settings.should_retry(
+        MockHTTPXException(404)
+    )  # Not found - still not retriable
+
+    # Test with non-HTTP exception
+    assert default_settings.should_retry(Exception("Network error"))
+    assert not default_settings.should_retry(Exception("Authentication failed"))

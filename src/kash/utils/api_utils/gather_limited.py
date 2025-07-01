@@ -17,17 +17,12 @@ from kash.utils.api_utils.api_retries import (
     RetrySettings,
     calculate_backoff,
     extract_http_status_code,
-    is_http_status_retriable,
 )
 from kash.utils.api_utils.progress_protocol import Labeler, ProgressTracker, TaskState
 
 T = TypeVar("T")
 
 log = logging.getLogger(__name__)
-
-DEFAULT_MAX_CONCURRENT: int = 5
-DEFAULT_MAX_RPS: float = 5.0
-DEFAULT_CANCEL_TIMEOUT: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -36,8 +31,11 @@ class Limit:
     Rate limiting configuration with max RPS and max concurrency.
     """
 
-    rps: float = DEFAULT_MAX_RPS
-    concurrency: int = DEFAULT_MAX_CONCURRENT
+    rps: float
+    concurrency: int
+
+
+DEFAULT_CANCEL_TIMEOUT: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -132,7 +130,7 @@ class RetryCounter:
 @overload
 async def gather_limited_async(
     *coro_specs: CoroSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -144,7 +142,7 @@ async def gather_limited_async(
 @overload
 async def gather_limited_async(
     *coro_specs: CoroSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = True,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -155,7 +153,7 @@ async def gather_limited_async(
 
 async def gather_limited_async(
     *coro_specs: CoroSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = True,  # Default to True for resilient batch operations
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -218,7 +216,7 @@ async def gather_limited_async(
             FuncTask(fetch_api, ("data1",), bucket="api1"),
             FuncTask(fetch_api, ("data2",), bucket="api2"),
             FuncTask(fetch_api, ("data3",), bucket="api3"),
-            global_limit=Limit(rps=100, concurrency=50),
+            limit=Limit(rps=100, concurrency=50),
             bucket_limits={
                 "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
                 "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
@@ -238,14 +236,14 @@ async def gather_limited_async(
         await gather_limited_async(
             lambda: fetch_with_cache("http://api.com/data1"),
             lambda: fetch_with_cache("http://api.com/data2"),
-            global_limit=Limit(rps=10, concurrency=5)  # Cache hits bypass these limits
+            limit=Limit(rps=10, concurrency=5)  # Cache hits bypass these limits
         )
 
         ```
 
     Args:
         *coro_specs: Callables or coroutines to execute
-        global_limit: Global limits applied to all tasks regardless of bucket
+        limit: Global limits applied to all tasks regardless of bucket
         bucket_limits: Optional per-bucket limits. Tasks use their bucket field to determine limits.
                       Use "*" as a fallback limit for buckets without specific limits.
         return_exceptions: If True, exceptions are returned as results
@@ -261,8 +259,8 @@ async def gather_limited_async(
     """
     log.info(
         "Executing with global limits: concurrency %s at %s rps, %s",
-        global_limit.concurrency,
-        global_limit.rps,
+        limit.concurrency if limit else "None",
+        limit.rps if limit else "None",
         retry_settings,
     )
     if not coro_specs:
@@ -281,8 +279,8 @@ async def gather_limited_async(
                 )
 
     # Global limits (apply to all tasks regardless of bucket)
-    global_semaphore = asyncio.Semaphore(global_limit.concurrency)
-    global_rate_limiter = AsyncLimiter(global_limit.rps, 1.0)
+    global_semaphore = asyncio.Semaphore(limit.concurrency) if limit else None
+    global_rate_limiter = AsyncLimiter(limit.rps, 1.0) if limit else None
 
     # Per-bucket limits (if bucket_limits provided)
     bucket_semaphores: dict[str, asyncio.Semaphore] = {}
@@ -357,7 +355,7 @@ async def gather_limited_async(
 @overload
 async def gather_limited_sync(
     *sync_specs: SyncSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = False,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -371,7 +369,7 @@ async def gather_limited_sync(
 @overload
 async def gather_limited_sync(
     *sync_specs: SyncSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = True,
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -384,7 +382,7 @@ async def gather_limited_sync(
 
 async def gather_limited_sync(
     *sync_specs: SyncSpec[T],
-    global_limit: Limit = Limit(),
+    limit: Limit | None,
     bucket_limits: dict[str, Limit] | None = None,
     return_exceptions: bool = True,  # Default to True for resilient batch operations
     retry_settings: RetrySettings | None = DEFAULT_RETRIES,
@@ -425,7 +423,7 @@ async def gather_limited_sync(
         results = await gather_limited_sync(
             lambda: some_sync_function(arg1),
             lambda: another_sync_function(arg2),
-            global_limit=Limit(rps=2.0, concurrency=3),
+            limit=Limit(rps=2.0, concurrency=3),
             retry_settings=RetrySettings(max_task_retries=3, max_total_retries=25)
         )
 
@@ -434,7 +432,7 @@ async def gather_limited_sync(
             FuncTask(fetch_from_api, ("data1",), bucket="api1"),
             FuncTask(fetch_from_api, ("data2",), bucket="api2"),
             FuncTask(fetch_from_api, ("data3",), bucket="api3"),
-            global_limit=Limit(rps=100, concurrency=50),
+            limit=Limit(rps=100, concurrency=50),
             bucket_limits={
                 "api1": Limit(rps=20, concurrency=10),  # Specific limit for api1
                 "*": Limit(rps=15, concurrency=8),      # Fallback for api2, api3, and others
@@ -454,14 +452,14 @@ async def gather_limited_sync(
         results = await gather_limited_sync(
             lambda: sync_fetch_with_cache("http://api.com/data1"),
             lambda: sync_fetch_with_cache("http://api.com/data2"),
-            global_limit=Limit(rps=5, concurrency=3)  # Cache hits bypass these limits
+            limit=Limit(rps=5, concurrency=3)  # Cache hits bypass these limits
         )
         ```
     """
     log.info(
         "Executing with global limits: concurrency %s at %s rps, %s",
-        global_limit.concurrency,
-        global_limit.rps,
+        limit.concurrency if limit else "None",
+        limit.rps if limit else "None",
         retry_settings,
     )
     if not sync_specs:
@@ -470,8 +468,8 @@ async def gather_limited_sync(
     retry_settings = retry_settings or NO_RETRIES
 
     # Global limits (apply to all tasks regardless of bucket)
-    global_semaphore = asyncio.Semaphore(global_limit.concurrency)
-    global_rate_limiter = AsyncLimiter(global_limit.rps, 1.0)
+    global_semaphore = asyncio.Semaphore(limit.concurrency) if limit else None
+    global_rate_limiter = AsyncLimiter(limit.rps, 1.0) if limit else None
 
     # Per-bucket limits (if bucket_limits provided)
     bucket_semaphores: dict[str, asyncio.Semaphore] = {}
@@ -628,8 +626,8 @@ async def _gather_with_interrupt_handling(
 async def _execute_with_retry(
     executor: Callable[[], Coroutine[None, None, T]],
     retry_settings: RetrySettings,
-    global_semaphore: asyncio.Semaphore,
-    global_rate_limiter: AsyncLimiter,
+    global_semaphore: asyncio.Semaphore | None,
+    global_rate_limiter: AsyncLimiter | None,
     bucket_semaphore: asyncio.Semaphore | None,
     bucket_rate_limiter: AsyncLimiter | None,
     global_retry_counter: RetryCounter,
@@ -644,7 +642,31 @@ async def _execute_with_retry(
     for each execution attempt.
     """
     # Acquire semaphores once for the entire retry cycle (including backoff periods)
-    async with global_semaphore:
+    if global_semaphore is not None:
+        async with global_semaphore:
+            if bucket_semaphore is not None:
+                async with bucket_semaphore:
+                    return await _execute_with_retry_inner(
+                        executor,
+                        retry_settings,
+                        global_rate_limiter,
+                        bucket_rate_limiter,
+                        global_retry_counter,
+                        status,
+                        task_id,
+                    )
+            else:
+                return await _execute_with_retry_inner(
+                    executor,
+                    retry_settings,
+                    global_rate_limiter,
+                    None,
+                    global_retry_counter,
+                    status,
+                    task_id,
+                )
+    else:
+        # No global semaphore, check bucket semaphore
         if bucket_semaphore is not None:
             async with bucket_semaphore:
                 return await _execute_with_retry_inner(
@@ -671,7 +693,7 @@ async def _execute_with_retry(
 async def _execute_with_retry_inner(
     executor: Callable[[], Coroutine[None, None, T]],
     retry_settings: RetrySettings,
-    global_rate_limiter: AsyncLimiter,
+    global_rate_limiter: AsyncLimiter | None,
     bucket_rate_limiter: AsyncLimiter | None,
     global_retry_counter: RetryCounter,
     status: ProgressTracker | None = None,
@@ -687,19 +709,6 @@ async def _execute_with_retry_inner(
 
     start_time = time.time()
     last_exception: Exception | None = None
-
-    # Create HTTP-aware is_retriable function based on settings
-    def is_retriable_for_task(exception: Exception) -> bool:
-        # First check the main is_retriable function
-        if not retry_settings.is_retriable(exception):
-            return False
-
-        status_code = extract_http_status_code(exception)
-        if status_code:
-            return is_http_status_retriable(status_code, retry_settings.http_retry_map)
-
-        # Not an HTTP error, use the main is_retriable result
-        return True
 
     for attempt in range(retry_settings.max_task_retries + 1):
         # Handle backoff before acquiring rate limiters (semaphores remain held)
@@ -727,7 +736,7 @@ async def _execute_with_retry_inner(
                     f"Attempt {attempt}/{retry_settings.max_task_retries} "
                     f"(waiting {backoff_time:.1f}s): {type(last_exception).__name__}: {last_exception}"
                 )
-                await status.update(task_id, error_msg=retry_info)
+                await status.update(task_id, TaskState.RETRY_WAIT, error_msg=retry_info)
 
                 # Use debug level for Rich trackers, warning/info for console trackers
                 use_debug_level = status.suppress_logs
@@ -758,6 +767,10 @@ async def _execute_with_retry_inner(
             # Sleep during backoff while holding semaphore slots
             await asyncio.sleep(backoff_time)
 
+            # Set state back to running before next attempt
+            if status and task_id:
+                await status.update(task_id, TaskState.RUNNING)
+
         try:
             # Execute task to check for potential rate limit bypass
             raw_result = await executor()
@@ -777,7 +790,21 @@ async def _execute_with_retry_inner(
                 result_value = cast(T, raw_result)
 
             # Apply rate limiting for non-bypassed results
-            async with global_rate_limiter:
+            if global_rate_limiter is not None:
+                async with global_rate_limiter:
+                    if bucket_rate_limiter is not None:
+                        async with bucket_rate_limiter:
+                            # Mark task as started now that we've passed rate limiting
+                            if status and task_id is not None and attempt == 0:
+                                await status.start(task_id)
+                            return result_value
+                    else:
+                        # Mark task as started now that we've passed rate limiting
+                        if status and task_id is not None and attempt == 0:
+                            await status.start(task_id)
+                        return result_value
+            else:
+                # No global rate limiter, check bucket rate limiter
                 if bucket_rate_limiter is not None:
                     async with bucket_rate_limiter:
                         # Mark task as started now that we've passed rate limiting
@@ -785,7 +812,7 @@ async def _execute_with_retry_inner(
                             await status.start(task_id)
                         return result_value
                 else:
-                    # Mark task as started now that we've passed rate limiting
+                    # No rate limiting at all
                     if status and task_id is not None and attempt == 0:
                         await status.start(task_id)
                     return result_value
@@ -807,8 +834,8 @@ async def _execute_with_retry_inner(
                     )
                     raise RetryExhaustedException(e, retry_settings.max_task_retries, total_time)
 
-            # Check if this is a retriable exception using our HTTP-aware function
-            if is_retriable_for_task(e):
+            # Check if this is a retriable exception using the centralized logic
+            if retry_settings.should_retry(e):
                 # Continue to next retry attempt (semaphores remain held for backoff)
                 continue
             else:
