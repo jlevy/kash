@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 T = TypeVar("T")
-TaskID = TypeVar("TaskID")
+TaskId = TypeVar("TaskId")
 
 # Generic task spec types for labeler functions
 TaskSpec = TypeVar("TaskSpec")
@@ -16,6 +16,7 @@ Labeler: TypeAlias = Callable[[int, TaskSpec], str]
 EMOJI_SUCCESS = "[✔︎]"
 EMOJI_FAILURE = "[✘]"
 EMOJI_SKIP = "[-]"
+EMOJI_WAITING = " ⧖ "
 EMOJI_WARN = "∆"
 EMOJI_RETRY = "⟲"
 
@@ -24,8 +25,8 @@ class TaskState(Enum):
     """Task execution states."""
 
     QUEUED = "queued"
+    WAITING = "waiting"
     RUNNING = "running"
-    RETRY_WAIT = "retry_wait"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -92,7 +93,7 @@ class TaskSummary:
                 return "Tasks had errors: " + ", ".join(parts)
 
 
-class ProgressTracker(Protocol[TaskID]):
+class ProgressTracker(Protocol[TaskId]):
     """
     Protocol for progress tracking that gather_limited can depend on.
 
@@ -108,17 +109,17 @@ class ProgressTracker(Protocol[TaskID]):
         """
         ...
 
-    async def add(self, label: str, steps_total: int = 1) -> TaskID:
+    async def add(self, label: str, steps_total: int = 1) -> TaskId:
         """Add a new task to track."""
         ...
 
-    async def start(self, task_id: TaskID) -> None:
+    async def start(self, task_id: TaskId) -> None:
         """Mark task as started (after rate limiting/queuing)."""
         ...
 
     async def update(
         self,
-        task_id: TaskID,
+        task_id: TaskId,
         state: TaskState | None = None,
         *,
         steps_done: int | None = None,
@@ -139,7 +140,7 @@ class ProgressTracker(Protocol[TaskID]):
 
     async def finish(
         self,
-        task_id: TaskID,
+        task_id: TaskId,
         state: TaskState,
         message: str = "",
     ) -> None:
@@ -154,10 +155,10 @@ class ProgressTracker(Protocol[TaskID]):
         ...
 
 
-class AsyncProgressContext(Protocol[TaskID]):
+class AsyncProgressContext(Protocol[TaskId]):
     """Protocol for async context manager progress trackers."""
 
-    async def __aenter__(self) -> ProgressTracker[TaskID]:
+    async def __aenter__(self) -> ProgressTracker[TaskId]:
         """Start progress tracking."""
         ...
 

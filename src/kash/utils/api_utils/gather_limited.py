@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import logging
 import threading
+import time
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeAlias, TypeVar, cast, overload
@@ -679,6 +680,7 @@ async def _execute_with_retry(
                     task_id,
                 )
         else:
+            # No semaphores at all, go straight to running
             return await _execute_with_retry_inner(
                 executor,
                 retry_settings,
@@ -705,7 +707,8 @@ async def _execute_with_retry_inner(
     This function assumes semaphores are already held by the caller and only
     manages rate limiters for each execution attempt.
     """
-    import time
+    if status and task_id:
+        await status.start(task_id)
 
     start_time = time.time()
     last_exception: Exception | None = None
@@ -736,7 +739,7 @@ async def _execute_with_retry_inner(
                     f"Attempt {attempt}/{retry_settings.max_task_retries} "
                     f"(waiting {backoff_time:.1f}s): {type(last_exception).__name__}: {last_exception}"
                 )
-                await status.update(task_id, TaskState.RETRY_WAIT, error_msg=retry_info)
+                await status.update(task_id, TaskState.WAITING, error_msg=retry_info)
 
                 # Use debug level for Rich trackers, warning/info for console trackers
                 use_debug_level = status.suppress_logs
@@ -778,9 +781,7 @@ async def _execute_with_retry_inner(
             # Check if result indicates limits should be disabled (e.g., cache hit)
             if isinstance(raw_result, TaskResult):
                 if raw_result.disable_limits:
-                    # Bypass rate limiting, mark as started, and return immediately
-                    if status and task_id is not None and attempt == 0:
-                        await status.start(task_id)
+                    # Bypass rate limiting and return immediately
                     return cast(T, raw_result.value)
                 else:
                     # Wrapped but limits enabled: extract value for rate limiting
@@ -794,27 +795,16 @@ async def _execute_with_retry_inner(
                 async with global_rate_limiter:
                     if bucket_rate_limiter is not None:
                         async with bucket_rate_limiter:
-                            # Mark task as started now that we've passed rate limiting
-                            if status and task_id is not None and attempt == 0:
-                                await status.start(task_id)
                             return result_value
                     else:
-                        # Mark task as started now that we've passed rate limiting
-                        if status and task_id is not None and attempt == 0:
-                            await status.start(task_id)
                         return result_value
             else:
                 # No global rate limiter, check bucket rate limiter
                 if bucket_rate_limiter is not None:
                     async with bucket_rate_limiter:
-                        # Mark task as started now that we've passed rate limiting
-                        if status and task_id is not None and attempt == 0:
-                            await status.start(task_id)
                         return result_value
                 else:
                     # No rate limiting at all
-                    if status and task_id is not None and attempt == 0:
-                        await status.start(task_id)
                     return result_value
 
         except Exception as e:

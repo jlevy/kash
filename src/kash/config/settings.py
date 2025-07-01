@@ -210,6 +210,12 @@ class Settings:
     use_nerd_icons: bool
     """If true, use Nerd Icons in file listings. Requires a compatible font."""
 
+    limit_rps: float
+    """Default rate limit for API calls."""
+
+    limit_concurrency: int
+    """Default concurrency limit for API calls."""
+
 
 ws_root_dir = Path("~/Kash").expanduser()
 
@@ -276,6 +282,8 @@ def _read_settings():
         mcp_server_port=DEFAULT_MCP_SERVER_PORT,
         use_kerm_codes=False,
         use_nerd_icons=True,
+        limit_rps=5.0,
+        limit_concurrency=10,
     )
 
 

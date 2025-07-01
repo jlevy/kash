@@ -22,6 +22,7 @@ from kash.utils.api_utils.progress_protocol import (
     EMOJI_RETRY,
     EMOJI_SKIP,
     EMOJI_SUCCESS,
+    EMOJI_WAITING,
     TaskInfo,
     TaskState,
     TaskSummary,
@@ -30,7 +31,7 @@ from kash.utils.api_utils.progress_protocol import (
 T = TypeVar("T")
 
 # Spinner configuration
-SPINNER_NAME = "dots12"
+SPINNER_NAME = "dots8Bit"
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,7 @@ class StatusStyles:
     failure_symbol: str = EMOJI_FAILURE
     skip_symbol: str = EMOJI_SKIP
     retry_symbol: str = EMOJI_RETRY
+    wait_symbol: str = EMOJI_WAITING
 
     # Status styles
     retry_style: str = "red"
@@ -52,6 +54,7 @@ class StatusStyles:
     failure_style: str = "red"
     skip_style: str = "yellow"
     running_style: str = "blue"
+    waiting_style: str = "yellow"
     error_style: str = "dim red"
 
     # Progress bar styles
@@ -114,12 +117,13 @@ class SpinnerStatusColumn(ProgressColumn):
         self.spinner: Spinner = Spinner(spinner_name)
         self.styles = styles
 
-        # Calculate fixed width for consistent column sizing
+        # Calculate fixed width for consistent column sizing, adding 2 for padding (space on each side)
         self.column_width: int = max(
-            _get_spinner_width(spinner_name),
+            _get_spinner_width(spinner_name) + 2,
             len(styles.success_symbol),
             len(styles.failure_symbol),
             len(styles.skip_symbol),
+            len(styles.wait_symbol),
         )
 
     @override
@@ -136,15 +140,15 @@ class SpinnerStatusColumn(ProgressColumn):
             text = Text(self.styles.failure_symbol, style=self.styles.failure_style)
         elif task_info.state == TaskState.SKIPPED:
             text = Text(self.styles.skip_symbol, style=self.styles.skip_style)
-        elif task_info.state == TaskState.RETRY_WAIT:
-            text = Text(self.styles.retry_symbol, style=self.styles.retry_style)
+        elif task_info.state == TaskState.WAITING:
+            text = Text(self.styles.wait_symbol, style=self.styles.waiting_style)
         elif task_info.state == TaskState.RUNNING:
-            # Running: show spinner
+            # Running: show spinner with padding
             spinner_result = self.spinner.render(task.get_time())
             if isinstance(spinner_result, Text):
-                text = spinner_result
+                text = Text(" ") + spinner_result + Text(" ")
             else:
-                text = Text(str(spinner_result))
+                text = Text(" " + str(spinner_result) + " ")
         else:
             # Should not happen, but return empty space
             return Text(" " * self.column_width)
@@ -657,16 +661,14 @@ def test_task_status_retry_states():
             await status.start(retry_task)
 
             # Simulate retry cycle
-            await status.update(
-                retry_task, error_msg="Connection timeout", state=TaskState.RETRY_WAIT
-            )
+            await status.update(retry_task, error_msg="Connection timeout", state=TaskState.WAITING)
             await asyncio.sleep(1.0)  # Simulate backoff
 
             await status.update(retry_task, state=TaskState.RUNNING)
             await asyncio.sleep(0.5)  # Simulate execution
 
             await status.update(
-                retry_task, error_msg="Rate limit exceeded", state=TaskState.RETRY_WAIT
+                retry_task, error_msg="Rate limit exceeded", state=TaskState.WAITING
             )
             await asyncio.sleep(1.0)  # Simulate longer backoff
 
