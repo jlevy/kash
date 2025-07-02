@@ -255,7 +255,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
 You can use kash from your MCP client (such as Anthropic Desktop or Cursor).
 
-You do this by running the the `kash_mcp` binary to make kash actions available as MCP
+You do this by running the the `kash-mcp` binary to make kash actions available as MCP
 tools.
 
 For Claude Desktop, my config looks like this:
@@ -264,7 +264,7 @@ For Claude Desktop, my config looks like this:
 {
   "mcpServers": {
     "kash": {
-      "command": "/Users/levy/.local/bin/kash_mcp",
+      "command": "/Users/levy/.local/bin/kash-mcp",
       "args": ["--proxy"]
     }
   }

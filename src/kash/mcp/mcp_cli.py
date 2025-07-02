@@ -114,10 +114,10 @@ def main():
     args = build_parser().parse_args()
 
     if args.list_tools or args.tool_help:
-        kash_setup(rich_logging=True, level=LogLevel.warning)
+        kash_setup(rich_logging=True, log_level=LogLevel.warning)
         show_tool_info(args.tool_help)
     else:
-        kash_setup(rich_logging=False, level=LogLevel.info)
+        kash_setup(rich_logging=False, log_level=LogLevel.info)
         run_server(args)
 
 
