@@ -145,7 +145,7 @@ h2 + h3 {
 }
 
 h3 {
-  font-size: 1.18rem;
+  font-size: 1.15rem;
   margin-top: 1.4rem;
   margin-bottom: 0.7rem;
 }
@@ -660,6 +660,12 @@ sup {
     width: auto;
     min-width: 100%;
     max-width: none;
+  }
+  
+  /* Smaller table text on mobile. */
+  table code,
+  table pre {
+    font-size: var(--font-size-mono-small);
   }
   
   ul, ol {
