@@ -15,6 +15,7 @@ class LLM(LLMName, Enum):
     # https://platform.openai.com/docs/models
     o4_mini = LLMName("o4-mini")
     o3 = LLMName("o3")
+    o3_pro = LLMName("o3-pro")
     o3_mini = LLMName("o3-mini")
     o1 = LLMName("o1")
     o1_mini = LLMName("o1-mini")
@@ -35,13 +36,9 @@ class LLM(LLMName, Enum):
     claude_3_5_haiku = LLMName("claude-3-5-haiku-latest")
 
     # https://ai.google.dev/gemini-api/docs/models
-    gemini_2_5_pro_preview_06_05 = LLMName("gemini/gemini-2.5-pro-preview-06-05")
-    gemini_2_5_pro_preview_05_06 = LLMName("gemini/gemini-2.5-pro-preview-05-06")
-    gemini_2_5_pro_preview_03_25 = LLMName("gemini/gemini-2.5-pro-preview-03-25")
-    gemini_2_5_flash_preview = LLMName("gemini-2.5-flash-preview-05-20")
-    gemini_2_0_flash = LLMName("gemini/gemini-2_0-flash")
-    gemini_2_0_flash_lite = LLMName("gemini/gemini-2.0-flash-lite")
-    gemini_2_0_pro_exp_02_05 = LLMName("gemini/gemini-2.0-pro-exp-02-05")
+    gemini_2_5_pro = LLMName("gemini/gemini-2.5-pro")
+    gemini_2_5_flash = LLMName("gemini/gemini-2.5-flash")
+    gemini_2_5_flash_lite = LLMName("gemini-2.5-flash-lite-preview-06-17")
 
     # https://docs.x.ai/docs/models
     xai_grok_3 = LLMName("xai/grok-3")
@@ -56,6 +53,7 @@ class LLM(LLMName, Enum):
     deepseek_reasoner = LLMName("deepseek/deepseek-reasoner")
 
     # https://console.groq.com/docs/models
+    groq_gemma2_9b_it = LLMName("groq/gemma2-9b-it")
     groq_llama_3_1_8b_instant = LLMName("groq/llama-3.1-8b-instant")
     groq_llama_3_3_70b_versatile = LLMName("groq/llama-3.3-70b-versatile")
     groq_deepseek_r1_distill_llama_70b = LLMName("groq/deepseek-r1-distill-llama-70b")

@@ -209,7 +209,7 @@ A list of parameter declarations, possibly with default values.
 DEFAULT_CAREFUL_LLM = LLM.o3
 DEFAULT_STRUCTURED_LLM = LLM.gpt_4o
 DEFAULT_STANDARD_LLM = LLM.claude_4_sonnet
-DEFAULT_FAST_LLM = LLM.o1_mini
+DEFAULT_FAST_LLM = LLM.gpt_4o
 
 
 # Parameters set globally such as in the workspace.
