@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from typing_extensions import override
+
 from kash.config.logger import get_logger
 from kash.embeddings.embeddings import Embeddings
 from kash.embeddings.text_similarity import rank_by_relatedness
@@ -19,6 +21,7 @@ class DocKey:
     doc_type: HelpDocType
     index: int
 
+    @override
     def __str__(self) -> str:
         return f"{self.doc_type.value}:{self.index}"
 

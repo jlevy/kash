@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from funlog import log_calls
 
@@ -24,12 +24,9 @@ def cosine_relatedness(x: ArrayLike, y: ArrayLike) -> float:
 def embed_query(model: EmbeddingModel, query: str) -> EmbeddingResponse:
     import litellm
     from litellm import embedding
-    from litellm.types.utils import EmbeddingResponse
 
     try:
-        response: EmbeddingResponse = cast(
-            EmbeddingResponse, embedding(model=model.litellm_name, input=[query])
-        )
+        response = embedding(model=model.litellm_name, input=[query])
     except litellm.exceptions.APIError as e:
         log.info("API error embedding query: %s", e)
         raise ApiResultError(str(e))

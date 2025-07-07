@@ -68,5 +68,5 @@ preferred_llms: list[LLMName] = [
     LLM.claude_4_opus,
     LLM.claude_3_7_sonnet,
     LLM.claude_3_5_haiku,
-    LLM.gemini_2_5_pro_preview_05_06,
+    LLM.gemini_2_5_pro,
 ]

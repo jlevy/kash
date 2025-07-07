@@ -21,6 +21,7 @@ def normalize_formatting(
     format: Format | None,
     support_ansi: bool = True,
     cleanups: bool = True,
+    smartquotes: bool = True,
 ) -> str:
     """
     Normalize formatting. Currently only normalizes Markdown and leaves plaintext
@@ -35,6 +36,7 @@ def normalize_formatting(
             text,
             line_wrapper=line_wrap_by_sentence(len_fn=len_fn, is_markdown=True),
             cleanups=cleanups,
+            smartquotes=smartquotes,
         )
     elif format == Format.plaintext:
         # Consider plaintext a raw format and don't normalize.

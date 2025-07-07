@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeAlias, cast
+from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic.dataclasses import dataclass
 from strif import abbrev_list
@@ -65,7 +65,6 @@ class Embeddings:
     @classmethod
     def embed(cls, keyvals: list[KeyVal], model=DEFAULT_EMBEDDING_MODEL) -> Embeddings:
         from litellm import embedding
-        from litellm.types.utils import EmbeddingResponse
 
         init_litellm()
 
@@ -82,9 +81,8 @@ class Embeddings:
             keys = [kv[0] for kv in batch]
             texts = [kv[1] for kv in batch]
 
-            response: EmbeddingResponse = cast(
-                EmbeddingResponse, embedding(model=model.litellm_name, input=texts)
-            )
+            response = embedding(model=model.litellm_name, input=texts)
+
             if not response.data:
                 raise ValueError("No embedding response data")
 
