@@ -8,15 +8,15 @@ exploratory, and flexible using Python and current AI tools.
 
 The philosophy behind kash is similar to Unix shell tools: simple commands that can be
 combined in flexible and powerful ways.
-It operates on "items" such as URLs, files, or Markdown notes within a workspace
+It operates on “items” such as URLs, files, or Markdown notes within a workspace
 directory.
 
 You can use Kash as an **interactive, AI-native command-line** shell for practical
-knowledge tasks. It's also **a Python library** that lets you convert a simple Python
+knowledge tasks. It’s also **a Python library** that lets you convert a simple Python
 function into a command and an MCP tool, so it integrates with other tools like
 Anthropic Desktop or Cursor.
 
-It's new and still has some rough edges, but it's now working well enough it is feeling
+It’s new and still has some rough edges, but it’s now working well enough it is feeling
 quite powerful. It now serves as a replacement for my usual shell (previously bash or
 zsh). I use it routinely to remix, combine, and interactively explore and then gradually
 automate complex tasks by composing AI tools, APIs, and libraries.
@@ -48,19 +48,20 @@ quick to install via uv.
   context of a **workspace**. A workspace is just a directory of files that have a few
   conventions to make it easier to maintain context and perform actions.
   A bit like how Git repos work, it has a `.kash/` directory that holds metadata and
-  cached content. The rest can be anything, but is typically directories of resources
-  (like .docx or .pdf or links to web pages) or content, typically Markdown files with
-  YAML frontmatter. All text files use
-  [frontmatter-format](https://github.com/jlevy/frontmatter-format) so have easy-to-read
-  YAML metadata that includes not just title or description, but also the names of the
-  actions that created it.
+  cached content. The rest can be anything, but is typically directories of content and
+  resources (often Markdown or HTML but also .docx or .pdf or links to web pages).
+  All text files use [frontmatter-format](https://github.com/jlevy/frontmatter-format)
+  so have YAML metadata that includes not just title or description, but also how it was
+  created. All Markdown files are auto-formatted with
+  [flowmark](https://github.com/jlevy/flowmark), which makes documents much easier to
+  diff and version control (and prettier to read and edit).
 
 - **Compositionality:** An action is composable with other actions simply as a Python
   function, so complex operations (for example, transcribing and annotating a video and
   publishing it on a website) actions can be built from simpler actions (say downloading
   and caching a YouTube video, identifying the speakers in a transcript, formatting it
-  as pretty HTML, etc.). The goal is to reduce the "interstitial complexity" of
-  combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
+  as pretty HTML, etc.). The goal is to reduce the “interstitial complexity” of
+  combining tools, so it’s easy for you (or an LLM!) to combine tools in flexible and
   powerful ways.
 
 - **Command-line usage:** In addition to using the function in other libraries and
@@ -87,16 +88,16 @@ transcripts and notes, write blog posts, extract or visualize concepts, check ci
 convert notes to PDFs or beautifully formatted HTML, or perform numerous other
 content-related tasks possible by orchestrating AI tools in the right ways.
 
-As I've been building kash over the past couple months, I found I've found it's not only
+As I’ve been building kash over the past couple months, I found I’ve found it’s not only
 faster to do complex things, but that it has also become replacement for my usual shell.
-It's the power-tool I want to use alongside Cursor and ChatGPT/Claude.
+It’s the power-tool I want to use alongside Cursor and ChatGPT/Claude.
 We all know and trust shells like bash, zsh, and fish, but now I find this is much more
 powerful for everyday usage.
 It has little niceties, like you can just type `files` for a better listing of files or
 `show` and it will show you a file the right way, no matter what kind of file it is.
-You can also type something like "? find md files" and press tab and it will list you I
+You can also type something like “? find md files” and press tab and it will list you I
 find it is much more powerful for local usage than than bash/zsh/fish.
-If you're a command-line nerd, you might like it a lot.
+If you’re a command-line nerd, you might like it a lot.
 
 But my hope is that with these enhancements, the shell is also far more friendly and
 usable by anyone reasonably technical, and does not feel so esoteric as a typical Unix
@@ -105,16 +106,17 @@ shell.
 Finally, one more thing: Kash is also my way of experimenting with something else new: a
 **terminal GUI support** that adds GUI features terminal like clickable text, buttons,
 tooltips, and popovers in the terminal.
-I've separately built a new desktop terminal app, Kerm, which adds support for a simple
-"Kerm codes" protocol for such visual components, encoded as OSC codes then rendered in
+I’ve separately built a new desktop terminal app, Kerm, which adds support for a simple
+“Kerm codes” protocol for such visual components, encoded as OSC codes then rendered in
 the terminal. Because Kash supports these codes, as this develops you will get the
 visuals of a web app layered on the flexibility of a text-based terminal.
 
 ### Is Kash Mature?
 
-No. :) It's the result of a couple months of coding and experimentation, and it's very
-much in progress. Please help me make it better by sharing your ideas and feedback!
-It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
+It’s the result of a couple months of coding and experimentation, and it’s still in
+progress and has rough edges.
+Please help me make it better by sharing your ideas and feedback!
+It’s easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
 My contact info is at [github.com/jlevy](https://github.com/jlevy).
 
 [**Please follow or DM me**](https://x.com/ojoshe) for future updates or if you have

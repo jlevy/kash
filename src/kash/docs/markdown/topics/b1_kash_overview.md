@@ -8,7 +8,7 @@ extensibility of a modern command line interface.
 
 The philosophy behind kash is similar to Unix shell tools: simple commands that can be
 combined flexibly in powerful ways.
-It operates on "items" such as URLs, files, or Markdown notes within a workspace
+It operates on “items” such as URLs, files, or Markdown notes within a workspace
 directory.
 
 This command-line is also AI enabled.
@@ -29,7 +29,7 @@ intuitive than old Unix commands.
 ### MCP Support
 
 If the idea of having lots of commands runnable by an LLM sounds to you a little like
-MCP, you're right. Any action in kash can also be an MCP tool!
+MCP, you’re right. Any action in kash can also be an MCP tool!
 
 You can connect Claude Desktop or Cursor or other MCP clients to kash and use any kash
 action as a tool. However, unlike the complexity of writing a new MCP server, the idea
@@ -41,22 +41,22 @@ Anyone, including kash itself, can write new actions.
 You write a simple Python function, add a decorator, and it becomes an action you can
 use in your shell.
 
-Finally, getting really useful things to work still takes effort, so I've also added a
+Finally, getting really useful things to work still takes effort, so I’ve also added a
 number of little libraries to help with this.
 
 ### Supporting Complex Tasks
 
-Because it's really just a set of Python libraries, kash is more capable than a typical
+Because it’s really just a set of Python libraries, kash is more capable than a typical
 shell. It is starting to become a sort of AI-friendly scripting framework as well.
 
 Inputs and outputs of commands are stored as files, so you can easily chain commands
 together and inspect intermediate results.
 
 When possible, actions are nondestructive and idempotent—that is, they will either
-create new files or simply skip an operation if it's already complete.
+create new files or simply skip an operation if it’s already complete.
 
 So it can work a bit like a Makefile: suppose you run a command like `transcribe` on a
-video. If you've already run that command on the same YouTube URL, kash knows it and can
+video. If you’ve already run that command on the same YouTube URL, kash knows it and can
 recognize the downloaded video and transcribed text is already present in your current
 workspace.
 
@@ -95,7 +95,7 @@ original document), the sources are listed in a `derived_from` array within the
 This means actions can find citations or other data on the provenance of a given piece
 of information.
 
-This might sound a little complex, but it's quite simple in practice.
+This might sound a little complex, but it’s quite simple in practice.
 All the metadata is in a standard format,
 [Frontmatter Format](https://github.com/jlevy/frontmatter-format), and the information
 is compatible with other apps and pretty self explanatory.

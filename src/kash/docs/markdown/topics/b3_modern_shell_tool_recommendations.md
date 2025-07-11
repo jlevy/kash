@@ -2,7 +2,7 @@
 
 Many of us (myself included) have long believed in sticking with tried-and-true bash and
 the classic command-line tools.
-While it's still wise to know these tools, we've in recent years seen many new tools
+While it’s still wise to know these tools, we’ve in recent years seen many new tools
 emerge that are more powerful, modern, and cross-platform.
 
 When using kash it makes sense to use these.

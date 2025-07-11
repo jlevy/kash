@@ -17,15 +17,15 @@ exploratory, and flexible using Python and current AI tools.
 
 The philosophy behind kash is similar to Unix shell tools: simple commands that can be
 combined in flexible and powerful ways.
-It operates on "items" such as URLs, files, or Markdown notes within a workspace
+It operates on “items” such as URLs, files, or Markdown notes within a workspace
 directory.
 
 You can use Kash as an **interactive, AI-native command-line** shell for practical
-knowledge tasks. It's also **a Python library** that lets you convert a simple Python
+knowledge tasks. It’s also **a Python library** that lets you convert a simple Python
 function into a command and an MCP tool, so it integrates with other tools like
 Anthropic Desktop or Cursor.
 
-It's new and still has some rough edges, but it's now working well enough it is feeling
+It’s new and still has some rough edges, but it’s now working well enough it is feeling
 quite powerful. It now serves as a replacement for my usual shell (previously bash or
 zsh). I use it routinely to remix, combine, and interactively explore and then gradually
 automate complex tasks by composing AI tools, APIs, and libraries.
@@ -57,19 +57,20 @@ quick to install via uv.
   context of a **workspace**. A workspace is just a directory of files that have a few
   conventions to make it easier to maintain context and perform actions.
   A bit like how Git repos work, it has a `.kash/` directory that holds metadata and
-  cached content. The rest can be anything, but is typically directories of resources
-  (like .docx or .pdf or links to web pages) or content, typically Markdown files with
-  YAML frontmatter. All text files use
-  [frontmatter-format](https://github.com/jlevy/frontmatter-format) so have easy-to-read
-  YAML metadata that includes not just title or description, but also the names of the
-  actions that created it.
+  cached content. The rest can be anything, but is typically directories of content and
+  resources (often Markdown or HTML but also .docx or .pdf or links to web pages).
+  All text files use [frontmatter-format](https://github.com/jlevy/frontmatter-format)
+  so have YAML metadata that includes not just title or description, but also how it was
+  created. All Markdown files are auto-formatted with
+  [flowmark](https://github.com/jlevy/flowmark), which makes documents much easier to
+  diff and version control (and prettier to read and edit).
 
 - **Compositionality:** An action is composable with other actions simply as a Python
   function, so complex operations (for example, transcribing and annotating a video and
   publishing it on a website) actions can be built from simpler actions (say downloading
   and caching a YouTube video, identifying the speakers in a transcript, formatting it
-  as pretty HTML, etc.). The goal is to reduce the "interstitial complexity" of
-  combining tools, so it's easy for you (or an LLM!) to combine tools in flexible and
+  as pretty HTML, etc.). The goal is to reduce the “interstitial complexity” of
+  combining tools, so it’s easy for you (or an LLM!) to combine tools in flexible and
   powerful ways.
 
 - **Command-line usage:** In addition to using the function in other libraries and
@@ -96,16 +97,16 @@ transcripts and notes, write blog posts, extract or visualize concepts, check ci
 convert notes to PDFs or beautifully formatted HTML, or perform numerous other
 content-related tasks possible by orchestrating AI tools in the right ways.
 
-As I've been building kash over the past couple months, I found I've found it's not only
+As I’ve been building kash over the past couple months, I found I’ve found it’s not only
 faster to do complex things, but that it has also become replacement for my usual shell.
-It's the power-tool I want to use alongside Cursor and ChatGPT/Claude.
+It’s the power-tool I want to use alongside Cursor and ChatGPT/Claude.
 We all know and trust shells like bash, zsh, and fish, but now I find this is much more
 powerful for everyday usage.
 It has little niceties, like you can just type `files` for a better listing of files or
 `show` and it will show you a file the right way, no matter what kind of file it is.
-You can also type something like "? find md files" and press tab and it will list you I
+You can also type something like “? find md files” and press tab and it will list you I
 find it is much more powerful for local usage than than bash/zsh/fish.
-If you're a command-line nerd, you might like it a lot.
+If you’re a command-line nerd, you might like it a lot.
 
 But my hope is that with these enhancements, the shell is also far more friendly and
 usable by anyone reasonably technical, and does not feel so esoteric as a typical Unix
@@ -114,16 +115,17 @@ shell.
 Finally, one more thing: Kash is also my way of experimenting with something else new: a
 **terminal GUI support** that adds GUI features terminal like clickable text, buttons,
 tooltips, and popovers in the terminal.
-I've separately built a new desktop terminal app, Kerm, which adds support for a simple
-"Kerm codes" protocol for such visual components, encoded as OSC codes then rendered in
+I’ve separately built a new desktop terminal app, Kerm, which adds support for a simple
+“Kerm codes” protocol for such visual components, encoded as OSC codes then rendered in
 the terminal. Because Kash supports these codes, as this develops you will get the
 visuals of a web app layered on the flexibility of a text-based terminal.
 
 ### Is Kash Mature?
 
-No. :) It's the result of a couple months of coding and experimentation, and it's very
-much in progress. Please help me make it better by sharing your ideas and feedback!
-It's easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
+It’s the result of a couple months of coding and experimentation, and it’s still in
+progress and has rough edges.
+Please help me make it better by sharing your ideas and feedback!
+It’s easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
 My contact info is at [github.com/jlevy](https://github.com/jlevy).
 
 [**Please follow or DM me**](https://x.com/ojoshe) for future updates or if you have
@@ -135,7 +137,7 @@ ideas, feedback, or use cases for Kash!
 
 Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with a bunch
 of enhanced commands and customizations.
-If you've used a bash or Python shell before, it should be very intuitive.
+If you’ve used a bash or Python shell before, it should be very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
 You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
@@ -144,7 +146,7 @@ and enhanced tab completion.
 The shell is an easy way to use Kash actions, simply calling them like other shell
 commands from the command line.
 
-But remember that's just one way to use actions; you can also use them directly in
+But remember that’s just one way to use actions; you can also use them directly in
 Python or from an MCP client.
 
 ### Current Kash Packages
@@ -154,7 +156,7 @@ However, some use cases require additional libraries, like video downloading too
 handling, etc.
 
 To keep kash dependencies more manageable, these additional utilities and actions are
-packaged additional "kits".
+packaged additional “kits”.
 
 The examples below use video transcription from YouTube as an example.
 To start with more full examples, I suggest starting with the `kash-media` kit.
@@ -169,7 +171,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    Kash is easiest to use via [**uv**](https://docs.astral.sh/uv/), the new package
    manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
    etc. Installing `uv` also ensures you get a compatible version of Python.
-   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+   See [uv’s docs](https://docs.astral.sh/uv/getting-started/installation/) for other
    installation methods and platforms.
    Usually you just want to run:
    ```shell
@@ -178,7 +180,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
 2. **Install additional command-line tools:**
 
-   In addition to Python, it's highly recommended to install a few other dependencies to
+   In addition to Python, it’s highly recommended to install a few other dependencies to
    make more tools and commands work.
    For macOS, you can again use brew:
 
@@ -235,7 +237,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    ```
 
    These keys should go in the `.env` file in your current work directory or a parent or
-   your home directory (recommended if you'll be working in several directories, as with
+   your home directory (recommended if you’ll be working in several directories, as with
    a typical shell).
 
 5. **Run kash:**
@@ -275,14 +277,14 @@ If you add the `--proxy` arg, it will run an MCP stdio server but connect to the
 server you are running in the kash shell, by default at `localhost:4440`.
 
 Then if you run `start_mcp_server` from the shell, your client will connect to your
-shell, and you can actually use any "published" kash action as an MCP tool.
+shell, and you can actually use any “published” kash action as an MCP tool.
 
-Then you can for example ask your MCP client "can you transcribe this video?"
+Then you can for example ask your MCP client “can you transcribe this video?”
 and give it a URL, and it will be able to call the `transcribe` action as a tool.
 
 What is even better is that all the inputs and outputs are saved in the current kash
-workspace, just as if you'd been running these commands yourself in the shell.
-This way, you don't lose context or any work, and can seamlessly switch between an MCP
+workspace, just as if you’d been running these commands yourself in the shell.
+This way, you don’t lose context or any work, and can seamlessly switch between an MCP
 client like Cursor, the shell, and any other tools to edit the inputs or outputs of
 actions in your workspace directory.
 
@@ -307,11 +309,11 @@ Type `help` for the full documentation.
 The simplest way to illustrate how to use kash is by example.
 You can go through the commands below a few at a time, trying each one.
 
-This is a "real" example that uses ffmpeg and a few other libraries.
-So to get it to work you must install not just the main shell but the kash "media kit"
+This is a “real” example that uses ffmpeg and a few other libraries.
+So to get it to work you must install not just the main shell but the kash “media kit”
 with extra dependencies.
 This is discussed in [the installation instructions](#installation-steps).
-If you don't have these already installed, you can add these tools:
+If you don’t have these already installed, you can add these tools:
 
 Then run `kash` to start.
 
@@ -462,8 +464,8 @@ All of these steps are just actions.
 
 ### Creating a New Workspace
 
-Although you don't always need one, a *workspace* is very helpful for any real work in
-kash. It's just a directory of files, plus a `.kash/` directory with various logs and
+Although you don’t always need one, a *workspace* is very helpful for any real work in
+kash. It’s just a directory of files, plus a `.kash/` directory with various logs and
 metadata.
 
 Note the `.kash/cache` directory contains all the downloaded videos and media you
@@ -484,7 +486,7 @@ By default, when you are not using the shell inside a workspace directory, or wh
 run kash the first time, it uses the default *global workspace*.
 
 Once you create a workspace, you can `cd` into that workspace and that will become the
-current workspace. (If you're familiar with how the `git` command-line works in
+current workspace. (If you’re familiar with how the `git` command-line works in
 conjunction with the `.git/` directory, this behavior is very similar.)
 
 To start a new workspace, run a command like
@@ -522,7 +524,7 @@ A few of the most important commands for managing files and work are these:
 
 - `workspace` shows or selects or creates a new workspace.
   Initially you work in the default global workspace (typically at `~/Kash/workspace`)
-  but for more real work you'll want to create a workspace, which is a directory to hold
+  but for more real work you’ll want to create a workspace, which is a directory to hold
   the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will
@@ -536,7 +538,7 @@ A few of the most important commands for managing files and work are these:
 
 - `logs` to see full logs (typically more detailed than what you see in the console).
 
-- `history` to see recent commands you've run.
+- `history` to see recent commands you’ve run.
 
 - `import_item` to add a resource such as a URL or a file to your local workspace.
 
@@ -567,7 +569,7 @@ markdownify --show_source
 
 ### What is Included?
 
-I've tried to build independently useful pieces that fit together in a simple way:
+I’ve tried to build independently useful pieces that fit together in a simple way:
 
 - The kash **action framework**:
 
@@ -640,9 +642,9 @@ I've tried to build independently useful pieces that fit together in a simple wa
     OSC 8 links
 
   - Sadly, we may have mind-boggling AI tools, but Terminals are still incredibly
-    archaic and don't support these features well (more on this below) but I have a new
+    archaic and don’t support these features well (more on this below) but I have a new
     terminal, Kerm, that shows these as tooltips and makes every command clickable
-    (please contact me if you'd like an early developer preview, as I'd love feedback)
+    (please contact me if you’d like an early developer preview, as I’d love feedback)
 
 ## Tools Used by Kash
 
@@ -676,14 +678,14 @@ I tried half a dozen different popular terminals on Mac
 [Hyper](https://hyper.is/)). Unfortunately, none offer really good support right out of
 the box, but I encourage you to try
 
-✨**Would you be willing to help test something new?** If you've made it this far and are
+✨**Would you be willing to help test something new?** If you’ve made it this far and are
 still reading, I have a request.
-So alongside kash, I've begun to build a new terminal app, **Kerm**, that has the
+So alongside kash, I’ve begun to build a new terminal app, **Kerm**, that has the
 features we would want in a modern command line, such as clickable links and commands,
 tooltips, and image support.
 Kash also takes advantage of this support by embedding OSC 8 links.
 It is *so* much nicer to use.
-I'd like feedback so please [message me](https://twitter.com/ojoshe) if you'd like to
+I’d like feedback so please [message me](https://twitter.com/ojoshe) if you’d like to
 try it out an early dev version!
 
 ### Choosing an Editor
@@ -693,7 +695,7 @@ Kash respects the `EDITOR` environment variable if you use the `edit` command.
 
 ### Using on macOS
 
-Kash calls `open` to open some files, so in general, it's convenient to make sure your
+Kash calls `open` to open some files, so in general, it’s convenient to make sure your
 preferred editor is set up for `.yml` and `.md` files.
 
 For convenience, a reminder on how to do this:
@@ -701,7 +703,7 @@ For convenience, a reminder on how to do this:
 - In Finder, pick a `.md` or `.yml` file and hit Cmd-I (or right-click and select Get
   Info).
 
-- Select the editor, such as Cursor or VSCode or Obsidian, and click the "Change All…"
+- Select the editor, such as Cursor or VSCode or Obsidian, and click the “Change All…”
   button to have it apply to all files with that extension.
 
 - Repeat with each file type.
@@ -720,23 +722,23 @@ out of the box to edit workspace files in Markdown, HTML, and YAML in kash works
 Kash uses Markdown files with YAML frontmatter, which is fully compatible with
 [Obsidian](https://obsidian.md/). Some notes:
 
-- In Obsidian's preferences, under Editor, turn on "Strict line breaks".
+- In Obsidian’s preferences, under Editor, turn on “Strict line breaks”.
 
-- This makes the line breaks in kash's normalized Markdown output work well in Obsidian.
+- This makes the line breaks in kash’s normalized Markdown output work well in Obsidian.
 
 - Some kash files also contain HTML in Markdown.
-  This works fine, but note that only the current line's HTML is shown in Obsidian.
+  This works fine, but note that only the current line’s HTML is shown in Obsidian.
 
 - Install the [Front Matter Title
   plugin](https://github.com/snezhig/obsidian-front-matter-title):
 
-  - Go to settings, enable community plugins, search for "Front Matter Title" and
+  - Go to settings, enable community plugins, search for “Front Matter Title” and
     install.
 
-  - Under "Installed Plugins," adjust the settings to enable "Replace shown title in
-    file explorer," "Replace shown title in graph," etc.
+  - Under “Installed Plugins,” adjust the settings to enable “Replace shown title in
+    file explorer,” “Replace shown title in graph,” etc.
 
-  - You probably want to keep the "Replace titles in header of leaves" off so you can
+  - You probably want to keep the “Replace titles in header of leaves” off so you can
     still see original filenames if needed.
 
   - Now titles are easy to read for all kash notes.

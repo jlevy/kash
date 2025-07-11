@@ -17,7 +17,7 @@ Anyone, including kash itself, can write new actions easily.
 
 The philosophy behind kash is similar to Unix shell tools: simple commands that can be
 combined in flexible and powerful ways.
-It operates on "items" such as URLs, files, or Markdown notes within a workspace
+It operates on “items” such as URLs, files, or Markdown notes within a workspace
 directory.
 
 For more detailed information, you can run `help` to get background and a list of
@@ -42,7 +42,7 @@ questions.
 ### How does kash accept both shell and assistant requests to the LLM with natural language?
 
 By default, if a command is valid shell or Python, kash will treat it as a shell
-command, using xonsh's conventions.
+command, using xonsh’s conventions.
 
 Commands that begin with a `?` are automatically considered assistant requests.
 
@@ -136,9 +136,9 @@ fit kash commands and actions, reading metadata on items, etc.
 
 ### Can kash replace my regular shell?
 
-While kash doesn't aim to completely replace all uses of the shell—for example, that's
+While kash doesn’t aim to completely replace all uses of the shell—for example, that’s
 hard to do in general for remote use, and people have many constraints, customizations,
-and preferences—I've found it's highly useful for a lot of situations.
+and preferences—I’ve found it’s highly useful for a lot of situations.
 It is starting to replace bash or zsh for day-to-day local use on my laptop.
 
 Kash basically wraps xonsh, so you have almost all the functionality of xonsh and Python
@@ -154,18 +154,18 @@ Any command you type on the command-line in kash is a command.
 Some commands are basic, built-in commands.
 The idea is there are relatively few of these, and they do important primitive things
 like `select` (select or show selections), `show` (show an item), `files` (list
-files—kash's better version of `ls`), `workspace` (shows information about the current
+files—kash’s better version of `ls`), `workspace` (shows information about the current
 workspace), or `logs` (shows the detailed logs for the current workspace).
 In Python, built-in commands are defined by simple functions.
 
 But most commands are defined as an *action*. Actions are invoked just like any other
-command but have a standard structure: they are assumed to perform an "action" on a set
+command but have a standard structure: they are assumed to perform an “action” on a set
 of items (files of known types) and then save those items, all within an existing
 workspace. Actions are defined as a subclass of `Action` in Python.
 
 ### Does nvm (Node version manager) work in kash?
 
-It's hard to get nvm to work well in xonsh, but try [fnm](https://github.com/Schniz/fnm)
+It’s hard to get nvm to work well in xonsh, but try [fnm](https://github.com/Schniz/fnm)
 instead! It works just as well and kash supports `fnm` automatically so it auto-detects
 and uses fnm to switch or install Node versions for directories with Node projects (i.e.
 there is an `.nvmrc`, `.node-version`, or `package.json` file).

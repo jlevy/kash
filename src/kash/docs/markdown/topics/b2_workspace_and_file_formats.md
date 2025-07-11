@@ -2,7 +2,7 @@
 
 A kash workspace is simply a directory of files.
 The goal is for a workspace to be easy to use not just with kash but with other editors
-or tools, so it's possible to edit, share, or commit files to version control.
+or tools, so it’s possible to edit, share, or commit files to version control.
 It makes sense to devote a workspace to a single topic, project, or area of research.
 
 File formats and conventions:

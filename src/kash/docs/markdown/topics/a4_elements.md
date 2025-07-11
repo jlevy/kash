@@ -2,7 +2,7 @@
 
 ### What is Included?
 
-I've tried to build independently useful pieces that fit together in a simple way:
+I’ve tried to build independently useful pieces that fit together in a simple way:
 
 - The kash **action framework**:
 
@@ -75,9 +75,9 @@ I've tried to build independently useful pieces that fit together in a simple wa
     OSC 8 links
 
   - Sadly, we may have mind-boggling AI tools, but Terminals are still incredibly
-    archaic and don't support these features well (more on this below) but I have a new
+    archaic and don’t support these features well (more on this below) but I have a new
     terminal, Kerm, that shows these as tooltips and makes every command clickable
-    (please contact me if you'd like an early developer preview, as I'd love feedback)
+    (please contact me if you’d like an early developer preview, as I’d love feedback)
 
 ## Tools Used by Kash
 

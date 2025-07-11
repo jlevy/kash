@@ -6,7 +6,7 @@ You may simply ask a question and the kash assistant will help you.
 Press **space** (or type **?**), then write your question or request.
 Use `logs` for detailed logs.
 
-*I'd love to hear from you with issues, bugs, and ideas.
+*I’d love to hear from you with issues, bugs, and ideas.
 Discuss at github.com/jlevy/kash or contact me github.com/jlevy or x.com/ojoshe (DMs
 open).*
 

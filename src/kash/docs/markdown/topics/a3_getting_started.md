@@ -15,11 +15,11 @@ Type `help` for the full documentation.
 The simplest way to illustrate how to use kash is by example.
 You can go through the commands below a few at a time, trying each one.
 
-This is a "real" example that uses ffmpeg and a few other libraries.
-So to get it to work you must install not just the main shell but the kash "media kit"
+This is a “real” example that uses ffmpeg and a few other libraries.
+So to get it to work you must install not just the main shell but the kash “media kit”
 with extra dependencies.
 This is discussed in [the installation instructions](#installation-steps).
-If you don't have these already installed, you can add these tools:
+If you don’t have these already installed, you can add these tools:
 
 Then run `kash` to start.
 
@@ -170,8 +170,8 @@ All of these steps are just actions.
 
 ### Creating a New Workspace
 
-Although you don't always need one, a *workspace* is very helpful for any real work in
-kash. It's just a directory of files, plus a `.kash/` directory with various logs and
+Although you don’t always need one, a *workspace* is very helpful for any real work in
+kash. It’s just a directory of files, plus a `.kash/` directory with various logs and
 metadata.
 
 Note the `.kash/cache` directory contains all the downloaded videos and media you
@@ -192,7 +192,7 @@ By default, when you are not using the shell inside a workspace directory, or wh
 run kash the first time, it uses the default *global workspace*.
 
 Once you create a workspace, you can `cd` into that workspace and that will become the
-current workspace. (If you're familiar with how the `git` command-line works in
+current workspace. (If you’re familiar with how the `git` command-line works in
 conjunction with the `.git/` directory, this behavior is very similar.)
 
 To start a new workspace, run a command like
@@ -230,7 +230,7 @@ A few of the most important commands for managing files and work are these:
 
 - `workspace` shows or selects or creates a new workspace.
   Initially you work in the default global workspace (typically at `~/Kash/workspace`)
-  but for more real work you'll want to create a workspace, which is a directory to hold
+  but for more real work you’ll want to create a workspace, which is a directory to hold
   the files you are working with.
 
 - `select` shows or sets selections, which are the set of files the next command will
@@ -244,7 +244,7 @@ A few of the most important commands for managing files and work are these:
 
 - `logs` to see full logs (typically more detailed than what you see in the console).
 
-- `history` to see recent commands you've run.
+- `history` to see recent commands you’ve run.
 
 - `import_item` to add a resource such as a URL or a file to your local workspace.
 

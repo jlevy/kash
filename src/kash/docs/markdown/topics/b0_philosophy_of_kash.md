@@ -3,14 +3,14 @@
 > “*Civilization advances by extending the number of important operations which we can
 > perform without thinking about them.*” —Alfred North Whitehead
 
-Here is a bit more motivation for experimenting with kash, why I think it's potentially
+Here is a bit more motivation for experimenting with kash, why I think it’s potentially
 so useful, and some design principles.
 (You may skip ahead to the next section if you just want a more concrete overview!)
 
-### Why Apps Can't Solve All Your Problems
+### Why Apps Can’t Solve All Your Problems
 
 AI has radically changed the way we use software.
-With LLMs and other generative AI models, we've seen big improvements in two areas:
+With LLMs and other generative AI models, we’ve seen big improvements in two areas:
 
 1. Powerful general-purpose new AI tools (ChatGPT, Perplexity, etc.)
 
@@ -18,20 +18,20 @@ With LLMs and other generative AI models, we've seen big improvements in two are
    want to solve, like Notion, Figma, Descript, etc.
 
 While we have these powerful cloud apps, we all know numerous situations where our
-problems aren't easily solved or automated with single tool like ChatGPT, Notion, Google
+problems aren’t easily solved or automated with single tool like ChatGPT, Notion, Google
 Docs, Slack, Excel, and Zapier.
 
 If you want to use any of the newest AI models and APIs for something not supported by
 an existing tool, you generally have to design and build it yourself—in Python and/or a
 full-stack web app.
 
-It's true tools like GitHub Copilot, Claude Code, and Cursor can help anyone write code
+It’s true tools like GitHub Copilot, Claude Code, and Cursor can help anyone write code
 much faster. But even if you have a tool like this, building polished apps that are good
 enough people will pay them takes time, and many good product ideas never get built.
-And the curse of [Conway's Law](https://en.wikipedia.org/wiki/Conway%27s_law) means many
-companies won't add specific features you want, or at best are likely to do it slowly.
+And the curse of [Conway’s Law](https://en.wikipedia.org/wiki/Conway%27s_law) means many
+companies won’t add specific features you want, or at best are likely to do it slowly.
 
-In short, in spite of AI tools accelerating software, certain things don't change: we
+In short, in spite of AI tools accelerating software, certain things don’t change: we
 are waiting for developers, product managers, designers, and entrepreneurs to design and
 ship solutions for us.
 
@@ -58,9 +58,9 @@ Command-line shells generally still suffer from three big issues:
 - A text-based interface many find confusing or ugly
 
 - No easy, “native” support for modern tools, apps, and APIs (especially LLMs—and using
-  `curl` to call OpenAI APIs doesn't count!)
+  `curl` to call OpenAI APIs doesn’t count!)
 
-Even worse, command lines haven't gotten much better.
+Even worse, command lines haven’t gotten much better.
 Few companies make money shipping new command-line tooling.
 (In the last few years this has slowly starting to change with tools like nushell, fish,
 and Warp.)
@@ -73,7 +73,7 @@ developer, a designer, or an enterpreneur building a product.
 Any tool that lets you solve complex problems yourself, without waiting for engineers
 and designers, can radically improve your productivity.
 
-I think it's a good time to revisit this idea.
+I think it’s a good time to revisit this idea.
 
 In a post-LLM world, it should be possible to do more things without so much time and
 effort spent (even with the help of LLMs) on coding and UI/UX design.
@@ -84,7 +84,7 @@ to see how well it works.
 
 ### The Goals of Kash
 
-Kash is an experimental attempt at building the tool I've wanted for a long time, using
+Kash is an experimental attempt at building the tool I’ve wanted for a long time, using
 a command line as a starting point, and with an initial focus on content-related tasks.
 
 That brings us to the goals behind building a new, AI-native shell.
@@ -99,17 +99,17 @@ That brings us to the goals behind building a new, AI-native shell.
 - **Make complex tasks possible:** Highly complex tasks and workflows should be easy to
   assemble (and rerun if they need to be automated) by adding new primitive actions and
   combining primitive actions into more complex workflows.
-  You shouldn't need to be a programmer to use any task—but any task should be
+  You shouldn’t need to be a programmer to use any task—but any task should be
   extensible with arbitrary code (written by you and an LLM) when needed.
 
 - **Augment human skills and judgement:** Many AI agent efforts aim for pure automation.
   But even with powerful LLMs and tools, full automation is rare.
-  Invariably, the best results come from human review wherever it's needed—experimenting
+  Invariably, the best results come from human review wherever it’s needed—experimenting
   with different models and prompts, looking at what works, focusing expert human
   attention in the right places.
   The most flexible tools augment, not replace, your ability to review and manipulate
   information. It should help both very technical users, like developers, as well as less
-  technical but sophisticated users who aren't traditional programmers.
+  technical but sophisticated users who aren’t traditional programmers.
 
 - **Accelerate discovery of the workflows that work best:** We have so many powerful
   APIs, models, libraries, and tools now—but the real bottleneck is in discovering and
@@ -125,7 +125,7 @@ That brings us to the goals behind building a new, AI-native shell.
 
 A better command line like a first step toward an item-based information operating
 system—an alternate, more flexible UX and information architecture for knowledge
-workflows. My hope is that kash becomes the tool you need when you don't know what tool
+workflows. My hope is that kash becomes the tool you need when you don’t know what tool
 you need.
 
 ### Design Principles
@@ -155,7 +155,7 @@ Key design choices:
    transition)
 
 7. **Maintain context in workspaces** (keep files organized by project or effort in a
-   folder that can be persisted, won't get lost, and includes content, metadata,
+   folder that can be persisted, won’t get lost, and includes content, metadata,
    actions, settings, selections, caches, history, etc.)
 
 8. **Maintain metadata on files** (so you always know where each piece of content comes

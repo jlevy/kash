@@ -4,7 +4,7 @@
 
 Kash offers a shell environment based on [xonsh](https://xon.sh/) augmented with a bunch
 of enhanced commands and customizations.
-If you've used a bash or Python shell before, it should be very intuitive.
+If you’ve used a bash or Python shell before, it should be very intuitive.
 
 Within the kash shell, you get a full environment with all actions and commands.
 You also get intelligent auto-complete, a built-in assistant to help you perform tasks,
@@ -13,7 +13,7 @@ and enhanced tab completion.
 The shell is an easy way to use Kash actions, simply calling them like other shell
 commands from the command line.
 
-But remember that's just one way to use actions; you can also use them directly in
+But remember that’s just one way to use actions; you can also use them directly in
 Python or from an MCP client.
 
 ### Current Kash Packages
@@ -23,7 +23,7 @@ However, some use cases require additional libraries, like video downloading too
 handling, etc.
 
 To keep kash dependencies more manageable, these additional utilities and actions are
-packaged additional "kits".
+packaged additional “kits”.
 
 The examples below use video transcription from YouTube as an example.
 To start with more full examples, I suggest starting with the `kash-media` kit.
@@ -38,7 +38,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    Kash is easiest to use via [**uv**](https://docs.astral.sh/uv/), the new package
    manager for Python. `uv` replaces traditional use of `pyenv`, `pipx`, `poetry`, `pip`,
    etc. Installing `uv` also ensures you get a compatible version of Python.
-   See [uv's docs](https://docs.astral.sh/uv/getting-started/installation/) for other
+   See [uv’s docs](https://docs.astral.sh/uv/getting-started/installation/) for other
    installation methods and platforms.
    Usually you just want to run:
    ```shell
@@ -47,7 +47,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
 2. **Install additional command-line tools:**
 
-   In addition to Python, it's highly recommended to install a few other dependencies to
+   In addition to Python, it’s highly recommended to install a few other dependencies to
    make more tools and commands work.
    For macOS, you can again use brew:
 
@@ -104,7 +104,7 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    ```
 
    These keys should go in the `.env` file in your current work directory or a parent or
-   your home directory (recommended if you'll be working in several directories, as with
+   your home directory (recommended if you’ll be working in several directories, as with
    a typical shell).
 
 5. **Run kash:**
@@ -144,14 +144,14 @@ If you add the `--proxy` arg, it will run an MCP stdio server but connect to the
 server you are running in the kash shell, by default at `localhost:4440`.
 
 Then if you run `start_mcp_server` from the shell, your client will connect to your
-shell, and you can actually use any "published" kash action as an MCP tool.
+shell, and you can actually use any “published” kash action as an MCP tool.
 
-Then you can for example ask your MCP client "can you transcribe this video?"
+Then you can for example ask your MCP client “can you transcribe this video?”
 and give it a URL, and it will be able to call the `transcribe` action as a tool.
 
 What is even better is that all the inputs and outputs are saved in the current kash
-workspace, just as if you'd been running these commands yourself in the shell.
-This way, you don't lose context or any work, and can seamlessly switch between an MCP
+workspace, just as if you’d been running these commands yourself in the shell.
+This way, you don’t lose context or any work, and can seamlessly switch between an MCP
 client like Cursor, the shell, and any other tools to edit the inputs or outputs of
 actions in your workspace directory.
 
