@@ -935,8 +935,8 @@ class Item:
                     "type": 64,
                     "format": 64,
                     "title": 40,
-                    "url": 64,
-                    "external_path": 64,
+                    "url": 128,
+                    "external_path": 0,
                 },
             )
             + f"[{len(self.body) if self.body else 0} body chars]"
@@ -961,7 +961,7 @@ class Item:
             + f"[{len(self.body) if self.body else 0} body chars]"
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.as_str_brief()
 
 
