@@ -3,7 +3,7 @@
   font-size: 16px;
   /* Adding Hack Nerd Font to all fonts for icon support, if it is installed. */
   --font-sans: "Source Sans 3 Variable", sans-serif, "Hack Nerd Font";
-  --font-serif: "PT Serif", serif, "Hack Nerd Font";
+  --font-serif: "LocalPunct", "PT Serif", serif, "Hack Nerd Font";
   /* Source Sans 3 Variable better at these weights. */
   --font-weight-sans-medium: 550;
   --font-weight-sans-bold: 650;
@@ -304,8 +304,11 @@ details {
   color: var(--color-text);
 
   border: 1px solid var(--color-hint-gentle);
-  border-radius: 3px;
   margin: 0.75rem 0;
+}
+
+details > :not(summary) {
+  padding: 0 0.75rem;
 }
 
 summary {
@@ -319,7 +322,6 @@ summary {
 
 summary:hover {
   color: var(--color-primary-light);
-  {# background: var(--color-hover-bg); #}
 }
 
 /* keep the border on the summary when open so it blends */
@@ -330,6 +332,34 @@ details[open] summary {
 summary:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* Special formatting for document metadata details */
+details.metadata {
+  color: var(--color-tertiary);
+}
+
+details.metadata > :not(summary) {
+    color: var(--color-secondary);
+}
+
+details.metadata summary {
+  font-size: var(--font-size-small);
+  font-weight: 550;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-tertiary);
+}
+
+details.metadata summary:hover {
+  color: var(--color-primary-light);
+}
+
+details.metadata blockquote {
+  border-left: none;
+  margin: 0 0.75rem;
+  font-size: var(--font-size-small);
+  font-style: italic;
 }
 
 
@@ -533,7 +563,7 @@ sup {
   border-radius: 4px;
   transition: all 0.15s ease-in-out;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .footnote-ref a:hover, .footnote:hover {
