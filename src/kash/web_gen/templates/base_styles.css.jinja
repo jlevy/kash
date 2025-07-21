@@ -370,7 +370,7 @@ details.metadata {
 }
 
 details.metadata > :not(summary) {
-    color: var(--color-secondary);
+  color: var(--color-secondary);
 }
 
 details.metadata summary {
@@ -659,12 +659,31 @@ sup {
 {% endblock footnote_styles %}
 
 {% block print_styles %}
-
 /* Print media adjustments for better readability and layout */
 @media print {
   @page {
     /* Set page margins for physical page */
-    margin: 0.6in 0.6in;
+    margin: 0.6in 0.9in 0.7in 0.9in;
+
+    @top-center {
+      content: "";
+    }
+    
+    @bottom-left {
+      content: "Formatted by Kash — github.com/jlevy/kash";
+      font-family: var(--font-sans) !important;
+      font-size: var(--font-size-small);
+      color: var(--color-tertiary) !important;
+      margin: 0 0 0.2in 0 !important;
+    }
+    
+    @bottom-right {
+      content: counter(page);
+      font-family: var(--font-sans) !important;
+      font-size: var(--font-size-small);
+      color: var(--color-tertiary) !important;
+      margin: 0 0 0.2in 0 !important;
+    }
   }
 
   :root {
@@ -675,19 +694,27 @@ sup {
     --font-size-mono: 0.9rem;
   }
 
-  body {
+    body {
     /* Remove body margin since @page handles it */
     margin: 0;
     /* Ensure good line height for print */
     line-height: 1.6;
   }
 
+  /* Enable hyphenation and justification for main text content only */
+  p, blockquote {
+    hyphens: auto;
+    text-align: justify;
+  }
+
+
+
   .long-text {
     /* Remove shadows and borders that don't work well in print */
     box-shadow: none !important;
     border: none !important;
     /* Add print-specific margins */
-    padding: 0 1rem;
+    padding: 0;
   }
 
   /* Ensure tables don't break layout in print */
@@ -741,6 +768,105 @@ sup {
   li {
     break-inside: avoid-page;
     page-break-inside: avoid; /* Fallback for older browsers */
+  }
+  
+  /* Hide doc metadata details in print (for now) */
+  details.metadata {
+    display: none !important;
+  }
+
+  /* XXX: long endnote lists cut off the numbers. This is a workaround:
+   * Custom numbering system for ordered lists using Grid for alignment */
+  ol {
+    list-style: none;
+    counter-reset: list-counter;
+    padding-left: 0;
+    margin-left: 1rem;
+  }
+
+  ol > li {
+    display: grid;
+    /* col 1: fixed width for numbers up to 999. col 2: for the content */
+    grid-template-columns: 2.5rem 1fr;
+    gap: 0 0.5rem; /* Space between number and content */
+    align-items: baseline; /* Aligns number with first line of text */
+    counter-increment: list-counter;
+    /* Override global li styles for grid layout */
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    position: static;
+  }
+
+  ol > li::before {
+    content: counter(list-counter) ".";
+    text-align: right;
+    font-family: var(--font-serif);
+  }
+
+  /* Place all direct children of li into the second grid column */
+  /* This makes p, ul, etc. stack vertically as intended */
+  ol > li > * {
+    grid-column: 2;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* Override justification for content within list items */
+  ol > li p,
+  ol > li blockquote {
+    text-align: left !important;
+    text-justify: none !important;
+    margin-top: 0; /* Tighter spacing inside list items */
+  }
+
+  /* --- Reset for Nested Lists --- */
+  /* This prevents nested lists from inheriting the grid layout */
+  ol ol {
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+    list-style: decimal outside;
+    counter-reset: initial; /* Don't inherit parent counter */
+  }
+
+  ol ul {
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+    list-style: none; /* We'll restore bullets with ::before */
+  }
+
+  ol ol > li {
+    display: list-item !important; /* Revert from grid to standard list item */
+    padding-left: 0.25rem;
+    margin-top: 0.4rem; /* Override global li margin for tighter spacing */
+    position: static; /* Override global li position */
+    /* Override justification from parent rules */
+    text-align: left !important;
+    text-justify: none !important;
+  }
+
+  ol ul > li {
+    display: list-item !important; /* Revert from grid to standard list item */
+    padding-left: 0.25rem;
+    margin-top: 0.4rem; /* Override global li margin for tighter spacing */
+    position: relative; /* Need relative positioning for bullet ::before */
+    /* Override justification from parent rules */
+    text-align: left !important;
+    text-justify: none !important;
+  }
+
+  /* Remove the custom counter from nested ol */
+  ol ol > li::before {
+    content: "" !important;
+  }
+
+  /* Restore bullets for nested ul within ol */
+  ol ul > li::before {
+    content: "▪︎";
+    position: absolute;
+    left: -.85rem;
+    top: .25rem;
+    font-size: 0.62rem;
   }
 }
 {% endblock print_styles %}
