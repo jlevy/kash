@@ -55,9 +55,11 @@
   text-align: center;
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-size: calc(1.2rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   margin-bottom: 0.5rem;
 }
 
@@ -80,9 +82,11 @@
   text-align: center;
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-size: calc(1.2rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   margin-bottom: 0.5rem;
 
   /* Hack to center the header above the columns */
@@ -106,10 +110,12 @@
   max-width: 10rem;
   text-align: center;
   font-family: var(--font-sans);
-  font-size: var(--font-size-small);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-size: calc(var(--font-size-small) * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   line-height: 1.2;
   padding: 0 0.5rem;
   border-bottom-width: 2px;

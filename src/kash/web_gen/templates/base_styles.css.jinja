@@ -9,6 +9,12 @@
   --font-weight-sans-bold: 650;
   --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
 
+  --font-features-sans:
+     "ss01" 0, /* Flat-tailed l */
+     "ss02" 1, /* Single-storey a */
+     "ss03" 1, /* Single-storey g */
+     "ss04" 0; /* Sans-bar I */
+
   --font-size-large: 1.2rem;
   --font-size-normal: 1rem;
   --font-size-small: 0.95rem;
@@ -16,6 +22,21 @@
   --font-size-mono: 0.82rem;
   --font-size-mono-small: 0.75rem;
   --font-size-mono-tiny: 0.7rem;
+
+  /* Both Source Sans 3 and PT Serif have small caps, so we use this instead of text-transform. */
+  --caps-transform: none;
+  --caps-caps-variant: all-small-caps;
+  --caps-spacing: 0.025em;
+  /* Compensate for small caps (Source Sans small caps are quite small) */
+  --caps-heading-size-multiplier: 1.42;
+  --caps-heading-line-height: calc(1.2 / var(--caps-heading-size-multiplier));
+
+  {# 
+  /* Option to handle small caps manually. */
+  --caps-transform: uppercase;
+  --caps-caps-variant: none;
+  --caps-spacing: 0.025em;
+  #}
 
   --console-char-width: 88;
   --console-width: calc(var(--console-char-width) + 2rem);
@@ -344,10 +365,12 @@ details.metadata > :not(summary) {
 }
 
 details.metadata summary {
-  font-size: var(--font-size-small);
   font-weight: 550;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  font-size: calc(var(--font-size-small) * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   color: var(--color-tertiary);
 }
 
@@ -406,13 +429,16 @@ hr:before {
 .long-text h3 {
   font-family: var(--font-sans);
   font-weight: 550;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  font-size: calc(1.15rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
 }
 
 .long-text h4 {
   font-family: var(--font-sans);
-  font-weight: 550;
+  font-weight: 540;
   font-style: italic;
   letter-spacing: 0.015em;
 }
@@ -463,10 +489,12 @@ hr:before {
 
 .long-text .sans-text h3 {
   font-family: var(--font-sans);
-  font-size: 1.1rem;
   font-weight: var(--font-weight-sans-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-size: calc(1.1rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   margin-top: 1rem;
   margin-bottom: 0.8rem;
 }
@@ -491,10 +519,12 @@ table {
 
 th {
   font-weight: var(--font-weight-sans-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-size: calc(1.0rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   border-bottom: 1px solid var(--color-border-hint);
-  line-height: 1.2;
   background-color: var(--color-bg-alt-solid);
 }
 

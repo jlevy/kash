@@ -89,10 +89,12 @@
 }
 
 .toc-title {
-  font-size: var(--font-size-small);
   font-weight: 550;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  font-size: calc(var(--font-size-small) * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   padding-left: 0.3rem;
   border-bottom: 1px solid var(--color-border-hint);
   border-left: none !important; /* Override toc-link border */

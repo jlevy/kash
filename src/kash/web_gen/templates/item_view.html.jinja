@@ -19,9 +19,11 @@
 
 .item-type {
   font-family: var(--font-sans);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  font-size: var(--font-size-smaller);
+  font-size: calc(var(--font-size-smaller) * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
   font-weight: var(--font-weight-sans-bold);
   padding-right: 1rem;
 }
