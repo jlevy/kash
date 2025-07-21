@@ -45,7 +45,7 @@ dependencies = [
     "strif>=3.0.1",
     "funlog>=0.2.0",
     "prettyfmt>=0.3.1",
-    "flowmark>=0.4.8",
+    "flowmark>=0.5.2",
     "frontmatter-format>=0.2.1",
     "chopdiff>=0.2.3",
     "clideps>=0.1.4",
@@ -77,6 +77,7 @@ dependencies = [
     "pathspec>=0.12.1",
     "patch-ng>=1.18.1",
     "inquirerpy>=0.3.4",
+    "questionary>=2.0.0",
     # HTTP clients:
     "httpx[brotli]>=0.28.1", # Include brotli for better compression and browser fingerprint.
     "curl-cffi>=0.11.4",
@@ -117,7 +118,7 @@ dev = [
     "ruff>=0.11.0",
     "codespell>=2.4.1",
     "rich>=14.0.0",
-    "basedpyright>=1.28.2",
+    "basedpyright>=1.31.0",
     "funlog>=0.2.0",
 ]
 
