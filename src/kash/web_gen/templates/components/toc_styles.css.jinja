@@ -285,3 +285,12 @@ body.toc-open {
     pointer-events: auto; /* Re-enable interaction */
   }
 } 
+
+@media print {
+  /* Hide TOC on print */
+  .toc-toggle,
+  .toc-backdrop,
+  .toc-container {
+    display: none !important;
+  }
+} 
