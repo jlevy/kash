@@ -2,6 +2,7 @@
 <style>
 .item-view {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   {# TODO: Consider putting a border to indicate type of info. But have to
      make sure it does not grow the tooltip inadverently. #}
   {# border-left: 3px solid var(--color-border-accent);
@@ -19,6 +20,7 @@
 
 .item-type {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: calc(var(--font-size-smaller) * var(--caps-heading-size-multiplier));
   line-height: var(--caps-heading-line-height);
   text-transform: var(--caps-transform);
@@ -110,7 +112,8 @@ h1.item-title {
 }
 
 .item-file-info {
-  {# font-family: var(--font-sans); #}
+  {# font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans); #}
   padding: 0;
   {# font-size: var(--font-size-mono-small); #}
   word-break: break-word;
@@ -118,6 +121,7 @@ h1.item-title {
 
 .item-file-info pre {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: var(--font-size-small);
   letter-spacing: 0;
   border: none;
@@ -139,6 +143,7 @@ h1.item-title {
 
 .item-description {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: var(--font-size-small);
   padding: 0.5rem 0;
 }
@@ -155,6 +160,7 @@ h1.item-title {
 .item-footer {
   padding: 0.5rem 1rem;
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: var(--font-size-smaller);
   color: var(--color-secondary);
 }

@@ -9,11 +9,15 @@
   --font-weight-sans-bold: 650;
   --font-mono: "Hack Nerd Font", "Menlo", "DejaVu Sans Mono", Consolas, "Lucida Console", monospace;
 
+  --font-features-sans: normal;
+  {#
+  /* TODO: FontSource builds don't seem to support these. Might be nice to use. */
   --font-features-sans:
      "ss01" 0, /* Flat-tailed l */
      "ss02" 1, /* Single-storey a */
-     "ss03" 1, /* Single-storey g */
+     "ss03" 0, /* Single-storey g */
      "ss04" 0; /* Sans-bar I */
+  #}
 
   --font-size-large: 1.2rem;
   --font-size-normal: 1rem;
@@ -322,6 +326,7 @@ img {
 
 details {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   color: var(--color-text);
 
   border: 1px solid var(--color-hint-gentle);
@@ -339,6 +344,10 @@ summary {
   user-select: none;
   background: var(--color-bg-alt);
   transition: all 0.15s ease-in-out;
+}
+
+summary::marker {
+  font-size: 0.85rem;
 }
 
 summary:hover {
@@ -428,6 +437,7 @@ hr:before {
 
 .long-text h3 {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-weight: 550;
   font-size: calc(1.15rem * var(--caps-heading-size-multiplier));
   line-height: var(--caps-heading-line-height);
@@ -438,6 +448,7 @@ hr:before {
 
 .long-text h4 {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-weight: 540;
   font-style: italic;
   letter-spacing: 0.015em;
@@ -464,6 +475,7 @@ hr:before {
 
 .long-text .sans-text {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
 }
 
 .long-text .sans-text p {
@@ -473,6 +485,7 @@ hr:before {
 
 .long-text .sans-text h1 {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: 1.75rem;
   font-weight: 380;
   margin-top: 1rem;
@@ -481,6 +494,7 @@ hr:before {
 
 .long-text .sans-text h2 {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: 1.25rem;
   font-weight: 440;
   margin-top: 1rem;
@@ -489,6 +503,7 @@ hr:before {
 
 .long-text .sans-text h3 {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-weight: var(--font-weight-sans-bold);
   font-size: calc(1.1rem * var(--caps-heading-size-multiplier));
   line-height: var(--caps-heading-line-height);
@@ -507,6 +522,7 @@ table, th, td, tbody tr {
 
 table {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
   font-size: var(--font-size-small);
   width: auto;
   margin-left: auto;
@@ -588,9 +604,12 @@ sup {
 
 .footnote-ref a, .footnote {
   font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
+  background-color: var(--color-bg-meta-solid);
+  color: var(--color-hint-strong);
   text-decoration: none;
   padding: 0 0.15rem;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.15s ease-in-out;
   font-style: normal;
   font-weight: 600;
@@ -600,6 +619,19 @@ sup {
   background-color: var(--color-hover-bg);
   color: var(--color-primary-light);
   text-decoration: none;
+}
+
+/* Don't use stylized footnotes in print. */
+@media print {
+  .footnote-ref a, .footnote {
+    background-color: transparent !important;
+    color: var(--color-text) !important;
+  }
+  
+  .footnote-ref a:hover, .footnote:hover {
+    background-color: transparent !important;
+    color: var(--color-text) !important;
+  }
 }
 {% endblock footnote_styles %}
 
