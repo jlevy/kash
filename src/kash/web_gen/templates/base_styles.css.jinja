@@ -535,7 +535,7 @@ table {
 
 th {
   font-weight: var(--font-weight-sans-bold);
-  font-size: calc(1.0rem * var(--caps-heading-size-multiplier));
+  font-size: calc(var(--font-size-small) * var(--caps-heading-size-multiplier));
   line-height: var(--caps-heading-line-height);
   text-transform: var(--caps-transform);
   font-variant-caps: var(--caps-caps-variant);
@@ -621,19 +621,129 @@ sup {
   text-decoration: none;
 }
 
-/* Don't use stylized footnotes in print. */
 @media print {
+  sup {
+    font-size: 70% !important;
+  }
+
+  /* Don't use stylized footnotes in print. */
   .footnote-ref a, .footnote {
+    font-family: var(--font-serif);
+    font-feature-settings: normal !important;
     background-color: transparent !important;
     color: var(--color-text) !important;
+    padding: 0 0.05rem !important;
+    font-weight: 400 !important;
   }
   
   .footnote-ref a:hover, .footnote:hover {
     background-color: transparent !important;
     color: var(--color-text) !important;
   }
+
+  /* Hide footnote return arrows/links in print */
+  .footnote-backref,
+  .footnote-return,
+  a[href^="#fnref"],
+  .reversefootnote {
+    display: none !important;
+  }
+
+  /* Also hide common up arrow characters */
+  .footnote::after[content*="↩"],
+  .footnote::after[content*="↑"] {
+    display: none !important;
+  }
 }
+
 {% endblock footnote_styles %}
+
+{% block print_styles %}
+
+/* Print media adjustments for better readability and layout */
+@media print {
+  @page {
+    /* Set page margins for physical page */
+    margin: 0.6in 0.6in;
+  }
+
+  :root {
+    /* Slightly larger fonts for print readability */
+    --font-size-normal: 1.1rem;
+    --font-size-small: 1.0rem;
+    --font-size-smaller: 0.9rem;
+    --font-size-mono: 0.9rem;
+  }
+
+  body {
+    /* Remove body margin since @page handles it */
+    margin: 0;
+    /* Ensure good line height for print */
+    line-height: 1.6;
+  }
+
+  .long-text {
+    /* Remove shadows and borders that don't work well in print */
+    box-shadow: none !important;
+    border: none !important;
+    /* Add print-specific margins */
+    padding: 0 1rem;
+  }
+
+  /* Ensure tables don't break layout in print */
+  .table-container {
+    position: static;
+    transform: none;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  table {
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  /* Adjust code blocks for print */
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Hide interactive elements that don't work in print */
+  .code-copy-button {
+    display: none !important;
+  }
+
+  /* Page break controls */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid;
+    page-break-after: avoid; /* Fallback for older browsers */
+    break-inside: avoid;
+    page-break-inside: avoid; /* Fallback for older browsers */
+  }
+
+  /* Avoid breaking these elements */
+  blockquote, pre, .code-block-wrapper, figure, .table-container {
+    break-inside: avoid;
+    page-break-inside: avoid; /* Fallback for older browsers */
+  }
+
+  /* Control text flow */
+  p {
+    orphans: 3; /* Minimum lines at bottom of page */
+    widows: 3;  /* Minimum lines at top of page */
+  }
+
+  /* Keep list items together when reasonable */
+  li {
+    break-inside: avoid-page;
+    page-break-inside: avoid; /* Fallback for older browsers */
+  }
+}
+{% endblock print_styles %}
 
 {% block responsive_styles %}
 /* Bleed wide on larger screens. */
