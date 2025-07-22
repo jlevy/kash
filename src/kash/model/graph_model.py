@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import asdict, field
+from typing import Any
 
 from pydantic.dataclasses import dataclass
 from strif import abbrev_list
@@ -18,6 +19,7 @@ class Node:
     body: str | None = None
     url: str | None = None
     thumbnail_url: str | None = None
+    data: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing_extensions import override
 
 from kash.config.logger import get_logger
-from kash.embeddings.embeddings import Embeddings
+from kash.embeddings.embeddings import Embeddings, EmbValue, KeyVal
 from kash.embeddings.text_similarity import rank_by_relatedness
 from kash.help.help_types import HelpDoc, HelpDocType
 from kash.web_content.local_file_cache import Loadable
@@ -59,7 +59,10 @@ class HelpIndex:
         from kash.web_content.file_cache_utils import cache_file
 
         def calculate_and_save_help_embeddings(target_path: Path) -> None:
-            keyvals = [(str(key), doc.embedding_text()) for key, doc in self._docs_by_key()]
+            keyvals = [
+                KeyVal(key=str(key), value=EmbValue(emb_text=doc.embedding_text()))
+                for key, doc in self._docs_by_key()
+            ]
             embeddings = Embeddings.embed(keyvals)
             log.info("Embedded %d help documents, cached at: %s", len(embeddings.data), target_path)
             embeddings.to_npz(target_path)

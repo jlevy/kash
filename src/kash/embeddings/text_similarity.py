@@ -52,8 +52,8 @@ def rank_by_relatedness(
     query_embedding = response.data[0]["embedding"]
 
     scored_strings = [
-        (key, text, relatedness_fn(query_embedding, emb))
-        for key, text, emb in embeddings.as_iterable()
+        (key, emb_value.emb_text, relatedness_fn(query_embedding, emb))
+        for key, emb_value, emb in embeddings.as_iterable()
     ]
     scored_strings.sort(key=lambda x: x[2], reverse=True)
 
