@@ -86,8 +86,8 @@ def multitask_status(
 ) -> MultiTaskStatus | nullcontext:
     """
     Create a `MultiTaskStatus` context manager for displaying multiple task progress
-    using the global shell console. If disabled, returns a null context, so it's convenient
-    to disable status display.
+    using the global shell console with live display conflict prevention. If disabled,
+    returns a null context, so it's convenient to disable status display.
     """
     if not enabled:
         return nullcontext()

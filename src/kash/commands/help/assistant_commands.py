@@ -1,7 +1,8 @@
 from kash.commands.base.basic_file_commands import trash
 from kash.commands.workspace.selection_commands import select
-from kash.config.logger import get_console, get_logger
-from kash.config.text_styles import PROMPT_ASSIST, SPINNER
+from kash.config.logger import get_logger
+from kash.config.text_styles import PROMPT_ASSIST
+from kash.config.unified_live import get_unified_live
 from kash.docs.all_docs import DocSelection
 from kash.exec import kash_command
 from kash.exec_model.shell_model import ShellResult
@@ -43,7 +44,7 @@ def assist(
             help()
             return
 
-    with get_console().status("Thinking…", spinner=SPINNER):  # noqa: F821
+    with get_unified_live().status("Thinking…"):
         shell_context_assistance(input, model=model, assistance_type=type)
 
 

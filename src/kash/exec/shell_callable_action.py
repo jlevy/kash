@@ -1,8 +1,9 @@
 from funlog import log_tallies
 
 from kash.config.env_settings import KashEnv
-from kash.config.logger import get_console, get_logger
-from kash.config.text_styles import COLOR_ERROR, SPINNER
+from kash.config.logger import get_logger
+from kash.config.text_styles import COLOR_ERROR
+from kash.config.unified_live import get_unified_live
 from kash.exec.action_exec import run_action_with_shell_context
 from kash.exec.history import record_command
 from kash.exec_model.commands_model import Command
@@ -57,7 +58,7 @@ class ShellCallableAction:
             log.info("Action shell args: %s", shell_args)
             explicit_values = RawParamValues(shell_args.options)
             if not action.interactive_input and not action.live_output:
-                with get_console().status(f"Running action {action.name}…", spinner=SPINNER):
+                with get_unified_live().status(f"Running action {action.name}…"):
                     result = run_action_with_shell_context(
                         action_cls,
                         explicit_values,

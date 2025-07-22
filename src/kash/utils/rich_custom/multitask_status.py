@@ -4,7 +4,7 @@ import asyncio
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from types import TracebackType
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from strif import abbrev_str, single_line
 from typing_extensions import override
@@ -17,6 +17,7 @@ from rich.progress import BarColumn, Progress, ProgressColumn, Task, TaskID
 from rich.spinner import Spinner
 from rich.text import Text
 
+from kash.config.unified_live import get_unified_live
 from kash.utils.api_utils.progress_protocol import (
     EMOJI_FAILURE,
     EMOJI_RETRY,
@@ -229,7 +230,7 @@ class TruncatedLabelColumn(ProgressColumn):
     def __init__(self, console_width: int):
         super().__init__()
         # Reserve half the console width for labels/status messages
-        self.max_label_width = console_width // 2
+        self.max_label_width: int = console_width // 2
 
     @override
     def render(self, task: Task) -> Text:
@@ -297,6 +298,9 @@ class MultiTaskStatus(AbstractAsyncContextManager):
         self._task_info: dict[int, TaskInfo] = {}
         self._next_id: int = 1
         self._rich_task_ids: dict[int, TaskID] = {}  # Map our IDs to Rich Progress IDs
+
+        # Unified live integration
+        self._unified_live: Any | None = None  # Reference to the global unified live
 
         # Calculate spinner width for consistent spacing
         self._spinner_width = _get_spinner_width(SPINNER_NAME)
@@ -367,7 +371,13 @@ class MultiTaskStatus(AbstractAsyncContextManager):
     @override
     async def __aenter__(self) -> MultiTaskStatus:
         """Start the live display."""
-        self._progress.__enter__()
+        # Try to integrate with unified live display
+
+        # Always integrate with unified live display (auto-initialized)
+        unified_live = get_unified_live()
+        self._unified_live = unified_live
+        # Register our progress display with the unified live
+        unified_live.set_multitask_display(self._progress)
         return self
 
     @override
@@ -378,9 +388,13 @@ class MultiTaskStatus(AbstractAsyncContextManager):
         exc_tb: TracebackType | None,
     ) -> None:
         """Stop the live display and show automatic summary if enabled."""
-        self._progress.__exit__(exc_type, exc_val, exc_tb)
+        # Always clean up unified live integration
+        if self._unified_live is not None:
+            # Remove our display from the unified live
+            self._unified_live.set_multitask_display(None)
+            self._unified_live = None
 
-        # Show automatic summary if enabled
+        # Show automatic summary if enabled (always print to console now)
         if self.auto_summary:
             summary = self.get_summary()
             self.console.print(summary)

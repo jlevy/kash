@@ -25,11 +25,13 @@ from xonsh.xontribs import xontribs_load
 import kash.config.suppress_warnings  # noqa: F401  # usort:skip
 
 # Keeping initial imports/deps minimal.
+from kash.config.unified_live import get_unified_live
 from kash.config import colors
+from kash.config.unified_live import get_unified_live
 from kash.config.lazy_imports import import_start_time  # usort:skip
-from kash.config.logger import get_console, get_log_settings, get_logger
+from kash.config.logger import get_log_settings, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
-from kash.config.text_styles import SPINNER, STYLE_ASSISTANCE, STYLE_HINT
+from kash.config.text_styles import STYLE_ASSISTANCE, STYLE_HINT
 from kash.help.assistant import AssistanceType
 from kash.shell.output.shell_output import cprint
 from kash.shell.ui.shell_syntax import is_assist_request_str
@@ -175,7 +177,7 @@ class CustomAssistantShell(PromptToolkitShell):
         assist_query = is_assist_request_str(line)
         if assist_query:
             try:
-                with get_console().status("Thinking…", spinner=SPINNER):
+                with get_unified_live().status("Thinking…"):
                     shell_context_assistance(assist_query, assistance_type=AssistanceType.fast)
             except Exception as e:
                 log.error(f"Sorry, could not get assistance: {abbrev_str(str(e), max_len=1000)}")
@@ -310,7 +312,8 @@ def assistance_on_not_found(cmd: list[str]):
     from kash.help.assistant import shell_context_assistance
 
     cprint("Command was not recognized.", style=STYLE_ASSISTANCE)
-    with get_console().status("", spinner=SPINNER):
+
+    with get_unified_live().status("Thinking…"):
         shell_context_assistance(
             f"""
             The user just typed the following command, but it was not found:
