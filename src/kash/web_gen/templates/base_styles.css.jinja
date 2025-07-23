@@ -27,10 +27,13 @@
   --font-size-mono-small: 0.75rem;
   --font-size-mono-tiny: 0.7rem;
 
+  --line-height-normal: 1.5;
+  --line-height-tight: 1.2;
+
   /* Both Source Sans 3 and PT Serif have small caps, so we use this instead of text-transform. */
   --caps-transform: none;
   --caps-caps-variant: all-small-caps;
-  --caps-spacing: 0.025em;
+  --caps-spacing: 0.021em;
   /* Compensate for small caps (Source Sans small caps are quite small) */
   --caps-heading-size-multiplier: 1.42;
   --caps-heading-line-height: calc(1.2 / var(--caps-heading-size-multiplier));
@@ -107,7 +110,7 @@ html {
 body {
   font-family: var(--font-serif);
   color: var(--color-text);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
   padding: 0;  /* No padding so we can have full width elements. */
   margin: auto;
   background-color: var(--color-bg);
@@ -142,7 +145,7 @@ a:hover {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
 }
 
 h1 {
@@ -619,12 +622,14 @@ sup {
 
 @media print {
   sup {
-    font-size: 70% !important;
+    /* Using small-caps so this is a bit larger */
+    font-size: 110% !important;
   }
 
   /* Don't use stylized footnotes in print. */
   .footnote-ref a, .footnote {
     font-family: var(--font-serif);
+    font-variant-caps: all-small-caps !important;
     font-feature-settings: normal !important;
     background-color: transparent !important;
     color: var(--color-text) !important;
@@ -675,9 +680,9 @@ sup {
     
     @bottom-right {
       content: counter(page);
-      font-family: var(--font-sans) !important;
+      font-family: var(--font-serif) !important;
       font-size: var(--font-size-small);
-      color: var(--color-tertiary) !important;
+      color: var(--color-text) !important;
       margin: 0 0 0.2in 0 !important;
     }
   }
@@ -688,13 +693,14 @@ sup {
     --font-size-small: 1.0rem;
     --font-size-smaller: 0.9rem;
     --font-size-mono: 0.9rem;
+
+    --line-height-normal: 1.42;
+    --line-height-tight: 1.15;
   }
 
-    body {
+  body {
     /* Remove body margin since @page handles it */
     margin: 0;
-    /* Ensure good line height for print */
-    line-height: 1.6;
   }
 
   /* Enable hyphenation and justification for main text content only */
@@ -703,14 +709,21 @@ sup {
     text-align: justify;
   }
 
-
-
   .long-text {
     /* Remove shadows and borders that don't work well in print */
     box-shadow: none !important;
     border: none !important;
     /* Add print-specific margins */
     padding: 0;
+  }
+
+  /* Slightly darker sans-serif headings look better in print. */
+  .long-text h3 {
+    font-weight: 580;
+  }
+
+  .long-text h4 {
+    font-weight: 580;
   }
 
   /* Ensure tables don't break layout in print */
@@ -760,11 +773,6 @@ sup {
     widows: 3;  /* Minimum lines at top of page */
   }
 
-  /* Keep list items together when reasonable */
-  li {
-    break-inside: avoid-page;
-    page-break-inside: avoid; /* Fallback for older browsers */
-  }
   
   /* Hide doc metadata details in print (for now) */
   details.metadata {
