@@ -199,7 +199,7 @@ h4+p, h5+p, h6+p {
 ul {
   list-style-type: none;
   margin-left: 1.8rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.7rem;
   padding-left: 0;
 }
 
@@ -210,6 +210,7 @@ li {
 }
 
 li > p {
+  /* No extra padding for paragraphs inside list items. */
   margin-bottom: 0;
 }
 
@@ -232,7 +233,7 @@ ol > li {
 }
 
 blockquote {
-  border-left: 2px solid var(--color-primary);
+  border-left: 1px solid var(--color-border-hairline);
   padding-left: 1rem;
   margin-left: 0;
   margin-right: 0;
@@ -694,13 +695,24 @@ sup {
     --font-size-smaller: 0.9rem;
     --font-size-mono: 0.9rem;
 
-    --line-height-normal: 1.42;
+    /* Tighter line height for print readability */
+    --line-height-normal: 1.4;
     --line-height-tight: 1.15;
   }
 
   body {
     /* Remove body margin since @page handles it */
     margin: 0;
+  }
+
+  /* Reduce spacing between block elements to match tighter line height */
+  p {
+    margin-top: 0.65rem;
+    margin-bottom: 0.65rem;
+  }
+
+  li {
+    margin-top: 0.6rem;
   }
 
   /* Enable hyphenation and justification for main text content only */
