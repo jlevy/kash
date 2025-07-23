@@ -22,7 +22,8 @@
   --font-size-large: 1.2rem;
   --font-size-normal: 1rem;
   --font-size-small: 0.95rem;
-  --font-size-smaller: 0.85rem;
+  --font-size-smaller: 0.9rem;
+  --font-size-tiny: 0.85rem;
   --font-size-mono: 0.82rem;
   --font-size-mono-small: 0.75rem;
   --font-size-mono-tiny: 0.7rem;
@@ -233,10 +234,9 @@ ol > li {
 }
 
 blockquote {
-  border-left: 1px solid var(--color-border-hairline);
+  {# border-left: 1px solid var(--color-border-hairline); #}
   padding-left: 1rem;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 1.5rem 4rem 1.5rem 1rem;
 }
 
 /* Inline code styling */
@@ -758,6 +758,15 @@ sup {
   pre {
     white-space: pre-wrap;
     word-wrap: break-word;
+    background-color: transparent !important;
+    border: none !important;
+    font-weight: normal !important;
+  }
+
+  code {
+    background-color: transparent !important;
+    border: none !important;
+    font-weight: normal !important;
   }
 
   /* Hide interactive elements that don't work in print */

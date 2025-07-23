@@ -276,6 +276,15 @@ body.toc-open {
   .toc-link.active {
     color: var(--color-text);
   }
+  
+  /* Slightly larger TOC font size on mobile */
+  .toc-title {
+    font-size: calc(var(--font-size-small) * var(--caps-heading-size-multiplier));
+  }
+  
+  .toc-list {
+    font-size: var(--font-size-small);
+  }
     
   .toc-container.mobile-visible {
     /* Visible state */
