@@ -10,6 +10,38 @@
 
   {% block title %}<title>{{ title }}</title>{% endblock title %}
 
+  {% block social_meta %}
+  {% if social_meta %}
+  <!-- Open Graph meta tags -->
+  <meta property="og:title" content="{{ social_meta.title or title }}" />
+  {% if social_meta.description %}
+  <meta property="og:description" content="{{ social_meta.description }}" />
+  {% endif %}
+  {% if social_meta.image %}
+  <meta property="og:image" content="{{ social_meta.image }}" />
+  {% endif %}
+  {% if social_meta.url %}
+  <meta property="og:url" content="{{ social_meta.url }}" />
+  {% endif %}
+  <meta property="og:type" content="{{ social_meta.type or 'website' }}" />
+  {% if social_meta.site_name %}
+  <meta property="og:site_name" content="{{ social_meta.site_name }}" />
+  {% endif %}
+  <!-- Twitter Card meta tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ social_meta.title or title }}" />
+  {% if social_meta.description %}
+  <meta name="twitter:description" content="{{ social_meta.description }}" />
+  {% endif %}
+  {% if social_meta.image %}
+  <meta name="twitter:image" content="{{ social_meta.image }}" />
+  {% endif %}
+  {% if social_meta.twitter_handle %}
+  <meta name="twitter:site" content="@{{ social_meta.twitter_handle }}" />
+  {% endif %}
+  {% endif %}
+  {% endblock social_meta %}
+
   {% block dark_mode_script %}
   <script>
     // Set theme before body renders to prevent flash of unstyled content

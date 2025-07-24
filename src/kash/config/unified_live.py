@@ -2,20 +2,18 @@ from __future__ import annotations
 
 import atexit
 import threading
-import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 
-from rich.console import Console, RenderableType
+from rich.console import Console, Group, RenderableType
 from rich.live import Live
 from rich.spinner import Spinner
 from rich.text import Text
-from rich.console import Group
 from strif import AtomicVar
 
 from kash.config.logger import get_console
-from kash.config.text_styles import SPINNER, COLOR_SPINNER
+from kash.config.text_styles import COLOR_SPINNER, SPINNER
 
 
 @dataclass

@@ -263,7 +263,7 @@ class Item:
     thumbnail_url: Url | None = None
 
     # Optional additional metadata.
-    extra: dict | None = None
+    extra: dict[str, Any] | None = None
 
     # Optional execution context. Useful for letting functions that take only an Item
     # arg get access to context.

@@ -23,15 +23,12 @@ from xonsh.shells.ptk_shell.formatter import PTKPromptFormatter
 from xonsh.xontribs import xontribs_load
 
 import kash.config.suppress_warnings  # noqa: F401  # usort:skip
-
-# Keeping initial imports/deps minimal.
-from kash.config.unified_live import get_unified_live
 from kash.config import colors
-from kash.config.unified_live import get_unified_live
 from kash.config.lazy_imports import import_start_time  # usort:skip
 from kash.config.logger import get_log_settings, get_logger
 from kash.config.settings import APP_NAME, find_rcfiles
 from kash.config.text_styles import STYLE_ASSISTANCE, STYLE_HINT
+from kash.config.unified_live import get_unified_live
 from kash.help.assistant import AssistanceType
 from kash.shell.output.shell_output import cprint
 from kash.shell.ui.shell_syntax import is_assist_request_str
