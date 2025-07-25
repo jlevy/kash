@@ -22,7 +22,7 @@ def minify_html(item: Item) -> Item:
     The terser minification seems a bit slower but more robust than
     [minify-html](https://github.com/wilsonzlin/minify-html).
     """
-    from minify_tw_html import minify_tw_html
+    from tminify.main import tminify
 
     if not item.store_path:
         raise InvalidInput(f"Missing store path: {item}")
@@ -33,7 +33,7 @@ def minify_html(item: Item) -> Item:
     output_item = item.derived_copy(format=Format.html, body=None)
     output_path = ws.target_path_for(output_item)
 
-    minify_tw_html(input_path, output_path)
+    tminify(input_path, output_path)
 
     output_item.body = output_path.read_text()
     output_item.external_path = str(output_path)  # Indicate item is already saved.

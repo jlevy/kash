@@ -871,7 +871,7 @@ wheels = [
 
 [[package]]
 name = "huggingface-hub"
-version = "0.33.5"
+version = "0.34.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
@@ -883,9 +883,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/02/16/5716d03e2b48bcc8e32d9b18ed7e55d2ae52e3d5df146cced9fe0581b5ff/huggingface_hub-0.33.5.tar.gz", hash = "sha256:814097e475646d170c44be4c38f7d381ccc4539156a5ac62a54f53aaf1602ed8", size = 427075, upload-time = "2025-07-24T12:30:31.449Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/22/cd/841bc8e0550d69f632a15cdd70004e95ba92cd0fbe13087d6669e2bb5f44/huggingface_hub-0.34.1.tar.gz", hash = "sha256:6978ed89ef981de3c78b75bab100a214843be1cc9d24f8e9c0dc4971808ef1b1", size = 456783, upload-time = "2025-07-25T14:54:54.758Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/33/d5/d9e9b75d8dc9cf125fff16fb0cd51d864a29e8b46b6880d8808940989405/huggingface_hub-0.33.5-py3-none-any.whl", hash = "sha256:29b4e64982c2064006021af297e1b17d44c85a8aaf90a0d7efeff7e7d2426296", size = 515705, upload-time = "2025-07-24T12:30:29.55Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/cf/dd53c0132f50f258b06dd37a4616817b1f1f6a6b38382c06effd04bb6881/huggingface_hub-0.34.1-py3-none-any.whl", hash = "sha256:60d843dcb7bc335145b20e7d2f1dfe93910f6787b2b38a936fb772ce2a83757c", size = 558788, upload-time = "2025-07-25T14:54:52.957Z" },
 ]
 
 [[package]]
@@ -1092,7 +1092,6 @@ dependencies = [
     { name = "markdownify" },
     { name = "mcp" },
     { name = "mcp-proxy" },
-    { name = "minify-tw-html" },
     { name = "openai" },
     { name = "pandas" },
     { name = "patch-ng" },
@@ -1121,6 +1120,7 @@ dependencies = [
     { name = "thefuzz" },
     { name = "tiktoken" },
     { name = "tldr" },
+    { name = "tminify" },
     { name = "typing-extensions" },
     { name = "uvicorn" },
     { name = "xonsh" },
@@ -1164,7 +1164,6 @@ requires-dist = [
     { name = "markdownify", specifier = ">=0.13.1" },
     { name = "mcp", specifier = ">=1.6.0" },
     { name = "mcp-proxy", specifier = ">=0.5.0" },
-    { name = "minify-tw-html", specifier = ">=0.1.3" },
     { name = "openai", specifier = ">=1.66.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "patch-ng", specifier = ">=1.18.1" },
@@ -1193,6 +1192,7 @@ requires-dist = [
     { name = "thefuzz", specifier = ">=0.22.1" },
     { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "tldr", specifier = ">=3.3.0" },
+    { name = "tminify", specifier = ">=0.1.6" },
     { name = "typing-extensions", specifier = ">=4.12.2" },
     { name = "uvicorn", specifier = ">=0.34.0" },
     { name = "xonsh", specifier = ">=0.19.3" },
@@ -1444,18 +1444,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
-]
-
-[[package]]
-name = "minify-tw-html"
-version = "0.1.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "prettyfmt" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ce/52/7784cac87ea3d0545ea8bfbed24e5aa9431ea80142e3c6320f3b2892ff2d/minify_tw_html-0.1.4.tar.gz", hash = "sha256:22ee4bd16323cea68f27aa524cce6d9c530adfb271622dc917bd5307ccd4603a", size = 36480, upload-time = "2025-07-22T16:23:37.17Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/46/200bcc3388f1e24ff33800ac05a149236cdeb45398ee126114cdb8bf3b86/minify_tw_html-0.1.4-py3-none-any.whl", hash = "sha256:dd395f28c4c0f3ac5008b12c35e466a966a765161c0d254a745b775d9d3af19a", size = 12311, upload-time = "2025-07-22T16:23:36.329Z" },
 ]
 
 [[package]]
@@ -2312,15 +2300,15 @@ wheels = [
 
 [[package]]
 name = "rich"
-version = "14.0.0"
+version = "14.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/53/830aa4c3066a8ab0ae9a9955976fb770fe9c6102117c8ec4ab3ea62d89e8/rich-14.0.0.tar.gz", hash = "sha256:82f1bc23a6a21ebca4ae0c45af9bdbc492ed20231dcb63f297d6d1021a9d5725", size = 224078, upload-time = "2025-03-30T14:15:14.23Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/75/af448d8e52bf1d8fa6a9d089ca6c07ff4453d86c65c145d0a300bb073b9b/rich-14.1.0.tar.gz", hash = "sha256:e497a48b844b0320d45007cdebfeaeed8db2a4f4bcf49f15e455cfc4af11eaa8", size = 224441, upload-time = "2025-07-25T07:32:58.125Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/9b/63f4c7ebc259242c89b3acafdb37b41d1185c07ff0011164674e9076b491/rich-14.0.0-py3-none-any.whl", hash = "sha256:1c9491e1951aac09caffd42f448ee3d04e58923ffe14993f6e83068dc395d7e0", size = 243229, upload-time = "2025-03-30T14:15:12.283Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/30/3c4d035596d3cf444529e0b2953ad0466f6049528a879d27534700580395/rich-14.1.0-py3-none-any.whl", hash = "sha256:536f5f1785986d6dbdea3c75205c473f970777b4a0d6c6dd1b696aa05a3fa04f", size = 243368, upload-time = "2025-07-25T07:32:56.73Z" },
 ]
 
 [[package]]
@@ -2730,6 +2718,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/04/3a/7ee781dff4b122652e5b6fc65c0abe0b2d1500032d4d4e058b58fa232070/tldr-3.4.1.tar.gz", hash = "sha256:34f573fa8f65d6b484dab5c2d93392c11141fb44161d4651e21b925820c1303f", size = 16805, upload-time = "2025-04-29T18:08:56.995Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/7d/2b836027fd1f7f079d4eb419c453bcc67148c7f2365d1c8bde8c07b673ca/tldr-3.4.1-py3-none-any.whl", hash = "sha256:312e22522417c42a5b327d2939d2f0a7400c7cd13751ba929a66d7cb7a885b6b", size = 13425, upload-time = "2025-04-29T18:08:55.365Z" },
+]
+
+[[package]]
+name = "tminify"
+version = "0.1.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "prettyfmt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/66/1db0ca0a970214364487b11dbd2bd91246ca11a493022fc67ba2c50ddab9/tminify-0.1.6.tar.gz", hash = "sha256:5e6aebe84b1e460b63a6ed57f9738cd4213696b0abad1ec5d55a214682cacb83", size = 36464, upload-time = "2025-07-25T16:51:39.939Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/e8/bc7c74dcd0add5cf93ad42ac3de26f126508b0c005ca85d5cc46b5ac8630/tminify-0.1.6-py3-none-any.whl", hash = "sha256:bca22f493918c549903d789890d3a2f43a7c1c44a8c6b7a1f9bcd21031975f16", size = 11996, upload-time = "2025-07-25T16:51:38.968Z" },
 ]
 
 [[package]]
