@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from mcp.server.sse import SseServerTransport
 from prettyfmt import fmt_path
-from sse_starlette.sse import AppStatus
 from starlette.applications import Starlette
 from starlette.routing import Mount, Route
 
@@ -71,10 +70,6 @@ class MCPServerSSE:
 
     def _setup_server(self):
         import uvicorn
-
-        # Reset AppStatus.should_exit_event to None to ensure it's created
-        # in the correct event loop when needed.
-        AppStatus.should_exit_event = None
 
         port = global_settings().mcp_server_port
 
