@@ -31,4 +31,4 @@ def welcome() -> None:
         )
     )
     cprint(Panel(Markdown(help_topics.warning), box=SQUARE, border_style=COLOR_HINT))
-    cprint("%s", get_full_version_name())
+    cprint("%s", get_full_version_name(with_kits=True))

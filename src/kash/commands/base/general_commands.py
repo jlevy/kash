@@ -39,7 +39,7 @@ def version() -> None:
     """
     Show the version of kash.
     """
-    cprint(get_full_version_name())
+    cprint(get_full_version_name(with_kits=True))
 
 
 @kash_command

@@ -170,6 +170,7 @@ def reset_rich_logging(
     the `.log` extension. If `log_path` is provided, it will be used to infer
     the log root and name.
     """
+    _init_rich_logging()
     if log_path:
         if not log_path.parent.exists():
             log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -206,6 +207,9 @@ def reload_rich_logging_setup():
 
 @cache
 def _init_rich_logging():
+    """
+    One-time idempotent setup of rich logging.
+    """
     rich.reconfigure(theme=get_theme(), highlighter=get_highlighter())
 
     logging.setLoggerClass(CustomLogger)

@@ -28,7 +28,14 @@ def get_version_tag():
     return f"v{get_version()}"
 
 
-def get_full_version_name(with_kits: bool = True):
+def get_full_version_name(with_kits: bool = False):
+    """
+    Get the full version name, including the version number and any loaded kits.
+
+    If `with_kits` is True, will also import `kash.kits` packages and get those versions,
+    but be careful as this can be much slower due to imports!
+    """
+
     version_items = [f"{PACKAGE_NAME} {get_version_tag()}"]
     if with_kits:
         from kash.actions import get_loaded_kits
