@@ -205,7 +205,9 @@ def kits() -> None:
         cprint("Currently imported kits:")
         for kit in get_loaded_kits().values():
             cprint(
-                format_name_and_value(f"{kit.name} kit", str(kit.path or ""), text_wrap=Wrap.NONE)
+                format_name_and_value(
+                    f"{kit.distribution_name} kit", str(kit.path or ""), text_wrap=Wrap.NONE
+                )
             )
 
 

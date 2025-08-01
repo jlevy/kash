@@ -28,8 +28,17 @@ def get_version_tag():
     return f"v{get_version()}"
 
 
-def get_full_version_name():
-    return f"{PACKAGE_NAME} {get_version_tag()}"
+def get_full_version_name(with_kits: bool = True):
+    version_items = [f"{PACKAGE_NAME} {get_version_tag()}"]
+    if with_kits:
+        from kash.actions import get_loaded_kits
+
+        kits = get_loaded_kits()
+        for kit in kits.values():
+            if kit.version:
+                version_items.append(f"{kit.distribution_name} v{kit.version}")
+
+    return ", ".join(version_items)
 
 
 if __name__ == "__main__":
