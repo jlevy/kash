@@ -3,6 +3,8 @@ from pathlib import Path
 from frontmatter_format import FmStyle, fmf_has_frontmatter, fmf_read, fmf_write
 from funlog import tally_calls
 from prettyfmt import custom_key_sort, fmt_size_human
+from sidematter_format import SidematterPath, resolve_sidematter
+from strif import atomic_output_file
 
 from kash.config.logger import get_logger
 from kash.model.items_model import ITEM_FIELDS, Item
@@ -22,13 +24,15 @@ _item_cache = MtimeCache[Item](max_size=2000, name="Item")
 
 
 @tally_calls()
-def write_item(item: Item, path: Path, normalize: bool = True):
+def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatter: bool = True):
     """
-    Write a text item to a file with standard frontmatter format YAML.
+    Write a text item to a file with standard frontmatter format YAML or sidematter format.
     By default normalizes formatting of the body text and updates the item's body.
+    If `use_frontmatter` is True, uses frontmatter on the file for metadata, and omits
+    the sidematter metadata file.
     """
     item.validate()
-    if item.format and not item.format.supports_frontmatter:
+    if use_frontmatter and item.format and not item.format.supports_frontmatter:
         raise ValueError(f"Item format `{item.format.value}` does not support frontmatter: {item}")
 
     # Clear cache before writing.
@@ -65,14 +69,29 @@ def write_item(item: Item, path: Path, normalize: bool = True):
 
     log.debug("Writing item to %s: body length %s, metadata %s", path, len(body), item.metadata())
 
-    fmf_write(
-        path,
-        body,
-        item.metadata(),
-        style=fm_style,
-        key_sort=ITEM_FIELD_SORT,
-        make_parents=True,
-    )
+    # Use sidematter format
+    spath = SidematterPath(path)
+    if use_frontmatter:
+        # Use frontmatter format
+        fmf_write(
+            path,
+            body,
+            item.metadata(),
+            style=fm_style,
+            key_sort=ITEM_FIELD_SORT,
+            make_parents=True,
+        )
+    else:
+        # Write the main file with just the body (no frontmatter)
+        with atomic_output_file(path, make_parents=True) as f:
+            f.write_text(body, encoding="utf-8")
+
+        # Sidematter metadata
+        spath.write_meta(item.metadata(), key_sort=ITEM_FIELD_SORT)
+
+    # Handle assets if present
+    if item.asset_dir:
+        spath.copy_assets_from(item.asset_dir)
 
     # Update cache.
     _item_cache.update(path, item)
@@ -86,8 +105,11 @@ def read_item(path: Path, base_dir: Path | None) -> Item:
     Read an item from a file. Uses `base_dir` to resolve paths, so the item's
     `store_path` will be set and be relative to `base_dir`.
 
-    If frontmatter format YAML is present, it is parsed. If not, the item will
-    be a resource with a format inferred from the file extension or the content.
+    Automatically detects and reads sidematter format (metadata in .meta.yml/.meta.json
+    sidecar files), which takes precedence over frontmatter when present. Falls back to
+    frontmatter format YAML if no sidematter is found. If neither is present, the item
+    will be a resource with a format inferred from the file extension or the content.
+
     The `store_path` will be the path relative to the `base_dir`, if the file
     is within `base_dir`, or otherwise the `external_path` will be set to the path
     it was read from.
@@ -103,15 +125,30 @@ def read_item(path: Path, base_dir: Path | None) -> Item:
 
 @tally_calls()
 def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
-    has_frontmatter = fmf_has_frontmatter(path)
-    body = metadata = None
-    if has_frontmatter:
-        body, metadata = fmf_read(path)
-        log.debug("Read item from %s: body length %s, metadata %s", path, len(body), metadata)
+    # First, try to resolve sidematter
+    sidematter = resolve_sidematter(path, use_frontmatter=False)
 
-        path = path.resolve()
-        if base_dir:
-            base_dir = base_dir.resolve()
+    if sidematter.meta:
+        # Sidematter found, use it (takes precedence over frontmatter)
+        metadata = sidematter.meta
+        body = path.read_text(encoding="utf-8")
+        log.debug(
+            "Read item from sidematter %s: body length %s, metadata %s",
+            sidematter.meta_path,
+            len(body),
+            metadata,
+        )
+    else:
+        # No sidematter, check for frontmatter
+        has_frontmatter = fmf_has_frontmatter(path)
+        body = metadata = None
+        if has_frontmatter:
+            body, metadata = fmf_read(path)
+            log.debug("Read item from %s: body length %s, metadata %s", path, len(body), metadata)
+
+    path = path.resolve()
+    if base_dir:
+        base_dir = base_dir.resolve()
 
     # Ensure store_path is used if it's within the base_dir, and
     # external_path otherwise.
@@ -127,8 +164,13 @@ def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
         item = Item.from_dict(
             metadata, body=body, store_path=store_path, external_path=external_path
         )
+
+        # If we found an assets directory, record it.
+        if sidematter.assets_path:
+            item.asset_dir = sidematter.assets_path.name
     else:
-        # This is a file without frontmatter. Infer format from the file and content,
+        # This is a file without frontmatter or sidematter.
+        # Infer format from the file and content,
         # and use store_path or external_path as appropriate.
         item = Item.from_external_path(path)
         if item.format:

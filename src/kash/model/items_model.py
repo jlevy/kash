@@ -262,6 +262,11 @@ class Item:
     # Optionally, a URL to a thumbnail image for this item.
     thumbnail_url: Url | None = None
 
+    # Optionally, if there are asset files that should travel with the item, this is
+    # parent directory of the assets, relative to the same directory as the primary file.
+    # Typically, if the primary file is `foo.md` this would be `foo.assets`.
+    asset_dir: str | None = None
+
     # Optional additional metadata.
     extra: dict[str, Any] | None = None
 

@@ -47,7 +47,7 @@ dependencies = [
     "prettyfmt>=0.3.1",
     "flowmark>=0.5.2",
     "frontmatter-format>=0.2.2",
-    "sidematter-format>=0.0.1",
+    "sidematter-format>=0.0.2",
     "chopdiff>=0.2.3",
     "clideps>=0.1.4",
     "tminify>=0.1.6",
@@ -130,7 +130,8 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 [tool.uv.sources]
 # For local development:
 # clideps = { path = "../clideps", editable = true }
-# tminify = { path = "../../github/tminify", editable = true }
+# tminify = { path = "../tminify", editable = true }
+# sidematter-format = { path = "../sidematter-format", editable = true }
 
 # ---- Build system ----
 

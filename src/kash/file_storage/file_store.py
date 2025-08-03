@@ -9,18 +9,14 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from strif import copyfile_atomic, hash_file, move_file
+from sidematter_format import move_with_sidematter
+from strif import copyfile_atomic, hash_file
 from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
 from kash.config.text_styles import EMOJI_SAVED
-from kash.file_storage.item_file_format import read_item, write_item
 from kash.file_storage.metadata_dirs import MetadataDirs
-from kash.file_storage.store_filenames import (
-    folder_for_type,
-    join_suffix,
-    parse_item_filename,
-)
+from kash.file_storage.store_filenames import folder_for_type, join_suffix, parse_item_filename
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
@@ -455,6 +451,8 @@ class FileStore(Workspace):
                     # Save as a text item with frontmatter.
                     if item.external_path:
                         item.body = Path(item.external_path).read_text()
+                    from kash.file_storage.item_file_format import write_item
+
                     write_item(item, full_path, normalize=not no_format)
             except OSError as e:
                 log.error("Error saving item: %s", e)
@@ -499,6 +497,8 @@ class FileStore(Workspace):
         """
         Load item at the given path.
         """
+        from kash.file_storage.item_file_format import read_item
+
         return read_item(self.base_dir / store_path, self.base_dir)
 
     def hash(self, store_path: StorePath) -> str:
@@ -521,6 +521,7 @@ class FileStore(Workspace):
         If `as_type` is specified, it will be used to override the item type, otherwise
         we go with our best guess.
         """
+        from kash.file_storage.item_file_format import read_item
         from kash.web_content.canon_url import canonicalize_url
 
         if isinstance(locator, StorePath) and not reimport:
@@ -679,7 +680,7 @@ class FileStore(Workspace):
         if not orig_path.exists():
             log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
-        move_file(orig_path, archive_path)
+        move_with_sidematter(orig_path, archive_path)
         self._remove_references([store_path])
 
         archive_path = StorePath(self.dirs.archive_dir / store_path)
@@ -695,7 +696,7 @@ class FileStore(Workspace):
         if full_input_path.is_relative_to(full_archive_path):
             store_path = StorePath(relpath(full_input_path, full_archive_path))
         original_path = self.base_dir / store_path
-        move_file(full_input_path, original_path)
+        move_with_sidematter(full_input_path, original_path)
         return StorePath(store_path)
 
     @synchronized
