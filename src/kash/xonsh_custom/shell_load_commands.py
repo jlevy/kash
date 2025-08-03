@@ -130,20 +130,14 @@ def log_command_action_info():
     kits = get_loaded_kits()
     action_count = len(get_all_action_classes())
     command_count = len(get_all_commands())
-    cprint(
-        Text.assemble(
-            Text("Kits loaded: "),
-            Text(
-                f"{', '.join(kits.keys()) if kits else 'none'}", style=COLOR_VALUE if kits else ""
-            ),
-        )
-    )
+    kits_list = ["kash-shell"] + list(k.distribution_name for k in kits.values())
     cprint(
         Text.assemble(
             Text(f"{command_count} commands", style=COLOR_VALUE),
             Text(" and "),
             Text(f"{action_count} actions", style=COLOR_VALUE),
-            Text(" loaded."),
+            Text(" loaded from "),
+            Text(f"{', '.join(kits_list)}", style=COLOR_VALUE if kits_list else ""),
         )
     )
 
