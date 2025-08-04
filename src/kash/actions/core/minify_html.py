@@ -31,7 +31,7 @@ def minify_html(item: Item) -> Item:
     input_path = ws.base_dir / item.store_path
 
     output_item = item.derived_copy(format=Format.html, body=None)
-    output_path = ws.target_path_for(output_item)
+    output_path = ws.assign_store_path(output_item)
 
     tminify(input_path, output_path)
 

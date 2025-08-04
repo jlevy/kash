@@ -9,14 +9,18 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from sidematter_format import Sidematter, move_with_sidematter
+from sidematter_format import move_with_sidematter
 from strif import copyfile_atomic, hash_file
 from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
 from kash.config.text_styles import EMOJI_SAVED
 from kash.file_storage.metadata_dirs import MetadataDirs
-from kash.file_storage.store_filenames import folder_for_type, join_suffix, parse_item_filename
+from kash.file_storage.store_filenames import (
+    folder_for_type,
+    join_suffix,
+    parse_item_filename,
+)
 from kash.model.items_model import Item, ItemId, ItemType
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
@@ -336,26 +340,24 @@ class FileStore(Workspace):
 
             return StorePath(store_path), old_store_path
 
-    def target_path_for(self, item: Item, *, relative: bool = False) -> Path:
+    @synchronized
+    def assign_store_path(self, item: Item) -> Path:
         """
-        Get an the absolute path for an item. Use this if you need to work around the
-        usual save mechanism and write directly to the store yourself, at the location
-        the item usually would be saved.
+        Pick a new store path for the item and mutate `item.store_path`.
 
-        If you write to this path, then set the item's `external_path` to indicate it's
-        already saved.
+        This is useful if you need to write to the store yourself, at the location
+        the item usually would be saved, and also want the path to be fixed.
+
+        This is idempotent. If you also write to the file, call `mark_as_saved()`
+        to indicate that the file is now saved. Otherwise the item should be saved
+        with `save()`.
+
+        Returns the absolute path, for convenience if you wish to write to the file
+        directly.
         """
         store_path, _old_store_path = self.store_path_for(item)
-        if relative:
-            return store_path
-        else:
-            return self.base_dir / store_path
-
-    def assets_path_for(self, item: Item, *, relative: bool = False) -> Path:
-        """
-        Get the sidematter format assets path for an item.
-        """
-        return Sidematter(self.target_path_for(item, relative=relative)).assets_dir
+        item.store_path = str(store_path)
+        return self.base_dir / store_path
 
     def _tmp_path_for(self, item: Item) -> StorePath:
         """

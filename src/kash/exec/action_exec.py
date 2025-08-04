@@ -109,9 +109,7 @@ def log_action(action: Action, action_input: ActionInput, operation: Operation):
     log.info("Input items are:\n%s", fmt_lines(action_input.items))
 
 
-def check_for_existing_result(
-    context: ActionContext, action_input: ActionInput, operation: Operation
-) -> ActionResult | None:
+def check_for_existing_result(context: ActionContext) -> ActionResult | None:
     """
     Check if we already have the results for this operation (same action and inputs)
     If so return it, unless rerun is requested, in which case we just log that the results
@@ -126,7 +124,7 @@ def check_for_existing_result(
 
     # Check if a previous run already produced the result.
     # To do this we preassemble outputs.
-    preassembled_result = action.preassemble(operation, action_input)
+    preassembled_result = action.preassemble_result(context)
     if preassembled_result:
         # Check if these items already exist, with last_operation matching action and input fingerprints.
         already_present = [ws.find_by_id(item) for item in preassembled_result.items]
@@ -341,7 +339,7 @@ def save_action_result(
 
 
 def run_action_with_caching(
-    context: ExecContext, action_input: ActionInput
+    exec_context: ExecContext, action_input: ActionInput
 ) -> tuple[ActionResult, list[StorePath], list[StorePath]]:
     """
     Run an action, including validation, only rerunning if `rerun` requested or
@@ -350,27 +348,28 @@ def run_action_with_caching(
 
     Note: Mutates the input but only to add `context` to each item.
     """
-    action = context.action
-    settings = context.settings
+    action = exec_context.action
+    settings = exec_context.settings
     ws = settings.workspace
 
     # Assemble the operation and validate the action input.
-    operation = validate_action_input(context, ws, action, action_input)
+    operation = validate_action_input(exec_context, ws, action, action_input)
 
     # Log what we're about to run.
     log_action(action, action_input, operation)
 
-    action_context = ActionContext(
-        exec_context=context, operation=operation, action_input=action_input
+    # Consolidate all the context.
+    context = ActionContext(
+        exec_context=exec_context, operation=operation, action_input=action_input
     )
 
     try:
         # Hack to add the context to each item.
         # We do this before cache preassemble check.
-        action_input.set_context(action_context)
+        action_input.set_context(context)
 
         # Check if a previous run already produced the result.
-        existing_result = check_for_existing_result(action_context, action_input, operation)
+        existing_result = check_for_existing_result(context)
 
         if existing_result and not settings.rerun:
             # Use the cached result.
@@ -388,7 +387,7 @@ def run_action_with_caching(
             )
         else:
             # Run it!
-            result = run_action_operation(action_context, action_input, operation)
+            result = run_action_operation(context, action_input, operation)
             result_store_paths, archived_store_paths = save_action_result(
                 ws,
                 result,

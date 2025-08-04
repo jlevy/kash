@@ -8,11 +8,11 @@ from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
 from kash.model.items_model import State
+from kash.model.operations_model import Operation
 
 if TYPE_CHECKING:
     from kash.file_storage.file_store import FileStore
     from kash.model.actions_model import Action, ActionInput
-    from kash.model.operations_model import Operation
 
 
 log = get_logger(__name__)

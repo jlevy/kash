@@ -238,7 +238,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 action_input = prepare_action_input(*input_items)
 
                 result, result_store_paths, _archived_store_paths = run_action_with_caching(
-                    context=context, action_input=action_input
+                    context, action_input
                 )
 
         # Return final result, formatted for the LLM to understand.

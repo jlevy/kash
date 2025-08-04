@@ -23,7 +23,6 @@ from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.exec_model import ActionContext, ExecContext
 from kash.model.items_model import UNTITLED, Format, Item, ItemType
-from kash.model.operations_model import Operation, Source
 from kash.model.params_model import (
     ALL_COMMON_PARAMS,
     COMMON_SHELL_PARAMS,
@@ -530,7 +529,7 @@ class Action(ABC):
         else:
             return prev_title
 
-    def preassemble(self, operation: Operation, input: ActionInput) -> ActionResult | None:
+    def preassemble_result(self, context: ActionContext) -> ActionResult | None:
         """
         Actions can have a separate preliminary step to pre-assemble outputs. This allows
         us to determine the title and types for the output items and check if they were
@@ -549,11 +548,9 @@ class Action(ABC):
         )
         if can_preassemble:
             # Using first input to determine the output title.
-            primary_input = input.items[0]
-            item = primary_input.derived_copy(type=self.output_type, body=None)
-            item.title = self.format_title(primary_input.title)
+            primary_input = context.action_input.items[0]
             # In this case we only expect one output.
-            item.update_history(Source(operation=operation, output_num=0, cacheable=self.cacheable))
+            item = primary_input.preassembled_copy(context, 0)
             return ActionResult([item])
         else:
             # Caching disabled.

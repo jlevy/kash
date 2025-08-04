@@ -866,11 +866,39 @@ class Item:
                 new_item.title = action.format_title(prev_title)
             else:
                 log.warning(
-                    "Deriving an item without action context so keeping previous title: %s", self
+                    "Deriving an item without action context so keeping previous title: %s",
+                    self,
                 )
                 new_item.title = f"{prev_title} (derived copy)"
 
         return new_item
+
+    def preassembled_copy(
+        self,
+        action_context: ActionContext | None = None,
+        output_num: int = 0,
+        **updates: Unpack[ItemUpdateOptions],
+    ) -> Item:
+        """
+        Pre-assemble a single output item for this action, including adding to the history,
+        which is useful to know the final store path, title, etc.
+        """
+        if not action_context:
+            action_context = self.context
+            if not action_context:
+                raise ValueError(f"Item has no action context: {self}")
+
+        action = action_context.action
+        item = self.derived_copy(**{"type": action.output_type, "body": None, **updates})
+        item.title = action.format_title(item.title)
+        item.update_history(
+            Source(
+                operation=action_context.operation,
+                output_num=output_num,
+                cacheable=action.cacheable,
+            )
+        )
+        return item
 
     def update_relations(self, **relations: Sequence[Locator]) -> ItemRelations:
         """
@@ -920,6 +948,16 @@ class Item:
         # Don't add duplicates to the history.
         if not self.history or self.history[-1] != operation_summary:
             self.history.append(operation_summary)
+
+    def mark_as_saved(self, external_path: Path) -> None:
+        """
+        Mark the item as saved at an external or internal path. If this item is saved to a
+        workspace and the path is inside the workspace, the save will be short-circuited.
+        If it's outside the workspace, the item will be copied to the workspace.
+        """
+        if not external_path.exists():
+            raise FileNotFoundError(f"Provided path not found: {fmt_loc(external_path)}")
+        self.external_path = str(external_path)
 
     def fmt_loc(self) -> str:
         """
