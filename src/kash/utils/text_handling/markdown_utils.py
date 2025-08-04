@@ -161,30 +161,30 @@ def rewrite_urls(
     return MARKDOWN.render(document)
 
 
-def rewrite_image_urls(content: str, url_rewriter: Callable[[str], str]) -> str:
+def rewrite_image_paths(content: str, from_prefix: str, to_prefix: str) -> str:
     """
-    Rewrite local image URLs in markdown content using the provided rewriter function.
+    Rewrite image paths in markdown content by replacing matching prefixes.
 
-    The rewriter function is only applied to local image paths (not remote URLs).
-    Remote URLs (starting with http:// or https://) are left unchanged.
+    This works with URLs, relative paths, or absolute paths.
 
     Args:
         content: The markdown content to process
-        url_rewriter: A function that takes an image path string and returns a new path
+        from_prefix: The prefix to match and replace
+        to_prefix: The prefix to replace the from_prefix with
 
     Returns:
-        The markdown content with rewritten image URLs
+        The markdown content with rewritten image paths
 
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
 
-    def filtered_rewriter(url: str) -> str | None:
-        if _is_remote_url(url):
-            return None  # Skip remote URLs
-        return url_rewriter(url)
+    def prefix_rewriter(url: str) -> str | None:
+        if url.startswith(from_prefix):
+            return url.replace(from_prefix, to_prefix, 1)
+        return None  # Skip URLs that don't match the prefix
 
-    return rewrite_urls(content, filtered_rewriter, element_types=(Image,))
+    return rewrite_urls(content, prefix_rewriter, element_types=(Image,))
 
 
 def _rewrite_tree_urls(
@@ -968,8 +968,8 @@ def test_extract_links_mixed_real_world() -> None:
     assert len(result) == len(expected_links)
 
 
-def test_rewrite_image_urls() -> None:
-    """Test rewriting image URLs in markdown content."""
+def test_rewrite_image_paths() -> None:
+    """Test rewriting image paths in markdown content."""
 
     # Test content with various image types
     content = dedent("""
@@ -984,29 +984,29 @@ def test_rewrite_image_urls() -> None:
         More content here.
         """)
 
-    def path_rewriter(path: str) -> str:
-        """Move images from current directory structure to new directory"""
-        if path.startswith("./images/"):
-            return path.replace("./images/", "./new-images/")
-        elif path.startswith("../assets/"):
-            return path.replace("../assets/", "./new-assets/")
-        return path
+    # Test rewriting ./images/ prefix
+    result1 = rewrite_image_paths(content, "./images/", "./new-images/")
+    assert "./new-images/local.png" in result1
+    assert "./images/local.png" not in result1
+    assert "https://example.com/remote.jpg" in result1  # Remote unchanged
+    assert "../assets/photo.jpeg" in result1  # Other local unchanged
 
-    result = rewrite_image_urls(content, path_rewriter)
+    # Test rewriting ../assets/ prefix
+    result2 = rewrite_image_paths(content, "../assets/", "./new-assets/")
+    assert "./new-assets/photo.jpeg" in result2
+    assert "../assets/photo.jpeg" not in result2
+    assert "./images/local.png" in result2  # Other local unchanged
+    assert "https://example.com/remote.jpg" in result2  # Remote unchanged
 
-    # Check that local paths were rewritten
-    assert "./new-images/local.png" in result
-    assert "./new-assets/photo.jpeg" in result
-
-    # Check that remote URL was not changed
-    assert "https://example.com/remote.jpg" in result
-
-    # Check that original local paths are gone
-    assert "./images/local.png" not in result
-    assert "../assets/photo.jpeg" not in result
+    # Test rewriting remote URLs
+    result3 = rewrite_image_paths(content, "https://example.com/", "https://cdn.example.com/")
+    assert "https://cdn.example.com/remote.jpg" in result3
+    assert "https://example.com/remote.jpg" not in result3
+    assert "./images/local.png" in result3  # Local unchanged
+    assert "../assets/photo.jpeg" in result3  # Local unchanged
 
 
-def test_rewrite_image_urls_no_images() -> None:
+def test_rewrite_image_paths_no_images() -> None:
     """Test rewriting on content with no images."""
     content = dedent("""
         # No Images Here
@@ -1018,10 +1018,7 @@ def test_rewrite_image_urls_no_images() -> None:
         - Item 2
         """)
 
-    def dummy_rewriter(path: str) -> str:
-        return f"rewritten-{path}"
-
-    result = rewrite_image_urls(content, dummy_rewriter)
+    result = rewrite_image_paths(content, "./", "rewritten-")
 
     # Content should be essentially unchanged (except possible minor formatting)
     assert "# No Images Here" in result
@@ -1029,7 +1026,7 @@ def test_rewrite_image_urls_no_images() -> None:
     assert "- Item 1" in result
 
 
-def test_rewrite_image_urls_only_remote() -> None:
+def test_rewrite_image_paths_only_remote() -> None:
     """Test rewriting on content with only remote images."""
     content = dedent("""
         # Remote Images Only
@@ -1038,17 +1035,20 @@ def test_rewrite_image_urls_only_remote() -> None:
         ![Image 2](http://test.com/image2.jpg)
         """)
 
-    def path_rewriter(path: str) -> str:
-        return f"local/{path}"
+    # Test rewriting https:// prefix
+    result1 = rewrite_image_paths(content, "https://example.com/", "https://cdn.example.com/")
+    assert "https://cdn.example.com/image1.png" in result1
+    assert "https://example.com/image1.png" not in result1
+    assert "http://test.com/image2.jpg" in result1  # Other protocol unchanged
 
-    result = rewrite_image_urls(content, path_rewriter)
+    # Test rewriting http:// prefix
+    result2 = rewrite_image_paths(content, "http://test.com/", "https://secure.test.com/")
+    assert "https://secure.test.com/image2.jpg" in result2
+    assert "http://test.com/image2.jpg" not in result2
+    assert "https://example.com/image1.png" in result2  # Other URL unchanged
 
-    # URLs should be unchanged since they're remote
-    assert "https://example.com/image1.png" in result
-    assert "http://test.com/image2.jpg" in result
 
-
-def test_rewrite_image_urls_complex() -> None:
+def test_rewrite_image_paths_complex() -> None:
     """Test rewriting with complex markdown structure."""
     content = dedent("""
         # Main Title
@@ -1069,20 +1069,26 @@ def test_rewrite_image_urls_complex() -> None:
         And a remote one: ![Remote](https://remote.com/image.png)
         """)
 
-    def prefix_rewriter(path: str) -> str:
-        """Add a prefix to all local paths"""
-        return f"assets/{path}"
+    # Test rewriting relative paths with ./ prefix
+    result1 = rewrite_image_paths(content, "./", "assets/")
+    assert "assets/local.png" in result1
+    assert "assets/list.png" in result1
+    assert "./local.png" not in result1
+    assert "./list.png" not in result1
+    assert "images/quote.jpg" in result1  # No ./ prefix, unchanged
+    assert "table.png" in result1  # No ./ prefix, unchanged
+    assert "https://remote.com/image.png" in result1  # Remote unchanged
 
-    result = rewrite_image_urls(content, prefix_rewriter)
+    # Test rewriting paths without prefix
+    result2 = rewrite_image_paths(content, "images/", "new-images/")
+    assert "new-images/quote.jpg" in result2
+    assert "![Quote image](images/quote.jpg)" not in result2  # Check full image syntax
+    assert "./local.png" in result2  # Different prefix, unchanged
 
-    # Check that all local images were prefixed
-    assert "assets/./local.png" in result
-    assert "assets/images/quote.jpg" in result
-    assert "assets/./list.png" in result
-    assert "assets/table.png" in result
-
-    # Remote should be unchanged
-    assert "https://remote.com/image.png" in result
+    # Test rewriting absolute URLs
+    result3 = rewrite_image_paths(content, "https://remote.com/", "https://cdn.remote.com/")
+    assert "https://cdn.remote.com/image.png" in result3
+    assert "https://remote.com/image.png" not in result3
 
 
 def test_rewrite_urls_all_types() -> None:
