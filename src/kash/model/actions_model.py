@@ -62,7 +62,7 @@ class ActionInput:
         return ActionInput(items=[])
 
     # XXX For convenience, we have the ability to include the context on each item
-    # (this helps so per-item functions don't have to take context args everywhere).
+    # (this helps soper-item functions don't have to take context args everywhere).
     # TODO: Probably better to move this to a context var.
     def set_context(self, context: ExecContext) -> None:
         for item in self.items:
@@ -520,31 +520,15 @@ class Action(ABC):
                 fmt_lines(overrides),
             )
 
-    def _preassemble_one(
-        self,
-        operation: Operation,
-        input: ActionInput,
-        output_num: int,
-        type: ItemType,
-        **kwargs,
-    ) -> Item:
+    def format_title(self, prev_title: str | None) -> str:
         """
-        Preassemble a single empty output item from the given input items. Include the title,
-        type, and last Operation so we can do an identity check if the output already exists.
+        Format the title for an output item of this action.
         """
-        primary_input = input.items[output_num]
-        item = primary_input.derived_copy(type=type, body=None, **kwargs)
-
+        prev_title = prev_title or UNTITLED
         if self.title_template:
-            item.title = self.title_template.format(
-                title=primary_input.title or UNTITLED, action_name=self.name
-            )
-
-        item.update_history(
-            Source(operation=operation, output_num=output_num, cacheable=self.cacheable)
-        )
-
-        return item
+            return self.title_template.format(title=prev_title, action_name=self.name)
+        else:
+            return prev_title
 
     def preassemble(self, operation: Operation, input: ActionInput) -> ActionResult | None:
         """
@@ -564,9 +548,13 @@ class Action(ABC):
             self.cacheable,
         )
         if can_preassemble:
-            return ActionResult(
-                [self._preassemble_one(operation, input, output_num=0, type=self.output_type)]
-            )
+            # Using first input to determine the output title.
+            primary_input = input.items[0]
+            item = primary_input.derived_copy(type=self.output_type, body=None)
+            item.title = self.format_title(primary_input.title)
+            # In this case we only expect one output.
+            item.update_history(Source(operation=operation, output_num=0, cacheable=self.cacheable))
+            return ActionResult([item])
         else:
             # Caching disabled.
             return None

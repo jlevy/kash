@@ -70,7 +70,15 @@ class ItemType(Enum):
         """
         Resources don't have a body. On concepts it's optional.
         """
-        return self.value not in [ItemType.resource.value, ItemType.concept.value]
+        return self.value not in (ItemType.resource.value, ItemType.concept.value)
+
+    @property
+    def allows_op_suffix(self) -> bool:
+        """
+        Whether it makes sense to have an operation suffix for this item type
+        (docs often should, but concepts or resources can have cleaner naming conventions).
+        """
+        return self not in (ItemType.concept, ItemType.resource, ItemType.export)
 
     @staticmethod
     def for_format(format: Format) -> ItemType:
@@ -628,11 +636,7 @@ class Item:
         # For docs, etc but not for concepts/resources/exports, add a parenthical note
         # indicating the last operation, if there was one. This makes filename slugs
         # more readable.
-        if add_ops_suffix and self.type not in [
-            ItemType.concept,
-            ItemType.resource,
-            ItemType.export,
-        ]:
+        if add_ops_suffix and self.type.allows_op_suffix:
             last_op = self.history and self.history[-1].action_name
             if last_op:
                 step_num = len(self.history) + 1 if self.history else 1
@@ -859,9 +863,7 @@ class Item:
             prev_title = self.title or (Path(self.store_path).stem if self.store_path else UNTITLED)
             if self.context:
                 action = self.context.action
-                new_item.title = action.title_template.format(
-                    title=prev_title, action_name=action.name
-                )
+                new_item.title = action.format_title(prev_title)
             else:
                 log.warning(
                     "Deriving an item without action context so keeping previous title: %s", self

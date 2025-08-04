@@ -592,19 +592,19 @@ def applicable_actions(*paths: str, brief: bool = False, all: bool = False) -> N
 
 
 @kash_command
-def preconditions() -> None:
+def preconditions(path: str | None = None) -> None:
     """
-    List all preconditions and if the current selection meets them.
+    List all preconditions and if the current selection or specified path meets them.
     """
 
     ws = current_ws()
-    selection = ws.selections.current.paths
-    if not selection:
-        raise InvalidInput("No selection")
+    input_paths = assemble_path_args(path)
+    items = [ws.load(item) for item in input_paths]
 
-    items = [ws.load(item) for item in selection]
-
-    print_status("Precondition check for selection:\n %s", fmt_lines(selection))
+    if path:
+        print_status("Precondition check for path:\n%s", fmt_lines([fmt_loc(path)]))
+    else:
+        print_status("Precondition check for selection:\n%s", fmt_lines(input_paths))
 
     for precondition in get_all_preconditions().values():
         satisfied = all(precondition(item) for item in items)
