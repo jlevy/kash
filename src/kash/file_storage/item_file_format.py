@@ -3,7 +3,7 @@ from pathlib import Path
 from frontmatter_format import FmStyle, fmf_has_frontmatter, fmf_read, fmf_write
 from funlog import tally_calls
 from prettyfmt import custom_key_sort, fmt_size_human
-from sidematter_format import SidematterPath, resolve_sidematter
+from sidematter_format import Sidematter
 from strif import atomic_output_file
 
 from kash.config.logger import get_logger
@@ -74,7 +74,7 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
     log.debug("Writing item to %s: body length %s, metadata %s", path, len(body), item.metadata())
 
     # Use sidematter format
-    spath = SidematterPath(path)
+    spath = Sidematter(path)
     if use_frontmatter:
         # Use frontmatter format
         fmf_write(
@@ -126,7 +126,7 @@ def read_item(path: Path, base_dir: Path | None) -> Item:
 @tally_calls()
 def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
     # First, try to resolve sidematter
-    sidematter = resolve_sidematter(path, use_frontmatter=False)
+    sidematter = Sidematter(path).resolve(use_frontmatter=False)
 
     if sidematter.meta:
         # Sidematter found, use it (takes precedence over frontmatter)

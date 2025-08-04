@@ -34,7 +34,7 @@ from kash.utils.text_handling.markdown_render import markdown_to_html
 from kash.utils.text_handling.markdown_utils import first_heading
 
 if TYPE_CHECKING:
-    from sidematter_format import Sidematter
+    from sidematter_format import ResolvedSidematter
 
     from kash.model.exec_model import ExecContext
     from kash.workspaces import Workspace
@@ -534,14 +534,14 @@ class Item:
 
         return item_dict
 
-    def sidematter(self, ws: Path | Workspace | None = None) -> Sidematter:
+    def sidematter(self, ws: Path | Workspace | None = None) -> ResolvedSidematter:
         """
         Get the sidematter for this item, if present, by looking at the files
         in the specified workspace (or the current workspace if not specified).
         """
-        from sidematter_format import resolve_sidematter
+        from sidematter_format import Sidematter
 
-        return resolve_sidematter(self.absolute_path(ws))
+        return Sidematter(self.absolute_path(ws)).resolve()
 
     def filename_stem(self) -> str | None:
         """

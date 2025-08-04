@@ -53,11 +53,6 @@ class Workspace(ABC):
     def base_dir(self) -> Path:
         """The base directory for this workspace."""
 
-    @property
-    @abstractmethod
-    def assets_dir(self) -> Path:
-        """The directory for this workspace's assets."""
-
 
 def resolve_ws(name: str | Path) -> WorkspaceInfo:
     """
