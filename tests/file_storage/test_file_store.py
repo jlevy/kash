@@ -550,7 +550,7 @@ def test_file_store_imports_and_frontmatter():
         (subdir / "nested_image.jpg").write_text("fake jpg")
 
         asset_item = read_item(asset_file, workspace_dir)
-        assert asset_item.asset_dir == "with_assets.assets"
+        assert asset_item.sidematter(workspace_dir).assets_path == assets_dir
         print("✔︎ Assets handling working")
 
         # Final workspace listing

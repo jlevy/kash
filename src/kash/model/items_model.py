@@ -34,6 +34,8 @@ from kash.utils.text_handling.markdown_render import markdown_to_html
 from kash.utils.text_handling.markdown_utils import first_heading
 
 if TYPE_CHECKING:
+    from sidematter_format import Sidematter
+
     from kash.model.exec_model import ExecContext
     from kash.workspaces import Workspace
 
@@ -262,11 +264,6 @@ class Item:
     # Optionally, a URL to a thumbnail image for this item.
     thumbnail_url: Url | None = None
 
-    # Optionally, if there are asset files that should travel with the item, this is
-    # parent directory of the assets, relative to the same directory as the primary file.
-    # Typically, if the primary file is `foo.md` this would be `foo.assets`.
-    asset_dir: str | None = None
-
     # Optional additional metadata.
     extra: dict[str, Any] | None = None
 
@@ -458,7 +455,7 @@ class Item:
         if self.type.expects_body and self.format.has_body and not self.body:
             raise ValueError(f"Item type `{self.type.value}` is text but has no body: {self}")
 
-    def absolute_path(self, ws: Workspace | None = None) -> Path:
+    def absolute_path(self, ws: Path | Workspace | None = None) -> Path:
         """
         Get the absolute path to the item. Throws `ValueError` if the item has no
         store path. If no workspace is provided, uses the current workspace.
@@ -467,8 +464,11 @@ class Item:
 
         if not self.store_path:
             raise ValueError("Item has no store path")
-        if not ws:
+        elif isinstance(ws, Path):
+            return ws / self.store_path
+        elif not ws:
             ws = current_ws()
+
         return ws.base_dir / self.store_path
 
     @property
@@ -490,7 +490,7 @@ class Item:
             raise ValueError("Cannot get doc id for an item that has not been saved")
         return str(self.store_path)
 
-    def metadata(self, datetime_as_str: bool = False) -> dict[str, Any]:
+    def metadata(self, *, datetime_as_str: bool = False) -> dict[str, Any]:
         """
         Metadata is all relevant non-None fields in easy-to-serialize form.
         Optional fields are omitted unless they are set.
@@ -533,6 +533,15 @@ class Item:
                     item_dict[f] = format_iso_timestamp(v)
 
         return item_dict
+
+    def sidematter(self, ws: Path | Workspace | None = None) -> Sidematter:
+        """
+        Get the sidematter for this item, if present, by looking at the files
+        in the specified workspace (or the current workspace if not specified).
+        """
+        from sidematter_format import resolve_sidematter
+
+        return resolve_sidematter(self.absolute_path(ws))
 
     def filename_stem(self) -> str | None:
         """

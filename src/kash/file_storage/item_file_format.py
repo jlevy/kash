@@ -28,8 +28,12 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
     """
     Write a text item to a file with standard frontmatter format YAML or sidematter format.
     By default normalizes formatting of the body text and updates the item's body.
+
     If `use_frontmatter` is True, uses frontmatter on the file for metadata, and omits
     the sidematter metadata file.
+
+    This function does not explicitly write sidematter assets; these can be written
+    separately.
     """
     item.validate()
     if use_frontmatter and item.format and not item.format.supports_frontmatter:
@@ -88,10 +92,6 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
 
         # Sidematter metadata
         spath.write_meta(item.metadata(), key_sort=ITEM_FIELD_SORT)
-
-    # Handle assets if present
-    if item.asset_dir:
-        spath.copy_assets_from(item.asset_dir)
 
     # Update cache.
     _item_cache.update(path, item)
@@ -164,10 +164,6 @@ def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
         item = Item.from_dict(
             metadata, body=body, store_path=store_path, external_path=external_path
         )
-
-        # If we found an assets directory, record it.
-        if sidematter.assets_path:
-            item.asset_dir = sidematter.assets_path.name
     else:
         # This is a file without frontmatter or sidematter.
         # Infer format from the file and content,
