@@ -75,7 +75,7 @@ def normalize_text_file(
 
 def test_osc8_link():
     from clideps.terminal.osc_utils import osc8_link
-    from flowmark.text_wrapping import wrap_paragraph
+    from flowmark import wrap_paragraph
 
     link = osc8_link("https://example.com/" + "x" * 50, "Example")
     assert ansi_cell_len(link) == 7

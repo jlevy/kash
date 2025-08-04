@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, ClassVar
 
-from flowmark.sentence_split_regex import split_sentences_regex
+from flowmark import split_sentences_regex
 from rich.console import Group
 from rich.text import Text
 from strif import abbrev_str, single_line

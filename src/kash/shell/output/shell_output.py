@@ -10,7 +10,6 @@ from enum import Enum, auto
 import rich
 import rich.style
 from flowmark import Wrap, fill_text
-from flowmark.text_filling import DEFAULT_INDENT
 from rich.console import Group, OverflowMethod, RenderableType
 from rich.rule import Rule
 from rich.style import Style
@@ -50,7 +49,7 @@ def print_style(pad_style: PadStyle):
     Context manager for print styles.
     """
     if pad_style == PadStyle.INDENT:
-        token = print_context_var.set(DEFAULT_INDENT)
+        token = print_context_var.set("    ")
         try:
             yield
         finally:

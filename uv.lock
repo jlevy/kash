@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <4.0"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -404,7 +404,7 @@ wheels = [
 
 [[package]]
 name = "chopdiff"
-version = "0.2.3"
+version = "0.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cydifflib" },
@@ -415,9 +415,9 @@ dependencies = [
     { name = "strif" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/71/3c53d6cb4a4278d77f1178c5ab6d0ea0c55c802154c26ceb35993e771c9b/chopdiff-0.2.3.tar.gz", hash = "sha256:fd3e1f0d331df37467cef3435db398f11b973d37ca61a96afaadaafb13a156c2", size = 80620, upload-time = "2025-06-08T22:00:29.678Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/7e/463ef79768f33a865f083086bc688b9c3933ec71378ad88a33b403253fb4/chopdiff-0.2.4.tar.gz", hash = "sha256:bf2c8501882deeda872005607467139754f2d1fcd9d0108c3f39dc00fb2d9526", size = 81576, upload-time = "2025-08-04T03:55:19.938Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/25/066da899df3caf44cf4522596affea0409206415a5abf87431333e995e39/chopdiff-0.2.3-py3-none-any.whl", hash = "sha256:365ba00ce5e4fde00b63b7c636a70bf0f05f4ac10878151662c50a84e9fb8c5a", size = 44325, upload-time = "2025-06-08T22:00:27.971Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/1b/46a61826172c66c86204a00c0822d8c76724303a7af2f7daee1309d09d99/chopdiff-0.2.4-py3-none-any.whl", hash = "sha256:a3fb39e2501fe4cdf52f4b4200647a295fcce7d56074f3ed94cd53cb4b2fb1be", size = 44318, upload-time = "2025-08-04T03:55:18.65Z" },
 ]
 
 [[package]]
@@ -669,7 +669,7 @@ wheels = [
 
 [[package]]
 name = "flowmark"
-version = "0.5.2"
+version = "0.5.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "marko" },
@@ -677,9 +677,9 @@ dependencies = [
     { name = "strif" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/15/29/0f032883eb3f9f83aa8764bb0975bd8576f02ce0f248f8bd68ffa7027862/flowmark-0.5.2.tar.gz", hash = "sha256:5502ef7e03ec1bcb42f7fe2a65fd3554e723e6462103db6de7b1dacc368586b6", size = 180927, upload-time = "2025-07-21T04:36:38.343Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/fc/54f7d0ff8781d64524c0e11affb83845d0dc15ce2cb3fe87cfb9d60da042/flowmark-0.5.3.tar.gz", hash = "sha256:ea3ecc00240ab8c67f552b54119060953d8788cace5f74edd2da6555c1cf32fa", size = 181648, upload-time = "2025-08-04T03:20:24.302Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/7f/5e7e540761b979908430d9a78b9934794fcc9ccf27c1d49b834c157c8cc2/flowmark-0.5.2-py3-none-any.whl", hash = "sha256:94ce1a7425b511428735194d93fa3419ee3dc70da174810c0ec32524432c7bd1", size = 30831, upload-time = "2025-07-21T04:36:37.209Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/0e/1b30c8b89a50b90822aa7ea8dc3f41d76b5452c9a6470f15fde81a5fa2f7/flowmark-0.5.3-py3-none-any.whl", hash = "sha256:47a3da800abdda4006985b2dad7e89f1409c03332e67bfa99d888c7fc0b6f541", size = 31249, upload-time = "2025-08-04T03:20:22.954Z" },
 ]
 
 [[package]]
@@ -1144,7 +1144,7 @@ requires-dist = [
     { name = "anyio", specifier = ">=4.8.0" },
     { name = "audioop-lts", marker = "python_full_version >= '3.13'", specifier = ">=0.2.1" },
     { name = "cachetools", specifier = ">=5.5.2" },
-    { name = "chopdiff", specifier = ">=0.2.3" },
+    { name = "chopdiff", specifier = ">=0.2.4" },
     { name = "clideps", specifier = ">=0.1.4" },
     { name = "colour", specifier = ">=0.1.5" },
     { name = "cssselect", specifier = ">=1.2.0" },
@@ -1152,7 +1152,7 @@ requires-dist = [
     { name = "deepgram-sdk", specifier = ">=3.10.1" },
     { name = "dunamai", specifier = ">=1.23.0" },
     { name = "fastapi", specifier = ">=0.115.11" },
-    { name = "flowmark", specifier = ">=0.5.2" },
+    { name = "flowmark", specifier = ">=0.5.3" },
     { name = "frontmatter-format", specifier = ">=0.2.2" },
     { name = "funlog", specifier = ">=0.2.0" },
     { name = "httpx", extras = ["brotli"], specifier = ">=0.28.1" },

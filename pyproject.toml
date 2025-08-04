@@ -45,10 +45,10 @@ dependencies = [
     "strif>=3.0.1",
     "funlog>=0.2.0",
     "prettyfmt>=0.3.1",
-    "flowmark>=0.5.2",
+    "flowmark>=0.5.3",
     "frontmatter-format>=0.2.2",
     "sidematter-format>=0.0.2",
-    "chopdiff>=0.2.3",
+    "chopdiff>=0.2.4",
     "clideps>=0.1.4",
     "tminify>=0.1.6",
     # Shell and file essentials:
@@ -131,6 +131,7 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 # For local development:
 # clideps = { path = "../clideps", editable = true }
 # tminify = { path = "../tminify", editable = true }
+# chopdiff = { git = "https://github.com/jlevy/chopdiff.git" }
 # sidematter-format = { path = "../sidematter-format", editable = true }
 
 # ---- Build system ----
