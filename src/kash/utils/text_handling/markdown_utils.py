@@ -1,20 +1,32 @@
 import re
+from collections.abc import Callable
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, TypeAlias
 
-import marko
 import regex
-from marko.block import Heading, ListItem
-from marko.inline import AutoLink, Link
+from flowmark import flowmark_markdown, line_wrap_by_sentence
+from marko.block import Heading, LinkRefDef, ListItem
+from marko.inline import AutoLink, Image, Link
 
 from kash.utils.common.url import Url
 
 HTag: TypeAlias = str
 
+
+UrlRewriter: TypeAlias = Callable[[str], str | None]
+"""
+An URL rewriter function takes a URL string and returns a new URL or
+None to skip rewriting.
+"""
+
 # Characters that commonly need escaping in Markdown inline text.
 MARKDOWN_ESCAPE_CHARS = r"([\\`*_{}\[\]()#+.!-])"
 MARKDOWN_ESCAPE_RE = re.compile(MARKDOWN_ESCAPE_CHARS)
+
+# Use flowmark for Markdown parsing and rendering.
+# Replaces the single shard marko Markdown object.
+MARKDOWN = flowmark_markdown(line_wrap_by_sentence(width=88, is_markdown=True))
 
 
 def escape_markdown(text: str) -> str:
@@ -56,23 +68,33 @@ def is_markdown_header(markdown: str) -> bool:
     return regex.match(r"^#+ ", markdown) is not None
 
 
+def comprehensive_transform_tree(element: Any, transformer: Callable[[Any], None]) -> None:
+    """
+    Enhanced tree traversal that handles all marko element types including GFM tables.
+
+    This extends flowmark's transform_tree to handle table elements that are not
+    included in flowmark's ContainerElement tuple.
+    """
+    transformer(element)
+
+    # Handle all types that can contain children
+    if hasattr(element, "children") and element.children is not None:
+        if isinstance(element.children, list):
+            # Create a copy for safe iteration if modification occurs
+            current_children = list(element.children)
+            for child in current_children:
+                comprehensive_transform_tree(child, transformer)
+
+
 def _tree_links(element, include_internal=False):
     links = []
 
     def _find_links(element):
-        match element:
-            case Link():
-                if include_internal or not element.dest.startswith("#"):
-                    links.append(element.dest)
-            case AutoLink():
-                if include_internal or not element.dest.startswith("#"):
-                    links.append(element.dest)
-            case _:
-                if hasattr(element, "children"):
-                    for child in element.children:
-                        _find_links(child)
+        if isinstance(element, (Link, AutoLink)):
+            if include_internal or not element.dest.startswith("#"):
+                links.append(element.dest)
 
-    _find_links(element)
+    comprehensive_transform_tree(element, _find_links)
     return links
 
 
@@ -84,7 +106,7 @@ def extract_links(content: str, include_internal=False) -> list[str]:
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
-    document = marko.parse(content)
+    document = MARKDOWN.parse(content)
     all_links = _tree_links(document, include_internal)
 
     # Deduplicate while preserving order
@@ -113,6 +135,84 @@ def extract_file_links(file_path: Path, include_internal=False) -> list[str]:
         return []
 
 
+def rewrite_urls(
+    content: str,
+    url_rewriter: UrlRewriter,
+    element_types: tuple[type, ...] = (Image, Link, AutoLink, LinkRefDef),
+) -> str:
+    """
+    Rewrite URLs in markdown content using the provided rewriter function.
+
+    Args:
+        content: The markdown content to process
+        url_rewriter: A function of type UrlRewriter that takes a URL string and returns
+                     a new URL string to replace it, or None to skip rewriting that URL
+        element_types: Tuple of element types to process (default: all URL-containing types)
+
+    Returns:
+        The markdown content with rewritten URLs
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
+    """
+    document = MARKDOWN.parse(content)
+    _rewrite_tree_urls(document, url_rewriter, element_types)
+
+    return MARKDOWN.render(document)
+
+
+def rewrite_image_urls(content: str, url_rewriter: Callable[[str], str]) -> str:
+    """
+    Rewrite local image URLs in markdown content using the provided rewriter function.
+
+    The rewriter function is only applied to local image paths (not remote URLs).
+    Remote URLs (starting with http:// or https://) are left unchanged.
+
+    Args:
+        content: The markdown content to process
+        url_rewriter: A function that takes an image path string and returns a new path
+
+    Returns:
+        The markdown content with rewritten image URLs
+
+    Raises:
+        marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
+    """
+
+    def filtered_rewriter(url: str) -> str | None:
+        if _is_remote_url(url):
+            return None  # Skip remote URLs
+        return url_rewriter(url)
+
+    return rewrite_urls(content, filtered_rewriter, element_types=(Image,))
+
+
+def _rewrite_tree_urls(
+    element: Any,
+    url_rewriter: UrlRewriter,
+    element_types: tuple[type, ...],
+) -> None:
+    """
+    Recursively traverse the markdown AST and rewrite URLs in specified element types.
+    """
+
+    def _rewrite_url(element: Any) -> None:
+        if isinstance(element, element_types) and hasattr(element, "dest"):
+            url = element.dest
+            new_url = url_rewriter(url)
+            if new_url is not None:
+                element.dest = new_url
+
+    comprehensive_transform_tree(element, _rewrite_url)
+
+
+def _is_remote_url(url: str) -> bool:
+    """
+    Check if a URL is a remote URL (starts with http:// or https://)
+    """
+    return url.startswith(("http://", "https://"))
+
+
 def extract_first_header(content: str) -> str | None:
     """
     Extract the first header from markdown content if present.
@@ -121,7 +221,7 @@ def extract_first_header(content: str) -> str | None:
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
-    document = marko.parse(content)
+    document = MARKDOWN.parse(content)
 
     if document.children and isinstance(document.children[0], Heading):
         return _extract_text(document.children[0]).strip()
@@ -183,22 +283,15 @@ def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
         ValueError: If `strict` is True and no bullet points are found.
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
-    document = marko.parse(content)
+    document = MARKDOWN.parse(content)
     bullet_points: list[str] = []
 
-    def _find_bullet_points(element):
+    def _collect_bullet_point(element):
         if isinstance(element, ListItem):
             # Extract markdown from this list item, preserving formatting
             bullet_points.append(_extract_list_item_markdown(element).strip())
-            # Then recursively process any nested lists within this item
-            if hasattr(element, "children"):
-                for child in element.children:
-                    _find_bullet_points(child)
-        elif hasattr(element, "children"):
-            for child in element.children:
-                _find_bullet_points(child)
 
-    _find_bullet_points(document)
+    comprehensive_transform_tree(document, _collect_bullet_point)
 
     # If no bullet points found
     if not bullet_points:
@@ -268,20 +361,16 @@ def extract_headings(text: str) -> list[tuple[HTag, str]]:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
         ValueError: If a heading with an unsupported level is encountered.
     """
-    document = marko.parse(text)
+    document = MARKDOWN.parse(text)
     headings_list: list[tuple[HTag, str]] = []
 
-    def _collect_headings_recursive(element: Any) -> None:
+    def _collect_heading(element: Any) -> None:
         if isinstance(element, Heading):
             tag = _type_from_heading(element)
             content = _extract_text(element).strip()
             headings_list.append((tag, content))
 
-        if hasattr(element, "children"):
-            for child in element.children:
-                _collect_headings_recursive(child)
-
-    _collect_headings_recursive(document)
+    comprehensive_transform_tree(document, _collect_heading)
 
     return headings_list
 
@@ -742,12 +831,12 @@ def test_extract_links_comprehensive() -> None:
     assert "https://github.com" in result_bare
     assert len(result_bare) == 2
 
-    # Test autolinks without brackets (expected to not work with standard markdown)
+    # Test autolinks without brackets (GFM extension enables auto-linking of plain URLs)
     auto_links = "Visit https://stackoverflow.com or http://reddit.com"
     result_auto = extract_links(auto_links)
-    assert (
-        result_auto == []
-    )  # Plain URLs without brackets aren't parsed as links in standard markdown
+    assert "https://stackoverflow.com" in result_auto
+    assert "http://reddit.com" in result_auto
+    assert len(result_auto) == 2  # GFM auto-links plain URLs
 
     # Test GFM footnotes (the original issue)
     footnote_content = """
@@ -777,13 +866,12 @@ Auto link: https://auto-link.com
     expected_links = [
         "https://example.com",  # Regular link
         "https://bare-link.com",  # Bare link
+        "https://auto-link.com",  # Plain auto link (GFM extension)
         "https://footnote-regular.com",  # Link in footnote
         "https://footnote-bare.com",  # Bare link in footnote
     ]
     for link in expected_links:
         assert link in result_mixed, f"Missing expected link: {link}"
-    # Should not include plain auto link (https://auto-link.com) as it's not in angle brackets
-    assert "https://auto-link.com" not in result_mixed
     assert len(result_mixed) == len(expected_links)
 
 
@@ -878,3 +966,389 @@ def test_extract_links_mixed_real_world() -> None:
     for link in expected_links:
         assert link in result, f"Missing expected link: {link}"
     assert len(result) == len(expected_links)
+
+
+def test_rewrite_image_urls() -> None:
+    """Test rewriting image URLs in markdown content."""
+
+    # Test content with various image types
+    content = dedent("""
+        # Document with Images
+        
+        Here's a local image: ![Alt text](./images/local.png)
+        
+        And a remote image: ![Remote](https://example.com/remote.jpg)
+        
+        Another local one: ![Another](../assets/photo.jpeg "Title")
+        
+        More content here.
+        """)
+
+    def path_rewriter(path: str) -> str:
+        """Move images from current directory structure to new directory"""
+        if path.startswith("./images/"):
+            return path.replace("./images/", "./new-images/")
+        elif path.startswith("../assets/"):
+            return path.replace("../assets/", "./new-assets/")
+        return path
+
+    result = rewrite_image_urls(content, path_rewriter)
+
+    # Check that local paths were rewritten
+    assert "./new-images/local.png" in result
+    assert "./new-assets/photo.jpeg" in result
+
+    # Check that remote URL was not changed
+    assert "https://example.com/remote.jpg" in result
+
+    # Check that original local paths are gone
+    assert "./images/local.png" not in result
+    assert "../assets/photo.jpeg" not in result
+
+
+def test_rewrite_image_urls_no_images() -> None:
+    """Test rewriting on content with no images."""
+    content = dedent("""
+        # No Images Here
+        
+        Just some regular text and [a link](https://example.com).
+        
+        And a list:
+        - Item 1
+        - Item 2
+        """)
+
+    def dummy_rewriter(path: str) -> str:
+        return f"rewritten-{path}"
+
+    result = rewrite_image_urls(content, dummy_rewriter)
+
+    # Content should be essentially unchanged (except possible minor formatting)
+    assert "# No Images Here" in result
+    assert "[a link](https://example.com)" in result
+    assert "- Item 1" in result
+
+
+def test_rewrite_image_urls_only_remote() -> None:
+    """Test rewriting on content with only remote images."""
+    content = dedent("""
+        # Remote Images Only
+        
+        ![Image 1](https://example.com/image1.png)
+        ![Image 2](http://test.com/image2.jpg)
+        """)
+
+    def path_rewriter(path: str) -> str:
+        return f"local/{path}"
+
+    result = rewrite_image_urls(content, path_rewriter)
+
+    # URLs should be unchanged since they're remote
+    assert "https://example.com/image1.png" in result
+    assert "http://test.com/image2.jpg" in result
+
+
+def test_rewrite_image_urls_complex() -> None:
+    """Test rewriting with complex markdown structure."""
+    content = dedent("""
+        # Main Title
+        
+        ## Section with Images
+        
+        Here's an image in a paragraph: ![Local](./local.png)
+        
+        > This is a blockquote with an image: ![Quote image](images/quote.jpg)
+        
+        1. List item with image: ![List image](./list.png)
+        2. Another item
+        
+        | Table | With |
+        |-------|------|
+        | ![Table image](table.png) | Cell |
+        
+        And a remote one: ![Remote](https://remote.com/image.png)
+        """)
+
+    def prefix_rewriter(path: str) -> str:
+        """Add a prefix to all local paths"""
+        return f"assets/{path}"
+
+    result = rewrite_image_urls(content, prefix_rewriter)
+
+    # Check that all local images were prefixed
+    assert "assets/./local.png" in result
+    assert "assets/images/quote.jpg" in result
+    assert "assets/./list.png" in result
+    assert "assets/table.png" in result
+
+    # Remote should be unchanged
+    assert "https://remote.com/image.png" in result
+
+
+def test_rewrite_urls_all_types() -> None:
+    """Test the generalized URL rewriter with all element types."""
+    content = dedent("""
+        # Document with Various URL Types
+        
+        Regular link: [Example](https://example.com/page)
+        
+        Auto link: <https://autolink.com>  
+        
+        Image: ![Alt text](./image.png)
+        
+        Reference link: [Ref link][ref]
+        
+        [ref]: https://reference.com/target
+        """)
+
+    def add_prefix(url: str) -> str | None:
+        if url.startswith("https://example.com"):
+            return url.replace("https://example.com", "https://newsite.com")
+        elif url.startswith("./"):
+            return f"assets/{url[2:]}"
+        return None  # Skip other URLs
+
+    result = rewrite_urls(content, add_prefix)
+
+    # Check rewritten URLs
+    assert "https://newsite.com/page" in result
+    assert "assets/image.png" in result
+
+    # Check unchanged URLs
+    assert "https://autolink.com" in result
+    assert "https://reference.com/target" in result
+
+
+def test_rewrite_urls_element_type_filter() -> None:
+    """Test filtering by element type."""
+    content = dedent("""
+        # Links and Images
+        
+        Link: [Example](./local-link.html)
+        Image: ![Alt](./local-image.png)
+        Auto: <./auto-link.html>
+        """)
+
+    def prefix_local(url: str) -> str | None:
+        if url.startswith("./"):
+            return f"new/{url[2:]}"
+        return None
+
+    # Only rewrite images
+    result_images = rewrite_urls(content, prefix_local, element_types=(Image,))
+    assert "new/local-image.png" in result_images
+    assert "./local-link.html" in result_images  # Link unchanged
+    assert "./auto-link.html" in result_images  # AutoLink unchanged
+
+    # Only rewrite regular links
+    result_links = rewrite_urls(content, prefix_local, element_types=(Link,))
+    assert "new/local-link.html" in result_links
+    assert "./local-image.png" in result_links  # Image unchanged
+    assert "./auto-link.html" in result_links  # AutoLink unchanged
+
+    # Rewrite both links and images
+    result_both = rewrite_urls(content, prefix_local, element_types=(Link, Image))
+    assert "new/local-link.html" in result_both
+    assert "new/local-image.png" in result_both
+    assert "./auto-link.html" in result_both  # AutoLink unchanged
+
+
+def test_rewrite_urls_unified_filter() -> None:
+    """Test unified filtering and rewriting in the rewriter function."""
+    content = dedent("""
+        # Mixed Local and Remote
+        
+        Local link: [Local](./local.html)
+        Remote link: [Remote](https://example.com/remote.html)
+        Local image: ![Local](./image.png) 
+        Remote image: ![Remote](https://example.com/image.jpg)
+        """)
+
+    def make_absolute_if_local(url: str) -> str | None:
+        # Only rewrite local URLs, skip remote ones
+        if url.startswith("./"):
+            return f"https://mysite.com/{url[2:]}"
+        return None  # Skip remote URLs
+
+    result = rewrite_urls(content, make_absolute_if_local)
+
+    # Local URLs should be rewritten
+    assert "https://mysite.com/local.html" in result
+    assert "https://mysite.com/image.png" in result
+
+    # Remote URLs should be unchanged
+    assert "https://example.com/remote.html" in result
+    assert "https://example.com/image.jpg" in result
+
+
+def test_rewrite_urls_none_return() -> None:
+    """Test that returning None skips rewriting."""
+    content = dedent("""
+        # Test Selective Rewriting
+        
+        Keep this: [Keep](./keep.html)
+        Change this: [Change](./change.html)
+        """)
+
+    def selective_rewriter(url: str) -> str | None:
+        if "change" in url:
+            return url.replace("./change.html", "./modified.html")
+        return None  # Skip everything else
+
+    result = rewrite_urls(content, selective_rewriter)
+
+    assert "./modified.html" in result
+    assert "./keep.html" in result  # Unchanged
+
+
+def test_rewrite_urls_reference_links() -> None:
+    """Test rewriting reference link definitions."""
+    content = dedent("""
+        # Reference Links
+        
+        Here's a [reference link][ref1] and [another][ref2].
+        
+        [ref1]: ./local-ref.html "Local Reference"
+        [ref2]: https://example.com/remote-ref.html "Remote Reference"  
+        """)
+
+    def update_local_refs(url: str) -> str | None:
+        if url.startswith("./"):
+            return url.replace("./", "./updated/")
+        return None
+
+    result = rewrite_urls(content, update_local_refs, element_types=(LinkRefDef,))
+
+    # Reference definition should be updated
+    assert "./updated/local-ref.html" in result
+
+    # Remote reference should be unchanged
+    assert "https://example.com/remote-ref.html" in result
+
+
+def test_rewrite_urls_complex_scenario() -> None:
+    """Test complex scenario with multiple filters and rewriters."""
+    content = dedent("""
+        # Complex Document
+        
+        ## Links Section
+        - [Internal page](./pages/about.html)
+        - [External site](https://external.com)
+        - <./contact.html>
+        
+        ## Images Section  
+        ![Logo](./assets/logo.png)
+        ![External](https://cdn.example.com/image.jpg)
+        
+        ## References
+        [About page][about]
+        [Contact][contact]
+        
+        [about]: ./pages/about.html
+        [contact]: ./contact.html
+        """)
+
+    def comprehensive_rewriter(url: str) -> str | None:
+        # Move local pages to new structure
+        if url.startswith("./pages/"):
+            return url.replace("./pages/", "./new-pages/")
+        # Move assets to CDN
+        elif url.startswith("./assets/"):
+            return url.replace("./assets/", "https://cdn.mysite.com/")
+        # Update contact page
+        elif url == "./contact.html":
+            return "./new-contact.html"
+        return None
+
+    result = rewrite_urls(content, comprehensive_rewriter)
+
+    # Check all expected rewrites
+    assert "./new-pages/about.html" in result
+    assert "https://cdn.mysite.com/logo.png" in result
+    assert "./new-contact.html" in result
+
+    # Check unchanged URLs
+    assert "https://external.com" in result
+    assert "https://cdn.example.com/image.jpg" in result
+
+
+def test_rewrite_urls_simplified_api() -> None:
+    """Test the simplified unified API with various rewriting scenarios."""
+    content = dedent("""
+        # Website Migration
+        
+        ## Local Content
+        - [About](./about.html)
+        - [Help](./help/faq.html)
+        - ![Logo](./images/logo.png)
+        - <./contact.html>
+        
+        ## External Content  
+        - [Partner](https://partner.com)
+        - ![CDN Image](https://cdn.example.com/img.jpg)
+        - <https://external-service.com>
+        
+        ## Reference Links
+        [Privacy Policy][privacy]
+        [Terms][terms]
+        
+        [privacy]: ./legal/privacy.html
+        [terms]: https://example.com/terms
+        """)
+
+    def migration_rewriter(url: str) -> str | None:
+        """
+        Unified rewriter that handles both filtering and rewriting:
+        - Migrates local pages to new site structure
+        - Moves images to CDN
+        - Updates specific domains
+        - Skips other URLs unchanged
+        """
+        # Local HTML pages -> new site structure
+        if url.startswith("./") and url.endswith(".html"):
+            if "/help/" in url:
+                # Move help pages to support section
+                filename = url.split("/")[-1]
+                return f"https://newsite.com/support/{filename}"
+            elif "/legal/" in url:
+                # Move legal pages to main site
+                filename = url.split("/")[-1]
+                return f"https://newsite.com/legal/{filename}"
+            else:
+                # Root level pages
+                filename = url[2:]  # Remove "./"
+                return f"https://newsite.com/{filename}"
+
+        # Local images -> CDN
+        elif url.startswith("./images/"):
+            filename = url.split("/")[-1]
+            return f"https://cdn.newsite.com/{filename}"
+
+        # Domain migration for external links
+        elif url.startswith("https://example.com"):
+            return url.replace("example.com", "newsite.com")
+
+        # Skip all other URLs (external services, CDNs, etc.)
+        return None
+
+    result = rewrite_urls(content, migration_rewriter)
+
+    # Verify local page migrations
+    assert "https://newsite.com/about.html" in result
+    assert "https://newsite.com/support/faq.html" in result
+    assert "https://newsite.com/legal/privacy.html" in result
+
+    # Verify image migration to CDN
+    assert "https://cdn.newsite.com/logo.png" in result
+
+    # Verify domain migration
+    assert "https://newsite.com/terms" in result
+
+    # Verify unchanged external URLs
+    assert "https://partner.com" in result
+    assert "https://cdn.example.com/img.jpg" in result
+    assert "https://external-service.com" in result
+
+    # Verify that relative URLs in angle brackets remain unchanged
+    # (marko doesn't parse them as URL elements)
+    assert "<./contact.html>" in result
