@@ -61,6 +61,17 @@ class ActionInput:
         """An empty input, for when an action processes no items."""
         return ActionInput(items=[])
 
+    # XXX For convenience, we have the ability to include the context on each item
+    # (this helps so per-item functions don't have to take context args everywhere).
+    # TODO: Probably better to move this to a context var.
+    def set_context(self, context: ExecContext) -> None:
+        for item in self.items:
+            item.context = context
+
+    def clear_context(self) -> None:
+        for item in self.items:
+            item.context = None
+
 
 class PathOpType(Enum):
     archive = "archive"
@@ -110,6 +121,10 @@ class ActionResult:
         return bool(
             self.replaces_input or self.skip_duplicates or self.path_ops or self.shell_result
         )
+
+    def set_context(self, context: ExecContext) -> None:
+        for item in self.items:
+            item.context = context
 
     def clear_context(self):
         for item in self.items:

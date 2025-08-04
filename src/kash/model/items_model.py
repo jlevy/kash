@@ -864,8 +864,7 @@ class Item:
                 )
             else:
                 log.warning(
-                    "Deriving an item without action context so keeping previous title: %s",
-                    self,
+                    "Deriving an item without action context so keeping previous title: %s", self
                 )
                 new_item.title = f"{prev_title} (derived copy)"
 

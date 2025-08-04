@@ -354,53 +354,55 @@ def run_action_with_caching(
     settings = context.settings
     ws = settings.workspace
 
-    # For convenience, we include the context to each item too (this helps so per-item
-    # functions don't have to take context args everywhere).
-    for item in action_input.items:
-        item.context = context
+    try:
+        # Hack to add the context to each item.
+        # We do this before cache preassemble check.
+        action_input.set_context(context)
 
-    # Assemble the operation and validate the action input.
-    operation = validate_action_input(context, ws, action, action_input)
+        # Assemble the operation and validate the action input.
+        operation = validate_action_input(context, ws, action, action_input)
 
-    # Log what we're about to run.
-    log_action(action, action_input, operation)
+        # Log what we're about to run.
+        log_action(action, action_input, operation)
 
-    # Check if a previous run already produced the result.
-    existing_result = check_for_existing_result(context, action_input, operation)
+        # Check if a previous run already produced the result.
+        existing_result = check_for_existing_result(context, action_input, operation)
 
-    if existing_result and not settings.rerun:
-        # Use the cached result.
-        result = existing_result
-        result_store_paths = [StorePath(not_none(item.store_path)) for item in result.items]
-        archived_store_paths = []
+        if existing_result and not settings.rerun:
+            # Use the cached result.
+            result = existing_result
+            result_store_paths = [StorePath(not_none(item.store_path)) for item in result.items]
+            archived_store_paths = []
 
-        PrintHooks.before_done_message()
-        log.message(
-            "%s Skipped: `%s` completed with %s %s",
-            EMOJI_SKIP,
-            action.name,
-            len(result.items),
-            plural("item", len(result.items)),
-        )
-    else:
-        # Run it!
-        result = run_action_operation(context, action_input, operation)
-        result_store_paths, archived_store_paths = save_action_result(
-            ws,
-            result,
-            action_input,
-            as_tmp=settings.tmp_output,
-            no_format=settings.no_format,
-        )
+            PrintHooks.before_done_message()
+            log.message(
+                "%s Skipped: `%s` completed with %s %s",
+                EMOJI_SKIP,
+                action.name,
+                len(result.items),
+                plural("item", len(result.items)),
+            )
+        else:
+            # Run it!
+            result = run_action_operation(context, action_input, operation)
+            result_store_paths, archived_store_paths = save_action_result(
+                ws,
+                result,
+                action_input,
+                as_tmp=settings.tmp_output,
+                no_format=settings.no_format,
+            )
 
-        PrintHooks.before_done_message()
-        log.message(
-            "%s Action: `%s` completed with %s %s",
-            EMOJI_SUCCESS,
-            action.name,
-            len(result.items),
-            plural("item", len(result.items)),
-        )
+            PrintHooks.before_done_message()
+            log.message(
+                "%s Action: `%s` completed with %s %s",
+                EMOJI_SUCCESS,
+                action.name,
+                len(result.items),
+                plural("item", len(result.items)),
+            )
+    finally:
+        action_input.clear_context()
 
     return result, result_store_paths, archived_store_paths
 

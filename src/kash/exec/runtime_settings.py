@@ -105,6 +105,7 @@ def kash_runtime(
 ) -> RuntimeSettingsManager:
     """
     Set a specific kash execution context for a with block.
+
     This allows defining a workspace and other execution settings as the ambient
     context within the block.
 
