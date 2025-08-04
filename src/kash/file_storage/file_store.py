@@ -9,7 +9,7 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from sidematter_format import move_with_sidematter
+from sidematter_format import Sidematter, move_with_sidematter
 from strif import copyfile_atomic, hash_file
 from typing_extensions import override
 
@@ -336,7 +336,7 @@ class FileStore(Workspace):
 
             return StorePath(store_path), old_store_path
 
-    def target_path_for(self, item: Item) -> Path:
+    def target_path_for(self, item: Item, *, relative: bool = False) -> Path:
         """
         Get an the absolute path for an item. Use this if you need to work around the
         usual save mechanism and write directly to the store yourself, at the location
@@ -346,7 +346,16 @@ class FileStore(Workspace):
         already saved.
         """
         store_path, _old_store_path = self.store_path_for(item)
-        return self.base_dir / store_path
+        if relative:
+            return store_path
+        else:
+            return self.base_dir / store_path
+
+    def assets_path_for(self, item: Item, *, relative: bool = False) -> Path:
+        """
+        Get the sidematter format assets path for an item.
+        """
+        return Sidematter(self.target_path_for(item, relative=relative)).assets_dir
 
     def _tmp_path_for(self, item: Item) -> StorePath:
         """

@@ -36,7 +36,7 @@ from kash.utils.text_handling.markdown_utils import first_heading
 if TYPE_CHECKING:
     from sidematter_format import ResolvedSidematter
 
-    from kash.model.exec_model import ExecContext
+    from kash.model.exec_model import ActionContext
     from kash.workspaces import Workspace
 
 log = get_logger(__name__)
@@ -277,7 +277,7 @@ class Item:
 
     # Optional execution context. Useful for letting functions that take only an Item
     # arg get access to context.
-    context: ExecContext | None = field(default=None, metadata={"exclude": True})
+    context: ActionContext | None = field(default=None, metadata={"exclude": True})
 
     # These fields we don't want in YAML frontmatter.
     # We don't include store_path as it's redundant with the filename.

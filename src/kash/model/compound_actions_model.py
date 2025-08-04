@@ -5,7 +5,8 @@ from pydantic.dataclasses import dataclass
 
 from kash.config.logger import get_logger
 from kash.exec.combiners import Combiner
-from kash.model.actions_model import Action, ActionInput, ActionResult, ExecContext
+from kash.model.actions_model import Action, ActionInput, ActionResult
+from kash.model.exec_model import ActionContext
 from kash.model.items_model import Item, State
 from kash.model.params_model import RawParamValues
 from kash.model.paths_model import StorePath
@@ -46,7 +47,7 @@ class SequenceAction(Action):
         )
         self.description = seq_description
 
-    def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
+    def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.workspaces import current_ws
 
@@ -140,7 +141,7 @@ class ComboAction(Action):
 
         self.description = combo_description
 
-    def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
+    def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.exec.combiners import combine_as_paragraphs
 

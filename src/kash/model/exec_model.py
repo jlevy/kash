@@ -11,7 +11,8 @@ from kash.model.items_model import State
 
 if TYPE_CHECKING:
     from kash.file_storage.file_store import FileStore
-    from kash.model.actions_model import Action
+    from kash.model.actions_model import Action, ActionInput
+    from kash.model.operations_model import Operation
 
 
 log = get_logger(__name__)
@@ -68,8 +69,8 @@ class RuntimeSettings:
 @dataclass(frozen=True)
 class ExecContext:
     """
-    An action and its context for execution. This is a good place for settings
-    that apply to any action and are bothersome to pass as parameters.
+    An action and its general context for execution. This is a good place for general
+    settings that apply to any action and are bothersome to pass as parameters.
     """
 
     action: Action
@@ -77,3 +78,29 @@ class ExecContext:
 
     settings: RuntimeSettings
     """The workspace and other run-time settings for the action."""
+
+
+@dataclass(frozen=True)
+class ActionContext:
+    """
+    All context for the currently executing action, with all inputs and options.
+    """
+
+    exec_context: ExecContext
+    """The context of the current execution."""
+
+    action_input: ActionInput
+    """The assembled input to the current action."""
+
+    operation: Operation
+    """The operation in full detail, including inputs and options."""
+
+    @property
+    def action(self) -> Action:
+        """The action being executed."""
+        return self.exec_context.action
+
+    @property
+    def settings(self) -> RuntimeSettings:
+        """The workspace and other run-time settings for the action."""
+        return self.exec_context.settings

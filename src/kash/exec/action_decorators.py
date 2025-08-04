@@ -31,7 +31,7 @@ from kash.model.actions_model import (
     ParamSource,
     TitleTemplate,
 )
-from kash.model.exec_model import ExecContext
+from kash.model.exec_model import ActionContext, ExecContext
 from kash.model.items_model import Item, ItemType
 from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
@@ -328,7 +328,7 @@ def kash_action(
                 super().__post_init__()
 
             @override
-            def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
+            def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
                 # Map the final, current actions param values back to the function parameters.
                 pos_args: list[Any] = []
                 kw_args: dict[str, Any] = {}

@@ -21,7 +21,7 @@ from kash.exec_model.args_model import NO_ARGS, ONE_ARG, ArgCount, ArgType, Sign
 from kash.exec_model.shell_model import ShellResult
 from kash.llm_utils import LLM, LLMName
 from kash.llm_utils.llm_messages import Message, MessageTemplate
-from kash.model.exec_model import ExecContext
+from kash.model.exec_model import ActionContext, ExecContext
 from kash.model.items_model import UNTITLED, Format, Item, ItemType
 from kash.model.operations_model import Operation, Source
 from kash.model.params_model import (
@@ -64,7 +64,7 @@ class ActionInput:
     # XXX For convenience, we have the ability to include the context on each item
     # (this helps soper-item functions don't have to take context args everywhere).
     # TODO: Probably better to move this to a context var.
-    def set_context(self, context: ExecContext) -> None:
+    def set_context(self, context: ActionContext) -> None:
         for item in self.items:
             item.context = context
 
@@ -122,7 +122,7 @@ class ActionResult:
             self.replaces_input or self.skip_duplicates or self.path_ops or self.shell_result
         )
 
-    def set_context(self, context: ExecContext) -> None:
+    def set_context(self, context: ActionContext) -> None:
         for item in self.items:
             item.context = context
 
@@ -603,7 +603,7 @@ class Action(ABC):
         return input_schema
 
     @abstractmethod
-    def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
+    def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         pass
 
     def __repr__(self):
@@ -629,7 +629,7 @@ class PerItemAction(Action, ABC):
         super().__post_init__()
 
     @override
-    def run(self, input: ActionInput, context: ExecContext) -> ActionResult:
+    def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         log.info("Running action `%s` per-item.", self.name)
         for item in input.items:
             item.context = context
@@ -645,3 +645,4 @@ class PerItemAction(Action, ABC):
 # Handle circular dependency in Python dataclasses.
 rebuild_dataclass(Item)  # pyright: ignore
 rebuild_dataclass(ExecContext)  # pyright: ignore
+rebuild_dataclass(ActionContext)  # pyright: ignore

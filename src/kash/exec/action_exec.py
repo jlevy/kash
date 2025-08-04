@@ -23,7 +23,7 @@ from kash.model.actions_model import (
     ExecContext,
     PathOpType,
 )
-from kash.model.exec_model import RuntimeSettings
+from kash.model.exec_model import ActionContext, RuntimeSettings
 from kash.model.items_model import Item, State
 from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
@@ -110,7 +110,7 @@ def log_action(action: Action, action_input: ActionInput, operation: Operation):
 
 
 def check_for_existing_result(
-    context: ExecContext, action_input: ActionInput, operation: Operation
+    context: ActionContext, action_input: ActionInput, operation: Operation
 ) -> ActionResult | None:
     """
     Check if we already have the results for this operation (same action and inputs)
@@ -155,7 +155,7 @@ def check_for_existing_result(
 
 
 def run_action_operation(
-    context: ExecContext,
+    context: ActionContext,
     action_input: ActionInput,
     operation: Operation,
 ) -> ActionResult:
@@ -205,7 +205,7 @@ class SkipItem(Exception):
     """
 
 
-def _run_for_each_item(context: ExecContext, input: ActionInput) -> ActionResult:
+def _run_for_each_item(context: ActionContext, input: ActionInput) -> ActionResult:
     """
     Helper to process each input item. If non-fatal errors are encountered on any item,
     they are reported and processing continues with the next item.
@@ -354,19 +354,23 @@ def run_action_with_caching(
     settings = context.settings
     ws = settings.workspace
 
+    # Assemble the operation and validate the action input.
+    operation = validate_action_input(context, ws, action, action_input)
+
+    # Log what we're about to run.
+    log_action(action, action_input, operation)
+
+    action_context = ActionContext(
+        exec_context=context, operation=operation, action_input=action_input
+    )
+
     try:
         # Hack to add the context to each item.
         # We do this before cache preassemble check.
-        action_input.set_context(context)
-
-        # Assemble the operation and validate the action input.
-        operation = validate_action_input(context, ws, action, action_input)
-
-        # Log what we're about to run.
-        log_action(action, action_input, operation)
+        action_input.set_context(action_context)
 
         # Check if a previous run already produced the result.
-        existing_result = check_for_existing_result(context, action_input, operation)
+        existing_result = check_for_existing_result(action_context, action_input, operation)
 
         if existing_result and not settings.rerun:
             # Use the cached result.
@@ -384,7 +388,7 @@ def run_action_with_caching(
             )
         else:
             # Run it!
-            result = run_action_operation(context, action_input, operation)
+            result = run_action_operation(action_context, action_input, operation)
             result_store_paths, archived_store_paths = save_action_result(
                 ws,
                 result,
