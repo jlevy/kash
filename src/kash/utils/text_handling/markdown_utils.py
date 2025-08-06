@@ -5,6 +5,7 @@ from textwrap import dedent
 from typing import Any, TypeAlias
 
 import regex
+from chopdiff.html import rewrite_html_img_urls
 from flowmark import flowmark_markdown, line_wrap_by_sentence
 from marko.block import Heading, LinkRefDef, ListItem
 from marko.inline import AutoLink, Image, Link
@@ -161,16 +162,20 @@ def rewrite_urls(
     return MARKDOWN.render(document)
 
 
-def rewrite_image_paths(content: str, from_prefix: str, to_prefix: str) -> str:
+def rewrite_image_urls(
+    content: str, from_prefix: str, to_prefix: str, *, include_img_tags: bool = True
+) -> str:
     """
     Rewrite image paths in markdown content by replacing matching prefixes.
 
-    This works with URLs, relative paths, or absolute paths.
+    This works with URLs, relative paths, or absolute paths. Optionally also
+    processes HTML img tags within the markdown content.
 
     Args:
         content: The markdown content to process
         from_prefix: The prefix to match and replace
         to_prefix: The prefix to replace the from_prefix with
+        include_img_tags: If True, also rewrite src attributes in HTML img tags
 
     Returns:
         The markdown content with rewritten image paths
@@ -184,7 +189,14 @@ def rewrite_image_paths(content: str, from_prefix: str, to_prefix: str) -> str:
             return url.replace(from_prefix, to_prefix, 1)
         return None  # Skip URLs that don't match the prefix
 
-    return rewrite_urls(content, prefix_rewriter, element_types=(Image,))
+    # First rewrite markdown image syntax
+    result = rewrite_urls(content, prefix_rewriter, element_types=(Image,))
+
+    # Then optionally rewrite HTML img tags
+    if include_img_tags:
+        result = rewrite_html_img_urls(result, from_prefix=from_prefix, to_prefix=to_prefix)
+
+    return result
 
 
 def _rewrite_tree_urls(
@@ -984,22 +996,22 @@ def test_rewrite_image_paths() -> None:
         More content here.
         """)
 
-    # Test rewriting ./images/ prefix
-    result1 = rewrite_image_paths(content, "./images/", "./new-images/")
+    # Test rewriting ./images/ prefix (default include_img_tags=True)
+    result1 = rewrite_image_urls(content, "./images/", "./new-images/")
     assert "./new-images/local.png" in result1
     assert "./images/local.png" not in result1
     assert "https://example.com/remote.jpg" in result1  # Remote unchanged
     assert "../assets/photo.jpeg" in result1  # Other local unchanged
 
     # Test rewriting ../assets/ prefix
-    result2 = rewrite_image_paths(content, "../assets/", "./new-assets/")
+    result2 = rewrite_image_urls(content, "../assets/", "./new-assets/")
     assert "./new-assets/photo.jpeg" in result2
     assert "../assets/photo.jpeg" not in result2
     assert "./images/local.png" in result2  # Other local unchanged
     assert "https://example.com/remote.jpg" in result2  # Remote unchanged
 
     # Test rewriting remote URLs
-    result3 = rewrite_image_paths(content, "https://example.com/", "https://cdn.example.com/")
+    result3 = rewrite_image_urls(content, "https://example.com/", "https://cdn.example.com/")
     assert "https://cdn.example.com/remote.jpg" in result3
     assert "https://example.com/remote.jpg" not in result3
     assert "./images/local.png" in result3  # Local unchanged
@@ -1018,7 +1030,7 @@ def test_rewrite_image_paths_no_images() -> None:
         - Item 2
         """)
 
-    result = rewrite_image_paths(content, "./", "rewritten-")
+    result = rewrite_image_urls(content, "./", "rewritten-")
 
     # Content should be essentially unchanged (except possible minor formatting)
     assert "# No Images Here" in result
@@ -1036,13 +1048,13 @@ def test_rewrite_image_paths_only_remote() -> None:
         """)
 
     # Test rewriting https:// prefix
-    result1 = rewrite_image_paths(content, "https://example.com/", "https://cdn.example.com/")
+    result1 = rewrite_image_urls(content, "https://example.com/", "https://cdn.example.com/")
     assert "https://cdn.example.com/image1.png" in result1
     assert "https://example.com/image1.png" not in result1
     assert "http://test.com/image2.jpg" in result1  # Other protocol unchanged
 
     # Test rewriting http:// prefix
-    result2 = rewrite_image_paths(content, "http://test.com/", "https://secure.test.com/")
+    result2 = rewrite_image_urls(content, "http://test.com/", "https://secure.test.com/")
     assert "https://secure.test.com/image2.jpg" in result2
     assert "http://test.com/image2.jpg" not in result2
     assert "https://example.com/image1.png" in result2  # Other URL unchanged
@@ -1070,7 +1082,7 @@ def test_rewrite_image_paths_complex() -> None:
         """)
 
     # Test rewriting relative paths with ./ prefix
-    result1 = rewrite_image_paths(content, "./", "assets/")
+    result1 = rewrite_image_urls(content, "./", "assets/")
     assert "assets/local.png" in result1
     assert "assets/list.png" in result1
     assert "./local.png" not in result1
@@ -1080,13 +1092,13 @@ def test_rewrite_image_paths_complex() -> None:
     assert "https://remote.com/image.png" in result1  # Remote unchanged
 
     # Test rewriting paths without prefix
-    result2 = rewrite_image_paths(content, "images/", "new-images/")
+    result2 = rewrite_image_urls(content, "images/", "new-images/")
     assert "new-images/quote.jpg" in result2
     assert "![Quote image](images/quote.jpg)" not in result2  # Check full image syntax
     assert "./local.png" in result2  # Different prefix, unchanged
 
     # Test rewriting absolute URLs
-    result3 = rewrite_image_paths(content, "https://remote.com/", "https://cdn.remote.com/")
+    result3 = rewrite_image_urls(content, "https://remote.com/", "https://cdn.remote.com/")
     assert "https://cdn.remote.com/image.png" in result3
     assert "https://remote.com/image.png" not in result3
 

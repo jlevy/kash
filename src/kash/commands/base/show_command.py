@@ -69,7 +69,8 @@ def show(
         if not noselect:
             from kash.commands.workspace.selection_commands import select
 
-            select(input_path)
+            if isinstance(input_path, StorePath):
+                select(input_path)
             return ShellResult(show_selection=True)
     except (InvalidInput, InvalidState):
         if path:

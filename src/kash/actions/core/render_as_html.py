@@ -11,7 +11,7 @@ from kash.exec_model.args_model import ONE_OR_MORE_ARGS
 from kash.model import ActionInput, ActionResult, Param
 from kash.model.items_model import ItemType
 from kash.utils.file_utils.file_formats_model import Format
-from kash.utils.text_handling.markdown_utils import rewrite_image_paths
+from kash.utils.text_handling.markdown_utils import rewrite_image_urls
 from kash.web_gen.simple_webpage import simple_webpage_render
 from kash.workspaces.workspaces import current_ws
 
@@ -51,7 +51,7 @@ def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
         # Rewrite image paths to be relative to the workspace.
         assert input_item.body
         if input_item.format in (Format.markdown, Format.md_html):
-            rewritten_body = rewrite_image_paths(input_item.body, old_prefix, new_prefix)
+            rewritten_body = rewrite_image_urls(input_item.body, old_prefix, new_prefix)
         else:
             rewritten_body = input_item.body
 

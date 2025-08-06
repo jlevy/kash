@@ -48,7 +48,7 @@ dependencies = [
     "flowmark>=0.5.3",
     "frontmatter-format>=0.2.2",
     "sidematter-format>=0.0.3",
-    "chopdiff>=0.2.4",
+    "chopdiff>=0.2.5",
     "clideps>=0.1.4",
     "tminify>=0.1.6",
     # Shell and file essentials:
@@ -89,6 +89,7 @@ dependencies = [
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
     # Basic text handling and web scraping:
+    "selectolax>=0.3.32",
     "readabilipy>=0.3.0",
     "markdownify>=0.13.1",
     "justext>=3.0.2",
@@ -131,7 +132,7 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 # For local development:
 # clideps = { path = "../clideps", editable = true }
 # tminify = { path = "../tminify", editable = true }
-# chopdiff = { git = "https://github.com/jlevy/chopdiff.git" }
+# chopdiff = { path = "../chopdiff", editable = true }
 # sidematter-format = { path = "../sidematter-format", editable = true }
 
 # ---- Build system ----
