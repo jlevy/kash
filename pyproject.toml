@@ -44,7 +44,7 @@ dependencies = [
     # My tools:
     "strif>=3.0.1",
     "funlog>=0.2.0",
-    "prettyfmt>=0.3.1",
+    "prettyfmt>=0.4.1",
     "flowmark>=0.5.3",
     "frontmatter-format>=0.2.2",
     "sidematter-format>=0.0.3",

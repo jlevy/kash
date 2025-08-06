@@ -869,7 +869,7 @@ class Item:
                     "Deriving an item without action context so keeping previous title: %s",
                     self,
                 )
-                new_item.title = f"{prev_title} (derived copy)"
+                new_item.title = prev_title
 
         return new_item
 
