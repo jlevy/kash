@@ -57,8 +57,9 @@ def diff_items(*paths: str, force: bool = False) -> ShellResult:
     as items themselves, so this works on items. Items are imported as usual into the
     global workspace if they are not already in the store.
 
-    :param stat: Only show the diffstat summary.
-    :param force: If true, will run the diff even if the items are of different formats.
+    Args:
+        stat: Only show the diffstat summary.
+        force: If true, will run the diff even if the items are of different formats.
     """
     ws = current_ws()
     if len(paths) == 2:
@@ -90,8 +91,9 @@ def diff_files(*paths: str, diffstat: bool = False, save: bool = False) -> Shell
     Show the unified diff between the given files. This works on any files, not
     just items, so helpful for quick analysis without importing the files.
 
-    :param diffstat: Only show the diffstat summary.
-    :param save: Save the diff as an item in the store.
+    Args:
+        diffstat: Only show the diffstat summary.
+        save: Save the diff as an item in the store.
     """
     if len(paths) == 2:
         [path1, path2] = paths

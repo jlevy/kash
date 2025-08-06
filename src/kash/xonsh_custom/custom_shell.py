@@ -431,8 +431,9 @@ def start_shell(single_command: str | None = None, ready_event: threading.Event 
     other customizations but then the rest of the customization is via the `kash_extension`
     xontrib.
 
-    :param single_command: Optional command to run in non-interactive mode
-    :param shell_ready_event: Optional event to signal when shell is ready
+    Args:
+        single_command: Optional command to run in non-interactive mode
+        shell_ready_event: Optional event to signal when shell is ready
     """
     import builtins
 

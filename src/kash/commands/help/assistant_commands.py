@@ -31,9 +31,10 @@ def assist(
     Invoke the kash assistant. You don't normally need this command as it is the same as just
     asking a question (a question ending with ?) on the kash console.
 
-    :param type: The type of assistance to use.
-    :param model: The model to use for the assistant. If not provided, the default model
-        for the assistant type is used.
+    Args:
+        type: The type of assistance to use.
+        model: The model to use for the assistant. If not provided, the default model
+            for the assistant type is used.
     """
     if not input:
         input = input_simple_string(
@@ -81,7 +82,8 @@ def assistant_history(follow: bool = False) -> None:
     """
     Show the assistant history for the current workspace.
 
-    :param follow: Follow the file as it grows.
+    Args:
+        follow: Follow the file as it grows.
     """
     ws = current_ws()
     tail_file(ws.base_dir / ws.dirs.assistant_history_yml, follow=follow)

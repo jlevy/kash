@@ -111,36 +111,37 @@ def files(
     with limited depth and breadth, and more control over recursion, sorting,
     and grouping.
 
-    :param overview: Recurse a couple levels and show files, but not too many.
-        Same as `--groupby=parent --depth=2 --max_per_group=100 --omit_dirs`
-        except also scales down `max_per_group` to 25 or 50 if there are many files.
-    :param recent: Only shows the most recently modified files in each directory.
-        Same as `--sort=modified --reverse --groupby=parent --max_per_group=100`
-        except also scales down `max_per_group` to 25 or 50 if there are many files.
-    :param recursive: List all files recursively. Same as `--depth=-1`.
-    :param flat: Show files in a flat list, rather than grouped by parent directory.
-        Same as `--groupby=flat`.
-    :param omit_dirs: Normally directories are included. This option omits them,
-        which is useful when recursing into subdirectories.
-    :param depth: Maximum depth to recurse into directories. -1 means no limit.
-    :param max_files: Maximum number of files to yield per input path.
-        -1 means no limit.
-    :param max_per_subdir: Maximum number of files to yield per subdirectory
-        (not including the top level). -1 means no limit.
-    :param max_per_group: Limit the first number of items displayed per group
-        (if groupby is used) or in total. 0 means show all.
-    :param no_max: Disable limits on depth and number of files. Same as
-        `--depth=-1 --max_files=-1 --max_per_subdir=-1 --max_per_group=-1`.
-    :param no_ignore: Disable ignoring hidden files.
-    :param all: Same as `--no_ignore --no_max`. Does not change `--depth`.
-    :param save: Save the listing as a CSV file item.
-    :param sort: Sort by `filename`, `size`, `accessed`, `created`, or `modified`.
-    :param reverse: Reverse the sorting order.
-    :param since: Filter files modified since a given time (e.g., '1 day', '2 hours').
-    :param groupby: Group results. Can be `flat` (no grouping, and by default implies
-        recursive), `parent`, or `suffix`. Defaults to 'parent'.
-    :param iso_time: Show time in ISO format (default is human-readable age).
-    :param pager: Use the pager when displaying the output.
+    Args:
+        overview: Recurse a couple levels and show files, but not too many.
+            Same as `--groupby=parent --depth=2 --max_per_group=100 --omit_dirs`
+            except also scales down `max_per_group` to 25 or 50 if there are many files.
+        recent: Only shows the most recently modified files in each directory.
+            Same as `--sort=modified --reverse --groupby=parent --max_per_group=100`
+            except also scales down `max_per_group` to 25 or 50 if there are many files.
+        recursive: List all files recursively. Same as `--depth=-1`.
+        flat: Show files in a flat list, rather than grouped by parent directory.
+            Same as `--groupby=flat`.
+        omit_dirs: Normally directories are included. This option omits them,
+            which is useful when recursing into subdirectories.
+        depth: Maximum depth to recurse into directories. -1 means no limit.
+        max_files: Maximum number of files to yield per input path.
+            -1 means no limit.
+        max_per_subdir: Maximum number of files to yield per subdirectory
+            (not including the top level). -1 means no limit.
+        max_per_group: Limit the first number of items displayed per group
+            (if groupby is used) or in total. 0 means show all.
+        no_max: Disable limits on depth and number of files. Same as
+            `--depth=-1 --max_files=-1 --max_per_subdir=-1 --max_per_group=-1`.
+        no_ignore: Disable ignoring hidden files.
+        all: Same as `--no_ignore --no_max`. Does not change `--depth`.
+        save: Save the listing as a CSV file item.
+        sort: Sort by `filename`, `size`, `accessed`, `created`, or `modified`.
+        reverse: Reverse the sorting order.
+        since: Filter files modified since a given time (e.g., '1 day', '2 hours').
+        groupby: Group results. Can be `flat` (no grouping, and by default implies
+            recursive), `parent`, or `suffix`. Defaults to 'parent'.
+        iso_time: Show time in ISO format (default is human-readable age).
+        pager: Use the pager when displaying the output.
     """
     if global_settings().use_nerd_icons:
         from kash.shell.file_icons.nerd_icons import icon_for_file

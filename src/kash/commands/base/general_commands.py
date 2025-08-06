@@ -160,8 +160,9 @@ def check_system_tools(warn_only: bool = False, brief: bool = False) -> None:
     """
     Check that all tools are installed.
 
-    :param warn_only: Only warn if tools are missing.
-    :param brief: Print summary as a single line.
+    Args:
+        warn_only: Only warn if tools are missing.
+        brief: Print summary as a single line.
     """
     if warn_only:
         pkg_check().warn_if_missing()
