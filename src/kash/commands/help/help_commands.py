@@ -37,8 +37,9 @@ def help(query: str | None = None, search: bool = False) -> None:
     Note that if you want Python `help()` and not kash help, use the
     alias `pyhelp`.
 
-    :param search: If true, does a simple search of help docs
-       (same as `search_help`).
+    Args:
+        search: If true, does a simple search of help docs
+            (same as `search_help`).
     """
     if not search and not query:
         manual()
@@ -53,7 +54,8 @@ def commands(no_pager: bool = False, full: bool = False) -> None:
     """
     Show help on all kash commands.
 
-    :param full: If true, show full help for each command.
+    Args:
+        full: If true, show full help for each command.
     """
     from kash.help.help_pages import print_builtin_commands_help
 
@@ -73,7 +75,8 @@ def actions(no_pager: bool = False, full: bool = False) -> None:
     """
     Show help on the full list of currently loaded actions.
 
-    :param full: If true, show full help for each action.
+    Args:
+        full: If true, show full help for each action.
     """
     from kash.help.help_pages import print_actions_help
 

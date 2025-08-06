@@ -43,17 +43,18 @@ def select(
     If any other flags are given, they show or modify the selection history.
     They must be used individually (and without paths).
 
-    :param history: Show the full selection history.
-    :param last: Show the last `last` selections in the history.
-    :param back: Move back in the selection history by `back` steps.
-    :param forward: Move forward in the selection history by `forward` steps.
-    :param previous: Move back in the selection history to the previous selection.
-    :param next: Move forward in the selection history to the next selection.
-    :param pop: Pop the current selection from the history.
-    :param clear_all: Clear the full selection history.
-    :param clear_future: Clear all selections from history after the current one.
-    :param refresh: Refresh the current selection to drop any paths that no longer exist.
-    :param no_check: Do not check if the paths exist.
+    Args:
+        history: Show the full selection history.
+        last: Show the last `last` selections in the history.
+        back: Move back in the selection history by `back` steps.
+        forward: Move forward in the selection history by `forward` steps.
+        previous: Move back in the selection history to the previous selection.
+        next: Move forward in the selection history to the next selection.
+        pop: Pop the current selection from the history.
+        clear_all: Clear the full selection history.
+        clear_future: Clear all selections from history after the current one.
+        refresh: Refresh the current selection to drop any paths that no longer exist.
+        no_check: Do not check if the paths exist.
     """
     ws = current_ws()
 
@@ -182,11 +183,12 @@ def save(parent: str | None = None, to: str | None = None, no_frontmatter: bool 
     Save the current selection to the given directory, or to the current directory if no
     target given.
 
-    :param parent: The directory to save the files to. If not given, it will be the
-        current directory.
-    :param to: If only one file is selected, a name to save it as. If it exists, it will
-        overwrite (and make a backup).
-    :param no_frontmatter: If true, will not include YAML frontmatter in the output.
+    Args:
+        parent: The directory to save the files to. If not given, it will be the
+            current directory.
+        to: If only one file is selected, a name to save it as. If it exists, it will
+            overwrite (and make a backup).
+        no_frontmatter: If true, will not include YAML frontmatter in the output.
     """
     ws = current_ws()
     store_paths = ws.selections.current.paths

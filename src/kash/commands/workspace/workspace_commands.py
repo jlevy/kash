@@ -100,8 +100,9 @@ def cache_list(media: bool = False, content: bool = False, workspace: str | None
     """
     List the contents of the workspace media and content caches. By default lists both caches.
 
-    :param media: List media cache only.
-    :param content: List content cache only.
+    Args:
+        media: List media cache only.
+        content: List content cache only.
     """
     if not media and not content:
         media = True
@@ -131,9 +132,10 @@ def clear_cache(media: bool = False, content: bool = False, workspace: str | Non
     """
     Clear the media and content caches. By default clears both caches.
 
-    :param media: Clear media cache only.
-    :param content: Clear content cache only.
-    :param global_cache: If in a workspace, clear the global caches, not the workspace caches.
+    Args:
+        media: Clear media cache only.
+        content: Clear content cache only.
+        global_cache: If in a workspace, clear the global caches, not the workspace caches.
     """
     if not media and not content:
         media = True
@@ -193,8 +195,9 @@ def history(max: int = 30, raw: bool = False) -> None:
 
     For xonsh's built-in history, use `xhistory`.
 
-    :param max: Show at most the last `max` commands.
-    :param raw: Show raw command history by tailing the history file directly.
+    Args:
+        max: Show at most the last `max` commands.
+        raw: Show raw command history by tailing the history file directly.
     """
     # TODO: Customize this by time frame.
     ws = current_ws()
@@ -400,10 +403,11 @@ def import_item(
     """
     Add a file or URL resource to the workspace as an item.
 
-    :param inplace: If set and the item is already in the store, reimport the item,
-      adding or rewriting metadata frontmatter.
-    :param type: Change the item type. Usually items are auto-detected from the file
-      format (typically doc or resource), but you can override this with this option.
+    Args:
+        inplace: If set and the item is already in the store, reimport the item,
+            adding or rewriting metadata frontmatter.
+        type: Change the item type. Usually items are auto-detected from the file
+            format (typically doc or resource), but you can override this with this option.
     """
     if not files_or_urls:
         raise InvalidInput("No files or URLs provided")
@@ -434,9 +438,10 @@ def save_clipboard(
     """
     Import the contents of the OS-native clipboard as a new item in the workspace.
 
-    :param title: The title of the new item (default: "pasted_text").
-    :param type: The type of the new item (default: resource).
-    :param format: The format of the new item (default: plaintext).
+    Args:
+        title: The title of the new item (default: "pasted_text").
+        type: The type of the new item (default: resource).
+        format: The format of the new item (default: plaintext).
     """
     import pyperclip
 
@@ -537,8 +542,9 @@ def applicable_actions(*paths: str, brief: bool = False, all: bool = False) -> N
     Show the actions that are applicable to the current selection.
     This is a great command to use at any point to see what actions are available!
 
-    :param brief: Show only action names. Otherwise show actions and descriptions.
-    :param all: Include actions with no preconditions.
+    Args:
+        brief: Show only action names. Otherwise show actions and descriptions.
+        all: Include actions with no preconditions.
     """
     store_paths = assemble_store_path_args(*paths)
     ws = current_ws()

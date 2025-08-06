@@ -23,7 +23,8 @@ def logs(follow: bool = False) -> None:
     """
     Page through the logs for the current workspace.
 
-    :param follow: Follow the file as it grows.
+    Args:
+        follow: Follow the file as it grows.
     """
     tail_file(get_log_settings().log_file_path, follow=follow)
 
@@ -51,9 +52,10 @@ def log_level(level: str | None = None, console: bool = False, file: bool = Fals
     """
     Set or show the log level. Applies to both console and file log levels unless specified.
 
-    :param level: The log level to set. If not specified, will show current level.
-    :param console: Set console log level only.
-    :param file: Set file log level only.
+    Args:
+        level: The log level to set. If not specified, will show current level.
+        console: Set console log level only.
+        file: Set file log level only.
     """
     if not console and not file:
         console = True

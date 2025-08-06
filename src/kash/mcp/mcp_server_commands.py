@@ -54,8 +54,9 @@ def mcp_logs(follow: bool = False, all: bool = False) -> None:
     """
     Show the logs from the MCP server and CLI proxy process.
 
-    :param follow: Follow the file as it grows.
-    :param all: Show all logs, not just the server logs, including Claude Desktop logs if found.
+    Args:
+        follow: Follow the file as it grows.
+        all: Show all logs, not just the server logs, including Claude Desktop logs if found.
     """
     from kash.mcp.mcp_cli import MCP_CLI_LOG_PATH
 

@@ -49,7 +49,8 @@ def local_server_logs(follow: bool = False) -> None:
     """
     Show the logs from the kash local (UI and MCP) servers.
 
-    :param follow: Follow the file as it grows.
+    Args:
+        follow: Follow the file as it grows.
     """
     log_path = global_settings().local_server_log_path
     if not log_path.exists():
