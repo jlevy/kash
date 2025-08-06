@@ -22,8 +22,9 @@ def reformat(*paths: str, inplace: bool = False) -> ShellResult:
 
     TODO: Also handle JSON and YAML.
 
-    :param inplace: Overwrite the original file. Otherwise save to a new
-    file with `_formatted` appended to the original name.
+    Args:
+        inplace: Overwrite the original file. Otherwise save to a new
+            file with `_formatted` appended to the original name.
     """
     resolved_paths = assemble_path_args(*paths)
     final_paths = []

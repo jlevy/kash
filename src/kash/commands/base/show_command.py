@@ -30,12 +30,13 @@ def show(
     Will use `bat` if available to show files in the console, including syntax
     highlighting and git diffs.
 
-    :param console: Force display to console (not browser or native apps).
-    :param native: Force display with a native app (depending on your system configuration).
-    :param thumbnail: If there is a thumbnail image, show it too.
-    :param browser: Force display with your default web browser.
-    :param plain: Use plain view in the console (this is `bat`'s `plain` style).
-    :param noselect: Disable default behavior where `show` also will `select` the file.
+    Args:
+        console: Force display to console (not browser or native apps).
+        native: Force display with a native app (depending on your system configuration).
+        thumbnail: If there is a thumbnail image, show it too.
+        browser: Force display with your default web browser.
+        plain: Use plain view in the console (this is `bat`'s `plain` style).
+        noselect: Disable default behavior where `show` also will `select` the file.
     """
     view_mode = (
         ViewMode.console

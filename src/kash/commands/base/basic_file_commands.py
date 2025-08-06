@@ -33,7 +33,8 @@ def clipboard_copy(path: str | None = None, raw: bool = False) -> None:
     Copy the contents of a file (or the first file in the selection) to the OS-native
     clipboard. Similar to `pbcopy` on macOS.
 
-    :param raw: Copy the full exact contents of the file. Otherwise frontmatter is omitted.
+    Args:
+        raw: Copy the full exact contents of the file. Otherwise frontmatter is omitted.
     """
     # TODO: Get this to work for images!
     import pyperclip
@@ -95,7 +96,8 @@ def edit(path: str | None = None, all: bool = False) -> None:
     """
     Edit the contents of a file using the user's default editor (or defaulting to nano).
 
-    :param all: Normally edits only the first file given. This passes all files to the editor.
+    Args:
+        all: Normally edits only the first file given. This passes all files to the editor.
     """
     input_paths = assemble_path_args(path)
     if not all:
@@ -111,8 +113,9 @@ def file_info(*paths: str, size_summary: bool = False, format: bool = False) -> 
     structure of the items at the given paths (for text documents) and the detected
     mime type.
 
-    :param size_summary: Only show size summary (words, sentences, paragraphs for a text document).
-    :param format: Only show detected file format.
+    Args:
+        size_summary: Only show size summary (words, sentences, paragraphs for a text document).
+        format: Only show detected file format.
     """
     if not size_summary and not format:
         size_summary = format = True

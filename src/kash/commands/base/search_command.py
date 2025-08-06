@@ -30,9 +30,10 @@ def search(
 
     search "youtube.com" resources/ --sort=modified
 
-    :param sort: How to sort results. Can be `path` or `modified` or `created` (as with `rg`).
-    :param ignore_case: Ignore case when searching.
-    :param verbose: Also print the ripgrep command line.
+    Args:
+        sort: How to sort results. Can be `path` or `modified` or `created` (as with `rg`).
+        ignore_case: Ignore case when searching.
+        verbose: Also print the ripgrep command line.
     """
     pkg_check().require("ripgrep")
     from ripgrepy import RipGrepNotFound, Ripgrepy
