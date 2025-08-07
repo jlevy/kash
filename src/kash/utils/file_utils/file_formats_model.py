@@ -72,6 +72,9 @@ class Format(Enum):
     mp3 = "mp3"
     m4a = "m4a"
     mp4 = "mp4"
+
+    # Binary formats.
+    zip = "zip"
     binary = "binary"
     """Catch-all format for binary files that are unrecognized."""
 
@@ -168,6 +171,10 @@ class Format(Enum):
         return self in [self.csv, self.xlsx, self.npz]
 
     @property
+    def is_zip(self) -> bool:
+        return self in [self.zip]
+
+    @property
     def is_binary(self) -> bool:
         return self.has_body and not self.is_text
 
@@ -257,6 +264,7 @@ class Format(Enum):
             FileExt.m4a.value: Format.m4a,
             FileExt.mp4.value: Format.mp4,
             FileExt.epub.value: Format.epub,
+            FileExt.zip.value: Format.zip,
         }
         return ext_to_format.get(file_ext.value, None)
 
@@ -292,6 +300,7 @@ class Format(Enum):
             Format.mp3: FileExt.mp3,
             Format.m4a: FileExt.m4a,
             Format.mp4: FileExt.mp4,
+            Format.zip: FileExt.zip,
         }
 
         return format_to_file_ext.get(self, None)
@@ -329,6 +338,9 @@ class Format(Enum):
             "audio/mp3": Format.mp3,
             "audio/mp4": Format.m4a,
             "video/mp4": Format.mp4,
+            "application/zip": Format.zip,
+            "application/x-zip": Format.zip,
+            "application/x-zip-compressed": Format.zip,
             "application/octet-stream": Format.binary,
         }
 

@@ -37,6 +37,7 @@ class FileExt(Enum):
     mp4 = "mp4"
     pptx = "pptx"
     epub = "epub"
+    zip = "zip"
 
     @property
     def dot_ext(self) -> str:

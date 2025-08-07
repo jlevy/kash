@@ -110,6 +110,7 @@ class ItemType(Enum):
             Format.mp3: ItemType.resource,
             Format.m4a: ItemType.resource,
             Format.mp4: ItemType.resource,
+            Format.zip: ItemType.resource,
         }
         return format_to_item_type.get(format, ItemType.resource)
 
@@ -688,8 +689,6 @@ class Item:
         """
         If it is a data Item, return the parsed YAML.
         """
-        if not self.type == ItemType.data:
-            raise FileFormatError(f"Item is not a data item: {self}")
         if not self.body:
             raise FileFormatError(f"Data item has no body: {self}")
         if self.format != Format.yaml:
