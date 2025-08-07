@@ -14,13 +14,12 @@ from kash.workspaces.workspaces import current_ws
 )
 def minify_html(item: Item) -> Item:
     """
-    Minify an HTML item's content using [html-minifier-terser](https://github.com/terser/html-minifier-terser).
-
+    Minify an HTML item's content using [tminify](https://github.com/jlevy/tminify).
     Also supports Tailwind CSS v4 compilation and inlining, if any Tailwind
     CSS v4 CDN script tags are found.
 
-    The terser minification seems a bit slower but more robust than
-    [minify-html](https://github.com/wilsonzlin/minify-html).
+    Tminify uses [html-minifier-terser](https://github.com/terser/html-minifier-terser).
+    This is a bit slower but more robust than [minify-html](https://github.com/wilsonzlin/minify-html).
     """
     from tminify.main import tminify
 

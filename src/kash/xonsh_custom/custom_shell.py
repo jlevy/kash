@@ -100,7 +100,7 @@ class CustomPTKPromptFormatter(PTKPromptFormatter):
                 if isinstance(result, FormattedText):
                     return result
             except Exception as e:
-                log.error("Error formatting prompt: evaluating %s: %s", template, e)
+                log.error("Error formatting prompt: evaluating %s: %s", template, e, exc_info=True)
                 # On any error, return a simple fallback prompt.
                 return FormattedText([("", "$ ")])
             # If it's not FormattedText, use it as the template for parent formatter

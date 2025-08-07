@@ -93,7 +93,6 @@ content: |
 
 from __future__ import annotations
 
-import json
 from dataclasses import field
 from enum import Enum
 from io import StringIO
@@ -104,6 +103,7 @@ from typing import Any
 from frontmatter_format import from_yaml_string, new_yaml, to_yaml_string
 from prettyfmt import abbrev_obj, custom_key_sort, fmt_size_human
 from pydantic.dataclasses import dataclass
+from sidematter_format import to_json_string
 
 
 class ChatRole(str, Enum):
@@ -161,9 +161,12 @@ class ChatMessage:
         Convert to a format that can be used as a standard chat completion, with
         the content field holding JSON-serialized data if it is structured.
         """
+
         return {
             "role": self.role.value,
-            "content": json.dumps(self.content) if isinstance(self.content, dict) else self.content,
+            "content": to_json_string(self.content)
+            if isinstance(self.content, dict)
+            else self.content,
         }
 
     @classmethod
@@ -174,7 +177,7 @@ class ChatMessage:
         return to_yaml_string(self.as_dict(), key_sort=_custom_key_sort)
 
     def to_json(self) -> str:
-        return json.dumps(self.as_dict())
+        return to_json_string(self.as_dict())
 
     def as_str(self) -> str:
         return self.to_yaml()
@@ -222,7 +225,7 @@ class ChatHistory:
         return stream.getvalue()
 
     def to_json(self) -> str:
-        return json.dumps([message.as_dict() for message in self.messages])
+        return to_json_string([message.as_dict() for message in self.messages], indent=None)
 
     def size_summary(self) -> str:
         role_counts = {}

@@ -46,8 +46,8 @@ dependencies = [
     "funlog>=0.2.0",
     "prettyfmt>=0.4.1",
     "flowmark>=0.5.3",
-    "frontmatter-format>=0.2.2",
-    "sidematter-format>=0.0.3",
+    "frontmatter-format>=0.2.3",
+    "sidematter-format>=0.0.4",
     "chopdiff>=0.2.5",
     "clideps>=0.1.4",
     "tminify>=0.1.6",
@@ -134,6 +134,7 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 # tminify = { path = "../tminify", editable = true }
 # chopdiff = { path = "../chopdiff", editable = true }
 # sidematter-format = { path = "../sidematter-format", editable = true }
+# frontmatter-format = { path = "../frontmatter-format", editable = true }
 
 # ---- Build system ----
 

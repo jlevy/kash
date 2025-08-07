@@ -1,5 +1,6 @@
 import functools
 import os
+import shutil
 import threading
 import time
 from collections.abc import Callable, Generator
@@ -667,7 +668,12 @@ class FileStore(Workspace):
         # TODO: Update metadata of all relations that point to this path too.
 
     def archive(
-        self, store_path: StorePath, *, missing_ok: bool = False, quiet: bool = False
+        self,
+        store_path: StorePath,
+        *,
+        missing_ok: bool = False,
+        quiet: bool = False,
+        with_sidematter: bool = False,
     ) -> StorePath:
         """
         Archive the item by moving it into the archive directory.
@@ -686,13 +692,16 @@ class FileStore(Workspace):
         if not orig_path.exists():
             log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
-        move_with_sidematter(orig_path, archive_path)
+        if with_sidematter:
+            move_with_sidematter(orig_path, archive_path)
+        else:
+            shutil.move(orig_path, archive_path)
         self._remove_references([store_path])
 
         archive_path = StorePath(self.dirs.archive_dir / store_path)
         return archive_path
 
-    def unarchive(self, store_path: StorePath) -> StorePath:
+    def unarchive(self, store_path: StorePath, with_sidematter: bool = False) -> StorePath:
         """
         Unarchive the item by moving back out of the archive directory.
         Path may be with or without the archive dir prefix.
@@ -702,7 +711,10 @@ class FileStore(Workspace):
         if full_input_path.is_relative_to(full_archive_path):
             store_path = StorePath(relpath(full_input_path, full_archive_path))
         original_path = self.base_dir / store_path
-        move_with_sidematter(full_input_path, original_path)
+        if with_sidematter:
+            move_with_sidematter(full_input_path, original_path)
+        else:
+            shutil.move(full_input_path, original_path)
         return StorePath(store_path)
 
     @synchronized
