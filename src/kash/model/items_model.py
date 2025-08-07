@@ -17,7 +17,7 @@ from prettyfmt import (
     slugify_snake,
 )
 from pydantic.dataclasses import dataclass
-from strif import abbrev_str, format_iso_timestamp
+from strif import abbrev_str, format_iso_timestamp, single_line
 
 from kash.config.logger import get_logger
 from kash.model.concept_model import canonicalize_concept
@@ -412,7 +412,7 @@ class Item:
 
         item = cls(
             type=item_type,
-            title=title,
+            title=single_line(title) if title else None,  # Avoid multiline titles.
             file_ext=file_ext,
             format=format,
             external_path=str(path),
@@ -438,7 +438,7 @@ class Item:
         return cls(
             type=ItemType.resource,
             format=Format.url,
-            title=media_metadata.title,
+            title=single_line(media_metadata.title),  # Avoid multiline titles.
             url=media_metadata.url,
             description=media_metadata.description,
             thumbnail_url=media_metadata.thumbnail_url,
@@ -848,10 +848,8 @@ class Item:
             assert updates["format"] is not None
             updates["file_ext"] = updates["format"].file_ext
 
-        # External resource paths only make sense for resources, so clear them out if new item
-        # is not a resource.
-        new_type = updates.get("type") or self.type
-        if "external_path" not in updates and new_type != ItemType.resource:
+        # External resource paths should not be preserved.
+        if "external_path" not in updates:
             updates["external_path"] = None
 
         new_item = self.new_copy_with(update_timestamp=True, **updates)

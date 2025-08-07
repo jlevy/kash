@@ -4,7 +4,7 @@ from frontmatter_format import FmStyle, fmf_has_frontmatter, fmf_read, fmf_write
 from funlog import tally_calls
 from prettyfmt import custom_key_sort, fmt_size_human
 from sidematter_format import Sidematter
-from strif import atomic_output_file
+from strif import atomic_output_file, single_line
 
 from kash.config.logger import get_logger
 from kash.model.items_model import ITEM_FIELDS, Item
@@ -42,7 +42,10 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
     # Clear cache before writing.
     _item_cache.delete(path)
 
+    title = item.title
     if normalize:
+        if item.title:
+            title = single_line(item.title)
         body = normalize_formatting(item.body_text(), item.format)
     else:
         body = item.body_text()
@@ -96,7 +99,8 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
     # Update cache.
     _item_cache.update(path, item)
 
-    # Update the item's body to reflect normalization.
+    # Update the item.
+    item.title = title
     item.body = body
 
 
@@ -144,7 +148,12 @@ def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
         body = metadata = None
         if has_frontmatter:
             body, metadata = fmf_read(path)
-            log.debug("Read item from %s: body length %s, metadata %s", path, len(body), metadata)
+            log.debug(
+                "Read item from %s: body length %s, metadata %s",
+                path,
+                len(body),
+                metadata,
+            )
 
     path = path.resolve()
     if base_dir:

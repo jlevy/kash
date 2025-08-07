@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from kash.config.logger import get_logger
 from kash.exec.preconditions import is_url_resource
-from kash.model.items_model import Item, ItemType
+from kash.model.items_model import Format, Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, is_url
@@ -36,7 +36,15 @@ def fetch_url_item(
     save_content: bool = True,
     refetch: bool = False,
     cache: bool = True,
+    overwrite: bool = True,
 ) -> FetchItemResult:
+    """
+    Fetch or load an URL or path. For a URL, will fetch the content and metadata and save
+    as an item in the workspace.
+
+    Returns:
+        The fetched or loaded item, already saved to the workspace.
+    """
     from kash.workspaces import current_ws
 
     ws = current_ws()
@@ -51,11 +59,22 @@ def fetch_url_item(
     else:
         raise InvalidInput(f"Not a URL or URL resource: {fmt_loc(locator)}")
 
-    return fetch_url_item_content(item, save_content=save_content, refetch=refetch, cache=cache)
+    return fetch_url_item_content(
+        item,
+        save_content=save_content,
+        refetch=refetch,
+        cache=cache,
+        overwrite=overwrite,
+    )
 
 
 def fetch_url_item_content(
-    item: Item, *, save_content: bool = True, refetch: bool = False, cache: bool = True
+    item: Item,
+    *,
+    save_content: bool = True,
+    refetch: bool = False,
+    cache: bool = True,
+    overwrite: bool = True,
 ) -> FetchItemResult:
     """
     Fetch content and metadata for a URL using a media service if we
@@ -67,8 +86,11 @@ def fetch_url_item_content(
 
     If `cache` is true, the content is also cached in the local file cache.
 
-    The content item is returned if content was saved. Otherwise, the updated
-    URL item is returned.
+    If `overwrite` is true, the item is saved at the same location every time.
+    This is useful to keep resource filenames consistent.
+
+    Returns:
+        The fetched or loaded item, already saved to the workspace.
     """
     from kash.media_base.media_services import get_media_metadata
     from kash.web_content.canon_url import canonicalize_url
@@ -109,7 +131,10 @@ def fetch_url_item_content(
         url_item = item.merged_copy(url_item)
     else:
         page_data = fetch_page_content(url, refetch=refetch, cache=cache)
-        url_item = item.new_copy_with(
+        url_item = Item(
+            type=ItemType.resource,
+            format=Format.url,
+            url=url,
             title=page_data.title or item.title,
             description=page_data.description or item.description,
             thumbnail_url=page_data.thumbnail_url or item.thumbnail_url,
@@ -128,10 +153,10 @@ def fetch_url_item_content(
         log.warning("Failed to fetch page data: title is missing: %s", item.url)
 
     # Now save the updated URL item and also the content item if we have one.
-    ws.save(url_item)
+    ws.save(url_item, overwrite=overwrite)
     assert url_item.store_path
     if content_item:
-        ws.save(content_item)
+        ws.save(content_item, overwrite=overwrite)
         assert content_item.store_path
         log.info(
             "Saved both URL and content item: %s, %s",
@@ -144,4 +169,6 @@ def fetch_url_item_content(
     was_cached = bool(
         not page_data or (page_data.cache_result and page_data.cache_result.was_cached)
     )
-    return FetchItemResult(content_item or url_item, was_cached=was_cached, page_data=page_data)
+    return FetchItemResult(
+        item=content_item or url_item, was_cached=was_cached, page_data=page_data
+    )
