@@ -69,7 +69,7 @@ def is_instructions(item: Item) -> bool:
 
 @kash_precondition
 def is_url_resource(item: Item) -> bool:
-    return bool(item.type == ItemType.resource and item.url)
+    return bool(item.type == ItemType.resource and item.format == Format.url and item.url)
 
 
 @kash_precondition
@@ -126,7 +126,7 @@ def has_markdown_with_html_body(item: Item) -> bool:
 
 @kash_precondition
 def has_fullpage_html_body(item: Item) -> bool:
-    return bool(has_html_body(item) and item.body and is_fullpage_html(item.body))
+    return bool(has_html_compatible_body(item) and item.body and is_fullpage_html(item.body))
 
 
 @kash_precondition

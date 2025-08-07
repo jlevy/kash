@@ -817,7 +817,7 @@ class Item:
         """
         Copy item with the given field updates. Resets `store_path` and `source` to None
         since those should be set explicitly later. Preserves other fields, including
-        the body.
+        the type and the body.
 
         Same as `new_copy_with` but also updates the `derived_from` relation. If we also
         have an action context, then use the `title_template` to derive a new title.
