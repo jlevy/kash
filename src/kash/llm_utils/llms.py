@@ -13,6 +13,10 @@ class LLM(LLMName, Enum):
     """
 
     # https://platform.openai.com/docs/models
+    gpt_5 = LLMName("gpt-5")
+    gpt_5_mini = LLMName("gpt-5-mini")
+    gpt_5_nano = LLMName("gpt-5-nano")
+    gpt_5_chat = LLMName("gpt-5-chat")
     o4_mini = LLMName("o4-mini")
     o3 = LLMName("o3")
     o3_pro = LLMName("o3-pro")
@@ -25,11 +29,12 @@ class LLM(LLMName, Enum):
     gpt_4o = LLMName("gpt-4o")
     gpt_4o_mini = LLMName("gpt-4o-mini")
     gpt_4 = LLMName("gpt-4")
-
     gpt_4_1_mini = LLMName("gpt-4.1-mini")
     gpt_4_1_nano = LLMName("gpt-4.1-nano")
 
     # https://docs.anthropic.com/en/docs/about-claude/models/all-models
+
+    claude_4_1_opus = LLMName("claude-opus-4-1")
     claude_4_opus = LLMName("claude-opus-4-20250514")
     claude_4_sonnet = LLMName("claude-sonnet-4-20250514")
     claude_3_7_sonnet = LLMName("claude-3-7-sonnet-latest")
