@@ -10,18 +10,12 @@ from kash.workspaces.workspaces import current_ws
 log = get_logger(__name__)
 
 
-def render_item_as_html(
+def copy_item_sidematter(
     input_item: Item,
     result_item: Item,
-    *,
-    add_title_h1: bool,
-    template_filename: str = "youtube_webpage.html.jinja",
-) -> Item:
+) -> tuple[str, str]:
     """
-    Render an item as HTML, including copying sidematter and assets.
-    Also rewrites image paths to be relative to the workspace.
-    The partly filled-in result item is needed to be able to assign a store path.
-    If `add_title_h1` is True, the title will be inserted as an h1 heading above the body.
+    Copy the sidematter of an item to a new item. Useful for copying assets, especially images.
     """
     ws = current_ws()
 
@@ -45,6 +39,18 @@ def render_item_as_html(
     old_prefix = Sidematter(src_path).assets_dir.name
     new_prefix = Sidematter(dest_path).assets_dir.name
 
+    return old_prefix, new_prefix
+
+
+def rewrite_item_image_urls(
+    input_item: Item,
+    old_prefix: str,
+    new_prefix: str,
+) -> Item:
+    """
+    Rewrite image path prefixes. Useful when we are rendering an item with sidematter
+    asset paths.
+    """
     log.message("Rewriting doc image paths: `%s` -> `%s`", old_prefix, new_prefix)
 
     # Rewrite image paths to be relative to the workspace.
@@ -55,6 +61,27 @@ def render_item_as_html(
         rewritten_body = input_item.body
 
     rewritten_item = input_item.derived_copy(body=rewritten_body)
+
+    return rewritten_item
+
+
+def render_item_as_html(
+    input_item: Item,
+    result_item: Item,
+    *,
+    add_title_h1: bool,
+    template_filename: str = "youtube_webpage.html.jinja",
+) -> Item:
+    """
+    Render an item as HTML, including copying sidematter and assets.
+    Also rewrites image paths to be relative to the workspace.
+    The partly filled-in result item is needed to be able to assign a store path.
+    If `add_title_h1` is True, the title will be inserted as an h1 heading above the body.
+    """
+
+    old_prefix, new_prefix = copy_item_sidematter(input_item, result_item)
+
+    rewritten_item = rewrite_item_image_urls(input_item, old_prefix, new_prefix)
 
     result_item.body = render_web_template(
         template_filename=template_filename,
