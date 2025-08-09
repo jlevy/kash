@@ -701,7 +701,7 @@ class FileStore(Workspace):
                 fmt_loc(self.dirs.archive_dir),
             )
         orig_path = self.base_dir / store_path
-        archive_path = self.dirs.archive_dir / store_path
+        full_archive_path = self.base_dir / self.dirs.archive_dir / store_path
         if missing_ok and not orig_path.exists():
             log.message("Item to archive not found so moving on: %s", fmt_loc(orig_path))
             return store_path
@@ -709,9 +709,10 @@ class FileStore(Workspace):
             log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
         if with_sidematter:
-            move_sidematter(orig_path, archive_path)
+            move_sidematter(orig_path, full_archive_path)
         else:
-            shutil.move(orig_path, archive_path)
+            os.makedirs(full_archive_path.parent, exist_ok=True)
+            shutil.move(orig_path, full_archive_path)
         self._remove_references([store_path])
 
         archive_path = StorePath(self.dirs.archive_dir / store_path)

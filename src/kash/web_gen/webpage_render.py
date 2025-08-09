@@ -1,62 +1,70 @@
+from sidematter_format import Sidematter, copy_sidematter
+
+from kash.config.logger import get_logger
 from kash.model.items_model import Item
 from kash.utils.file_utils.file_formats_model import Format
+from kash.utils.text_handling.markdown_utils import rewrite_image_urls
 from kash.web_gen.template_render import render_web_template
+from kash.workspaces.workspaces import current_ws
+
+log = get_logger(__name__)
 
 
-def render_webpage(
+def render_item_as_html(
+    input_item: Item,
+    result_item: Item,
     *,
-    title: str,
-    content_html: str,
-    thumbnail_url: str | None = None,
-    add_title_h1: bool = True,
-    show_theme_toggle: bool = False,
-    page_template: str = "youtube_webpage.html.jinja",
-) -> str:
+    add_title_h1: bool,
+    template_filename: str = "youtube_webpage.html.jinja",
+) -> Item:
     """
-    Generate a simple web page from a single item.
+    Render an item as HTML, including copying sidematter and assets.
+    Also rewrites image paths to be relative to the workspace.
+    The partly filled-in result item is needed to be able to assign a store path.
     If `add_title_h1` is True, the title will be inserted as an h1 heading above the body.
     """
-    return render_web_template(
-        template_filename=page_template,
+    ws = current_ws()
+
+    # Manually copy over metadata and assets. This makes image assets work.
+    assert input_item.store_path
+    src_path = ws.base_dir / input_item.store_path
+    dest_path = ws.assign_store_path(result_item)
+
+    log.message(
+        "Copying sidematter and assets: %s -> %s",
+        input_item.store_path,
+        result_item.store_path,
+    )
+    copy_sidematter(
+        src_path=src_path,
+        dest_path=dest_path,
+        make_parents=True,
+        copy_original=False,
+    )
+
+    old_prefix = Sidematter(src_path).assets_dir.name
+    new_prefix = Sidematter(dest_path).assets_dir.name
+
+    log.message("Rewriting doc image paths: `%s` -> `%s`", old_prefix, new_prefix)
+
+    # Rewrite image paths to be relative to the workspace.
+    assert input_item.body
+    if input_item.format in (Format.markdown, Format.md_html):
+        rewritten_body = rewrite_image_urls(input_item.body, old_prefix, new_prefix)
+    else:
+        rewritten_body = input_item.body
+
+    rewritten_item = input_item.derived_copy(body=rewritten_body)
+
+    result_item.body = render_web_template(
+        template_filename=template_filename,
         data={
-            "title": title,
+            "title": input_item.pick_title(),
             "add_title_h1": add_title_h1,
-            "content_html": content_html,
-            "thumbnail_url": thumbnail_url,
-            "enable_themes": show_theme_toggle,
-            "show_theme_toggle": show_theme_toggle,
+            "content_html": rewritten_item.body_as_html(),
+            "thumbnail_url": input_item.thumbnail_url,
+            "enable_themes": True,
+            "show_theme_toggle": True,
         },
     )
-
-
-## Tests
-
-
-def test_render():
-    import os
-
-    from kash.model.items_model import ItemType
-
-    # Create a test item
-    item = Item(
-        type=ItemType.doc,
-        format=Format.html,
-        title="A Simple Web Page",
-        body="<p>This is a simple web page with <b>HTML content</b>.</p>",
-    )
-
-    # Generate HTML
-    html = render_webpage(
-        title=item.pick_title(),
-        content_html=item.body_as_html(),
-        thumbnail_url=item.thumbnail_url,
-    )
-
-    os.makedirs("tmp", exist_ok=True)
-    with open("tmp/simple_webpage.html", "w") as f:
-        f.write(html)
-    print("Rendered simple webpage to tmp/simple_webpage.html")
-
-    # Basic validation
-    assert item.title and item.title in html
-    assert "<b>HTML content</b>" in html
+    return result_item
