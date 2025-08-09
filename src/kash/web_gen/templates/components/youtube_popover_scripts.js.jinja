@@ -1,0 +1,223 @@
+(function () {
+  function isYouTubeLink(href) {
+    return /(^https?:\/\/)?(www\.)?(youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)/.test(href);
+  }
+
+  function parseTimeToSeconds(text) {
+    if (!text) return 0;
+    // Support common formats like "170.56s" or "170.56" (seconds, possibly decimal)
+    const trimmed = String(text).trim();
+    const cleaned = trimmed.endsWith('s') ? trimmed.slice(0, -1) : trimmed;
+    const seconds = parseFloat(cleaned);
+    if (!isFinite(seconds) || seconds < 0) return 0;
+    // YouTube embed "start" expects integer seconds
+    return Math.floor(seconds);
+  }
+
+  function parseStartSeconds(url) {
+    try {
+      const u = new URL(url, window.location.origin);
+      if (u.searchParams.has("t")) {
+        return parseTimeToSeconds(u.searchParams.get("t") || "0");
+      }
+      if (u.searchParams.has("start")) {
+        return parseTimeToSeconds(u.searchParams.get("start") || "0");
+      }
+      // #t=...
+      if (u.hash && u.hash.startsWith("#t=")) {
+        return parseTimeToSeconds(u.hash.slice(3));
+      }
+      return 0;
+    } catch {
+      // Fallback rough parse
+      const m = url.match(/[?#&](?:start|t)=([^&#]+)/);
+      return m ? parseTimeToSeconds(decodeURIComponent(m[1])) : 0;
+    }
+  }
+
+  function extractVideoId(url) {
+    try {
+      const u = new URL(url, window.location.origin);
+      const host = u.hostname.replace(/^www\./, "");
+      if (host === "youtu.be") {
+        return u.pathname.split("/").filter(Boolean)[0] || null;
+      }
+      if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+        if (u.pathname.startsWith("/watch")) {
+          return u.searchParams.get("v");
+        }
+        if (u.pathname.startsWith("/embed/") || u.pathname.startsWith("/shorts/")) {
+          return u.pathname.split("/")[2] || null;
+        }
+      }
+      return null;
+    } catch {
+      // Fallback regexes
+      const rx1 = /youtu\.be\/([^?&#\/]+)/;
+      const rx2 = /v=([^?&#\/]+)/;
+      const rx3 = /\/embed\/([^?&#\/]+)/;
+      const rx4 = /youtube\.com\/shorts\/([^?&#\/]+)/;
+      return (url.match(rx1)?.[1]) || (url.match(rx2)?.[1]) || (url.match(rx3)?.[1]) || (url.match(rx4)?.[1]) || null;
+    }
+  }
+
+  function buildEmbedUrl(videoId, startSeconds) {
+    const params = new URLSearchParams({
+      autoplay: "1",
+      start: String(startSeconds || 0),
+      rel: "0",
+      modestbranding: "1",
+      enablejsapi: "1"
+    });
+    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?${params.toString()}`;
+  }
+
+  function openPopover({ href, title }) {
+    const pop = document.getElementById("yt-popover");
+    if (!pop) return;
+
+    const id = extractVideoId(href);
+    if (!id) return;
+
+    const start = parseStartSeconds(href);
+    const iframe = pop.querySelector("#yt-iframe");
+    const titleEl = pop.querySelector("#yt-title");
+    const backdrop = document.getElementById("yt-backdrop");
+
+    // Set title and src
+    titleEl.textContent = title || "YouTube";
+    iframe.src = buildEmbedUrl(id, start);
+
+    pop.classList.add("open");
+    pop.setAttribute("aria-hidden", "false");
+
+    // Show mobile backdrop and lock body like TOC does
+    backdrop?.classList.add("visible");
+    document.body.classList.add("yt-open");
+
+    // Gracefully hide TOC if present, and remember to restore it later
+    tryHideTOC();
+  }
+
+  function closePopover() {
+    const pop = document.getElementById("yt-popover");
+    if (!pop) return;
+    const iframe = pop.querySelector("#yt-iframe");
+    const backdrop = document.getElementById("yt-backdrop");
+    // Stop playback by clearing src
+    iframe.src = "";
+    pop.classList.remove("open", "maximized");
+    pop.setAttribute("aria-hidden", "true");
+    backdrop?.classList.remove("visible");
+    document.body.classList.remove("yt-open");
+
+    // Restore TOC state if we hid it
+    tryRestoreTOC();
+  }
+
+  function toggleMaximize() {
+    const pop = document.getElementById("yt-popover");
+    if (!pop) return;
+    const btn = pop.querySelector(".yt-maximize");
+    const isMax = pop.classList.toggle("maximized");
+    // Swap icon
+    if (typeof feather !== "undefined" && btn) {
+      btn.innerHTML = isMax ? feather.icons.minimize.toSvg() : feather.icons.maximize.toSvg();
+    }
+  }
+
+  function attachHandlers() {
+    // Wire up static controls
+    const pop = document.getElementById("yt-popover");
+    if (!pop) return;
+
+    const closeBtn = pop.querySelector(".yt-close");
+    const maxBtn = pop.querySelector(".yt-maximize");
+    const backdrop = document.getElementById("yt-backdrop");
+
+    closeBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      closePopover();
+    });
+    maxBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleMaximize();
+    });
+
+    // ESC closes
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closePopover();
+      }
+    });
+
+    // Click on backdrop closes (mobile)
+    backdrop?.addEventListener("click", () => closePopover());
+
+    // Intercept YouTube links inside main content
+    const scope = document.querySelector(".long-text") || document;
+    scope.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute("href") || "";
+      if (!isYouTubeLink(href)) return;
+
+      a.addEventListener("click", (ev) => {
+        // Respect new-tab or modifier-click intentions
+        if (ev.defaultPrevented) return;
+        if (ev.button !== 0) return; // only left click
+        if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        openPopover({ href, title: a.textContent?.trim() || "YouTube" });
+
+        // Update icons if necessary
+        if (typeof feather !== "undefined") {
+          feather.replace();
+        }
+      }, { capture: true });
+    });
+  }
+
+  // ---- TOC coexistence helpers ----
+  function tryHideTOC() {
+    const tocContainer = document.getElementById('toc-container');
+    const tocBackdrop = document.getElementById('toc-backdrop');
+    if (!tocContainer) return;
+
+    // Desktop layout is auto-hidden via CSS when body has .yt-open
+    // For mobile layout, if TOC is currently open, close it and remember to restore
+    const wasOpenMobile = tocContainer.classList.contains('mobile-visible');
+    const bodyHadTocOpen = document.body.classList.contains('toc-open');
+
+    if (wasOpenMobile) {
+      document.body.dataset.tocWasOpen = '1';
+      tocContainer.classList.remove('mobile-visible');
+      tocBackdrop?.classList.remove('visible');
+    }
+    if (bodyHadTocOpen) {
+      document.body.dataset.tocHadBodyOpen = '1';
+      document.body.classList.remove('toc-open');
+    }
+  }
+
+  function tryRestoreTOC() {
+    const tocContainer = document.getElementById('toc-container');
+    const tocBackdrop = document.getElementById('toc-backdrop');
+    if (!tocContainer) return;
+
+    if (document.body.dataset.tocWasOpen === '1') {
+      tocContainer.classList.add('mobile-visible');
+      tocBackdrop?.classList.add('visible');
+      delete document.body.dataset.tocWasOpen;
+    }
+    if (document.body.dataset.tocHadBodyOpen === '1') {
+      document.body.classList.add('toc-open');
+      delete document.body.dataset.tocHadBodyOpen;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", attachHandlers);
+})();
+
+

@@ -5,7 +5,7 @@ from kash.web_gen.template_render import render_web_template
 
 def simple_webpage_render(
     item: Item,
-    page_template: str = "simple_webpage.html.jinja",
+    page_template: str = "youtube_webpage.html.jinja",
     add_title_h1: bool = True,
     show_theme_toggle: bool = False,
 ) -> str:

@@ -1,0 +1,150 @@
+/* YouTube popover styles aligned to the TOC layout */
+.yt-popover {
+  position: fixed;
+  display: none;          /* hidden by default; toggled via .open */
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-hint); /* match TOC border */
+  border-radius: 0; /* match TOC radius */
+  box-shadow: none; /* match TOC (no shadow) */
+  z-index: 200;
+  overflow: hidden;
+}
+
+.yt-popover.open { display: flex; flex-direction: column; }
+
+.yt-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-hint-gentle);
+}
+
+.yt-title {
+  font-family: 'Source Sans 3 Variable', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: var(--color-hint-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yt-controls { display: flex; gap: 0.35rem; }
+
+.yt-player-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  background: #000;
+  min-height: 200px; /* ensure visible player area on small screens */
+}
+
+.yt-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Maximize fills available viewport width while keeping margins */
+.yt-popover.maximized {
+  left: 1rem !important;
+  right: 1rem !important;
+  top: 1rem !important;
+  bottom: 1rem !important;
+  width: auto !important;
+  border-radius: 0.5rem; /* maximize uses a gentle radius to indicate modal-like state */
+}
+
+/* Use default .button hover and pointer behavior from base styles */
+
+/* Desktop layout: overlay on the left, same width as TOC */
+@media (min-width: {{ toc_breakpoint | default(1200) }}px) {
+  .yt-popover {
+    top: 2rem;                 /* align with TOC sticky top */
+    left: 2rem;                /* align with TOC left margin */
+    width: calc(var(--toc-width) * 1.4);
+    min-height: var(--toc-width);
+    overflow: hidden; /* avoid internal scrollbars; player fills */
+  }
+
+  /* When YouTube popover is open, hide the TOC on desktop */
+  body.yt-open .toc-container {
+    display: none !important;
+  }
+}
+
+/* Mobile layout: behave like TOC popover with dimmed backdrop */
+@media (max-width: {{ toc_breakpoint | default(1200) - 1 }}px) {
+  .yt-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 199;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  }
+
+  .yt-backdrop.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    touch-action: none;
+    -webkit-overflow-scrolling: auto;
+    overflow: hidden;
+  }
+
+  .yt-popover {
+    top: 4rem;
+    left: 1rem;
+    width: calc(100vw - 2rem);
+    height: calc(100vh - 5rem); /* definite height so player can flex-fill */
+    color: var(--color-text);
+    background: var(--color-bg-alt-solid); /* match TOC mobile background */
+    border: 1px solid var(--color-border-hint);
+    z-index: 200;
+    overflow: hidden; /* avoid scroll; header+player fit */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out,
+                transform 0.3s ease-in-out,
+                visibility 0.3s ease-in-out,
+                pointer-events 0.3s ease-in-out,
+                background-color 0.4s ease-in-out,
+                border-color 0.4s ease-in-out,
+                box-shadow 0.4s ease-in-out;
+    padding: 1rem 0.7rem; /* match TOC mobile padding */
+  }
+
+  .yt-popover.open {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Prevent body scroll when YouTube popover is open */
+  body.yt-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: none;
+    -webkit-overflow-scrolling: auto;
+  }
+}
+
+

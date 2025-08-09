@@ -1,0 +1,47 @@
+{% extends "simple_webpage.html.jinja" %}
+
+{#
+  Extends the simple page with a right-side YouTube popover player.
+  Usage: pass page_template="youtube_webpage.html.jinja" to simple_webpage_render.
+#}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+{% include "components/youtube_popover_styles.css.jinja" %}
+</style>
+{% endblock custom_styles %}
+
+{% block body_footer %}
+{{ super() }}
+{# Backdrop for mobile, mirrors TOC backdrop behavior #}
+<div class="yt-backdrop" id="yt-backdrop"></div>
+<div id="yt-popover" class="yt-popover" aria-hidden="true">
+  <div class="yt-popover-header">
+    <div class="yt-title" id="yt-title"></div>
+    <div class="yt-controls">
+      <button class="button yt-maximize" aria-label="maximize video"><i data-feather="maximize"></i></button>
+      <button class="button yt-close" aria-label="close video"><i data-feather="x"></i></button>
+    </div>
+  </div>
+  <div class="yt-player-wrap">
+    <iframe
+      id="yt-iframe"
+      class="yt-iframe"
+      title="YouTube video player"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+{% endblock body_footer %}
+
+{% block scripts_extra %}
+{{ super() }}
+<script>
+{% include "components/youtube_popover_scripts.js.jinja" %}
+</script>
+{% endblock scripts_extra %}
+
+
