@@ -10,7 +10,7 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from sidematter_format import move_sidematter
+from sidematter_format import copy_sidematter, move_sidematter, remove_sidematter
 from strif import copyfile_atomic, hash_file
 from typing_extensions import override
 
@@ -520,6 +520,7 @@ class FileStore(Workspace):
         *,
         as_type: ItemType | None = None,
         reimport: bool = False,
+        with_sidematter: bool = False,
     ) -> StorePath:
         """
         Add resources from files or URLs. If a locator is a path, copy it into the store.
@@ -527,6 +528,8 @@ class FileStore(Workspace):
         are not imported again and the existing store path is returned.
         If `as_type` is specified, it will be used to override the item type, otherwise
         we go with our best guess.
+        If `with_sidematter` is true, will copy any sidematter files (metadata/assets) to
+        the destination.
         """
         from kash.file_storage.item_file_format import read_item
         from kash.web_content.canon_url import canonicalize_url
@@ -588,6 +591,9 @@ class FileStore(Workspace):
                 # we'll pick a new store path.
                 store_path = self.save(item)
                 log.info("Imported text file: %s", item.as_str())
+                # If requested, also copy any sidematter files (metadata/assets) to match destination.
+                if with_sidematter:
+                    copy_sidematter(path, self.base_dir / store_path, copy_original=False)
             else:
                 # Binary or other files we just copy over as-is, preserving the name.
                 # We know the extension is recognized.
@@ -596,7 +602,10 @@ class FileStore(Workspace):
                     raise FileExists(f"Resource already in store: {fmt_loc(store_path)}")
 
                 log.message("Importing resource: %s", fmt_loc(path))
-                copyfile_atomic(path, self.base_dir / store_path, make_parents=True)
+                if with_sidematter:
+                    copy_sidematter(path, self.base_dir / store_path)
+                else:
+                    copyfile_atomic(path, self.base_dir / store_path, make_parents=True)
 
                 # Optimization: Don't import an identical file twice.
                 if old_store_path:
@@ -607,7 +616,10 @@ class FileStore(Workspace):
                             "Imported resource is identical to the previous import: %s",
                             fmt_loc(old_store_path),
                         )
-                        os.unlink(self.base_dir / store_path)
+                        if with_sidematter:
+                            remove_sidematter(self.base_dir / store_path)
+                        else:
+                            os.unlink(self.base_dir / store_path)
                         store_path = old_store_path
                 log.message("Imported resource: %s", fmt_loc(store_path))
             return store_path
@@ -617,16 +629,20 @@ class FileStore(Workspace):
         *locators: Locator,
         as_type: ItemType | None = None,
         reimport: bool = False,
+        with_sidematter: bool = False,
     ) -> list[StorePath]:
         return [
-            self.import_item(locator, as_type=as_type, reimport=reimport) for locator in locators
+            self.import_item(
+                locator, as_type=as_type, reimport=reimport, with_sidematter=with_sidematter
+            )
+            for locator in locators
         ]
 
-    def import_and_load(self, locator: UnresolvedLocator) -> Item:
+    def import_and_load(self, locator: UnresolvedLocator, with_sidematter: bool = False) -> Item:
         """
         Import a locator and return the item.
         """
-        store_path = self.import_item(locator)
+        store_path = self.import_item(locator, with_sidematter=with_sidematter)
         return self.load(store_path)
 
     def _filter_selection_paths(self):

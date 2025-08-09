@@ -118,10 +118,13 @@ def import_locator_args(
     *locators_or_strs: UnresolvedLocator,
     as_type: ItemType = ItemType.resource,
     reimport: bool = False,
+    with_sidematter: bool = False,
 ) -> list[StorePath]:
     """
     Import locators into the current workspace.
     """
     locators = [resolve_locator_arg(loc) for loc in locators_or_strs]
     ws = current_ws()
-    return ws.import_items(*locators, as_type=as_type, reimport=reimport)
+    return ws.import_items(
+        *locators, as_type=as_type, reimport=reimport, with_sidematter=with_sidematter
+    )

@@ -3,11 +3,14 @@ from kash.utils.file_utils.file_formats_model import Format
 from kash.web_gen.template_render import render_web_template
 
 
-def simple_webpage_render(
-    item: Item,
-    page_template: str = "youtube_webpage.html.jinja",
+def render_webpage(
+    *,
+    title: str,
+    content_html: str,
+    thumbnail_url: str | None = None,
     add_title_h1: bool = True,
     show_theme_toggle: bool = False,
+    page_template: str = "youtube_webpage.html.jinja",
 ) -> str:
     """
     Generate a simple web page from a single item.
@@ -16,10 +19,10 @@ def simple_webpage_render(
     return render_web_template(
         template_filename=page_template,
         data={
-            "title": item.pick_title(),
+            "title": title,
             "add_title_h1": add_title_h1,
-            "content_html": item.body_as_html(),
-            "thumbnail_url": item.thumbnail_url,
+            "content_html": content_html,
+            "thumbnail_url": thumbnail_url,
             "enable_themes": show_theme_toggle,
             "show_theme_toggle": show_theme_toggle,
         },
@@ -43,7 +46,11 @@ def test_render():
     )
 
     # Generate HTML
-    html = simple_webpage_render(item)
+    html = render_webpage(
+        title=item.pick_title(),
+        content_html=item.body_as_html(),
+        thumbnail_url=item.thumbnail_url,
+    )
 
     os.makedirs("tmp", exist_ok=True)
     with open("tmp/simple_webpage.html", "w") as f:

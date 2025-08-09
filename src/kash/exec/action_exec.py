@@ -42,6 +42,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
     Prepare input args, which may be URLs or paths, into items that correspond to
     URL or file resources, either finding them in the workspace or importing them.
     Also fetches metadata for URLs if they don't already have title and description.
+    Automatically imports any URLs and copies any sidematter-format files (metadata/assets).
     """
     from kash.exec.fetch_url_items import fetch_url_item_content
 
@@ -49,7 +50,7 @@ def prepare_action_input(*input_args: CommandArg, refetch: bool = False) -> Acti
 
     # Ensure input items are already saved in the workspace and load the corresponding items.
     # This also imports any URLs.
-    input_items = [ws.import_and_load(arg) for arg in input_args]
+    input_items = [ws.import_and_load(arg, with_sidematter=True) for arg in input_args]
 
     # URLs should have metadata like a title and be valid, so we fetch them.
     if input_items:

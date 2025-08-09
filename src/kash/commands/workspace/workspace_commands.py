@@ -398,7 +398,10 @@ def params(full: bool = False) -> None:
 
 @kash_command
 def import_item(
-    *files_or_urls: str, type: ItemType | None = None, inplace: bool = False
+    *files_or_urls: str,
+    type: ItemType | None = None,
+    inplace: bool = False,
+    with_sidematter: bool = False,
 ) -> ShellResult:
     """
     Add a file or URL resource to the workspace as an item.
@@ -408,6 +411,8 @@ def import_item(
             adding or rewriting metadata frontmatter.
         type: Change the item type. Usually items are auto-detected from the file
             format (typically doc or resource), but you can override this with this option.
+        with_sidematter: If set, will copy any sidematter-format files (metadata/assets)
+            to the destination.
     """
     if not files_or_urls:
         raise InvalidInput("No files or URLs provided")
@@ -416,7 +421,9 @@ def import_item(
     store_paths = []
 
     locators = [resolve_locator_arg(r) for r in files_or_urls]
-    store_paths = ws.import_items(*locators, as_type=type, reimport=inplace)
+    store_paths = ws.import_items(
+        *locators, as_type=type, reimport=inplace, with_sidematter=with_sidematter
+    )
 
     print_status(
         "Imported %s %s:\n%s",

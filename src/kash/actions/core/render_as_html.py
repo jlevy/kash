@@ -12,7 +12,7 @@ from kash.model import ActionInput, ActionResult, Param
 from kash.model.items_model import ItemType
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.text_handling.markdown_utils import rewrite_image_urls
-from kash.web_gen.simple_webpage import simple_webpage_render
+from kash.web_gen.webpage_render import render_webpage
 from kash.workspaces.workspaces import current_ws
 
 log = get_logger(__name__)
@@ -57,8 +57,12 @@ def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
 
         rewritten_item = input_item.derived_copy(body=rewritten_body)
 
-        result_item.body = simple_webpage_render(
-            rewritten_item, add_title_h1=not no_title, show_theme_toggle=True
+        result_item.body = render_webpage(
+            title=input_item.pick_title(),
+            content_html=rewritten_item.body_as_html(),
+            thumbnail_url=input_item.thumbnail_url,
+            add_title_h1=not no_title,
+            show_theme_toggle=True,
         )
 
         # Manually copy over metadata *and* assets. This makes image assets work.
