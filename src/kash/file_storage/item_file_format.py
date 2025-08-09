@@ -104,7 +104,7 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
     item.body = body
 
 
-def read_item(path: Path, base_dir: Path | None) -> Item:
+def read_item(path: Path, base_dir: Path | None, preserve_filename: bool = True) -> Item:
     """
     Read an item from a file. Uses `base_dir` to resolve paths, so the item's
     `store_path` will be set and be relative to `base_dir`.
@@ -124,11 +124,13 @@ def read_item(path: Path, base_dir: Path | None) -> Item:
         log.debug("Cache hit for item: %s", path)
         return cached_item
 
-    return _read_item_uncached(path, base_dir)
+    return _read_item_uncached(path, base_dir, preserve_filename=preserve_filename)
 
 
 @tally_calls()
-def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
+def _read_item_uncached(
+    path: Path, base_dir: Path | None, *, preserve_filename: bool = True
+) -> Item:
     # First, try to resolve sidematter
     sidematter = Sidematter(path).resolve(use_frontmatter=False)
 
@@ -200,6 +202,10 @@ def _read_item_uncached(path: Path, base_dir: Path | None) -> Item:
             with open(path, encoding="utf-8") as f:
                 item.body = f.read()
             item.external_path = None
+
+    # Preserve the original filename.
+    if preserve_filename:
+        item.original_filename = path.name
 
     # Update modified time.
     item.set_modified(path.stat().st_mtime)

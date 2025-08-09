@@ -1,3 +1,4 @@
+from chopdiff.html import rewrite_html_img_urls
 from sidematter_format import Sidematter, copy_sidematter
 
 from kash.config.logger import get_logger
@@ -51,15 +52,20 @@ def rewrite_item_image_urls(
     Rewrite image path prefixes. Useful when we are rendering an item with sidematter
     asset paths.
     """
-    log.message("Rewriting doc image paths: `%s` -> `%s`", old_prefix, new_prefix)
 
     # Rewrite image paths to be relative to the workspace.
     assert input_item.body
     if input_item.format in (Format.markdown, Format.md_html):
         rewritten_body = rewrite_image_urls(input_item.body, old_prefix, new_prefix)
+    elif input_item.format == Format.html:
+        rewritten_body = rewrite_html_img_urls(
+            input_item.body, from_prefix=old_prefix, to_prefix=new_prefix
+        )
     else:
         rewritten_body = input_item.body
 
+    change_str = "found" if rewritten_body != input_item.body else "none found"
+    log.message("Rewrote doc image paths (%s): `%s` -> `%s`", change_str, old_prefix, new_prefix)
     rewritten_item = input_item.derived_copy(body=rewritten_body)
 
     return rewritten_item

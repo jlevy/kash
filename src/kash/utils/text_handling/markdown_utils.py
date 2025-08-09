@@ -195,7 +195,6 @@ def rewrite_image_urls(
     # Then optionally rewrite HTML img tags
     if include_img_tags:
         result = rewrite_html_img_urls(result, from_prefix=from_prefix, to_prefix=to_prefix)
-
     return result
 
 

@@ -380,9 +380,9 @@ class Item:
         item_type: ItemType | None = None,
         *,
         title: str | None = None,
-        original_filename: str | None = None,
         url: Url | None = None,
         mime_type: MimeType | None = None,
+        preserve_filename: bool = True,
     ) -> Item:
         """
         Create a resource Item for a file with a format inferred from the file extension
@@ -411,6 +411,7 @@ class Item:
         if not file_ext:
             file_ext = format_info.suggested_file_ext
 
+        original_filename = Path(path).name if preserve_filename else None
         item = cls(
             type=item_type,
             title=single_line(title) if title else None,  # Avoid multiline titles.
@@ -1000,6 +1001,7 @@ class Item:
                 key_filter={
                     "store_path": 0,
                     "external_path": 64,
+                    "original_filename": 64,
                     "type": 64,
                     "format": 64,
                     "state": 64,
