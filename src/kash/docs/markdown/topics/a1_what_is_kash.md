@@ -1,3 +1,16 @@
+## Hello!
+
+If you’re seeing this, you there’s a good chance I shared it with you for feedback.
+Thank you for checking out Kash.
+
+It’s new, the result of some experimentation over the past few months.
+I like a lot of things about it but it isn’t mature and I’d love your help to make it
+more usable. If you try it please **let me know** what works and what doesn’t work.
+Or if you just don’t get it, where you lost interest or got stuck.
+My contact info is at [github.com/jlevy](https://github.com/jlevy) or [follow or DM
+me](https://x.com/ojoshe) (I’m fastest on Twitter DMs).
+Thank you. :)
+
 ## What is Kash?
 
 > “*Simple should be simple.
@@ -12,9 +25,15 @@ It operates on “items” such as URLs, files, or Markdown notes within a works
 directory.
 
 You can use Kash as an **interactive, AI-native command-line** shell for practical
-knowledge tasks. It’s also **a Python library** that lets you convert a simple Python
-function into a command and an MCP tool, so it integrates with other tools like
-Anthropic Desktop or Cursor.
+knowledge tasks.
+
+But it’s actually not just a shell, and you can skip the shell entirely.
+It’s really simply **a Python library** that lets you convert a simple Python function
+into “actions” that work in a clean way on plain files in a workspace.
+An action is also an MCP tool, so it integrates with other tools like Anthropic Desktop
+or Cursor.
+
+So basically, it gives a unified way to use the shell, Python functions, and MCP tools.
 
 It’s new and still has some rough edges, but it’s now working well enough it is feeling
 quite powerful. It now serves as a replacement for my usual shell (previously bash or
@@ -73,10 +92,10 @@ quick to install via uv.
 - **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
   You can use it with any models or APIs you like, and is already set up to use the APIs
-  of **OpenAI GPT-4o and o1**, **Anthropic Claude 3.7**, **Google Gemini**, **xAI
-  Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**,
-  **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries.
-  There is also some experimental support for **LlamaIndex** and **ChromaDB**.
+  of **OpenAI** (GPT-5 is now the default model), **Anthropic Claude**, **Google
+  Gemini**, **xAI Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via
+  **LiteLLM**), **Deepgram**, **Perplexity**, **Firecrawl**, **Exa**, and any Python
+  libraries. There is also some experimental support for **LlamaIndex** and **ChromaDB**.
 
 - **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
   in any MCP client, like Anthropic Desktop or Cursor.
@@ -110,14 +129,3 @@ I’ve separately built a new desktop terminal app, Kerm, which adds support for
 “Kerm codes” protocol for such visual components, encoded as OSC codes then rendered in
 the terminal. Because Kash supports these codes, as this develops you will get the
 visuals of a web app layered on the flexibility of a text-based terminal.
-
-### Is Kash Mature?
-
-It’s the result of a couple months of coding and experimentation, and it’s still in
-progress and has rough edges.
-Please help me make it better by sharing your ideas and feedback!
-It’s easiest to DM me at [twitter.com/ojoshe](https://x.com/ojoshe).
-My contact info is at [github.com/jlevy](https://github.com/jlevy).
-
-[**Please follow or DM me**](https://x.com/ojoshe) for future updates or if you have
-ideas, feedback, or use cases for Kash!
