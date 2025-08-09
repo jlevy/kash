@@ -10,7 +10,7 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from sidematter_format import move_with_sidematter
+from sidematter_format import move_sidematter
 from strif import copyfile_atomic, hash_file
 from typing_extensions import override
 
@@ -693,7 +693,7 @@ class FileStore(Workspace):
             log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
         if with_sidematter:
-            move_with_sidematter(orig_path, archive_path)
+            move_sidematter(orig_path, archive_path)
         else:
             shutil.move(orig_path, archive_path)
         self._remove_references([store_path])
@@ -712,7 +712,7 @@ class FileStore(Workspace):
             store_path = StorePath(relpath(full_input_path, full_archive_path))
         original_path = self.base_dir / store_path
         if with_sidematter:
-            move_with_sidematter(full_input_path, original_path)
+            move_sidematter(full_input_path, original_path)
         else:
             shutil.move(full_input_path, original_path)
         return StorePath(store_path)

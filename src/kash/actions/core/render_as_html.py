@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sidematter_format import Sidematter
+from sidematter_format import Sidematter, copy_sidematter
 
 from kash.actions.core.tabbed_webpage_config import tabbed_webpage_config
 from kash.actions.core.tabbed_webpage_generate import tabbed_webpage_generate
@@ -59,6 +59,20 @@ def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
 
         result_item.body = simple_webpage_render(
             rewritten_item, add_title_h1=not no_title, show_theme_toggle=True
+        )
+
+        # Manually copy over metadata *and* assets. This makes image assets work.
+        result_path = ws.assign_store_path(result_item)
+        log.message(
+            "Copying sidematter and assets: %s -> %s",
+            input_item.store_path,
+            result_item.store_path,
+        )
+        copy_sidematter(
+            src_path=ws.base_dir / input_item.store_path,
+            dest_path=result_path,
+            make_parents=True,
+            copy_original=False,
         )
 
         return ActionResult([result_item])

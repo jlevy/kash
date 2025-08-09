@@ -951,6 +951,7 @@ class Item:
         Mark the item as saved at an external or internal path. If this item is saved to a
         workspace and the path is inside the workspace, the save will be short-circuited.
         If it's outside the workspace, the item will be copied to the workspace.
+        Having this method makes it quick to catch bugs where the file is missing.
         """
         if not external_path.exists():
             raise FileNotFoundError(f"Provided path not found: {fmt_loc(external_path)}")
