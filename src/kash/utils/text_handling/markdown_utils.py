@@ -27,7 +27,7 @@ MARKDOWN_ESCAPE_RE = re.compile(MARKDOWN_ESCAPE_CHARS)
 
 # Use flowmark for Markdown parsing and rendering.
 # Replaces the single shard marko Markdown object.
-MARKDOWN = flowmark_markdown(line_wrap_by_sentence(width=88, is_markdown=True))
+MARKDOWN = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
 
 
 def escape_markdown(text: str) -> str:
