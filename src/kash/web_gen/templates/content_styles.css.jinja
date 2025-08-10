@@ -44,6 +44,49 @@
   margin: 2rem 0;
 }
 
+.key-claims {
+  font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
+  font-size: var(--font-size-small);
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--color-hint-gentle);
+}
+
+.claim {
+  font-weight: 600;
+  position: relative;
+  margin-left: 1.8rem;
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+  font-weight: var(--font-weight-sans-bold);
+  font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
+}
+
+.claim::before {
+  content: "▪︎";
+  position: absolute;
+  left: -.85rem;
+  top: .25rem;
+  font-size: 0.625rem;
+}
+
+.key-claims::before {
+  content: "Key Claims";
+  display: block;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-sans);
+  font-weight: 500;
+  font-size: calc(1.2rem * var(--caps-heading-size-multiplier));
+  line-height: var(--caps-heading-line-height);
+  text-transform: var(--caps-transform);
+  font-variant-caps: var(--caps-caps-variant);
+  letter-spacing: var(--caps-spacing);
+  margin-bottom: 0.5rem;
+}
+
 .summary {
   font-family: var(--font-sans);
   font-feature-settings: var(--font-features-sans);

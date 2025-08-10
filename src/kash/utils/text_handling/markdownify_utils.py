@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from kash.utils.text_handling.escape_html_tags import escape_html_tags
 
@@ -35,7 +36,7 @@ def markdownify_preprocess(html: str) -> str:
 
 # Good options for markdownify. Without setting sup_symbol and sub_symbol, that
 # info is typically lost.
-MARKDOWNIFY_OPTIONS = {
+MARKDOWNIFY_OPTIONS: dict[str, Any] = {
     "sup_symbol": "<__sup>",
     "sub_symbol": "<__sub>",
     "escape_underscores": True,
