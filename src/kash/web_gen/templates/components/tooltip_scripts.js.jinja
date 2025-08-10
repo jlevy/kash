@@ -41,6 +41,8 @@ const TOOLTIP_CONFIG = {
   content: {
     maxFootnoteLength: 400, // Maximum characters for footnote tooltips
     minFootnoteLength: 5,   // Minimum characters to show tooltip
+    maxInternalLinkLength: 1000, // Maximum characters for internal link tooltips
+    minInternalLinkLength: 10,  // Minimum characters to show tooltip
   }
 };
 
@@ -859,6 +861,187 @@ function truncateFootnoteContent(html, text) {
   return tempDiv.innerHTML;
 }
 
+/* -----------------------------------------------------------------------------
+   Automatic internal link detection and tooltip creation
+   ----------------------------------------------------------------------------- */
+
+// Initialize internal link tooltips
+function initInternalLinkTooltips() {
+  console.debug('Initializing internal link tooltips...');
+  
+  // Find all internal links (href starting with #, but not footnotes)
+  // Note: :not() cannot contain complex selectors like descendant selectors
+  const allInternalLinks = document.querySelectorAll('a[href^="#"]:not(.footnote)');
+  const internalLinks = Array.from(allInternalLinks).filter(link => {
+    // Skip if it's inside a footnote-ref
+    if (link.closest('.footnote-ref')) return false;
+    
+    const href = link.getAttribute('href');
+    // Skip empty or footnote links
+    return href && href !== '#' && !href.startsWith('#fn-');
+  });
+  
+  let tooltipsAdded = 0;
+  
+  internalLinks.forEach(link => {
+    try {
+      const href = link.getAttribute('href');
+      if (!href || href === '#' || href.startsWith('#fn-')) return; // Skip empty or footnote links
+      
+      const targetId = href.substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (!targetElement) {
+        console.debug(`Target element not found for ID: ${targetId}`);
+        return;
+      }
+      
+      // Extract meaningful content based on element type
+      let tooltipContent = '';
+      let tooltipText = '';
+      
+      // Check if it's a heading
+      if (targetElement.matches('h1, h2, h3, h4, h5, h6')) {
+        const headingLevel = targetElement.tagName.substring(1);
+        const headingText = TooltipUtils.extractTextContent(targetElement);
+        tooltipText = headingText;
+        
+        // Format based on heading level
+        if (headingLevel === '1' || headingLevel === '2') {
+          tooltipContent = `<strong>Section:</strong> ${TooltipUtils.sanitizeText(headingText)}`;
+        } else {
+          tooltipContent = `<strong>Subsection:</strong> ${TooltipUtils.sanitizeText(headingText)}`;
+        }
+        
+        // Try to get first paragraph after heading for context
+        let nextElement = targetElement.nextElementSibling;
+        while (nextElement && !nextElement.matches('p') && !nextElement.matches('h1, h2, h3, h4, h5, h6')) {
+          nextElement = nextElement.nextElementSibling;
+        }
+        
+        if (nextElement && nextElement.matches('p')) {
+          const paragraphText = TooltipUtils.extractTextContent(nextElement);
+          if (paragraphText && paragraphText.length > 0) {
+            const truncatedPara = truncateInternalLinkContent(paragraphText, 150);
+            tooltipContent += `<br><br>${TooltipUtils.sanitizeText(truncatedPara)}`;
+          }
+        }
+      }
+      // Check if it's a figure, table, or other special content
+      else if (targetElement.matches('figure, .figure')) {
+        const caption = targetElement.querySelector('figcaption, .caption');
+        if (caption) {
+          tooltipText = TooltipUtils.extractTextContent(caption);
+          tooltipContent = `<strong>Figure:</strong> ${TooltipUtils.sanitizeText(tooltipText)}`;
+        } else {
+          tooltipText = 'Figure';
+          tooltipContent = '<strong>Figure</strong>';
+        }
+      }
+      else if (targetElement.matches('table, .table-container')) {
+        const caption = targetElement.querySelector('caption');
+        const firstHeader = targetElement.querySelector('th');
+        if (caption) {
+          tooltipText = TooltipUtils.extractTextContent(caption);
+          tooltipContent = `<strong>Table:</strong> ${TooltipUtils.sanitizeText(tooltipText)}`;
+        } else if (firstHeader) {
+          tooltipText = TooltipUtils.extractTextContent(firstHeader);
+          tooltipContent = `<strong>Table:</strong> ${TooltipUtils.sanitizeText(tooltipText)}...`;
+        } else {
+          tooltipText = 'Table';
+          tooltipContent = '<strong>Table</strong>';
+        }
+      }
+      // Check if it's a code block
+      else if (targetElement.matches('pre, .code-block-wrapper')) {
+        const codeElement = targetElement.querySelector('code') || targetElement;
+        const codeText = TooltipUtils.extractTextContent(codeElement);
+        const firstLine = codeText.split('\n')[0];
+        tooltipText = firstLine;
+        tooltipContent = `<strong>Code:</strong> <code>${TooltipUtils.sanitizeText(truncateInternalLinkContent(firstLine, 100))}</code>`;
+      }
+      // Check if it's a details/summary element
+      else if (targetElement.matches('details')) {
+        const summary = targetElement.querySelector('summary');
+        if (summary) {
+          tooltipText = TooltipUtils.extractTextContent(summary);
+          tooltipContent = `<strong>Details:</strong> ${TooltipUtils.sanitizeText(tooltipText)}`;
+        } else {
+          return; // Skip if no summary
+        }
+      }
+      // Default: extract text content from the element
+      else {
+        tooltipText = TooltipUtils.extractTextContent(targetElement);
+        
+        // Check if the element has a meaningful tag name for context
+        const tagName = targetElement.tagName.toLowerCase();
+        if (tagName === 'section' || tagName === 'article') {
+          // Try to find a heading within it
+          const heading = targetElement.querySelector('h1, h2, h3, h4, h5, h6');
+          if (heading) {
+            const headingText = TooltipUtils.extractTextContent(heading);
+            tooltipContent = `<strong>Section:</strong> ${TooltipUtils.sanitizeText(headingText)}`;
+            // Get first paragraph if available
+            const firstPara = targetElement.querySelector('p');
+            if (firstPara) {
+              const paraText = TooltipUtils.extractTextContent(firstPara);
+              const truncatedPara = truncateInternalLinkContent(paraText, 150);
+              tooltipContent += `<br><br>${TooltipUtils.sanitizeText(truncatedPara)}`;
+            }
+          } else {
+            tooltipContent = TooltipUtils.sanitizeText(truncateInternalLinkContent(tooltipText, TOOLTIP_CONFIG.content.maxInternalLinkLength));
+          }
+        } else {
+          // Just show the content
+          tooltipContent = TooltipUtils.sanitizeText(truncateInternalLinkContent(tooltipText, TOOLTIP_CONFIG.content.maxInternalLinkLength));
+        }
+      }
+      
+      // Skip if content is too short or empty
+      if (!tooltipText || tooltipText.length < TOOLTIP_CONFIG.content.minInternalLinkLength) {
+        console.debug(`Content too short or empty for internal link to: ${targetId}`);
+        return;
+      }
+      
+      // Add the tooltip
+      TooltipManager.addTooltip(link, tooltipContent, 'auto', {
+        isInternalLink: true,
+        targetId: targetId
+      });
+      tooltipsAdded++;
+      
+      console.debug(`Added tooltip for internal link to ${targetId}: "${tooltipText.substring(0, 50)}..."`);
+    } catch (error) {
+      console.error('Error processing internal link:', link, error);
+    }
+  });
+  
+  console.debug(`Internal link tooltips initialized: ${tooltipsAdded} tooltips added`);
+  return tooltipsAdded;
+}
+
+// Truncate internal link content if too long
+function truncateInternalLinkContent(text, maxLength = TOOLTIP_CONFIG.content.maxInternalLinkLength) {
+  if (!text) return '';
+  
+  const trimmedText = text.trim();
+  if (trimmedText.length <= maxLength) {
+    return trimmedText;
+  }
+  
+  // Try to truncate at a word boundary
+  const truncated = trimmedText.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  
+  if (lastSpace > maxLength * 0.8) {
+    // If we have a reasonable word boundary, use it
+    return truncated.substring(0, lastSpace) + '…';
+  } else {
+    // Otherwise just truncate at the max length
+    return truncated + '…';
+  }
+}
+
 // Initialize all tooltips
 function initTooltips() {
   console.debug('Starting tooltip initialization...');
@@ -868,7 +1051,9 @@ function initTooltips() {
     MobileInteractionManager.init();
     
     const footnoteCount = initFootnoteTooltips();
-    console.debug(`Tooltip initialization complete. Total footnote tooltips: ${footnoteCount}`);
+    const internalLinkCount = initInternalLinkTooltips();
+    
+    console.debug(`Tooltip initialization complete. Footnote tooltips: ${footnoteCount}, Internal link tooltips: ${internalLinkCount}`);
   } catch (error) {
     console.error('Error during tooltip initialization:', error);
   }
