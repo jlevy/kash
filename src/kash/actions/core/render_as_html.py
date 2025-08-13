@@ -31,7 +31,7 @@ def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
     if len(input.items) == 1:
         input_item = input.items[0]
 
-        result_item = input_item.preassembled_copy(type=ItemType.export, format=Format.html)
+        result_item = input_item.derived_copy(type=ItemType.export, format=Format.html)
 
         result_item = render_item_as_html(input_item, result_item, add_title_h1=not no_title)
 

@@ -154,7 +154,7 @@ source = "uv-dynamic-versioning"
 [tool.uv-dynamic-versioning]
 vcs = "git"
 style = "pep440"
-bump = "true"
+bump = true
 
 # Explicitly configure top-level namespace for hatch.
 [tool.hatch.build.targets.wheel]

@@ -550,7 +550,7 @@ class Action(ABC):
             # Using first input to determine the output title.
             primary_input = context.action_input.items[0]
             # In this case we only expect one output.
-            item = primary_input.preassembled_copy(context, 0)
+            item = primary_input.derived_copy(context, 0)
             return ActionResult([item])
         else:
             # Caching disabled.

@@ -569,16 +569,25 @@ class Item:
             path_name = None
         return path_name
 
-    def slug_name(self, max_len: int = SLUG_MAX_LEN, prefer_title: bool = False) -> str:
+    def slug_name(
+        self,
+        max_len: int = SLUG_MAX_LEN,
+        prefer_title: bool = False,
+        add_ops_suffix: bool = True,
+    ) -> str:
         """
         Get a readable slugified name for this item, either from a previous filename
-        or from slugifying the title or content. May not be unique.
+        or from slugifying the title or content. Adds the last operation suffix if requested
+        and available in item history.
         """
-        filename_stem = self.filename_stem()
-        if filename_stem and not prefer_title:
-            return slugify_snake(filename_stem)
+        base_title = self.filename_stem()
+        if prefer_title or not base_title:
+            base_title = self.pick_title(max_len=max_len, add_ops_suffix=add_ops_suffix)
         else:
-            return slugify_snake(self.pick_title(max_len=max_len, add_ops_suffix=True))
+            base_title = self.pick_title(
+                base_title=base_title, max_len=max_len, add_ops_suffix=add_ops_suffix
+            )
+        return slugify_snake(base_title)
 
     def default_filename(self) -> str:
         """
@@ -602,6 +611,7 @@ class Item:
 
     def pick_title(
         self,
+        base_title: str | None = None,
         *,
         max_len: int = 100,
         add_ops_suffix: bool = False,
@@ -614,30 +624,30 @@ class Item:
         """
         # First special case: if we are pulling the title from the body header, check
         # that.
-        if not self.title and pull_body_heading:
-            heading = self.body_heading()
-            if heading:
-                return heading
+        if not base_title:
+            if not base_title and pull_body_heading:
+                heading = self.body_heading()
+                base_title = heading
 
-        # Next special case: URLs with no title use the url itself.
-        if not self.title and self.url:
-            return abbrev_str(self.url, max_len)
+            # Next special case: URLs with no title use the url itself.
+            if not self.title and self.url:
+                return abbrev_str(self.url, max_len)
 
-        filename_stem = self.filename_stem()
+            filename_stem = self.filename_stem()
 
-        # Use the title or the path if possible, falling back to description or even body text.
-        title_raw_text = (
-            self.title
-            or filename_stem
-            or self.description
-            or (not self.is_binary and self.abbrev_body(max_len))
-            or UNTITLED
-        )
+            # Use the title or the path if possible, falling back to description or even body text.
+            base_title = (
+                self.title
+                or filename_stem
+                or self.description
+                or (not self.is_binary and self.abbrev_body(max_len))
+                or UNTITLED
+            )
 
-        suffix = ""
         # For docs, etc but not for concepts/resources/exports, add a parenthical note
         # indicating the last operation, if there was one. This makes filename slugs
         # more readable.
+        suffix = ""
         if add_ops_suffix and self.type.allows_op_suffix:
             last_op = self.history and self.history[-1].action_name
             if last_op:
@@ -646,7 +656,7 @@ class Item:
 
         shorter_len = min(max_len, max(max_len - len(suffix), 20))
         clean_text = sanitize_title(
-            abbrev_phrase_in_middle(html_to_plaintext(title_raw_text), shorter_len)
+            abbrev_phrase_in_middle(html_to_plaintext(base_title), shorter_len)
         )
 
         final_text = clean_text
@@ -813,7 +823,12 @@ class Item:
         merged_fields = self._copy_and_update(other, update_timestamp=False)
         return Item(**merged_fields)
 
-    def derived_copy(self, **updates: Unpack[ItemUpdateOptions]) -> Item:
+    def derived_copy(
+        self,
+        action_context: ActionContext | None = None,
+        output_num: int = 0,
+        **updates: Unpack[ItemUpdateOptions],
+    ) -> Item:
         """
         Copy item with the given field updates. Resets `store_path` and `source` to None
         since those should be set explicitly later. Preserves other fields, including
@@ -822,6 +837,8 @@ class Item:
         Same as `new_copy_with` but also updates the `derived_from` relation. If we also
         have an action context, then use the `title_template` to derive a new title.
         """
+
+        # Get derived_from relation if possible.
         if not self.store_path:
             if self.relations.derived_from:
                 log.message(
@@ -856,47 +873,34 @@ class Item:
         if derived_from:
             new_item.update_relations(derived_from=derived_from)
 
+        action_context = action_context or self.context
+
+        # Record the history.
+        if action_context:
+            self.source = Source(
+                operation=action_context.operation,
+                output_num=output_num,
+                cacheable=action_context.action.cacheable,
+            )
+            self.add_to_history(self.source.operation.summary())
+            action = action_context.action
+        else:
+            action = None
+
         # Fall back to action title template if we have it and title wasn't explicitly set.
         if "title" not in updates:
             prev_title = self.title or (Path(self.store_path).stem if self.store_path else UNTITLED)
-            if self.context:
-                action = self.context.action
+
+            if action:
                 new_item.title = action.format_title(prev_title)
             else:
-                log.warning(
+                log.info(
                     "Deriving an item without action context so keeping previous title: %s",
                     self,
                 )
                 new_item.title = prev_title
 
         return new_item
-
-    def preassembled_copy(
-        self,
-        action_context: ActionContext | None = None,
-        output_num: int = 0,
-        **updates: Unpack[ItemUpdateOptions],
-    ) -> Item:
-        """
-        Pre-assemble a single output item for this action, including adding to the history,
-        which is useful to know the final store path, title, etc.
-        """
-        if not action_context:
-            action_context = self.context
-            if not action_context:
-                raise ValueError(f"Item has no action context: {self}")
-
-        action = action_context.action
-        item = self.derived_copy(**{"type": action.output_type, "body": None, **updates})
-        item.title = action.format_title(item.title)
-        item.update_history(
-            Source(
-                operation=action_context.operation,
-                output_num=output_num,
-                cacheable=action.cacheable,
-            )
-        )
-        return item
 
     def update_relations(self, **relations: Sequence[Locator]) -> ItemRelations:
         """
