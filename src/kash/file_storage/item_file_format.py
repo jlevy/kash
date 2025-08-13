@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from frontmatter_format import FmStyle, fmf_has_frontmatter, fmf_read, fmf_write
+from frontmatter_format import (
+    FmStyle,
+    fmf_has_frontmatter,
+    fmf_read,
+    fmf_read_frontmatter,
+    fmf_write,
+)
 from funlog import tally_calls
 from prettyfmt import custom_key_sort, fmt_size_human
 from sidematter_format import Sidematter
@@ -106,7 +112,7 @@ def write_item(item: Item, path: Path, *, normalize: bool = True, use_frontmatte
 
 def read_item(path: Path, base_dir: Path | None, preserve_filename: bool = True) -> Item:
     """
-    Read an item from a file. Uses `base_dir` to resolve paths, so the item's
+    Read a text item from a file. Uses `base_dir` to resolve paths, so the item's
     `store_path` will be set and be relative to `base_dir`.
 
     Automatically detects and reads sidematter format (metadata in .meta.yml/.meta.json
@@ -129,33 +135,39 @@ def read_item(path: Path, base_dir: Path | None, preserve_filename: bool = True)
 
 @tally_calls()
 def _read_item_uncached(
-    path: Path, base_dir: Path | None, *, preserve_filename: bool = True
+    path: Path,
+    base_dir: Path | None,
+    *,
+    preserve_filename: bool = True,
+    prefer_frontmatter: bool = True,
 ) -> Item:
     # First, try to resolve sidematter
     sidematter = Sidematter(path).resolve(use_frontmatter=False)
 
-    if sidematter.meta:
-        # Sidematter found, use it (takes precedence over frontmatter)
+    # Use sidematter metadata unless we find and prefer frontmatter for metadata.
+    has_frontmatter = fmf_has_frontmatter(path)
+    frontmatter_meta = prefer_frontmatter and has_frontmatter and fmf_read_frontmatter(path)
+    if sidematter.meta and not frontmatter_meta:
         metadata = sidematter.meta
-        body = path.read_text(encoding="utf-8")
+        body, _frontmatter_metadata = fmf_read(path)
         log.debug(
             "Read item from sidematter %s: body length %s, metadata %s",
             sidematter.meta_path,
             len(body),
             metadata,
         )
+    elif has_frontmatter:
+        body, metadata = fmf_read(path)
+        log.debug(
+            "Read item from %s: body length %s, metadata %s",
+            path,
+            len(body),
+            metadata,
+        )
     else:
-        # No sidematter, check for frontmatter
-        has_frontmatter = fmf_has_frontmatter(path)
-        body = metadata = None
-        if has_frontmatter:
-            body, metadata = fmf_read(path)
-            log.debug(
-                "Read item from %s: body length %s, metadata %s",
-                path,
-                len(body),
-                metadata,
-            )
+        # Not readable, binary or otherwise.
+        metadata = None
+        body = None
 
     path = path.resolve()
     if base_dir:
