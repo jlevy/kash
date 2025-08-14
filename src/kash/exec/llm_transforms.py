@@ -1,4 +1,5 @@
 from dataclasses import replace
+from typing import Unpack
 
 from chopdiff.docs import DiffFilter, TextDoc
 from chopdiff.transforms import WindowSettings, filtered_transform
@@ -12,7 +13,7 @@ from kash.llm_utils.fuzzy_parsing import strip_markdown_fence
 from kash.llm_utils.llm_completion import llm_template_completion
 from kash.llm_utils.llm_messages import Message, MessageTemplate
 from kash.model.actions_model import LLMOptions
-from kash.model.items_model import Item
+from kash.model.items_model import Item, ItemType, ItemUpdateOptions
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.text_handling.doc_normalization import normalize_formatting
@@ -88,10 +89,11 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
 def llm_transform_item(
     item: Item,
     model: LLMName | None = None,
+    *,
     normalize: bool = True,
     strip_fence: bool = True,
     check_no_results: bool = True,
-    format: Format | None = None,
+    **updates: Unpack[ItemUpdateOptions],
 ) -> Item:
     """
     Main function for running an LLM action on an item.
@@ -99,6 +101,14 @@ def llm_transform_item(
     Model may be overridden by an explicit model parameter.
     Also by default cleans up and normalizes output as Markdown.
     """
+    # Default to Markdown docs.
+    if "format" not in updates:
+        updates["format"] = Format.markdown
+    if "type" not in updates:
+        updates["type"] = ItemType.doc
+    if "body" not in updates:
+        updates["body"] = None
+
     if not item.context:
         raise InvalidInput(f"LLM actions expect a context on input item: {item}")
     action = item.context.action
@@ -112,13 +122,12 @@ def llm_transform_item(
     log.message("LLM transform from action `%s` on item: %s", action.name, item)
     log.message("LLM options: %s", action.llm_options)
 
-    format = format or item.format or Format.markdown
-    result_item = item.derived_copy(body=None, format=format)
+    result_item = item.derived_copy(**updates)
     result_str = llm_transform_str(llm_options, item.body, check_no_results=check_no_results)
     if strip_fence:
         result_str = strip_markdown_fence(result_str)
     if normalize:
-        result_str = normalize_formatting(result_str, format=format)
+        result_str = normalize_formatting(result_str, format=updates["format"])
 
     result_item.body = result_str
     return result_item
