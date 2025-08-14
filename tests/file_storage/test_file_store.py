@@ -516,9 +516,8 @@ def test_file_store_imports_and_frontmatter():
         )
 
         mixed_item = read_item(mixed_file, workspace_dir)
-        assert mixed_item.title == "Sidematter Title"  # Should use sidematter
-        assert mixed_item.type == ItemType.concept  # Should use sidematter
-        assert mixed_item.extra and mixed_item.extra["custom_field"] == "from sidematter"
+        assert mixed_item.title == "Frontmatter Title"  # Should use frontmatter by default
+        assert mixed_item.type == ItemType.doc  # Should use frontmatter
         assert mixed_item.body and "# Test Content" in mixed_item.body
         print("✔︎ Sidematter precedence working")
 

@@ -47,7 +47,9 @@ def get_implementations(choice: str) -> list[tuple[str, Any]]:
 
     if choice in ["2", "3"]:
         try:
-            from kash.shell.input import input_prompts_questionary
+            from kash.shell.input import (
+                input_prompts_questionary,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             implementations.append(("Questionary", input_prompts_questionary))
         except ImportError as e:
