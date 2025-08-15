@@ -203,6 +203,15 @@ class ItemId:
             # If we got here, the item has no identity.
             item_id = None
 
+        log.debug(
+            "item_id is %s for type=%s, format=%s, url=%s, title=%s, source=%s",
+            item_id,
+            item.type,
+            item.format,
+            item.url,
+            item.title,
+            item.source,
+        )
         return item_id
 
 
@@ -877,12 +886,13 @@ class Item:
 
         # Record the history.
         if action_context:
-            self.source = Source(
-                operation=action_context.operation,
-                output_num=output_num,
-                cacheable=action_context.action.cacheable,
+            new_item.update_source(
+                Source(
+                    operation=action_context.operation,
+                    output_num=output_num,
+                    cacheable=action_context.action.cacheable,
+                )
             )
-            self.add_to_history(self.source.operation.summary())
             action = action_context.action
         else:
             action = None
@@ -911,9 +921,10 @@ class Item:
             setattr(self.relations, key, list(value))
         return self.relations
 
-    def update_history(self, source: Source) -> None:
+    def update_source(self, source: Source) -> None:
         """
-        Update the history of the item with the given operation.
+        Update the source and the history of the item to indicate it was created
+        by the given operation. For convenience, this is idempotent.
         """
         self.source = source
         self.add_to_history(source.operation.summary())
@@ -945,6 +956,9 @@ class Item:
         return metadata_matches and body_matches
 
     def add_to_history(self, operation_summary: OperationSummary):
+        """
+        For convenience, this is idempotent.
+        """
         if not self.history:
             self.history = []
         # Don't add duplicates to the history.

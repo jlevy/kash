@@ -182,7 +182,7 @@ def run_action_operation(
             this_op = replace(operation, arguments=[operation.arguments[i]])
         else:
             this_op = operation
-        item.update_history(Source(operation=this_op, output_num=i, cacheable=action.cacheable))
+        item.update_source(Source(operation=this_op, output_num=i, cacheable=action.cacheable))
 
     # Override the state if appropriate (this handles marking items as transient).
     if settings.override_state:

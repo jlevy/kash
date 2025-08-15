@@ -246,7 +246,8 @@ class Action(ABC):
 
     output_type: ItemType = ItemType.doc
     """
-    The type of the output item(s), which for now are all assumed to be of the same type.
+    The type of the output item(s). Sometimes an action can return multiple
+    output types, in which case this will be the output type of the first output.
     """
 
     expected_outputs: ArgCount = ONE_ARG
@@ -540,7 +541,7 @@ class Action(ABC):
         """
         can_preassemble = self.cacheable and self.expected_outputs == ONE_ARG
         log.info(
-            "Preassemble check for `%s` is %s (%s with cacheable=%s)",
+            "Preassemble check for `%s`: can_preassemble=%s (expected_outputs=%s, cacheable=%s)",
             self.name,
             can_preassemble,
             self.expected_outputs,
@@ -549,9 +550,10 @@ class Action(ABC):
         if can_preassemble:
             # Using first input to determine the output title.
             primary_input = context.action_input.items[0]
-            # In this case we only expect one output.
-            item = primary_input.derived_copy(context, 0)
-            return ActionResult([item])
+            # In this case we only expect one output, of the type specified by the action.
+            primary_output = primary_input.derived_copy(context, 0, type=context.action.output_type)
+            log.info("Preassembled output: source %s, %s", primary_output.source, primary_output)
+            return ActionResult([primary_output])
         else:
             # Caching disabled.
             return None

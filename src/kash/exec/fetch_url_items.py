@@ -98,7 +98,8 @@ def fetch_url_item_content(
     from kash.workspaces import current_ws
 
     ws = current_ws()
-    if not refetch and item.title and item.description and item.body:
+    has_key_content = item.title and item.description and (not item.has_body or item.body)
+    if not refetch and has_key_content:
         log.info(
             "Already have title, description, and body, will not fetch: %s",
             item.fmt_loc(),

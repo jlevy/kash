@@ -274,24 +274,34 @@ class FileStore(Workspace):
         Best effort to see if an item with the same identity is already in the store.
         """
         item_id = item.item_id()
-        log.info("Looking for item by id: %s", item_id)
+        log.info("Looking for item by id: %s for %s", item_id, item)
         if not item_id:
             return None
         else:
             store_path = self.id_map.get(item_id)
             if not store_path:
-                # Just in case the id_map is not complete, check the default path too.
-                default_path = self.default_path_for(item)
-                if self.exists(default_path):
-                    old_item = self.load(default_path)
-                    if old_item.item_id() == item_id:
-                        log.info(
-                            "Item with the same id already saved (disk check):\n%s",
-                            fmt_lines([fmt_loc(default_path), item_id]),
-                        )
-                        store_path = default_path
-                        self.id_map[item_id] = default_path
-                        return default_path
+                # Just in case the id_map is not complete, check the other paths too
+                possible_paths = [
+                    p
+                    for p in [
+                        item.store_path,
+                        self.store_path_for(item)[0],
+                        self.default_path_for(item),
+                    ]
+                    if p
+                ]
+                for p in possible_paths:
+                    if self.exists(p):
+                        old_item = self.load(p)
+                        if old_item.item_id() == item_id:
+                            log.info(
+                                "Item with the same id already saved (disk check):\n%s",
+                                fmt_lines([fmt_loc(p), item_id]),
+                            )
+                            store_path = p
+                            self.id_map[item_id] = p
+                            return p
+                log.info("Also checked paths but no id match:\n%s", fmt_lines(possible_paths))
             if store_path and self.exists(store_path):
                 log.info(
                     "Item with the same id already saved (disk check):\n%s",
