@@ -28,6 +28,7 @@ log = get_logger(__name__)
 @kash_action(
     expected_args=ONE_OR_NO_ARGS,
     precondition=is_chat,
+    output_format=Format.yaml,
     uses_selection=False,
     interactive_input=True,
     cacheable=False,

@@ -16,19 +16,15 @@ from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
 from kash.config.text_styles import EMOJI_SAVED
+from kash.file_storage.item_id_index import ItemIdIndex
 from kash.file_storage.metadata_dirs import MetadataDirs
-from kash.file_storage.store_filenames import (
-    folder_for_type,
-    join_suffix,
-    parse_item_filename,
-)
-from kash.model.items_model import Item, ItemId, ItemType
+from kash.file_storage.store_filenames import folder_for_type, join_suffix
+from kash.model.items_model import Item, ItemType
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
 from kash.utils.common.format_utils import fmt_loc
-from kash.utils.common.uniquifier import Uniquifier
 from kash.utils.common.url import Locator, UnresolvedLocator, Url, is_url
-from kash.utils.errors import FileExists, FileNotFound, InvalidFilename, SkippableError
+from kash.utils.errors import FileExists, FileNotFound
 from kash.utils.file_utils.file_formats_model import Format
 from kash.utils.file_utils.file_walk import walk_by_dir
 from kash.utils.file_utils.ignore_files import IgnoreChecker, add_to_ignore
@@ -94,9 +90,8 @@ class FileStore(Workspace):
         self.info_logged = False
         self.warnings: list[str] = []
 
-        # TODO: Move this to its own IdentifierIndex class, and make it exactly mirror disk state.
-        self.uniquifier = Uniquifier()
-        self.id_map: dict[ItemId, StorePath] = {}
+        # Index of item identifiers and unique slug history
+        self.id_index = ItemIdIndex()
 
         self.dirs = MetadataDirs(base_dir=self.base_dir, is_global_ws=self.is_global_ws)
         if not auto_init and not self.dirs.is_initialized():
@@ -133,7 +128,7 @@ class FileStore(Workspace):
     def _id_index_init(self):
         num_dups = 0
         for store_path in self.walk_items():
-            dup_path = self._id_index_item(store_path)
+            dup_path = self.id_index.index_item(store_path, self.load)
             if dup_path:
                 num_dups += 1
 
@@ -141,62 +136,6 @@ class FileStore(Workspace):
             self.warnings.append(
                 f"Found {num_dups} duplicate items in store. See `logs` for details."
             )
-
-    @synchronized
-    def _id_index_item(self, store_path: StorePath) -> StorePath | None:
-        """
-        Update metadata index with a new item.
-        """
-        name, item_type, _format, file_ext = parse_item_filename(store_path)
-        if not file_ext:
-            log.debug(
-                "Skipping file with unrecognized name or extension: %s",
-                fmt_path(store_path),
-            )
-            return None
-
-        full_suffix = join_suffix(item_type.name, file_ext.name) if item_type else file_ext.name
-        self.uniquifier.add(name, full_suffix)
-
-        dup_path = None
-
-        try:
-            item = self.load(store_path)
-            item_id = item.item_id()
-            if item_id:
-                old_path = self.id_map.get(item_id)
-                if old_path and old_path != store_path:
-                    dup_path = old_path
-                    log.info(
-                        "Duplicate items (%s):\n%s",
-                        item_id,
-                        fmt_lines([old_path, store_path]),
-                    )
-                self.id_map[item_id] = store_path
-        except (ValueError, SkippableError) as e:
-            log.warning(
-                "Could not load file, skipping from store index: %s: %s",
-                fmt_path(store_path),
-                e,
-            )
-
-        return dup_path
-
-    @synchronized
-    def _id_unindex_item(self, store_path: StorePath):
-        """
-        Remove an item from the metadata index.
-        """
-        try:
-            item = self.load(store_path)
-            item_id = item.item_id()
-            if item_id:
-                try:
-                    self.id_map.pop(item_id, None)
-                except KeyError:
-                    pass  # If we happen to reload a store it might no longer be in memory.
-        except (FileNotFoundError, InvalidFilename):
-            pass
 
     def resolve_to_store_path(self, path: Path | StorePath) -> StorePath | None:
         """
@@ -232,7 +171,6 @@ class FileStore(Workspace):
         """
         return (self.base_dir / store_path).exists()
 
-    @synchronized
     def _pick_filename_for(self, item: Item, *, overwrite: bool = False) -> tuple[str, str | None]:
         """
         Get a suitable filename for this item. If `overwrite` is true, use the the slugified
@@ -251,7 +189,7 @@ class FileStore(Workspace):
         slug = item.slug_name()
         full_suffix = item.get_full_suffix()
         # Get a unique name per item type.
-        unique_slug, old_slugs = self.uniquifier.uniquify_historic(slug, full_suffix)
+        unique_slug, old_slugs = self.id_index.uniquify_slug(slug, full_suffix)
 
         # Suffix files with both item type and a suitable file extension.
         new_unique_filename = join_suffix(unique_slug, full_suffix)
@@ -278,9 +216,9 @@ class FileStore(Workspace):
         if not item_id:
             return None
         else:
-            store_path = self.id_map.get(item_id)
+            store_path = self.id_index.find_store_path_by_id(item_id)
             if not store_path:
-                # Just in case the id_map is not complete, check the other paths too
+                # Just in case the index is not complete, check the other paths too
                 possible_paths = [
                     p
                     for p in [
@@ -298,8 +236,8 @@ class FileStore(Workspace):
                                 "Item with the same id already saved (disk check):\n%s",
                                 fmt_lines([fmt_loc(p), item_id]),
                             )
-                            store_path = p
-                            self.id_map[item_id] = p
+                            # Ensure index is updated consistently and with logging
+                            self.id_index.index_item(p, self.load)
                             return p
                 log.info("Also checked paths but no id match:\n%s", fmt_lines(possible_paths))
             if store_path and self.exists(store_path):
@@ -331,9 +269,13 @@ class FileStore(Workspace):
             return self._tmp_path_for(item), None
         elif item.store_path:
             return StorePath(item.store_path), None
-        elif item_id in self.id_map and self.exists(self.id_map[item_id]):
+        elif (
+            item_id
+            and (existing := self.id_index.find_store_path_by_id(item_id))
+            and self.exists(existing)
+        ):
             # If this item has an identity and we've saved under that id before, use the same store path.
-            store_path = self.id_map[item_id]
+            store_path = existing
             log.info(
                 "When picking a store path, found an existing item with same id:\n%s",
                 fmt_lines([fmt_loc(store_path), item_id]),
@@ -425,6 +367,8 @@ class FileStore(Workspace):
             # Indicate this is an item with a store path, not an external path.
             # Keep external_path set so we know body is in that file.
             item.store_path = str(rel_path)
+            # Ensure index is updated for items written directly into the store.
+            self.id_index.index_item(StorePath(rel_path), self.load)
             return StorePath(rel_path)
         else:
             # Otherwise it's still in memory or in a file outside the workspace and we need to save it.
@@ -500,7 +444,7 @@ class FileStore(Workspace):
 
         # Update in-memory store_path only after successful save.
         item.store_path = str(store_path)
-        self._id_index_item(store_path)
+        self.id_index.index_item(store_path, self.load)
 
         if not skipped_save:
             log.message("%s Saved item: %s", EMOJI_SAVED, fmt_loc(store_path))
@@ -546,6 +490,7 @@ class FileStore(Workspace):
 
         if isinstance(locator, StorePath) and not reimport:
             log.info("Store path already imported: %s", fmt_loc(locator))
+            self.id_index.index_item(locator, self.load)
             return locator
         elif is_url(locator):
             # Import a URL as a resource.
@@ -679,7 +624,7 @@ class FileStore(Workspace):
         """
         self.selections.remove_values(store_paths)
         for store_path in store_paths:
-            self._id_unindex_item(store_path)
+            self.id_index.unindex_item(store_path, self.load)
         # TODO: Update metadata of all relations that point to this path too.
 
     @synchronized
@@ -689,8 +634,8 @@ class FileStore(Workspace):
         """
         self.selections.replace_values(replacements)
         for store_path, new_store_path in replacements:
-            self._id_unindex_item(store_path)
-            self._id_index_item(new_store_path)
+            self.id_index.unindex_item(store_path, self.load)
+            self.id_index.index_item(new_store_path, self.load)
         # TODO: Update metadata of all relations that point to this path too.
 
     def archive(
@@ -718,12 +663,13 @@ class FileStore(Workspace):
         if not orig_path.exists():
             log.warning("Item to archive not found: %s", fmt_loc(orig_path))
             return store_path
+        # Remove references (including id_map) before moving so we can load the item to compute id.
+        self._remove_references([store_path])
         if with_sidematter:
             move_sidematter(orig_path, full_archive_path)
         else:
             os.makedirs(full_archive_path.parent, exist_ok=True)
             shutil.move(orig_path, full_archive_path)
-        self._remove_references([store_path])
 
         archive_path = StorePath(self.dirs.archive_dir / store_path)
         return archive_path
@@ -742,6 +688,8 @@ class FileStore(Workspace):
             move_sidematter(full_input_path, original_path)
         else:
             shutil.move(full_input_path, original_path)
+        # Re-index after restoring from archive.
+        self.id_index.index_item(store_path, self.load)
         return StorePath(store_path)
 
     @synchronized
@@ -758,7 +706,7 @@ class FileStore(Workspace):
         log.message(
             "Using workspace: %s (%s items)",
             fmt_path(self.base_dir, rel_to_cwd=False),
-            len(self.uniquifier),
+            len(self.id_index),
         )
         log.message(
             "Logging to: %s",

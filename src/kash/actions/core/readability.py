@@ -9,7 +9,7 @@ from kash.web_content.web_extract_readabilipy import extract_text_readabilipy
 log = get_logger(__name__)
 
 
-@kash_action(precondition=is_url_resource | has_html_body)
+@kash_action(precondition=is_url_resource | has_html_body, output_format=Format.html)
 def readability(item: Item) -> Item:
     """
     Extracts clean HTML from a raw HTML item.

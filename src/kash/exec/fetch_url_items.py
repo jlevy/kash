@@ -98,10 +98,11 @@ def fetch_url_item_content(
     from kash.workspaces import current_ws
 
     ws = current_ws()
-    has_key_content = item.title and item.description and (not item.has_body or item.body)
+    # We could check for description too, but many pages don't have one.
+    has_key_content = item.title and (not item.has_body or item.body)
     if not refetch and has_key_content:
         log.info(
-            "Already have title, description, and body, will not fetch: %s",
+            "Already have title so assuming metadata is up to date, will not fetch: %s",
             item.fmt_loc(),
         )
         return FetchItemResult(item, was_cached=True)

@@ -246,8 +246,17 @@ class Action(ABC):
 
     output_type: ItemType = ItemType.doc
     """
-    The type of the output item(s). Sometimes an action can return multiple
-    output types, in which case this will be the output type of the first output.
+    The type of the output item(s). If an action returns multiple output types,
+    this will be the output type of the first output.
+    This is mainly used for preassembly for the cache check if an output already exists.
+    """
+
+    output_format: Format | None = None
+    """
+    The format of the output item(s). The default is to assume it is the same
+    format as the input. If an action returns multiple output formats,
+    this will be the format of the first output.
+    This is mainly used for preassembly for the cache check if an output already exists.
     """
 
     expected_outputs: ArgCount = ONE_ARG

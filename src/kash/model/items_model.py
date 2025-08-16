@@ -844,7 +844,9 @@ class Item:
         the type and the body.
 
         Same as `new_copy_with` but also updates the `derived_from` relation. If we also
-        have an action context, then use the `title_template` to derive a new title.
+        have an action context, then use that to fill some fields, in particular `title_template`
+        to derive a new title and `output_type` and `output_format` to set the output type
+        and format
         """
 
         # Get derived_from relation if possible.
@@ -878,11 +880,29 @@ class Item:
         if "external_path" not in updates:
             updates["external_path"] = None
 
+        action_context = action_context or self.context
+
+        if action_context:
+            # Default the output item type and format to the action's declared output_type
+            # and format if not explicitly set.
+            if "type" not in updates:
+                updates["type"] = action_context.action.output_type
+            if "format" not in updates and action_context.action.output_format:
+                updates["format"] = action_context.action.output_format
+            elif "format" in updates and action_context.action.output_format:
+                # Check if explicitly specified format matches declared output format
+                specified_format = updates["format"]
+                if specified_format and action_context.action.output_format != specified_format:
+                    log.warning(
+                        "Output item format `%s` does not match declared output format `%s` for action `%s`",
+                        specified_format.value,
+                        action_context.action.output_format.value,
+                        action_context.action.name,
+                    )
+
         new_item = self.new_copy_with(update_timestamp=True, **updates)
         if derived_from:
             new_item.update_relations(derived_from=derived_from)
-
-        action_context = action_context or self.context
 
         # Record the history.
         if action_context:

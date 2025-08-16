@@ -6,11 +6,13 @@ from kash.exec_model.args_model import ONE_OR_MORE_ARGS
 from kash.exec_model.commands_model import Command
 from kash.exec_model.shell_model import ShellResult
 from kash.model import ActionInput, ActionResult
+from kash.utils.file_utils.file_formats_model import Format
 
 
 @kash_action(
     expected_args=ONE_OR_MORE_ARGS,
     precondition=(has_html_body | has_simple_text_body) & ~has_fullpage_html_body,
+    output_format=Format.html,
 )
 def show_webpage(input: ActionInput) -> ActionResult:
     """

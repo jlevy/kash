@@ -37,6 +37,7 @@ from kash.model.params_model import Param, ParamDeclarations, TypedParamValues
 from kash.model.preconditions_model import Precondition
 from kash.utils.common.function_inspect import FuncParam, inspect_function_params
 from kash.utils.errors import InvalidDefinition
+from kash.utils.file_utils.file_formats_model import Format
 
 log = get_logger(__name__)
 
@@ -204,6 +205,7 @@ def kash_action(
     arg_type: ArgType = ArgType.Locator,
     expected_args: ArgCount = ONE_ARG,
     output_type: ItemType = ItemType.doc,
+    output_format: Format | None = None,
     expected_outputs: ArgCount = ONE_ARG,
     params: ParamDeclarations = (),
     run_per_item: bool | None = None,
@@ -318,6 +320,7 @@ def kash_action(
                 self.arg_type = arg_type
                 self.uses_selection = uses_selection
                 self.output_type = output_type
+                self.output_format = output_format
                 self.interactive_input = interactive_input
                 self.live_output = live_output
                 self.mcp_tool = mcp_tool

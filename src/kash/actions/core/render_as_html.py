@@ -15,6 +15,7 @@ log = get_logger(__name__)
 @kash_action(
     expected_args=ONE_OR_MORE_ARGS,
     precondition=(has_html_body | has_simple_text_body) & ~has_fullpage_html_body,
+    output_format=Format.html,
     params=(Param("no_title", "Don't add a title to the page body.", type=bool),),
 )
 def render_as_html(input: ActionInput, no_title: bool = False) -> ActionResult:
