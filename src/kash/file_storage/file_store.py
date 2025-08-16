@@ -212,7 +212,7 @@ class FileStore(Workspace):
         Best effort to see if an item with the same identity is already in the store.
         """
         item_id = item.item_id()
-        log.info("Looking for item by id: %s for %s", item_id, item)
+        log.info("Looking for item by id:\n%s", fmt_lines([item, item_id]))
         if not item_id:
             return None
         else:

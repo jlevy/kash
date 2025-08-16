@@ -887,16 +887,15 @@ class Item:
             # and format if not explicitly set.
             if "type" not in updates:
                 updates["type"] = action_context.action.output_type
-            if "format" not in updates and action_context.action.output_format:
-                updates["format"] = action_context.action.output_format
-            elif "format" in updates and action_context.action.output_format:
-                # Check if explicitly specified format matches declared output format
-                specified_format = updates["format"]
-                if specified_format and action_context.action.output_format != specified_format:
+            # If we were not given a format override, we leave the output type the same.
+            elif action_context.action.output_format:
+                # Check an overridden format and then our own format.
+                new_output_format = updates.get("format", self.format)
+                if new_output_format and action_context.action.output_format != new_output_format:
                     log.warning(
                         "Output item format `%s` does not match declared output format `%s` for action `%s`",
-                        specified_format.value,
-                        action_context.action.output_format.value,
+                        new_output_format,
+                        action_context.action.output_format,
                         action_context.action.name,
                     )
 
