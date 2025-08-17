@@ -281,7 +281,7 @@ def _do_logging_setup(log_settings: LogSettings):
 def prefix(line: str, emoji: str = "", warn_emoji: str = "") -> str:
     prefix = task_stack_prefix_str()
     emojis = f"{warn_emoji}{emoji}".strip()
-    return " ".join(filter(None, [prefix, emojis, line]))
+    return "".join(filter(None, [prefix, emojis, line]))
 
 
 def prefix_args(
