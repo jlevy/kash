@@ -542,6 +542,8 @@ async def gather_limited_sync(
             # Mark as failed
             if status and task_id is not None:
                 await status.finish(task_id, TaskState.FAILED, str(e))
+
+            log.warning("Task failed: %s: %s", label, e, exc_info=True)
             raise
 
     return await _gather_with_interrupt_handling(
