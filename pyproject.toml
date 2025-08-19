@@ -84,7 +84,7 @@ dependencies = [
     "curl-cffi>=0.11.4",
     # LLM and API essentials:
     "tiktoken>=0.9.0",
-    "openai>=1.66.3",
+    "openai==1.99.9",  # FIXME: Pinning for now due to import errors (ImportError: cannot import name 'ResponseTextConfig' from 'openai.types.responses.response')   
     "litellm>=1.74.15.post1",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
@@ -130,6 +130,7 @@ kash-mcp = "kash.mcp.mcp_cli:main"
 
 [tool.uv.sources]
 # For local development:
+# flowmark = { path = "../flowmark", editable = true }
 # clideps = { path = "../clideps", editable = true }
 # tminify = { path = "../tminify", editable = true }
 # chopdiff = { path = "../chopdiff", editable = true }
