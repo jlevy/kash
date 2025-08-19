@@ -26,7 +26,7 @@ MARKDOWN_ESCAPE_CHARS = r"([\\`*_{}\[\]()#+.!-])"
 MARKDOWN_ESCAPE_RE = re.compile(MARKDOWN_ESCAPE_CHARS)
 
 # Use flowmark for Markdown parsing and rendering.
-# Replaces the single shard marko Markdown object.
+# This replaces the single shared Markdown object that marko offers.
 MARKDOWN = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
 
 
@@ -87,16 +87,23 @@ def comprehensive_transform_tree(element: Any, transformer: Callable[[Any], None
                 comprehensive_transform_tree(child, transformer)
 
 
-def _tree_links(element, include_internal=False):
-    links = []
+def _tree_links(element, include_internal=False) -> list[str]:
+    links: list[str] = []
 
     def _find_links(element):
         if isinstance(element, (Link, AutoLink)):
             if include_internal or not element.dest.startswith("#"):
+                assert isinstance(element.dest, str)
                 links.append(element.dest)
 
     comprehensive_transform_tree(element, _find_links)
     return links
+
+
+# TODO: Marko seems to include trailing parentheses on bare links.
+# Fix this in flowmark
+def _fix_link(url: str) -> str:
+    return url.rstrip(")")
 
 
 def extract_links(content: str, include_internal=False) -> list[str]:
@@ -112,11 +119,11 @@ def extract_links(content: str, include_internal=False) -> list[str]:
 
     # Deduplicate while preserving order
     seen: dict[str, None] = {}
-    result = []
+    result: list[str] = []
     for link in all_links:
         if link not in seen:
             seen[link] = None
-            result.append(link)
+            result.append(_fix_link(link))
     return result
 
 
@@ -1369,3 +1376,26 @@ def test_rewrite_urls_simplified_api() -> None:
     # Verify that relative URLs in angle brackets remain unchanged
     # (marko doesn't parse them as URL elements)
     assert "<./contact.html>" in result
+
+
+def test_extract_links_parentheses_adjacent() -> None:
+    """URLs adjacent to closing parentheses should not include the parenthesis."""
+    content = dedent(
+        """
+        [^res1]: Under 50 U.S.C. § 4531(c)(3), amounts in the Defense Production Act Fund (used
+            for Title III) “shall remain available until expended,” meaning they do not expire
+            at the end of a fiscal year (law text:
+            https://www.law.cornell.edu/uscode/text/50/4531).
+
+        [^res2]: USAspending.gov’s federal account 097-0801 (Defense Production Act Purchases,
+            Defense) provides official figures for obligations and unobligated balances by
+            fiscal year drawn from Treasury data (https://www.usaspending.gov/account/097-0801).
+        """
+    )
+
+    links = extract_links(content)
+    assert "https://www.law.cornell.edu/uscode/text/50/4531" in links
+    assert "https://www.law.cornell.edu/uscode/text/50/4531)" not in links
+
+    assert "https://www.usaspending.gov/account/097-0801" in links
+    assert "https://www.usaspending.gov/account/097-0801)" not in links
