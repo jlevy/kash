@@ -247,7 +247,10 @@ def test_normalize_url():
         normalize_url(url=Url("/not/a/URL"))
         raise AssertionError()
     except ValueError as e:
-        assert str(e) == "Scheme '' not in allowed schemes: ['http', 'https', 'file']: /not/a/URL"
+        assert (
+            str(e)
+            == "Scheme '' not in allowed schemes: ['http', 'https', 'file', 's3']: /not/a/URL"
+        )
 
     try:
         normalize_url(Url("ftp://example.com"))
@@ -255,7 +258,7 @@ def test_normalize_url():
     except ValueError as e:
         assert (
             str(e)
-            == "Scheme 'ftp' not in allowed schemes: ['http', 'https', 'file']: ftp://example.com"
+            == "Scheme 'ftp' not in allowed schemes: ['http', 'https', 'file', 's3']: ftp://example.com"
         )
 
 
