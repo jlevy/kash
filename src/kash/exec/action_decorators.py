@@ -400,9 +400,8 @@ def kash_action(
                 context = ExecContext(action, current_runtime_settings())
 
             # Run the action.
-            result, _, _ = run_action_with_caching(context, action_input)
-
-            return result
+            result_with_paths = run_action_with_caching(context, action_input)
+            return result_with_paths.result
 
         if is_simple_func:
             # Need to convert back to a SimpleActionFunction.

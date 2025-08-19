@@ -1,5 +1,5 @@
 import time
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from prettyfmt import fmt_lines, fmt_path, plural
@@ -29,8 +29,10 @@ from kash.model.operations_model import Input, Operation, Source
 from kash.model.params_model import ALL_COMMON_PARAMS, GLOBAL_PARAMS, RawParamValues
 from kash.model.paths_model import StorePath
 from kash.shell.output.shell_output import PrintHooks
+from kash.utils.common.s3_utils import get_s3_parent_folder, s3_sync_to_folder
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
+from kash.utils.common.url import Url, is_s3_url
 from kash.utils.errors import ContentError, InvalidOutput, get_nonfatal_exceptions
 from kash.workspaces import Selection, current_ws
 
@@ -339,19 +341,40 @@ def save_action_result(
     return result_store_paths, archived_store_paths
 
 
+@dataclass(frozen=True)
+class ResultWithPaths:
+    """
+    Result of an action, including the store paths of any S3 items created.
+    """
+
+    result: ActionResult
+    result_paths: list[StorePath]
+    archived_paths: list[StorePath]
+    s3_paths: list[Url]
+
+
 def run_action_with_caching(
     exec_context: ExecContext, action_input: ActionInput
-) -> tuple[ActionResult, list[StorePath], list[StorePath]]:
+) -> ResultWithPaths:
     """
     Run an action, including validation, only rerunning if `rerun` requested or
     result is not already present. Returns the result, the store paths of the
     result items, and the store paths of any archived items.
+
+    Also handles optional S3 syncing if the input was from S3.
 
     Note: Mutates the input but only to add `context` to each item.
     """
     action = exec_context.action
     settings = exec_context.settings
     ws = settings.workspace
+
+    # If the input is from S3, we note the parent folder to copy the output back to.
+    s3_parent_folder = None
+    if exec_context.settings.sync_to_s3 and action_input.items and action_input.items[0].url:
+        url = action_input.items[0].url
+        if url and is_s3_url(url):
+            s3_parent_folder = get_s3_parent_folder(url)
 
     # Assemble the operation and validate the action input.
     operation = validate_action_input(exec_context, ws, action, action_input)
@@ -408,7 +431,26 @@ def run_action_with_caching(
     finally:
         action_input.clear_context()
 
-    return result, result_store_paths, archived_store_paths
+    # If the action created an S3 item, we copy it back to the same S3 parent folder.
+    # Only do this for the first result, for simplicity.
+    s3_urls: list[Url] = []
+    if s3_parent_folder and len(result_store_paths) > 0:
+        log.warning(
+            "Source was an S3 path so syncing result S3: %s -> %s",
+            result_store_paths[0],
+            s3_parent_folder,
+        )
+        s3_urls = s3_sync_to_folder(
+            result_store_paths[0], s3_parent_folder, include_sidematter=True
+        )
+        log.message("Synced result to S3:\n%s", fmt_lines(s3_urls))
+
+    return ResultWithPaths(
+        result=result,
+        result_paths=result_store_paths,
+        archived_paths=archived_store_paths,
+        s3_paths=s3_urls,
+    )
 
 
 def run_action_with_shell_context(
@@ -486,7 +528,10 @@ def run_action_with_shell_context(
     input = prepare_action_input(*args, refetch=refetch)
 
     # Finally, run the action.
-    result, result_store_paths, archived_store_paths = run_action_with_caching(context, input)
+    result_with_paths = run_action_with_caching(context, input)
+    result = result_with_paths.result
+    result_store_paths = result_with_paths.result_paths
+    archived_store_paths = result_with_paths.archived_paths
 
     # Implement any path operations from the output and/or select the final output
     if not internal_call:

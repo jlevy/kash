@@ -293,7 +293,8 @@ def download_url(
 
         s3 = boto3.resource("s3")
         s3_path = parsed_url.path.lstrip("/")
-        s3.Bucket(parsed_url.netloc).download_file(s3_path, target_filename)
+        with atomic_output_file(target_filename, make_parents=True) as temp_filename:
+            s3.Bucket(parsed_url.netloc).download_file(s3_path, temp_filename)
         return None
 
     req_headers = _get_req_headers(mode, headers)

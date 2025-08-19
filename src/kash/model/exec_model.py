@@ -43,6 +43,9 @@ class RuntimeSettings:
     no_format: bool = False
     """If True, will not normalize the output item's body text formatting (for Markdown)."""
 
+    sync_to_s3: bool = True
+    """If True, will sync output items to S3 if input was from S3."""
+
     @property
     def workspace(self) -> FileStore:
         from kash.workspaces.workspaces import get_ws

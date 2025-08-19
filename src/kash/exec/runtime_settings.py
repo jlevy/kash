@@ -102,6 +102,7 @@ def kash_runtime(
     override_state: State | None = None,
     tmp_output: bool = False,
     no_format: bool = False,
+    sync_to_s3: bool = False,
 ) -> RuntimeSettingsManager:
     """
     Set a specific kash execution context for a with block.
@@ -131,5 +132,6 @@ def kash_runtime(
         override_state=override_state,
         tmp_output=tmp_output,
         no_format=no_format,
+        sync_to_s3=sync_to_s3,
     )
     return RuntimeSettingsManager(settings=settings)

@@ -26,6 +26,7 @@ A string that may not be resolved to a URL or path.
 
 HTTP_ONLY = ["http", "https"]
 HTTP_OR_FILE = HTTP_ONLY + ["file"]
+HTTP_OR_FILE_OR_S3 = HTTP_OR_FILE + ["s3"]
 
 
 def check_if_url(
@@ -36,7 +37,8 @@ def check_if_url(
     the `urlparse.ParseResult`.
 
     Also returns false for Paths, so that it's easy to use local paths and URLs
-    (`Locator`s) interchangeably. Can provide `HTTP_ONLY` or `HTTP_OR_FILE` to
+    (`Locator`s) interchangeably. Can provide `HTTP_ONLY` or `HTTP_OR_FILE`
+    or `HTTP_OR_FILE_OR_S3` to restrict to only certain schemes.
     restrict to only certain schemes.
     """
     if isinstance(text, Path):
@@ -67,6 +69,13 @@ def is_file_url(url: str | Url) -> bool:
     Is URL a file:// URL? Does not check for local file paths.
     """
     return url.startswith("file://")
+
+
+def is_s3_url(url: str | Url) -> bool:
+    """
+    Is URL an S3 URL?
+    """
+    return url.startswith("s3://")
 
 
 def parse_http_url(url: str | Url) -> ParseResult:
@@ -118,7 +127,7 @@ def as_file_url(path: str | Path) -> Url:
 
 def normalize_url(
     url: Url,
-    check_schemes: list[str] | None = HTTP_OR_FILE,
+    check_schemes: list[str] | None = HTTP_OR_FILE_OR_S3,
     drop_fragment: bool = True,
     resolve_local_paths: bool = True,
 ) -> Url:

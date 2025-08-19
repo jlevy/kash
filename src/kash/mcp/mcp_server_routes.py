@@ -6,8 +6,10 @@ from dataclasses import dataclass
 
 from funlog import log_calls
 from mcp.server.lowlevel import Server
+from mcp.server.lowlevel.server import StructuredContent, UnstructuredContent
 from mcp.types import Prompt, Resource, TextContent, Tool
 from prettyfmt import fmt_path
+from pydantic import BaseModel
 from strif import AtomicVar
 
 from kash.config.capture_output import CapturedOutput, captured_output
@@ -20,6 +22,7 @@ from kash.model.actions_model import Action, ActionResult
 from kash.model.exec_model import ExecContext
 from kash.model.params_model import TypedParamValues
 from kash.model.paths_model import StorePath
+from kash.utils.common.url import Url
 
 log = get_logger(__name__)
 
@@ -109,6 +112,22 @@ def get_published_tools() -> list[Tool]:
         return []
 
 
+class StructuredActionResult(BaseModel):
+    """
+    Error from an MCP tool call.
+    """
+
+    s3_paths: list[Url] | None = None
+    """If the tool created an S3 item, the S3 paths of the created items."""
+
+    error: str | None = None
+    """If the tool had an error, the error message."""
+
+    # TODO: Include other metadata.
+    # metadata: dict[str, Any] | None = None
+    # """Metadata about the action result."""
+
+
 @dataclass(frozen=True)
 class ToolResult:
     """
@@ -119,6 +138,7 @@ class ToolResult:
     captured_output: CapturedOutput
     action_result: ActionResult
     result_store_paths: list[StorePath]
+    result_s3_paths: list[Url]
     error: Exception | None = None
 
     @property
@@ -168,12 +188,13 @@ class ToolResult:
         # TODO: Add more info on how to find the logs.
         return "Check kash logs for details."
 
-    def formatted_for_client(self) -> list[TextContent]:
+    def as_mcp_content(self) -> tuple[UnstructuredContent, StructuredContent]:
         """
-        Convert the tool result to content for the client LLM.
+        Convert the tool result to content for the MCP client.
         """
+        structured = StructuredActionResult()
         if self.error:
-            return [
+            unstructured = [
                 TextContent(
                     text=f"The tool `{self.action.name}` had an error: {self.error}.\n\n"
                     + self.check_logs_message,
@@ -194,7 +215,7 @@ class ToolResult:
             if not chat_result:
                 chat_result = "No result. Check kash logs for details."
 
-            return [
+            unstructured = [
                 TextContent(
                     text=f"{self.output_summary}\n\n"
                     f"{self.output_content}\n\n"
@@ -202,10 +223,15 @@ class ToolResult:
                     type="text",
                 ),
             ]
+            structured = StructuredActionResult(s3_paths=self.result_s3_paths)
+
+        return unstructured, structured.model_dump()
 
 
 @log_calls(level="info")
-def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
+def run_mcp_tool(
+    action_name: str, arguments: dict
+) -> tuple[UnstructuredContent, StructuredContent]:
     """
     Run the action as a tool.
     """
@@ -222,6 +248,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 refetch=False,  # Using the file caches.
                 # Keeping all transient files for now, but maybe make transient?
                 override_state=None,
+                sync_to_s3=True,  # Enable S3 syncing for MCP tools.
             ) as exec_settings:
                 action_cls = look_up_action_class(action_name)
 
@@ -237,9 +264,9 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 context = ExecContext(action=action, settings=exec_settings)
                 action_input = prepare_action_input(*input_items)
 
-                result, result_store_paths, _archived_store_paths = run_action_with_caching(
-                    context, action_input
-                )
+                result_with_paths = run_action_with_caching(context, action_input)
+                result = result_with_paths.result
+                result_store_paths = result_with_paths.result_paths
 
         # Return final result, formatted for the LLM to understand.
         return ToolResult(
@@ -247,8 +274,9 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
             captured_output=capture.output,
             action_result=result,
             result_store_paths=result_store_paths,
+            result_s3_paths=result_with_paths.s3_paths,
             error=None,
-        ).formatted_for_client()
+        ).as_mcp_content()
 
     except Exception as e:
         log.exception("Error running mcp tool")
@@ -258,7 +286,7 @@ def run_mcp_tool(action_name: str, arguments: dict) -> list[TextContent]:
                 + "Check kash logs for details.",
                 type="text",
             )
-        ]
+        ], StructuredActionResult(error=str(e)).model_dump()
 
 
 def create_base_server() -> Server:
@@ -288,7 +316,9 @@ def create_base_server() -> Server:
         return []
 
     @app.call_tool()
-    async def handle_tool(name: str, arguments: dict) -> list[TextContent]:
+    async def handle_tool(
+        name: str, arguments: dict
+    ) -> tuple[UnstructuredContent, StructuredContent]:
         try:
             if name not in _mcp_published_actions.copy():
                 log.error(f"Unknown tool requested: {name}")
@@ -303,6 +333,6 @@ def create_base_server() -> Server:
                     text=f"Error executing tool {name}: {e}",
                     type="text",
                 )
-            ]
+            ], StructuredActionResult(error=str(e)).model_dump()
 
     return app

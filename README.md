@@ -201,8 +201,8 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
    ```shell
    sudo apt-get update
-   sudo apt-get install -y libgl1 ffmpeg libmagic-dev 
-   # For the additional command-line tools, pixi is better on Ubuntu:
+   sudo apt-get install -y libgl1 ffmpeg libmagic-dev imagemagick bat ripgrep hexyl
+   # Or for more additional command-line tools, pixi is better on Ubuntu:
    curl -fsSL https://pixi.sh/install.sh | sh
    . ~/.bashrc
    pixi global install ripgrep bat eza hexyl imagemagick zoxide
