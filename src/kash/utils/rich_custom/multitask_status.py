@@ -72,6 +72,8 @@ RUNNING_SYMBOL = ""
 DEFAULT_LABEL_WIDTH = 40
 DEFAULT_PROGRESS_WIDTH = 20
 
+MAX_DISPLAY_TASKS = 20
+
 
 # Calculate spinner width to maintain column alignment
 def _get_spinner_width(spinner_name: str) -> int:
@@ -101,6 +103,9 @@ class StatusSettings:
     transient: bool = True
     refresh_per_second: float = 10
     styles: StatusStyles = DEFAULT_STYLES
+    # Maximum number of tasks to keep visible in the live display.
+    # Older completed/skipped/failed tasks beyond this cap will be removed from the live view.
+    max_display_tasks: int = MAX_DISPLAY_TASKS
 
 
 class SpinnerStatusColumn(ProgressColumn):
@@ -298,6 +303,10 @@ class MultiTaskStatus(AbstractAsyncContextManager):
         self._task_info: dict[int, TaskInfo] = {}
         self._next_id: int = 1
         self._rich_task_ids: dict[int, TaskID] = {}  # Map our IDs to Rich Progress IDs
+        # Track order of tasks added to the Progress so we can prune oldest completed ones
+        self._displayed_task_order: list[int] = []
+        # Track tasks pruned from the live display so we don't re-add them later
+        self._pruned_task_ids: set[int] = set()
 
         # Unified live integration
         self._unified_live: Any | None = None  # Reference to the global unified live
@@ -442,6 +451,10 @@ class MultiTaskStatus(AbstractAsyncContextManager):
                 progress_display=None,
             )
             self._rich_task_ids[task_id] = rich_task_id
+            self._displayed_task_order.append(task_id)
+
+            # Prune if too many tasks are visible (prefer removing completed ones)
+            self._prune_completed_tasks_if_needed()
 
     async def set_progress_display(self, task_id: int, display: RenderableType) -> None:
         """
@@ -536,18 +549,31 @@ class MultiTaskStatus(AbstractAsyncContextManager):
 
             # Complete the progress bar and stop spinner
             if rich_task_id is not None:
-                total = self._progress.tasks[rich_task_id].total or 1
+                # Safely find the Task by id; Progress.tasks is a list, not a dict
+                task_obj = next((t for t in self._progress.tasks if t.id == rich_task_id), None)
+                if task_obj is not None and task_obj.total is not None:
+                    total = task_obj.total
+                else:
+                    total = task_info.steps_total or 1
                 self._progress.update(rich_task_id, completed=total, task_info=task_info)
             else:
-                # Task was never started, but we still need to add it to show completion
-                rich_task_id = self._progress.add_task(
-                    "",
-                    total=task_info.steps_total,
-                    label=task_info.label,
-                    completed=task_info.steps_total,
-                    task_info=task_info,
-                )
-                self._rich_task_ids[task_id] = rich_task_id
+                # If this task was pruned from the live display, skip re-adding it
+                if task_id in self._pruned_task_ids:
+                    pass
+                else:
+                    # Task was never started; add a completed row so it appears once
+                    rich_task_id = self._progress.add_task(
+                        "",
+                        total=task_info.steps_total,
+                        label=task_info.label,
+                        completed=task_info.steps_total,
+                        task_info=task_info,
+                    )
+                    self._rich_task_ids[task_id] = rich_task_id
+                    self._displayed_task_order.append(task_id)
+
+            # After finishing, prune completed tasks to respect max visible cap
+            self._prune_completed_tasks_if_needed()
 
     def get_task_info(self, task_id: int) -> TaskInfo | None:
         """Get additional task information."""
@@ -566,6 +592,54 @@ class MultiTaskStatus(AbstractAsyncContextManager):
     def console_for_output(self) -> Console:
         """Get console instance for additional output above progress."""
         return self._progress.console
+
+    def _prune_completed_tasks_if_needed(self) -> None:
+        """
+        Ensure at most `max_display_tasks` tasks are visible by removing the oldest
+        completed/skipped/failed tasks first. Running or waiting tasks are never
+        removed by this method.
+        Note: This method assumes it's called under self._lock.
+        """
+        max_visible = self.settings.max_display_tasks
+
+        # Nothing to prune or unlimited
+        if max_visible <= 0:
+            return
+
+        # Count visible tasks (those with a Rich task id present)
+        visible_task_ids = [tid for tid in self._displayed_task_order if tid in self._rich_task_ids]
+        excess = len(visible_task_ids) - max_visible
+        if excess <= 0:
+            return
+
+        # Build list of terminal tasks that can be pruned (oldest first)
+        terminal_tasks = []
+        for tid in self._displayed_task_order:
+            if tid not in self._rich_task_ids:
+                continue
+            info = self._task_info.get(tid)
+            if info and info.state in (
+                TaskState.COMPLETED,
+                TaskState.FAILED,
+                TaskState.SKIPPED,
+            ):
+                terminal_tasks.append(tid)
+
+        # Remove the oldest terminal tasks up to the excess count
+        tasks_to_remove = terminal_tasks[:excess]
+
+        for tid in tasks_to_remove:
+            rich_tid = self._rich_task_ids.pop(tid, None)
+            if rich_tid is not None:
+                # Remove from Rich progress display
+                self._progress.remove_task(rich_tid)
+            # Mark as pruned so we don't re-add on finish
+            self._pruned_task_ids.add(tid)
+
+        # Efficiently rebuild the displayed task order without the removed tasks
+        self._displayed_task_order = [
+            tid for tid in self._displayed_task_order if tid not in tasks_to_remove
+        ]
 
 
 ## Tests

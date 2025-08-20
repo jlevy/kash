@@ -123,5 +123,12 @@ async def multitask_gather(
             len(task_list),
             abbrev_list(result.errors),
         )
-
+        log.error(
+            "multitask_gather: first error (full traceback):",
+            exc_info=(
+                type(result.errors[0]),
+                result.errors[0],
+                result.errors[0].__traceback__,
+            ),
+        )
     return result
