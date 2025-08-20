@@ -289,13 +289,19 @@ def _extract_list_item_markdown(element: Any) -> str:
         return ""
 
 
-def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
+def extract_bullet_points(
+    content: str, *, strict: bool = False, allow_paragraphs: bool = False
+) -> list[str]:
     """
     Extract list item values from a Markdown file, preserving all original formatting.
 
     If no bullet points are found and `strict` is False, returns the entire content
     as a single item (treating plain text as if it were the first bullet point).
+
     If `strict` is True, only actual list items are returned.
+
+    If `allow_paragraphs` is True, if the content contains multiple paragraphs and no
+    bullet points are found, return the paragraphs as separate items.
 
     Raises:
         ValueError: If `strict` is True and no bullet points are found.
@@ -315,6 +321,8 @@ def extract_bullet_points(content: str, *, strict: bool = False) -> list[str]:
     if not bullet_points:
         if strict:
             raise ValueError("No bullet points found in content")
+        elif allow_paragraphs and "\n\n" in content:
+            return [p.strip() for p in content.split("\n\n")]
         elif content.strip():
             # Not strict mode, treat as plain text
             return [content.strip()]
