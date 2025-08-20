@@ -106,10 +106,9 @@ def _fix_link(url: str) -> str:
     return url.rstrip(")")
 
 
-def extract_links(content: str, include_internal=False) -> list[str]:
+def extract_urls(content: str, include_internal=False) -> list[Url]:
     """
-    Extract all links from Markdown content. Deduplicates and
-    preserves order.
+    Extract all URLs from Markdown content. Deduplicates and preserves order.
 
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
@@ -119,17 +118,17 @@ def extract_links(content: str, include_internal=False) -> list[str]:
 
     # Deduplicate while preserving order
     seen: dict[str, None] = {}
-    result: list[str] = []
+    result: list[Url] = []
     for link in all_links:
         if link not in seen:
             seen[link] = None
-            result.append(_fix_link(link))
+            result.append(Url(_fix_link(link)))
     return result
 
 
-def extract_file_links(file_path: Path, include_internal=False) -> list[str]:
+def extract_file_urls(file_path: Path, include_internal=False) -> list[Url]:
     """
-    Extract all links from a Markdown file. Future: Include textual and section context.
+    Extract all URLs from a Markdown file. Future: Include textual and section context.
 
     Returns an empty list if there are parsing errors.
     """
@@ -137,7 +136,7 @@ def extract_file_links(file_path: Path, include_internal=False) -> list[str]:
 
     try:
         content = file_path.read_text()
-        return extract_links(content, include_internal)
+        return extract_urls(content, include_internal)
     except Exception as e:
         logging.warning(f"Failed to extract links from {file_path}: {e}")
         return []
@@ -803,7 +802,7 @@ def test_markdown_utils_exceptions() -> None:
     import tempfile
 
     # Test extract_file_links with non-existent file
-    result = extract_file_links(Path("/non/existent/file.md"))
+    result = extract_file_urls(Path("/non/existent/file.md"))
     assert result == []  # Should return empty list for any error
 
     # Test extract_file_links with empty file (should work fine)
@@ -812,7 +811,7 @@ def test_markdown_utils_exceptions() -> None:
         tmp_path = Path(tmp.name)
 
     try:
-        result = extract_file_links(tmp_path)
+        result = extract_file_urls(tmp_path)
         assert result == []  # Empty file has no links
     finally:
         tmp_path.unlink()
@@ -823,7 +822,7 @@ def test_markdown_utils_exceptions() -> None:
         tmp_path = Path(tmp.name)
 
     try:
-        result = extract_file_links(tmp_path)
+        result = extract_file_urls(tmp_path)
         # Should still work - marko is very permissive with markdown
         assert isinstance(result, list)
     finally:
@@ -831,11 +830,11 @@ def test_markdown_utils_exceptions() -> None:
 
     # Test extract_links with string content
     content = "Check out [this link](https://example.com) and [internal](#section)"
-    result = extract_links(content)
+    result = extract_urls(content)
     assert "https://example.com" in result
     assert "#section" not in result  # Internal links excluded by default
 
-    result_with_internal = extract_links(content, include_internal=True)
+    result_with_internal = extract_urls(content, include_internal=True)
     assert "https://example.com" in result_with_internal
     assert "#section" in result_with_internal
 
@@ -845,21 +844,21 @@ def test_extract_links_comprehensive() -> None:
 
     # Test regular markdown links
     regular_links = "Check out [this link](https://example.com) and [another](https://test.com)"
-    result = extract_links(regular_links)
+    result = extract_urls(regular_links)
     assert "https://example.com" in result
     assert "https://test.com" in result
     assert len(result) == 2
 
     # Test bare/autolinks in angle brackets
     bare_links = "Visit <https://google.com> and also <https://github.com>"
-    result_bare = extract_links(bare_links)
+    result_bare = extract_urls(bare_links)
     assert "https://google.com" in result_bare
     assert "https://github.com" in result_bare
     assert len(result_bare) == 2
 
     # Test autolinks without brackets (GFM extension enables auto-linking of plain URLs)
     auto_links = "Visit https://stackoverflow.com or http://reddit.com"
-    result_auto = extract_links(auto_links)
+    result_auto = extract_urls(auto_links)
     assert "https://stackoverflow.com" in result_auto
     assert "http://reddit.com" in result_auto
     assert len(result_auto) == 2  # GFM auto-links plain URLs
@@ -870,7 +869,7 @@ def test_extract_links_comprehensive() -> None:
     - The Ko-Op, accessed June 28, 2025,
       <https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/>
 """
-    result_footnote = extract_links(footnote_content)
+    result_footnote = extract_urls(footnote_content)
     assert (
         "https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/"
         in result_footnote
@@ -888,7 +887,7 @@ Auto link: https://auto-link.com
 [^1]: Footnote with [regular link](https://footnote-regular.com)
 [^2]: Footnote with bare link <https://footnote-bare.com>
 """
-    result_mixed = extract_links(mixed_content)
+    result_mixed = extract_urls(mixed_content)
     expected_links = [
         "https://example.com",  # Regular link
         "https://bare-link.com",  # Bare link
@@ -904,7 +903,7 @@ Auto link: https://auto-link.com
 def test_extract_bare_links() -> None:
     """Test extraction of bare links in angle brackets."""
     content = "Visit <https://example.com> and <https://github.com/user/repo> for more info"
-    result = extract_links(content)
+    result = extract_urls(content)
     assert "https://example.com" in result
     assert "https://github.com/user/repo" in result
     assert len(result) == 2
@@ -917,7 +916,7 @@ def test_extract_footnote_links() -> None:
         
         [^1]: This footnote has a [regular link](https://example.com) and <https://bare-link.com>
         """)
-    result = extract_links(content)
+    result = extract_urls(content)
     assert "https://example.com" in result
     assert "https://bare-link.com" in result
     assert len(result) == 2
@@ -931,7 +930,7 @@ def test_extract_reference_style_links() -> None:
         [ref1]: https://example.com/article1
         [ref2]: https://example.com/article2
         """)
-    result = extract_links(content)
+    result = extract_urls(content)
     assert "https://example.com/article1" in result
     assert "https://example.com/article2" in result
     assert len(result) == 2
@@ -946,14 +945,14 @@ def test_extract_links_and_dups() -> None:
         """)
 
     # Default behavior: exclude internal links
-    result = extract_links(content)
+    result = extract_urls(content)
     assert "https://example.com" in result
     assert "#introduction" not in result
     assert "#conclusion" not in result
     assert len(result) == 1
 
     # Include internal links
-    result_with_internal = extract_links(content, include_internal=True)
+    result_with_internal = extract_urls(content, include_internal=True)
     assert "https://example.com" in result_with_internal
     assert "#introduction" in result_with_internal
     assert "#conclusion" in result_with_internal
@@ -981,7 +980,7 @@ def test_extract_links_mixed_real_world() -> None:
               <https://psychedelictherapists.co/blog/the-future-of-ketamine-assisted-psychotherapy/>
         """)
 
-    result = extract_links(content)
+    result = extract_urls(content)
     expected_links = [
         "https://pubmed.ncbi.nlm.nih.gov",
         "https://scholar.google.com",
@@ -1401,7 +1400,7 @@ def test_extract_links_parentheses_adjacent() -> None:
         """
     )
 
-    links = extract_links(content)
+    links = extract_urls(content)
     assert "https://www.law.cornell.edu/uscode/text/50/4531" in links
     assert "https://www.law.cornell.edu/uscode/text/50/4531)" not in links
 
