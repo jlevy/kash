@@ -48,7 +48,7 @@ dependencies = [
     "flowmark>=0.5.3",
     "frontmatter-format>=0.2.3",
     "sidematter-format>=0.0.5",
-    "chopdiff>=0.2.5",
+    "chopdiff>=0.2.6",
     "clideps>=0.1.4",
     "tminify>=0.1.6",
     # Shell and file essentials:
