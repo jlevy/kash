@@ -1,48 +1,18 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from flowmark import flowmark_markdown, line_wrap_by_sentence
 from marko import Markdown
 from marko.ext import footnote
 
-from kash.utils.text_handling.markdown_utils import comprehensive_transform_tree
-
-
-def _normalize_footnotes_in_markdown(content: str) -> str:
-    """
-    Ensure blank lines between consecutive footnote definitions.
-
-    Marko has a bug where consecutive footnotes without blank lines are parsed
-    as a single footnote. This adds blank lines where needed.
-    """
-    lines = content.split("\n")
-    result = []
-    i = 0
-
-    while i < len(lines):
-        line = lines[i]
-        result.append(line)
-
-        # Check if this is a footnote definition
-        if re.match(r"^\[\^[^\]]+\]:", line):
-            # Look ahead to see if the next non-empty line is also a footnote
-            j = i + 1
-            while j < len(lines) and not lines[j].strip():
-                result.append(lines[j])
-                j += 1
-
-            if j < len(lines) and re.match(r"^\[\^[^\]]+\]:", lines[j]):
-                # Next non-empty line is also a footnote, add blank line
-                result.append("")
-
-            i = j
-        else:
-            i += 1
-
-    return "\n".join(result)
+from kash.utils.text_handling.markdown_utils import (
+    MARKDOWN as DEFAULT_MARKDOWN,
+)
+from kash.utils.text_handling.markdown_utils import (
+    comprehensive_transform_tree,
+    normalize_footnotes_in_markdown,
+)
 
 
 @dataclass
@@ -81,10 +51,10 @@ class MarkdownFootnotes:
             MarkdownFootnotes instance with all footnotes indexed by ID
         """
         if markdown_parser is None:
-            markdown_parser = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
+            markdown_parser = DEFAULT_MARKDOWN
 
         # Normalize to work around marko bug with consecutive footnotes
-        normalized_content = _normalize_footnotes_in_markdown(content)
+        normalized_content = normalize_footnotes_in_markdown(content)
         document = markdown_parser.parse(normalized_content)
         return MarkdownFootnotes.from_document(document, markdown_parser)
 
@@ -102,7 +72,7 @@ class MarkdownFootnotes:
             MarkdownFootnotes instance with all footnotes indexed by ID
         """
         if markdown_parser is None:
-            markdown_parser = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
+            markdown_parser = DEFAULT_MARKDOWN
 
         footnotes_dict: dict[str, FootnoteInfo] = {}
 
@@ -206,9 +176,9 @@ def extract_footnote_references(content: str, markdown_parser: Markdown | None =
         List of unique footnote IDs that are referenced (with the ^)
     """
     if markdown_parser is None:
-        markdown_parser = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
+        markdown_parser = DEFAULT_MARKDOWN
 
-    normalized_content = _normalize_footnotes_in_markdown(content)
+    normalized_content = normalize_footnotes_in_markdown(content)
     document = markdown_parser.parse(normalized_content)
     references: list[str] = []
     seen: set[str] = set()

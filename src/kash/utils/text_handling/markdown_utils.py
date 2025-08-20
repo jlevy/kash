@@ -30,6 +30,44 @@ MARKDOWN_ESCAPE_RE = re.compile(MARKDOWN_ESCAPE_CHARS)
 MARKDOWN = flowmark_markdown(line_wrap_by_sentence(is_markdown=True))
 
 
+# Regex for a markdown footnote definition line: "[^id]: ..."
+FOOTNOTE_DEF_RE = re.compile(r"^\[\^[^\]]+\]:")
+
+
+def normalize_footnotes_in_markdown(content: str) -> str:
+    """
+    Ensure blank lines between consecutive footnote definitions.
+
+    Some markdown parsers (marko) merge consecutive footnotes without blank
+    lines into a single definition. This adds blank lines where needed.
+    """
+    lines = content.split("\n")
+    result: list[str] = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+        result.append(line)
+
+        # Check if this is a footnote definition
+        if FOOTNOTE_DEF_RE.match(line):
+            # Look ahead to see if the next non-empty line is also a footnote
+            j = i + 1
+            while j < len(lines) and not lines[j].strip():
+                result.append(lines[j])
+                j += 1
+
+            if j < len(lines) and FOOTNOTE_DEF_RE.match(lines[j]):
+                # Next non-empty line is also a footnote, add blank line
+                result.append("")
+
+            i = j
+        else:
+            i += 1
+
+    return "\n".join(result)
+
+
 def escape_markdown(text: str) -> str:
     """
     Escape characters with special meaning in Markdown.
@@ -113,6 +151,7 @@ def extract_urls(content: str, include_internal=False) -> list[Url]:
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
+    content = normalize_footnotes_in_markdown(content)
     document = MARKDOWN.parse(content)
     all_links = _tree_links(document, include_internal)
 
@@ -162,6 +201,7 @@ def rewrite_urls(
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
+    content = normalize_footnotes_in_markdown(content)
     document = MARKDOWN.parse(content)
     _rewrite_tree_urls(document, url_rewriter, element_types)
 
@@ -238,6 +278,7 @@ def extract_first_header(content: str) -> str | None:
     Raises:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
+    content = normalize_footnotes_in_markdown(content)
     document = MARKDOWN.parse(content)
 
     if document.children and isinstance(document.children[0], Heading):
@@ -306,6 +347,7 @@ def extract_bullet_points(
         ValueError: If `strict` is True and no bullet points are found.
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
     """
+    content = normalize_footnotes_in_markdown(content)
     document = MARKDOWN.parse(content)
     bullet_points: list[str] = []
 
@@ -386,6 +428,7 @@ def extract_headings(text: str) -> list[tuple[HTag, str]]:
         marko.ParseError: If the markdown content contains invalid syntax that cannot be parsed.
         ValueError: If a heading with an unsupported level is encountered.
     """
+    text = normalize_footnotes_in_markdown(text)
     document = MARKDOWN.parse(text)
     headings_list: list[tuple[HTag, str]] = []
 
