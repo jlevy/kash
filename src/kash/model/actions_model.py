@@ -585,9 +585,9 @@ class Action(ABC):
                 "type": "array",
                 "items": {
                     "type": "string",
-                    "description": "A path to a local file or a URL",
+                    "description": "A URL or S3 URL or a workspace file path, e.g. https://example.com/some/file/path or s3://somebucket/some/file/path or some/file/path",
                 },
-                "description": f"Input items ({self.expected_args.as_str()})",
+                "description": f"A list of paths or URLs of input items ({self.expected_args.as_str()}). Use an array of length one for a single input.",
             }
 
             # Set min/max items.

@@ -47,7 +47,7 @@ llm_options = LLMOptions(
 )
 
 
-@kash_action(llm_options=llm_options, params=common_params("model"), mcp_tool=True)
+@kash_action(llm_options=llm_options, params=common_params("model"))
 def summarize_as_bullets(item: Item, model: LLMName = LLM.default_standard) -> Item:
     """
     Summarize text as bullet points.

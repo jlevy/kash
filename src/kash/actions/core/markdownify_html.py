@@ -13,9 +13,7 @@ from kash.web_content.web_extract_readabilipy import extract_text_readabilipy
 log = get_logger(__name__)
 
 
-@kash_action(
-    precondition=is_url_resource | has_html_body, output_format=Format.markdown, mcp_tool=True
-)
+@kash_action(precondition=is_url_resource | has_html_body, output_format=Format.markdown)
 def markdownify_html(item: Item) -> Item:
     """
     Converts raw HTML or the URL of an HTML page to Markdown, fetching with the content

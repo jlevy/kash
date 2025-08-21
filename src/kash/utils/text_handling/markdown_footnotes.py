@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from marko import Markdown
+from marko.block import Document
 from marko.ext import footnote
 
 from kash.utils.text_handling.markdown_utils import (
@@ -59,7 +60,9 @@ class MarkdownFootnotes:
         return MarkdownFootnotes.from_document(document, markdown_parser)
 
     @staticmethod
-    def from_document(document: Any, markdown_parser: Markdown | None = None) -> MarkdownFootnotes:
+    def from_document(
+        document: Document, markdown_parser: Markdown | None = None
+    ) -> MarkdownFootnotes:
         """
         Extract all footnotes from a parsed markdown document.
 
