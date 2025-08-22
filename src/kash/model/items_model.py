@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NotRequired, TypedDict, TypeVar, Unpack
+from urllib.parse import urlparse
 
 from frontmatter_format import from_yaml_string, new_yaml
 from prettyfmt import (
@@ -570,12 +571,19 @@ class Item:
         from kash.file_storage.store_filenames import parse_item_filename
 
         # Prefer original to external, e.g. if we know the original but the external might
-        # be a cache filename.
-        path = self.store_path or self.original_filename or self.external_path
+        # be a cache filename. Also check
+        path = (
+            self.store_path
+            or self.original_filename
+            or self.external_path
+            or (self.url and urlparse(self.url).path)
+            or ""
+        ).strip()
         if path:
             path_name, _item_type, _format, _file_ext = parse_item_filename(Path(path).name)
         else:
             path_name = None
+
         return path_name
 
     def slug_name(
@@ -607,6 +615,7 @@ class Item:
 
         slug = self.slug_name()
         full_suffix = self.get_full_suffix()
+
         return join_suffix(slug, full_suffix)
 
     def body_heading(self, allowed_tags: tuple[str, ...] = ("h1", "h2")) -> str | None:
