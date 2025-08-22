@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
+from logging import getLogger
 from pathlib import Path
 
+from dotenv import find_dotenv, load_dotenv
 from sidematter_format.sidematter_format import Sidematter
+from strif import abbrev_str
 
 from kash.utils.common.url import Url, is_s3_url, parse_s3_url
+
+log = getLogger(__name__)
 
 
 def check_aws_cli() -> None:
@@ -17,6 +23,27 @@ def check_aws_cli() -> None:
         raise RuntimeError(
             "AWS CLI not found in PATH. Please install 'awscli' and ensure 'aws' is available."
         )
+
+
+def reload_aws_env_vars() -> None:
+    """
+    Fresh reload of AWS env vars from .env.local.
+    """
+
+    def aws_creds() -> set[tuple[str, str]]:
+        return {(k, abbrev_str(v, 5)) for k, v in os.environ.items() if k.startswith("AWS_")}
+
+    if len(aws_creds()) == 0:
+        dotenv_path = find_dotenv(".env.local") or find_dotenv(".env")
+        load_dotenv(dotenv_path, override=True)
+        if len(aws_creds()) > 0:
+            log.info(
+                "Loaded %s, found AWS credentials: %s",
+                dotenv_path,
+                aws_creds(),
+            )
+        else:
+            log.warning("No AWS credentials found in env or .env files")
 
 
 def get_s3_parent_folder(url: Url) -> Url | None:
@@ -47,6 +74,7 @@ def s3_sync_to_folder(
     - For a single file: the file URL (and sidematter file/dir URLs if included).
     - For a directory: the destination parent prefix URL (non-recursive reporting).
     """
+    reload_aws_env_vars()
 
     src_path = Path(src_path)
     if not src_path.exists():
@@ -84,11 +112,16 @@ def s3_sync_to_folder(
                         p.name,
                     ],
                     check=True,
+                    env=os.environ,
                 )
                 targets.append(Url(dest_prefix + p.name))
             elif p.is_dir():
                 dest_dir = dest_prefix + p.name + "/"
-                subprocess.run(["aws", "s3", "sync", str(p), dest_dir], check=True)
+                subprocess.run(
+                    ["aws", "s3", "sync", str(p), dest_dir],
+                    check=True,
+                    env=os.environ,
+                )
                 targets.append(Url(dest_dir))
 
         return targets
@@ -103,6 +136,7 @@ def s3_sync_to_folder(
                 dest_prefix,
             ],
             check=True,
+            env=os.environ,
         )
         targets.append(Url(dest_prefix))
         return targets

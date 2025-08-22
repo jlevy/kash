@@ -166,9 +166,6 @@ class Settings:
     system_cache_dir: Path
     """Default global and system cache directory (for global media, content, etc)."""
 
-    mcp_ws_dir: Path | None
-    """The directory for the MCP workspace, if set."""
-
     local_server_log_path: Path
     """The path to the local server log."""
 
@@ -245,14 +242,6 @@ def _get_system_cache_dir() -> Path:
     return KashEnv.KASH_SYSTEM_CACHE_DIR.read_path(default=_get_ws_root_dir() / "cache")
 
 
-def _get_mcp_ws_dir() -> Path | None:
-    mcp_dir = KashEnv.KASH_MCP_WS.read_str(default=None)
-    if mcp_dir:
-        return Path(mcp_dir).expanduser().resolve()
-    else:
-        return None
-
-
 @cache
 def _get_local_server_log_path() -> Path:
     return resolve_and_create_dirs(get_system_logs_dir() / f"{LOCAL_SERVER_LOG_NAME}.log")
@@ -266,7 +255,6 @@ def _read_settings():
         system_config_dir=_get_system_config_dir(),
         system_logs_dir=get_system_logs_dir(),
         system_cache_dir=_get_system_cache_dir(),
-        mcp_ws_dir=_get_mcp_ws_dir(),
         local_server_log_path=_get_local_server_log_path(),
         # These default to the global but can be overridden by workspace settings.
         media_cache_dir=_get_system_cache_dir() / MEDIA_CACHE_NAME,

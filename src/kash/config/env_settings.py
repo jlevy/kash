@@ -22,9 +22,6 @@ class KashEnv(EnvEnum):
     KASH_SYSTEM_CACHE_DIR = "KASH_SYSTEM_CACHE_DIR"
     """The directory for system cache (caches separate from workspace caches)."""
 
-    KASH_MCP_WS = "KASH_MCP_WS"
-    """The directory for the workspace for MCP servers."""
-
     KASH_SHOW_TRACEBACK = "KASH_SHOW_TRACEBACK"
     """Whether to show tracebacks on actions and commands in the shell."""
 

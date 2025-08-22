@@ -95,6 +95,8 @@ def get_ws(name_or_path: str | Path, auto_init: bool = True) -> FileStore:
     Get a workspace by name or path. Adds to the in-memory registry so we reuse it.
     With `auto_init` true, will initialize the workspace if it is not already initialized.
     """
+    if isinstance(name_or_path, Path):
+        name_or_path = name_or_path.expanduser().absolute()
     name = Path(name_or_path).name
     name = check_strict_workspace_name(name)
     info = resolve_ws(name_or_path)

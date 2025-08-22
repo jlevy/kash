@@ -237,10 +237,8 @@ def run_mcp_tool(
     """
     try:
         with captured_output() as capture:
-            # XXX For now, unless the user has overridden the MCP workspace, we use the
-            # current workspace, which could be changed by the user by changing working
-            # directories. Maybe confusing?
-            explicit_mcp_ws = global_settings().mcp_ws_dir
+            # Use the global workspace default
+            explicit_mcp_ws = global_settings().global_ws_dir
 
             with kash_runtime(
                 workspace_dir=explicit_mcp_ws,

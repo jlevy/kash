@@ -12,6 +12,7 @@ from cachetools import TTLCache
 from strif import atomic_output_file, copyfile_atomic
 
 from kash.config.env_settings import KashEnv
+from kash.utils.common.s3_utils import reload_aws_env_vars
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats import MimeType
 
@@ -289,9 +290,14 @@ def download_url(
         copyfile_atomic(parsed_url.netloc + parsed_url.path, target_filename, make_parents=True)
         return None
     elif parsed_url.scheme == "s3":
+        reload_aws_env_vars()
         import boto3  # pyright: ignore
 
-        s3 = boto3.resource("s3")
+        # Force boto3 to create a new session with current environment variables
+        # This ensures it picks up any newly loaded credentials e.g. from .env.local
+        session = boto3.Session()
+        s3 = session.resource("s3")
+
         s3_path = parsed_url.path.lstrip("/")
         with atomic_output_file(target_filename, make_parents=True) as temp_filename:
             s3.Bucket(parsed_url.netloc).download_file(s3_path, temp_filename)

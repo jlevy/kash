@@ -11,7 +11,12 @@ from pathlib import Path
 
 from clideps.utils.readable_argparse import ReadableColorFormatter
 
-from kash.config.settings import DEFAULT_MCP_SERVER_PORT, LogLevel, global_settings
+from kash.config.settings import (
+    DEFAULT_MCP_SERVER_PORT,
+    LogLevel,
+    atomic_global_settings,
+    global_settings,
+)
 from kash.config.setup import kash_setup
 from kash.shell.version import get_version
 
@@ -26,8 +31,6 @@ log = logging.getLogger()
 
 
 def build_parser():
-    from kash.workspaces.workspaces import global_ws_dir
-
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=ReadableColorFormatter)
     parser.add_argument(
         "--version",
@@ -36,8 +39,8 @@ def build_parser():
     )
     parser.add_argument(
         "--workspace",
-        default=global_ws_dir(),
-        help=f"Set workspace directory. Defaults to kash global workspace directory: {global_ws_dir()}",
+        default=global_settings().global_ws_dir,
+        help=f"Set workspace directory. Defaults to kash global workspace directory: {global_settings().global_ws_dir}",
     )
     parser.add_argument(
         "--proxy",
@@ -94,6 +97,10 @@ def run_server(args: argparse.Namespace):
 
     log.warning("kash MCP CLI started, logging to: %s", MCP_CLI_LOG_PATH)
     log.warning("Current working directory: %s", Path(".").resolve())
+
+    if args.workspace and args.workspace != global_settings().global_ws_dir:
+        with atomic_global_settings().updates() as settings:
+            settings.global_ws_dir = Path(args.workspace).absolute()
 
     ws: Workspace = get_ws(name_or_path=Path(args.workspace), auto_init=True)
     os.chdir(ws.base_dir)
