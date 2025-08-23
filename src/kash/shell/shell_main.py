@@ -70,20 +70,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _import_packages():
-    try:
-        # Slowest packages:
-        import uvicorn.protocols  # noqa: F401
-        import uvicorn.protocols.http.h11_impl  # noqa: F401
-        import uvicorn.protocols.websockets.websockets_impl  # noqa: F401
-        import xonsh.completers.init  # noqa: F401
-        import xonsh.pyghooks  # noqa: F401
+    from kash.config.warm_slow_imports import warm_slow_imports
 
-        import kash.actions  # noqa: F401
-        import kash.local_server  # noqa: F401
-        import kash.local_server.local_server  # noqa: F401
-        import kash.mcp.mcp_server_sse  # noqa: F401
-    except ImportError as e:
-        log.warning(f"Error pre-importing packages: {e}")
+    warm_slow_imports(include_extras=False)
 
     imports_done_event.set()
 

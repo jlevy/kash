@@ -18,6 +18,7 @@ from kash.config.settings import (
     global_settings,
 )
 from kash.config.setup import kash_setup
+from kash.config.warm_slow_imports import warm_slow_imports
 from kash.shell.version import get_version
 
 __version__ = get_version()
@@ -97,6 +98,10 @@ def run_server(args: argparse.Namespace):
 
     log.warning("kash MCP CLI started, logging to: %s", MCP_CLI_LOG_PATH)
     log.warning("Current working directory: %s", Path(".").resolve())
+
+    # Eagerly import so the server is warmed up.
+    # This is important to save init time on fresh sandboxes like E2B!
+    warm_slow_imports(include_extras=True)
 
     if args.workspace and args.workspace != global_settings().global_ws_dir:
         with atomic_global_settings().updates() as settings:
