@@ -25,6 +25,33 @@ def check_aws_cli() -> None:
         )
 
 
+def run_aws_command(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+    """
+    Run an AWS CLI command and capture output.
+    Raises a RuntimeError with stdout/stderr on failure.
+    """
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        env=os.environ,
+    )
+
+    if result.returncode != 0:
+        # Build a detailed error message
+        error_parts = [f"AWS command failed with exit code {result.returncode}"]
+        error_parts.append(f"Command: {' '.join(cmd)}")
+
+        if result.stdout:
+            error_parts.append(f"stdout: {result.stdout}")
+        if result.stderr:
+            error_parts.append(f"stderr: {result.stderr}")
+
+        raise RuntimeError("\n".join(error_parts))
+
+    return result
+
+
 def reload_aws_env_vars() -> None:
     """
     Fresh reload of AWS env vars from .env.local.
@@ -34,7 +61,7 @@ def reload_aws_env_vars() -> None:
         return {(k, abbrev_str(v, 5)) for k, v in os.environ.items() if k.startswith("AWS_")}
 
     if len(aws_creds()) == 0:
-        dotenv_path = find_dotenv(".env.local") or find_dotenv(".env")
+        dotenv_path = find_dotenv(".env.local", usecwd=True) or find_dotenv(".env", usecwd=True)
         load_dotenv(dotenv_path, override=True)
         if len(aws_creds()) > 0:
             log.info(
@@ -99,7 +126,7 @@ def s3_sync_to_folder(
         for p in sync_paths:
             if p.is_file():
                 # Use sync with include/exclude to leverage default short-circuiting
-                subprocess.run(
+                run_aws_command(
                     [
                         "aws",
                         "s3",
@@ -110,33 +137,54 @@ def s3_sync_to_folder(
                         "*",
                         "--include",
                         p.name,
-                    ],
-                    check=True,
-                    env=os.environ,
+                    ]
                 )
                 targets.append(Url(dest_prefix + p.name))
             elif p.is_dir():
                 dest_dir = dest_prefix + p.name + "/"
-                subprocess.run(
-                    ["aws", "s3", "sync", str(p), dest_dir],
-                    check=True,
-                    env=os.environ,
-                )
+                run_aws_command(["aws", "s3", "sync", str(p), dest_dir])
                 targets.append(Url(dest_dir))
 
         return targets
     else:
         # Directory mode: sync whole directory.
-        subprocess.run(
+        run_aws_command(
             [
                 "aws",
                 "s3",
                 "sync",
                 str(src_path),
                 dest_prefix,
-            ],
-            check=True,
-            env=os.environ,
+            ]
         )
         targets.append(Url(dest_prefix))
         return targets
+
+
+def s3_download_file(s3_url: Url, target_path: str | Path) -> None:
+    """
+    Download a file from S3 to a local path using the AWS CLI.
+
+    Args:
+        s3_url: The S3 URL to download from (s3://bucket/path/to/file)
+        target_path: The local path to save the file to
+    """
+    reload_aws_env_vars()
+
+    if not is_s3_url(s3_url):
+        raise ValueError(f"Source must be an s3:// URL: {s3_url}")
+
+    check_aws_cli()
+
+    target_path = Path(target_path)
+
+    # Use aws s3 cp to download the file
+    run_aws_command(
+        [
+            "aws",
+            "s3",
+            "cp",
+            str(s3_url),
+            str(target_path),
+        ]
+    )
