@@ -152,7 +152,7 @@ def fetch_url_item_content(
             )
 
     if not url_item.title:
-        log.warning("Failed to fetch page data: title is missing: %s", item.url)
+        log.info("Title is missing for url item: %s", item)
 
     # Now save the updated URL item and also the content item if we have one.
     ws.save(url_item, overwrite=overwrite)

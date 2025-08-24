@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import asdict, field, is_dataclass
@@ -636,8 +637,8 @@ class Item:
         pull_body_heading: bool = False,
     ) -> str:
         """
-        Get or infer a title for this item, falling back to the filename, URL, description, or
-        finally body text. Optionally, include the last operation as a parenthetical at the end
+        Get or infer a title for this item, falling back to the URL, description or
+        body text. Optionally, include the last operation as a parenthetical at the end
         of the title. Will use "Untitled" if all else fails.
         """
         # First special case: if we are pulling the title from the body header, check
@@ -651,12 +652,9 @@ class Item:
             if not self.title and self.url:
                 return abbrev_str(self.url, max_len)
 
-            filename_stem = self.filename_stem()
-
-            # Use the title or the path if possible, falling back to description or even body text.
+            # Use semantic sources for titles. The original filename is preserved separately.
             base_title = (
                 self.title
-                or filename_stem
                 or self.description
                 or (not self.is_binary and self.abbrev_body(max_len))
                 or UNTITLED
@@ -666,7 +664,11 @@ class Item:
         # indicating the last operation, if there was one. This makes filename slugs
         # more readable.
         suffix = ""
-        if add_ops_suffix and self.type.allows_op_suffix:
+        if (
+            add_ops_suffix
+            and self.type.allows_op_suffix
+            and not re.search(r"step\d+", base_title)  # Just in case, never add suffix twice.
+        ):
             last_op = self.history and self.history[-1].action_name
             if last_op:
                 step_num = len(self.history) + 1 if self.history else 1
@@ -902,10 +904,11 @@ class Item:
                 new_output_format = updates.get("format", self.format)
                 if new_output_format and action_context.action.output_format != new_output_format:
                     log.warning(
-                        "Output item format `%s` does not match declared output format `%s` for action `%s`",
+                        "Output item format `%s` does not match declared output format `%s` for action `%s` on item: %s",
                         new_output_format,
                         action_context.action.output_format,
                         action_context.action.name,
+                        self,
                     )
 
         new_item = self.new_copy_with(update_timestamp=True, **updates)
@@ -927,7 +930,9 @@ class Item:
 
         # Fall back to action title template if we have it and title wasn't explicitly set.
         if "title" not in updates:
-            prev_title = self.title or (Path(self.store_path).stem if self.store_path else UNTITLED)
+            # Avoid using filenames as titles when deriving. Prefer existing semantic title
+            # or derive from body heading/URL.
+            prev_title = self.title or self.pick_title(pull_body_heading=True)
 
             if action:
                 new_item.title = action.format_title(prev_title)
