@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import pprint
 from dataclasses import dataclass
+from pathlib import Path
 
+from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from funlog import log_calls
 from mcp.server.lowlevel import Server
 from mcp.server.lowlevel.server import StructuredContent, UnstructuredContent
@@ -237,6 +239,8 @@ def run_mcp_tool(
     """
     try:
         with captured_output() as capture:
+            dotenv_paths = load_dotenv_paths(True, True, Path("."))
+            log.warning("Loaded .env files: %s", dotenv_paths)
             # Use the global workspace default
             explicit_mcp_ws = global_settings().global_ws_dir
 
