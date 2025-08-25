@@ -451,7 +451,7 @@ class Action(ABC):
         return changed_params
 
     def param_value_summary_str(self) -> str:
-        return fmt_lines(
+        return ", ".join(
             [format_key_value(name, value) for name, value in self.param_value_summary().items()]
         )
 

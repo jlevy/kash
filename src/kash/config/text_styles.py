@@ -262,7 +262,7 @@ PROMPT_ASSIST = "(assistant) ❯"
 
 EMOJI_HINT = "👉"
 
-EMOJI_MSG_INDENT = "⋮   "
+EMOJI_MSG_INDENT = "⋮ "
 
 EMOJI_START = "[➤]"
 

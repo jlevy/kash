@@ -901,7 +901,7 @@ class Item:
             # If we were not given a format override, we leave the output type the same.
             elif action_context.action.output_format:
                 # Check an overridden format and then our own format.
-                new_output_format = updates.get("format", self.format)
+                new_output_format = updates.get("format")
                 if new_output_format and action_context.action.output_format != new_output_format:
                     log.warning(
                         "Output item format `%s` does not match declared output format `%s` for action `%s` on item: %s",

@@ -107,7 +107,7 @@ def log_action(action: Action, action_input: ActionInput, operation: Operation):
     log.message("%s Action: `%s`", EMOJI_START, action.name)
     log.info("Running: `%s`", operation.command_line(with_options=True))
     if len(action.param_value_summary()) > 0:
-        log.message("Parameters:\n%s", action.param_value_summary_str())
+        log.message("Parameters: %s", action.param_value_summary_str())
     log.info("Operation is: %s", operation)
     log.info("Input items are:\n%s", fmt_lines(action_input.items))
 

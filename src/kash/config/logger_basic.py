@@ -19,7 +19,16 @@ class SuppressedWarningsStreamHandler(logging.StreamHandler):
 def basic_file_handler(path: Path, level: LogLevel | LogLevelStr) -> logging.FileHandler:
     handler = logging.FileHandler(path)
     handler.setLevel(LogLevel.parse(level).value)
-    handler.setFormatter(Formatter("%(asctime)s %(levelname).1s %(name)s - %(message)s"))
+
+    class ThreadIdFormatter(Formatter):
+        def format(self, record):
+            # Add shortened thread ID as an attribute
+            record.thread_short = str(record.thread)[-5:]
+            return super().format(record)
+
+    handler.setFormatter(
+        ThreadIdFormatter("%(asctime)s %(levelname).1s [T%(thread_short)s] %(name)s - %(message)s")
+    )
     return handler
 
 

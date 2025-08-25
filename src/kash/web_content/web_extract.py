@@ -26,7 +26,6 @@ def fetch_page_content(
 
     Force re-fetching and updating the cache by setting `refetch` to true.
 
-
     For HTML and other text files, uses the `text_extractor` to extract
     clean text and page metadata.
     """

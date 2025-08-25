@@ -349,7 +349,7 @@ def kash_action(
                         fmt_lines(self.params),
                     )
                     log.info(
-                        "Action function param values:\n%s",
+                        "Action function param values: %s",
                         self.param_value_summary_str(),
                     )
                 else:
