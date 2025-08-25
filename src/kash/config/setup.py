@@ -75,6 +75,21 @@ def kash_setup(
 
 
 def _lib_setup():
+    import logging
+
+    log = logging.getLogger(__name__)
+
+    # Trust store integration, for consistent TLS behavior.
+    try:
+        import truststore  # type: ignore
+
+        truststore.inject_into_ssl()
+        log.info("truststore initialized: using system TLS trust store")
+    except Exception as exc:
+        # If not installed or fails, default TLS trust will be used.
+        log.warning("truststore not available at import time: %s", exc)
+
+    # Handle default YAML representers.
     from sidematter_format import register_default_yaml_representers
 
     register_default_yaml_representers()

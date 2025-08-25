@@ -144,11 +144,13 @@ def fetch_url_item_content(
         if save_content:
             assert page_data.saved_content
             assert page_data.format_info
+            if not page_data.format_info.format:
+                log.warning("No format detected for content, defaulting to HTML: %s", url)
             content_item = url_item.new_copy_with(
                 external_path=str(page_data.saved_content),
                 # Use the original filename, not the local cache filename (which has a hash suffix).
                 original_filename=item.get_filename(),
-                format=page_data.format_info.format,
+                format=page_data.format_info.format or Format.html,
             )
 
     if not url_item.title:

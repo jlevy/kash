@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import ssl
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
 from functools import cache, cached_property
@@ -16,13 +18,140 @@ from kash.utils.common.s3_utils import s3_download_file
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats import MimeType
 
+log = logging.getLogger(__name__)
+
+
+def _httpx_verify_context() -> ssl.SSLContext | bool:
+    """
+    Return an SSLContext that uses the system trust store via truststore, if available.
+    Falls back to certifi bundle; otherwise True to use httpx defaults.
+    """
+    try:
+        import truststore
+
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except Exception:
+        try:
+            import certifi
+
+            return ssl.create_default_context(cafile=certifi.where())
+        except Exception:
+            return True
+
+
+def _stream_to_file(
+    target_filename: str | Path,
+    response_iterator: Iterable[bytes],
+    total_size: int,
+    show_progress: bool,
+) -> None:
+    with atomic_output_file(target_filename, make_parents=True) as temp_filename:
+        with open(temp_filename, "wb") as f:
+            if not show_progress:
+                for chunk in response_iterator:
+                    if chunk:
+                        f.write(chunk)
+            else:
+                from tqdm import tqdm
+
+                with tqdm(
+                    total=total_size,
+                    unit="B",
+                    unit_scale=True,
+                    desc=f"Downloading {Path(str(target_filename)).name}",
+                ) as progress:
+                    for chunk in response_iterator:
+                        if chunk:
+                            f.write(chunk)
+                            progress.update(len(chunk))
+
+
+def _httpx_fetch(
+    url: Url,
+    *,
+    timeout: int,
+    auth: Any | None,
+    headers: dict[str, str] | None,
+    mode: ClientMode,
+    log_label: str,
+):
+    import httpx
+
+    req_headers = _get_req_headers(mode, headers)
+    parsed_url = urlparse(str(url))
+    with httpx.Client(
+        follow_redirects=True,
+        timeout=timeout,
+        auth=auth,
+        headers=req_headers,
+        verify=_httpx_verify_context(),
+    ) as client:
+        log.debug("fetch_url (%s): using headers: %s", log_label, client.headers)
+        if mode is ClientMode.BROWSER_HEADERS:
+            _prime_host(parsed_url.netloc, client, timeout)
+        response = client.get(url)
+        log.info(
+            "Fetched (%s): %s (%s bytes): %s",
+            log_label,
+            response.status_code,
+            len(response.content),
+            url,
+        )
+        response.raise_for_status()
+        return response
+
+
+def _httpx_download(
+    url: Url,
+    target_filename: str | Path,
+    *,
+    show_progress: bool,
+    timeout: int,
+    auth: Any | None,
+    headers: dict[str, str] | None,
+    mode: ClientMode,
+    log_label: str,
+) -> dict[str, str]:
+    import httpx
+
+    req_headers = _get_req_headers(mode, headers)
+    parsed_url = urlparse(str(url))
+    with httpx.Client(
+        follow_redirects=True,
+        timeout=timeout,
+        headers=req_headers,
+        verify=_httpx_verify_context(),
+    ) as client:
+        if mode is ClientMode.BROWSER_HEADERS:
+            _prime_host(parsed_url.netloc, client, timeout)
+        log.debug("download_url (%s): using headers: %s", log_label, client.headers)
+        with client.stream("GET", url, auth=auth, follow_redirects=True) as response:
+            response.raise_for_status()
+            response_headers = dict(response.headers)
+            total = int(response.headers.get("content-length", "0"))
+            _stream_to_file(target_filename, response.iter_bytes(), total, show_progress)
+            return response_headers
+
+
+def _is_tls_cert_error(exc: Exception) -> bool:
+    """
+    Heuristic detection of TLS/certificate verification errors coming from curl_cffi/libcurl.
+    """
+    s = str(exc).lower()
+    if "curl: (60)" in s:
+        return True
+    if "certificate verify failed" in s:
+        return True
+    if "ssl" in s and ("certificate" in s or "cert" in s or "handshake" in s):
+        return True
+    return False
+
+
 if TYPE_CHECKING:
     from curl_cffi.requests import Response as CurlCffiResponse
     from curl_cffi.requests import Session as CurlCffiSession
     from httpx import Client as HttpxClient
     from httpx import Response as HttpxResponse
-
-log = logging.getLogger(__name__)
 
 
 DEFAULT_TIMEOUT = 30
@@ -200,54 +329,57 @@ def fetch_url(
 
         from curl_cffi.requests import Session
 
-        with Session() as client:
-            # Set headers on the session - they will be sent with all requests
-            client.headers.update(req_headers)
-            _prime_host(
-                parsed_url.netloc, client, timeout, impersonate=CURL_CFFI_IMPERSONATE_VERSION
-            )
-            log.debug("fetch_url (curl_cffi): using session headers: %s", client.headers)
-            response = client.get(
+        exc: Exception | None = None
+        try:
+            with Session() as client:
+                # Set headers on the session - they will be sent with all requests
+                client.headers.update(req_headers)
+                _prime_host(
+                    parsed_url.netloc, client, timeout, impersonate=CURL_CFFI_IMPERSONATE_VERSION
+                )
+                log.debug("fetch_url (curl_cffi): using session headers: %s", client.headers)
+                response = client.get(
+                    url,
+                    impersonate=CURL_CFFI_IMPERSONATE_VERSION,
+                    timeout=timeout,
+                    auth=auth,
+                    allow_redirects=True,
+                )
+                log.info(
+                    "Fetched (curl_cffi): %s (%s bytes): %s",
+                    response.status_code,
+                    len(response.content),
+                    url,
+                )
+                response.raise_for_status()
+                return response
+        except Exception as e:
+            exc = e
+
+        if exc and _is_tls_cert_error(exc):
+            log.warning(
+                "TLS/SSL verification failed with curl_cffi for %s: %s; falling back to httpx",
                 url,
-                impersonate=CURL_CFFI_IMPERSONATE_VERSION,
+                exc,
+            )
+            # Fallback to httpx with browser-like headers (uses system trust if available)
+            return _httpx_fetch(
+                url,
                 timeout=timeout,
                 auth=auth,
-                allow_redirects=True,
+                headers=headers,
+                mode=ClientMode.BROWSER_HEADERS,
+                log_label="httpx fallback",
             )
-            log.info(
-                "Fetched (curl_cffi): %s (%s bytes): %s",
-                response.status_code,
-                len(response.content),
-                url,
-            )
-            response.raise_for_status()
-            return response
+
+        if exc:
+            raise exc
 
     # Handle httpx modes
     else:
-        import httpx
-
-        with httpx.Client(
-            follow_redirects=True,
-            timeout=timeout,
-            auth=auth,
-            headers=req_headers,
-        ) as client:
-            log.debug("fetch_url (httpx): using headers: %s", client.headers)
-
-            # Cookie priming only makes sense for the browser-like mode
-            if mode is ClientMode.BROWSER_HEADERS:
-                _prime_host(parsed_url.netloc, client, timeout)
-
-            response = client.get(url)
-            log.info(
-                "Fetched (httpx): %s (%s bytes): %s",
-                response.status_code,
-                len(response.content),
-                url,
-            )
-            response.raise_for_status()
-            return response
+        return _httpx_fetch(
+            url, timeout=timeout, auth=auth, headers=headers, mode=mode, log_label="httpx"
+        )
 
 
 @dataclass(frozen=True)
@@ -297,27 +429,6 @@ def download_url(
     req_headers = _get_req_headers(mode, headers)
     response_headers = None
 
-    def stream_to_file(response_iterator, total_size):
-        with atomic_output_file(target_filename, make_parents=True) as temp_filename:
-            with open(temp_filename, "wb") as f:
-                if not show_progress:
-                    for chunk in response_iterator:
-                        if chunk:  # Skip empty chunks
-                            f.write(chunk)
-                else:
-                    from tqdm import tqdm
-
-                    with tqdm(
-                        total=total_size,
-                        unit="B",
-                        unit_scale=True,
-                        desc=f"Downloading {Path(target_filename).name}",
-                    ) as progress:
-                        for chunk in response_iterator:
-                            if chunk:  # Skip empty chunks
-                                f.write(chunk)
-                                progress.update(len(chunk))
-
     # Handle curl_cffi mode
     if mode is ClientMode.CURL_CFFI:
         if not _have_curl_cffi():
@@ -325,47 +436,111 @@ def download_url(
 
         from curl_cffi.requests import Session
 
-        with Session() as client:
-            # Set headers on the session; they will be sent with all requests
-            client.headers.update(req_headers)
-            _prime_host(
-                parsed_url.netloc, client, timeout, impersonate=CURL_CFFI_IMPERSONATE_VERSION
-            )
-            log.debug("download_url (curl_cffi): using session headers: %s", client.headers)
-
-            response = client.get(
-                url,
-                impersonate=CURL_CFFI_IMPERSONATE_VERSION,
-                timeout=timeout,
-                auth=auth,
-                allow_redirects=True,
-                stream=True,
-            )
-            response.raise_for_status()
-            response_headers = dict(response.headers)
-            total = int(response.headers.get("content-length", "0"))
-
-            # Use iter_content for streaming; this is the standard method for curl_cffi
-            chunk_iterator = response.iter_content(chunk_size=8192)
-            stream_to_file(chunk_iterator, total)
-
-    # Handle httpx modes
-    else:
-        import httpx
-
-        with httpx.Client(follow_redirects=True, timeout=timeout, headers=req_headers) as client:
-            if mode is ClientMode.BROWSER_HEADERS:
-                _prime_host(parsed_url.netloc, client, timeout)
-
-            log.debug("download_url (httpx): using headers: %s", client.headers)
-            with client.stream("GET", url, auth=auth, follow_redirects=True) as response:
+        exc: Exception | None = None
+        try:
+            with Session() as client:
+                # Set headers on the session; they will be sent with all requests
+                client.headers.update(req_headers)
+                _prime_host(
+                    parsed_url.netloc, client, timeout, impersonate=CURL_CFFI_IMPERSONATE_VERSION
+                )
+                log.debug("download_url (curl_cffi): using session headers: %s", client.headers)
+                response = client.get(
+                    url,
+                    impersonate=CURL_CFFI_IMPERSONATE_VERSION,
+                    timeout=timeout,
+                    auth=auth,
+                    allow_redirects=True,
+                    stream=True,
+                )
                 response.raise_for_status()
                 response_headers = dict(response.headers)
                 total = int(response.headers.get("content-length", "0"))
-                stream_to_file(response.iter_bytes(), total)
+
+                # Use iter_content for streaming; this is the standard method for curl_cffi
+                chunk_iterator = response.iter_content(chunk_size=8192)
+                _stream_to_file(target_filename, chunk_iterator, total, show_progress)
+        except Exception as e:
+            exc = e
+
+        if exc and _is_tls_cert_error(exc):
+            log.warning(
+                "TLS/SSL verification failed with curl_cffi for %s: %s; falling back to httpx",
+                url,
+                exc,
+            )
+            # Fallback to httpx streaming with browser-like headers (system trust store if available)
+            response_headers = _httpx_download(
+                url,
+                target_filename,
+                show_progress=show_progress,
+                timeout=timeout,
+                auth=auth,
+                headers=headers,
+                mode=ClientMode.BROWSER_HEADERS,
+                log_label="httpx fallback",
+            )
+        elif exc:
+            raise exc
+
+    # Handle httpx modes
+    else:
+        response_headers = _httpx_download(
+            url,
+            target_filename,
+            show_progress=show_progress,
+            timeout=timeout,
+            auth=auth,
+            headers=headers,
+            mode=mode,
+            log_label="httpx",
+        )
 
     # Filter out None values from headers for HttpHeaders type compatibility
     if response_headers:
         clean_headers = {k: v for k, v in response_headers.items() if v is not None}
         return HttpHeaders(clean_headers)
     return None
+
+
+def main() -> None:
+    """
+    Simple CLI test harness for fetch and download.
+
+    Usage examples:
+      uv run python -m kash.web_content.web_fetch
+      uv run python -m kash.web_content.web_fetch https://www.example.com
+    """
+    import sys
+    import traceback
+
+    # Try to use the system trust store for TLS like command-line curl
+    try:
+        import truststore  # type: ignore
+
+        truststore.inject_into_ssl()
+        log.warning("truststore initialized for test harness: using system TLS trust store")
+    except Exception as exc:
+        log.info("truststore not available for test harness; using default TLS trust (%s)", exc)
+
+    urls = [
+        "https://www.example.com",
+        "https://www.businessdefense.gov/ibr/mceip/dpai/dpat3/index.html",
+    ]
+
+    args = [a for a in sys.argv[1:] if a and a.strip()]
+    if args:
+        urls = args
+
+    for u in urls:
+        try:
+            log.warning("Testing fetch_url: %s", u)
+            r = fetch_url(Url(u))
+            log.warning("fetch_url OK: %s -> %s bytes", u, len(r.content))
+        except Exception as exc:
+            log.exception("fetch_url FAILED for %s: %s", u, exc)
+            traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()
