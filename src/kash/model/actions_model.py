@@ -244,11 +244,12 @@ class Action(ABC):
     be ONE_ARG.
     """
 
-    output_type: ItemType = ItemType.doc
+    output_type: ItemType | None = None
     """
     The type of the output item(s). If an action returns multiple output types,
     this will be the output type of the first output.
     This is mainly used for preassembly for the cache check if an output already exists.
+    None means to use the input type.
     """
 
     output_format: Format | None = None
@@ -560,7 +561,14 @@ class Action(ABC):
             # Using first input to determine the output title.
             primary_input = context.action_input.items[0]
             # In this case we only expect one output, of the type specified by the action.
-            primary_output = primary_input.derived_copy(context, 0, type=context.action.output_type)
+            output_type = context.action.output_type or primary_input.type
+            if not output_type:
+                log.warning(
+                    "No output type specified for action `%s`, using `doc` for preassembly",
+                    self.name,
+                )
+                output_type = ItemType.doc
+            primary_output = primary_input.derived_copy(context, 0, type=output_type)
             log.info("Preassembled output: source %s, %s", primary_output.source, primary_output)
             return ActionResult([primary_output])
         else:

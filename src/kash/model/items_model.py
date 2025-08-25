@@ -896,7 +896,7 @@ class Item:
         if action_context:
             # Default the output item type and format to the action's declared output_type
             # and format if not explicitly set.
-            if "type" not in updates:
+            if "type" not in updates and action_context.action.output_type:
                 updates["type"] = action_context.action.output_type
             # If we were not given a format override, we leave the output type the same.
             elif action_context.action.output_format:

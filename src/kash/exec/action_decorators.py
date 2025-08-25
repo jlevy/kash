@@ -204,7 +204,7 @@ def kash_action(
     precondition: Precondition = Precondition.always,
     arg_type: ArgType = ArgType.Locator,
     expected_args: ArgCount = ONE_ARG,
-    output_type: ItemType = ItemType.doc,
+    output_type: ItemType | None = None,
     output_format: Format | None = None,
     expected_outputs: ArgCount = ONE_ARG,
     params: ParamDeclarations = (),
