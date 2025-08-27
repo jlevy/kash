@@ -543,8 +543,8 @@ class Action(ABC):
     def preassemble_result(self, context: ActionContext) -> ActionResult | None:
         """
         Actions can have a separate preliminary step to pre-assemble outputs. This allows
-        us to determine the title and types for the output items and check if they were
-        already generated before running slow or expensive actions.
+        us to determine thew expected shape of the expected output and check if it already
+        exists.
 
         For now, this only applies to actions with a single output, when `self.cacheable`
         is True.
@@ -568,7 +568,10 @@ class Action(ABC):
                     self.name,
                 )
                 output_type = ItemType.doc
-            primary_output = primary_input.derived_copy(context, 0, type=output_type)
+            output_format = context.action.output_format or primary_input.format
+            primary_output = primary_input.derived_copy(
+                context, 0, type=output_type, format=output_format
+            )
             log.info("Preassembled output: source %s, %s", primary_output.source, primary_output)
             return ActionResult([primary_output])
         else:

@@ -193,9 +193,16 @@ class ItemId:
         from kash.web_content.canon_url import canonicalize_url
 
         item_id = None
-        if item.type == ItemType.resource and item.format == Format.url and item.url:
+        if (
+            item.type == ItemType.resource
+            and item.format == Format.url
+            and item.url
+            and not item.source
+        ):
+            # This is a plain URL resource, so its identity is its URL.
             item_id = ItemId(item.type, IdType.url, canonicalize_url(item.url))
         elif item.type == ItemType.concept and item.title:
+            # This is a concept, so its identity is its title.
             item_id = ItemId(item.type, IdType.concept, canonicalize_concept(item.title))
         elif item.source and item.source.cacheable and item.source.operation.has_known_inputs:
             # We know the source of this and if the action was cacheable, we can create
