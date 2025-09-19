@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "setup": "# ---- Copy configuration files ----\n# cp \"$CONDUCTOR_ROOT_PATH/.env\" .\n\n# ---- Install dependencies ----\n# npm install\n# pip install \nmake install"
+  },
+  "runScriptMode": "concurrent"
+}
