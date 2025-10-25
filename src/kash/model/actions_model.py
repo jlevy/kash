@@ -171,6 +171,7 @@ class LLMOptions:
     body_template: MessageTemplate = MessageTemplate("{body}")
     windowing: WindowSettings = WINDOW_NONE
     diff_filter: DiffFilter | None = None
+    enable_web_search: bool = False
 
     def updated_with(self, param_name: str, value: Any) -> LLMOptions:
         """Update option from an action parameter."""

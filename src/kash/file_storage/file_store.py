@@ -485,6 +485,9 @@ class FileStore(Workspace):
         If `with_sidematter` is true, will copy any sidematter files (metadata/assets) to
         the destination.
         """
+        # TODO: Make sure importing a text item that already has
+        # frontmatter doesn't accidentally duplicate the frontmatter
+
         from kash.file_storage.item_file_format import read_item
         from kash.web_content.canon_url import canonicalize_url
 
@@ -531,6 +534,7 @@ class FileStore(Workspace):
                 # This will read the file with or without frontmatter.
                 # We are importing so we want to drop the external path so we save the body.
                 item = read_item(path, self.base_dir)
+                log.info("Imported text item: %s", item)
                 item.external_path = None
 
                 if item.type and as_type and item.type != as_type:

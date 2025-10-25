@@ -206,10 +206,10 @@ A list of parameter declarations, possibly with default values.
 
 # These are the default models for typical use cases.
 # The user may override them with parameters.
-DEFAULT_CAREFUL_LLM = LLM.gpt_5
-DEFAULT_STRUCTURED_LLM = LLM.gpt_5
-DEFAULT_STANDARD_LLM = LLM.gpt_5
-DEFAULT_FAST_LLM = LLM.gpt_5_mini
+DEFAULT_CAREFUL_LLM = LLM.claude_sonnet_4_5
+DEFAULT_STRUCTURED_LLM = LLM.claude_sonnet_4_5
+DEFAULT_STANDARD_LLM = LLM.claude_sonnet_4_5
+DEFAULT_FAST_LLM = LLM.claude_haiku_4_5
 
 
 # Parameters set globally such as in the workspace.

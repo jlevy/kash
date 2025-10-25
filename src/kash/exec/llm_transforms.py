@@ -29,6 +29,7 @@ def windowed_llm_transform(
     windowing: WindowSettings | None,
     diff_filter: DiffFilter | None = None,
     check_no_results: bool = True,
+    enable_web_search: bool = False,
 ) -> TextDoc:
     def doc_transform(input_doc: TextDoc) -> TextDoc:
         return TextDoc.from_text(
@@ -41,6 +42,7 @@ def windowed_llm_transform(
                     input=input_doc.reassemble(),
                     body_template=template,
                     check_no_results=check_no_results,
+                    enable_web_search=enable_web_search,
                 ).content
             )
         )
@@ -67,6 +69,7 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
             input_str,
             options.windowing,
             diff_filter=options.diff_filter,
+            enable_web_search=options.enable_web_search,
         ).reassemble()
     else:
         log.info(
@@ -81,6 +84,7 @@ def llm_transform_str(options: LLMOptions, input_str: str, check_no_results: boo
             body_template=options.body_template,
             input=input_str,
             check_no_results=check_no_results,
+            enable_web_search=options.enable_web_search,
         ).content
 
     return result_str

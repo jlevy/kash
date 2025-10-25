@@ -1,8 +1,9 @@
 {% extends "simple_webpage.html.jinja" %}
 
 {#
-  Extends the simple page with a right-side YouTube popover player.
-  Usage: pass page_template="youtube_webpage.html.jinja" to simple_webpage_render.
+  Extends the simple page with YouTube popover player.
+  Safe to use instead of simple_webpage.html.jinja since it only adds
+  functionality for YouTube if applicable.
 #}
 
 {% block custom_styles %}

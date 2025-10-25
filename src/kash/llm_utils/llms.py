@@ -28,22 +28,23 @@ class LLM(LLMName, Enum):
     gpt_4_1 = LLMName("gpt-4.1")
     gpt_4o = LLMName("gpt-4o")
     gpt_4o_mini = LLMName("gpt-4o-mini")
+    gpt_4o_search_preview = LLMName("gpt-4o-search-preview")
     gpt_4 = LLMName("gpt-4")
     gpt_4_1_mini = LLMName("gpt-4.1-mini")
     gpt_4_1_nano = LLMName("gpt-4.1-nano")
 
-    # https://docs.anthropic.com/en/docs/about-claude/models/all-models
+    # https://docs.claude.com/en/docs/about-claude/models
 
-    claude_4_1_opus = LLMName("claude-opus-4-1")
-    claude_4_opus = LLMName("claude-opus-4-20250514")
-    claude_4_sonnet = LLMName("claude-sonnet-4-20250514")
-    claude_3_7_sonnet = LLMName("claude-3-7-sonnet-latest")
-    claude_3_5_haiku = LLMName("claude-3-5-haiku-latest")
+    claude_sonnet_4_5 = LLMName("claude-sonnet-4-5-20250929")
+    claude_haiku_4_5 = LLMName("claude-haiku-4-5-20251001")
+    claude_opus_4_1 = LLMName("claude-opus-4-1-20250805")
+    claude_sonnet_4 = LLMName("claude-sonnet-4-20250514")
+    claude_opus_4 = LLMName("claude-opus-4-20250514")
 
     # https://ai.google.dev/gemini-api/docs/models
     gemini_2_5_pro = LLMName("gemini/gemini-2.5-pro")
     gemini_2_5_flash = LLMName("gemini/gemini-2.5-flash")
-    gemini_2_5_flash_lite = LLMName("gemini-2.5-flash-lite-preview-06-17")
+    gemini_2_5_flash_lite = LLMName("gemini/gemini-2.5-flash-lite")
 
     # https://docs.x.ai/docs/models
     xai_grok_3 = LLMName("xai/grok-3")
