@@ -85,8 +85,8 @@ dependencies = [
     "truststore>=0.10.4",
     # LLM and API essentials:
     "tiktoken>=0.9.0",
-    "openai==1.99.9", # FIXME: Pinning for now due to import errors (ImportError: cannot import name 'ResponseTextConfig' from 'openai.types.responses.response')
-    "litellm>=1.74.15.post1",
+    "openai>=2.15.0",
+    "litellm>=1.80.16",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
     # Basic text handling and web scraping:
@@ -197,7 +197,6 @@ ignore = [
     "UP031",
     "UP007",
     "B904",
-    "UP038",
     "B007",
     "B008",
     "B026",
