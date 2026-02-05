@@ -5,34 +5,28 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from clideps.env_vars.dotenv_utils import load_dotenv_paths
-from httpx import Timeout
 
 from kash.config.logger import CustomLogger, get_logger
 from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
-from kash.utils.errors import ApiError, ContentError
+from kash.utils.errors import ContentError
 
 if TYPE_CHECKING:
-    from deepgram import PrerecordedResponse
+    from deepgram.types.listen_v1accepted_response import ListenV1AcceptedResponse
+    from deepgram.types.listen_v1response import ListenV1Response
 
 log: CustomLogger = get_logger(__name__)
 
 
 def deepgram_transcribe_raw(
     audio_file_path: Path, language: str | None = None
-) -> PrerecordedResponse:
+) -> ListenV1Response | ListenV1AcceptedResponse:
     """
     Transcribe an audio file using Deepgram and return the raw response.
     """
     # Slow import, do lazily.
-    from deepgram import (
-        ClientOptionsFromEnv,
-        DeepgramClient,
-        FileSource,
-        ListenRESTClient,
-        PrerecordedOptions,
-        PrerecordedResponse,
-    )
+    from deepgram import DeepgramClient
+    from deepgram.core.request_options import RequestOptions
 
     size = getsize(audio_file_path)
     log.info(
@@ -40,21 +34,19 @@ def deepgram_transcribe_raw(
     )
 
     load_dotenv_paths(True, True, global_settings().system_config_dir)
-    deepgram = DeepgramClient("", ClientOptionsFromEnv())
+    deepgram = DeepgramClient()
 
     with open(audio_file_path, "rb") as audio_file:
         buffer_data = audio_file.read()
 
-    payload: FileSource = {
-        "buffer": buffer_data,
-    }
-
-    options = PrerecordedOptions(model="nova-2", smart_format=True, diarize=True, language=language)
-    client: ListenRESTClient = deepgram.listen.rest.v("1")  # pyright: ignore
-
-    response = client.transcribe_file(payload, options, timeout=Timeout(500))
-    if not isinstance(response, PrerecordedResponse):
-        raise ApiError("Deepgram returned an unexpected response type")
+    response = deepgram.listen.v1.media.transcribe_file(
+        request=buffer_data,
+        model="nova-2",
+        smart_format=True,
+        diarize=True,
+        language=language,
+        request_options=RequestOptions(timeout_in_seconds=500),
+    )
 
     return response
 
@@ -64,7 +56,9 @@ def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None
 
     log.save_object("Deepgram response", None, response)
 
-    diarized_segments = _deepgram_diarized_segments(response)
+    # Convert Pydantic model to dict for processing.
+    response_dict = response.model_dump()
+    diarized_segments = _deepgram_diarized_segments(response_dict)
     log.debug("Diarized response: %s", diarized_segments)
 
     if not diarized_segments:
