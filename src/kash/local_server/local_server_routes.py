@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -55,7 +55,7 @@ def format_local_url(route_path: str, **params: str | None) -> str:
     return url
 
 
-class Route(str, Enum):
+class Route(StrEnum):
     file_view = "/file/view"
     item_view = "/item/view"
     explain = "/explain"

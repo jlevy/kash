@@ -94,7 +94,7 @@ content: |
 from __future__ import annotations
 
 from dataclasses import field
-from enum import Enum
+from enum import Enum, StrEnum
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
@@ -106,7 +106,7 @@ from pydantic.dataclasses import dataclass
 from sidematter_format import to_json_string
 
 
-class ChatRole(str, Enum):
+class ChatRole(StrEnum):
     """
     The role of a message in a chat. Represents the "role" in LLM APIs but note we slightly
     abuse this term to also represent other types of messages, such as commands issued

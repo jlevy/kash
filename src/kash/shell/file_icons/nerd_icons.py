@@ -17,7 +17,7 @@
 
 import os
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 NBSP = "\u00a0"
 
@@ -35,7 +35,7 @@ class Icon:
 
 
 # fmt: off
-class Icons(str, Enum):
+class Icons(StrEnum):
     ARCHIVE = '\uf410'             # 
     AUDIO = "\uf001"               # 
     BINARY = "\ueae8"              # 

@@ -67,7 +67,7 @@ https://www.ethanheilman.com/x/28/index.html
 #   files, so that legacy shell commands automatically have tooltips with info
 #   about files).
 
-from enum import Enum
+from enum import StrEnum
 from html import escape
 from typing import Annotated, Literal, Self, TypeAlias
 from urllib.parse import parse_qs, quote, urlencode, urlparse
@@ -91,7 +91,7 @@ KUI_SCHEME = f"{KUI_PROTOCOL}//"
 """The Kerm code URI scheme for embedding UI elements into links."""
 
 
-class UIActionType(str, Enum):
+class UIActionType(StrEnum):
     paste_text = "paste_text"
     """Default action for pasting text into the terminal. If value is omitted, paste the link text."""
 
@@ -120,7 +120,7 @@ class UIAction(BaseModel):
         return self.model_dump_json()
 
 
-class DisplayStyle(str, Enum):
+class DisplayStyle(StrEnum):
     """
     Style for text.
     """
@@ -157,14 +157,14 @@ class DisplayHints(BaseModel):
     dimensions: Dimensions | None = Field(default=None, description="Dimensions.")
 
 
-class UIRole(str, Enum):
+class UIRole(StrEnum):
     tooltip = "tooltip"
     popover = "popover"
     output = "output"
     input = "input"
 
 
-class UIElementType(str, Enum):
+class UIElementType(StrEnum):
     text_tooltip = "text_tooltip"
     link_tooltip = "link_tooltip"
     iframe_tooltip = "iframe_tooltip"

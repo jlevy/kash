@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 
-class SortOption(str, Enum):
+class SortOption(StrEnum):
     filename = "filename"
     size = "size"
     accessed = "accessed"
@@ -28,13 +28,13 @@ class SortOption(str, Enum):
     modified = "modified"
 
 
-class GroupByOption(str, Enum):
+class GroupByOption(StrEnum):
     flat = "flat"
     parent = "parent"
     suffix = "suffix"
 
 
-class FileType(str, Enum):
+class FileType(StrEnum):
     file = "file"
     dir = "dir"
 

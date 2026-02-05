@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 from kash.exec_model.commands_model import CommentedCommand
 
 
-class Confidence(str, Enum):
+class Confidence(StrEnum):
     """
     How confident the assistant is that the answer is correct.
     """

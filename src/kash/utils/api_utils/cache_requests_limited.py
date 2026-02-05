@@ -32,13 +32,11 @@ class CachingSession(requests.Session):
     ):
         super().__init__()
         self._limiter: Limiter | None = None
+        self._max_wait_secs = max_wait_secs
         if limit and limit_interval_secs:
             rate = Rate(limit, Duration.SECOND * limit_interval_secs)
             bucket = InMemoryBucket([rate])
-            # Explicitly set raise_when_fail=False and max_delay to enable blocking.
-            self._limiter = Limiter(
-                bucket, raise_when_fail=False, max_delay=Duration.SECOND * max_wait_secs
-            )
+            self._limiter = Limiter(bucket)
             log.info(
                 "CachingSession: rate limiting requests with limit=%d, interval=%d, max_wait=%d",
                 limit,
@@ -56,9 +54,11 @@ class CachingSession(requests.Session):
 
         def save(path: Path):
             if self._limiter:
-                acquired = self._limiter.try_acquire("caching_session_get")
+                acquired = self._limiter.try_acquire(
+                    "caching_session_get", blocking=True, timeout=self._max_wait_secs
+                )
                 if not acquired:
-                    # Generally shouldn't happen.
+                    # Generally shouldn't happen with blocking=True and reasonable timeout.
                     raise RuntimeError("Rate limiter failed to acquire after maximum delay")
 
             response = super(CachingSession, self).get(url, **kwargs)
