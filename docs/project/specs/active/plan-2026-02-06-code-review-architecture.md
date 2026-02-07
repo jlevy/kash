@@ -822,12 +822,58 @@ def sample_item():
 
 ## Testing Strategy
 
-- **Unit tests** for pure functions (models, parsing, scoring, URLs) - no mocks
-- **Mocked tests** for functions with external deps (LLM, filesystem, workspace)
-- **Integration tests** for action execution pipeline, web fetch, MCP routing
-- **Not tested**: xonsh shell integration, Rich rendering, interactive prompts
-- **CI rules**: No tests requiring live API keys; use `@pytest.mark.online` for optional
-- **Speed target**: <1 second for all unit tests; integration tests marked `@pytest.mark.slow`
+**Applicable guidelines**: `general-testing-rules`, `general-tdd-guidelines`,
+`golden-testing-guidelines`
+
+### Test Categories (per `general-tdd-guidelines`)
+
+1. **Unit tests** — Fast, focused tests for pure business logic. No network, no
+   filesystem (except tmp_path). Target: models, parsing, scoring, URLs.
+   Per `general-testing-rules`: write the minimal set of tests with maximal coverage.
+   Do NOT write tests that are trivially obvious (e.g. "create object, check field").
+
+2. **Integration tests** — Exercise multiple components with mocked external APIs.
+   No network access. Target: action execution pipeline, web fetch (mock httpx),
+   MCP routing (mock action execution). File names: `test_*_integration.py`.
+
+3. **Golden/session tests** — Per `golden-testing-guidelines`, capture complete
+   execution traces for complex multi-step operations. Particularly valuable for:
+   - **Action pipelines**: Capture input items, intermediate transforms, output items
+     as YAML golden files. Serialize Item fields (title, body, format, type,
+     operation fingerprint) excluding timestamps and file paths.
+   - **Web content extraction**: Capture raw HTML input → extraction output as golden
+     files. Stable fields: extracted text, title, byline. Unstable: cache paths, timing.
+   - **LLM transforms**: Capture prompt assembly, (mocked) response, post-processing
+     as golden traces. Validates prompt templates haven't silently changed.
+   Golden test infrastructure: define a `SessionEvent` schema, YAML serialization,
+   stable-field filtering. Consider using tryscript for CLI output golden tests once
+   standalone CLI exists (Phase 4).
+
+4. **E2E tests** — Real system behavior with live APIs. Not run in CI.
+   Requires API keys. Marked with `@pytest.mark.online`.
+
+### Test Rules (from `general-testing-rules` and `python-rules`)
+
+- Write the minimal set of tests with maximal coverage
+- Do NOT write trivial tests (creating objects and checking fields)
+- Test edge cases and boundaries (empty inputs, nulls, max/min, errors)
+- Don't test implementation details — focus on behavior and outcomes
+- For simple tests, prefer inline functions in the source file below a `## Tests`
+  comment (per `python-rules`). No pytest import needed for inline tests.
+- For longer tests, use `tests/module_name/test_*.py`
+- Do NOT use pytest fixtures (parameterized, expected exception decorators) unless
+  the test is complex enough to justify it
+- Assertions should not have redundant messages (`assert x == 5` not
+  `assert x == 5, "x should be 5"`)
+- Never use `assert False`; use `raise AssertionError("explanation")` instead
+
+### Test Infrastructure
+
+- `tests/conftest.py` — Shared fixtures (temp_workspace, mock_current_ws, mock_llm,
+  sample_item). See Part 5 for design.
+- Markers: `@pytest.mark.slow`, `@pytest.mark.online`, `@pytest.mark.golden`
+- Speed target: <1 second for all unit tests
+- No tests requiring live API keys in CI
 
 ## Part 6: Guidelines Conformance Review
 
@@ -838,38 +884,80 @@ Each guideline review should verify conformance and create beads for gaps.
 
 | Guideline | Key Checks | Status |
 |-----------|-----------|--------|
-| python-rules | Type hints, naming, imports, error handling | Partial |
-| python-modern-guidelines | `from __future__`, `@override`, uv, modern patterns | Partial |
-| python-cli-patterns | CLI structure, agent compat, output modes, error codes | Not applied |
-| error-handling-rules | Custom exceptions, exit codes, no silent failures | Partial |
-| general-coding-rules | Constants, magic numbers, DRY, YAGNI | Partial |
-| general-comment-rules | Concise comments, no obvious comments, why not what | Good |
-| general-testing-rules | Minimal effective tests, no trivial tests, coverage | Low coverage |
-| backward-compatibility-rules | API stability, file format compat, migration | Needs clarification |
-| general-style-rules | Formatting, consistency | Good (ruff enforced) |
-| general-tdd-guidelines | Test-first for new features | Not practiced |
-| commit-conventions | Conventional commits | Partial |
-| release-notes-guidelines | Changelog and release notes | Not present |
+| `python-rules` | Type hints, naming, absolute imports, `@override`, `pathlib`, `atomic_output_file`, testing style | Partial |
+| `python-modern-guidelines` | `from __future__`, `@override`, uv, `atomic_output_file` from strif, prettyfmt | Partial |
+| `python-cli-patterns` | CLI structure, agent compat (`--format`, `--non-interactive`, `--no-progress`), output modes, error codes | Not applied |
+| `error-handling-rules` | Custom exception hierarchy, exit codes as API contracts, logging is not handling, transient vs permanent errors, error tests | Partial |
+| `general-coding-rules` | Named constants (no magic numbers), descriptive names with docstrings | Partial |
+| `general-comment-rules` | Explanatory "why" comments, concise, no obvious/repetitive comments | Good |
+| `general-testing-rules` | Minimal tests with maximal coverage, no trivial tests, edge cases, behavior not implementation | Low coverage |
+| `general-tdd-guidelines` | Red-Green-Refactor, unit/integration/golden/E2E test types, separate structural vs behavioral commits | Not practiced |
+| `golden-testing-guidelines` | Session-based golden tests for complex systems, YAML session files, stable field filtering, tryscript for CLI | Not present |
+| `backward-compatibility-rules` | Documented compat policy per area, no unnecessary compat code | Needs clarification |
+| `general-style-rules` | Formatting, consistency | Good (ruff enforced) |
+| `commit-conventions` | Conventional commits format | Partial |
+| `release-notes-guidelines` | Changelog and release notes | Not present |
 
 ### Key Gaps Identified
 
-1. **python-modern-guidelines**: ~215 files missing `from __future__ import annotations`;
-   limited `@override` usage (14 files); no `__slots__` on performance-critical classes
+1. **`python-rules`**: Absolute imports are used consistently (good). `@override` is
+   used in only 14 files — the guideline says "ALWAYS use `@override` decorators."
+   `from __future__ import annotations` is missing from ~215 files. `atomic_output_file`
+   from strif is used in some places but not all file writes. Inline tests (below
+   `## Tests` comment in source files) are not used — all tests are in separate files.
+   No `if __name__ == "__main__"` for testing (7 files still have it, violating the
+   guideline).
 
-2. **python-cli-patterns**: No `--format json` output mode; no `--non-interactive` flag;
-   no `--no-progress` flag; errors go to stdout not stderr; no exit codes beyond 0/1
+2. **`python-modern-guidelines`**: strif's `atomic_output_file` should be used for all
+   file writes (currently mixed). prettyfmt is already a dependency and used in places
+   but could be used more consistently for log output formatting.
 
-3. **error-handling-rules**: No custom exception hierarchy (uses generic Exception in
-   many places); some bare `except:` clauses; error logging without re-raise in places
+3. **`python-cli-patterns`**: The codebase has no standalone CLI mode — everything goes
+   through xonsh. The guideline specifies: `--non-interactive` to disable prompts,
+   `--format text|json|jsonl` for output, `--no-progress` for agent compatibility,
+   respect `CI` and `NO_COLOR` env vars. None of these exist. OutputManager pattern
+   for dual text/JSON output is not implemented. No custom exceptions with exit codes.
 
-4. **general-coding-rules**: Magic numbers in completion_scoring.py, port ranges,
-   timing constants; some constants defined as module-level variables without docstrings
+4. **`error-handling-rules`**: The guideline's 8 principles are largely not followed:
+   - Principle 1 (error handling is part of the feature): Many functions have happy-path
+     only implementation
+   - Principle 5 (logging is not handling): Several places log errors at debug level
+     without control flow change (Anti-Pattern 1: "Debug-Only Error Handling")
+   - Principle 6 (exit codes as API contracts): Only 0/1 exit codes
+   - Principle 7 (tests must verify error behavior): No error behavior tests exist
+   - Principle 8 (transient vs permanent errors): No error classification. The
+     guideline calls for `TransientError`/`PermanentError` distinction for retry logic.
 
-5. **general-testing-rules**: Test coverage at ~7%; no conftest.py; no test markers;
-   no coverage measurement configured
+5. **`general-coding-rules`**: Magic numbers found in: `completion_scoring.py` (scoring
+   weights, thresholds), port range 4470-4499 in settings, timing constants (30s
+   timeout in web_fetch), various buffer sizes. Guideline says "NEVER hardcode numeric
+   values directly" and "all numeric constants must have clear, descriptive names and
+   docstrings."
 
-6. **backward-compatibility-rules**: No documented compatibility policy for Item
-   file format, workspace directory structure, or action parameter signatures
+6. **`general-testing-rules`**: Test coverage at ~7%. Guideline says "write the minimal
+   set of tests with maximal coverage" — the current state doesn't meet even minimal
+   coverage. No edge case tests, no error path tests.
+
+7. **`general-tdd-guidelines`**: The guideline defines 4 test types (unit, integration,
+   golden, E2E). Currently only unit-style tests exist. Golden tests would be
+   particularly valuable for action pipeline testing (capture Item transformations as
+   YAML golden files). The guideline's "Tidy First" approach (separate structural vs
+   behavioral commits) is not practiced.
+
+8. **`golden-testing-guidelines`**: Not implemented at all. The guideline specifically
+   says golden tests "excel for complex systems where writing and maintaining hundreds
+   of unit or integration tests is burdensome." This applies to kash's action pipeline,
+   web content extraction, and LLM transform chains. Consider:
+   - Event schema for action execution (input items, params, output items)
+   - YAML session files checked into `tests/golden/`
+   - Stable fields: item title, body, format, type, operation fingerprint
+   - Unstable fields: timestamps, file paths, cache keys
+   - tryscript for CLI golden tests once standalone CLI exists (Phase 4)
+
+9. **`backward-compatibility-rules`**: No documented policy. The guideline template
+   should be filled in for: code types/methods (DO NOT MAINTAIN recommended for
+   single-app refactors), library APIs (KEEP DEPRECATED if used externally), file
+   formats (SUPPORT BOTH for Item YAML format), database schemas (N/A).
 
 ## Open Questions
 
@@ -895,7 +983,30 @@ Each guideline review should verify conformance and create beads for gaps.
 
 ## References
 
-- tbd guidelines: python-rules, python-modern-guidelines, python-cli-patterns
-- tbd guidelines: error-handling-rules, general-coding-rules, general-comment-rules
-- tbd guidelines: general-testing-rules, backward-compatibility-rules
-- Kash README.md and development.md
+### tbd Guidelines (run `tbd guidelines <name>` to load)
+
+**Python-specific**:
+- `python-rules` — Core Python rules: imports, types, `@override`, `pathlib`, testing
+- `python-modern-guidelines` — Modern Python: `from __future__`, uv, `atomic_output_file`, prettyfmt
+- `python-cli-patterns` — CLI patterns: Typer/argparse, `--format json`, agent compat, OutputManager
+
+**Testing**:
+- `general-testing-rules` — Minimal tests, maximal coverage, no trivial tests, edge cases
+- `general-tdd-guidelines` — Red-Green-Refactor, unit/integration/golden/E2E test types
+- `golden-testing-guidelines` — Session-based golden tests, YAML captures, tryscript for CLI
+
+**Code quality**:
+- `error-handling-rules` — Exception hierarchy, exit codes, transient/permanent errors
+- `general-coding-rules` — Named constants, no magic numbers
+- `general-comment-rules` — Explanatory "why" comments, concise
+- `general-style-rules` — Formatting, consistency
+
+**Process**:
+- `backward-compatibility-rules` — Compat policy template, migration planning
+- `commit-conventions` — Conventional commits format
+- `release-notes-guidelines` — Changelog practices
+
+### Project Files
+- `README.md`, `development.md` — Project documentation
+- `pyproject.toml` — Dependencies, tool configuration
+- `Makefile` — Development workflows
