@@ -13,6 +13,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: "Create test infrastructure: conftest.py, fixtures, test factories"
 type: is
-updated_at: 2026-02-07T09:28:45.122Z
-version: 3
+updated_at: 2026-02-07T18:11:01.064Z
+version: 5
 ---
+Create tests/conftest.py with shared fixtures (temp_workspace, mock_current_ws, mock_llm, sample_item). Add pytest markers (@pytest.mark.slow, @pytest.mark.online, @pytest.mark.golden). Follow: general-testing-rules (minimal tests, maximal coverage), python-rules (testing section: inline tests for simple cases, tests/ for longer), general-tdd-guidelines (unit/integration/golden/E2E categories).

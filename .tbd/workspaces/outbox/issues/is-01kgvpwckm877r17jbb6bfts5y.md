@@ -13,6 +13,6 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Eliminate import side effects - make action/command registration lazy
 type: is
-updated_at: 2026-02-07T09:28:45.531Z
-version: 3
+updated_at: 2026-02-07T18:11:01.033Z
+version: 4
 ---

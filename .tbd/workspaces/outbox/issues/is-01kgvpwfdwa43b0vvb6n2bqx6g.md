@@ -9,6 +9,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Extract named constants from magic numbers (scoring, ports, timing)
 type: is
-updated_at: 2026-02-07T09:28:17.595Z
-version: 1
+updated_at: 2026-02-07T18:11:01.095Z
+version: 3
 ---
+Extract named constants from magic numbers per general-coding-rules: 'NEVER hardcode numeric values directly. All numeric constants must have clear, descriptive names and docstrings.' Known locations: completion_scoring.py (scoring weights, thresholds), settings.py (port range 4470-4499), web_fetch.py (30s timeout), various buffer sizes.

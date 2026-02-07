@@ -15,6 +15,6 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Create standalone action runner (kash.run()) for library use
 type: is
-updated_at: 2026-02-07T09:28:43.960Z
-version: 4
+updated_at: 2026-02-07T18:11:01.045Z
+version: 5
 ---

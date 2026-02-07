@@ -9,6 +9,6 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Create KashTestRunner for testing loop integration
 type: is
-updated_at: 2026-02-07T09:28:19.246Z
-version: 1
+updated_at: 2026-02-07T18:11:01.129Z
+version: 2
 ---

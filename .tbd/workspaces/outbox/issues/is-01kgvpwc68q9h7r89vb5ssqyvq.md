@@ -11,6 +11,6 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Define clean public API surface in __init__.py files
 type: is
-updated_at: 2026-02-07T09:28:42.028Z
-version: 2
+updated_at: 2026-02-07T18:11:01.021Z
+version: 3
 ---

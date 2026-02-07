@@ -9,6 +9,6 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Audit and reorganize utils/ directory (72 files across 7 subdirs)
 type: is
-updated_at: 2026-02-07T09:28:20.006Z
-version: 1
+updated_at: 2026-02-07T18:11:01.145Z
+version: 2
 ---
