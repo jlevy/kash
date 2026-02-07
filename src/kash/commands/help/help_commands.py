@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flowmark import Wrap
 
 from kash.commands.help.doc_commands import manual

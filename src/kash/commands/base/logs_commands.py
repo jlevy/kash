@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from prettyfmt import fmt_lines

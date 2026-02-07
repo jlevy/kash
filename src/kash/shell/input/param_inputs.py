@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.model.params_model import Param
 from kash.shell.input.input_prompts import input_choice, input_simple_string
 

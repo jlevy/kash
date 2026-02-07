@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from prettyfmt import fmt_count_items

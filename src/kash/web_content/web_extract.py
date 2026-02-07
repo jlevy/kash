@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funlog import log_calls
 
 from kash.utils.common.url import Url

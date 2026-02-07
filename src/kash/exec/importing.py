@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from prettyfmt import fmt_lines, fmt_path

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import subprocess
 
 from clideps.pkgs.pkg_check import pkg_check

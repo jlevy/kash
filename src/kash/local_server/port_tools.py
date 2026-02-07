@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import socket
 import time
 from collections.abc import Iterable

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funlog import log_calls
 from prettyfmt import fmt_lines
 

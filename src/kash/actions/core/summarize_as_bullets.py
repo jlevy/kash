@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.exec import kash_action, llm_transform_item
 from kash.llm_utils import LLM, LLMName, Message, MessageTemplate
 from kash.model import Item, LLMOptions, common_params

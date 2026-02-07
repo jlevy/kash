@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from os.path import getsize
 
 from openai import OpenAI

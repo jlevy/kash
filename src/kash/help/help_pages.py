@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from rich.text import Text
 
 from kash.config.logger import get_logger

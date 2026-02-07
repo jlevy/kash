@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import StrEnum
 from pathlib import Path
 from urllib.parse import urlencode

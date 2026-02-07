@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.config.logger import get_logger
 from kash.config.settings import global_settings
 from kash.exec import kash_command

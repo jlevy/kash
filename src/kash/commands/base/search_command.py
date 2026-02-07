@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from clideps.pkgs.pkg_check import pkg_check

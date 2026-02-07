@@ -4,6 +4,8 @@ stdio standalone mode, with all kash tools exposed. But can be run in SSE standa
 mode or as a stdio proxy to another SSE server.
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os

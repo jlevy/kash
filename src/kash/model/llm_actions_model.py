@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from chopdiff.divs import CHUNK, ORIGINAL, RESULT, TextNode
 from pydantic.dataclasses import dataclass
 from typing_extensions import override

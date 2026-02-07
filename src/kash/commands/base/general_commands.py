@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from clideps.env_vars.dotenv_setup import interactive_dotenv_setup
 from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from clideps.env_vars.env_check import format_dotenv_check, format_env_var_check, print_env_check

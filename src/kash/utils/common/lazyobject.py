@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Portions of this code are from xonsh:
 #
 # Copyright (c) 2016, xonsh

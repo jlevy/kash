@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import justext
 
 from kash.config.logger import get_logger

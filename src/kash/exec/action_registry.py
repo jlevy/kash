@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from cachetools import Cache, cached
 from strif import AtomicVar
 

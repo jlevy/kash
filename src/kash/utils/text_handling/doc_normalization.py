@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from flowmark import fill_markdown, line_wrap_by_sentence

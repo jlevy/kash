@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flowmark import Wrap
 from rich.text import Text
 

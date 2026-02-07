@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.exec import kash_action
 from kash.exec.preconditions import has_fullpage_html_body
 from kash.model import Format, Item, Param

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.utils.file_utils.file_formats_model import Format
 
 # TODO: Consider adding more categories, either aligning with eza or seti-ui/VSCode:

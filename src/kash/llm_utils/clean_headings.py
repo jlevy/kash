@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.llm_utils import Message, MessageTemplate, llm_template_completion
 from kash.llm_utils.llms import LLM
 from kash.utils.text_handling.markdown_utils import as_bullet_points

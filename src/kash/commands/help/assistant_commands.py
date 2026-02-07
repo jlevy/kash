@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.commands.base.basic_file_commands import trash
 from kash.commands.workspace.selection_commands import select
 from kash.config.logger import get_logger

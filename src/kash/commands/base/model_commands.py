@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from clideps.env_vars.dotenv_utils import env_var_is_set
 from flowmark import Wrap
 from rich.text import Text

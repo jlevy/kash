@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from frontmatter_format import fmf_read_raw, fmf_strip_frontmatter

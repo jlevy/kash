@@ -2,6 +2,8 @@
 Tools for capitalizing words and phrases.
 """
 
+from __future__ import annotations
+
 # TODO: May be better to replace or merge this, which also has a good test suite
 # https://github.com/ppannuto/python-titlecase
 

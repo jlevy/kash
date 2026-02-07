@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Based on https://github.com/eza-community/eza/blob/1780411a76fe9d5f3967f3130ed1d4cdc79b493a/src/output/icons.rs
 #
 # Modified version license:
