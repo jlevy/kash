@@ -1430,7 +1430,7 @@ requires-dist = [
     { name = "markdownify", specifier = ">=0.13.1" },
     { name = "mcp", specifier = ">=1.6.0" },
     { name = "mcp-proxy", specifier = ">=0.5.0" },
-    { name = "openai", specifier = "==1.99.9" },
+    { name = "openai", specifier = ">=1.99,<2.0" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "patch-ng", specifier = ">=1.18.1" },
     { name = "pathspec", specifier = ">=0.12.1" },
