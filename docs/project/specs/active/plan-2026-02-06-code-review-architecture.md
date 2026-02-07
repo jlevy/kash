@@ -773,52 +773,192 @@ def sample_item():
 
 ---
 
-## Implementation Plan
+## Part 7: Downstream Dependency Analysis and Backward Compatibility
 
-### Phase 1: Core Library API and Cleanup
+### Downstream Consumers
 
-- [ ] Define and implement clean public API surface in `__init__.py`
-- [ ] Eliminate import side effects (lazy registration)
-- [ ] Create standalone action runner (`kash.run()`)
-- [ ] Add `__all__` to all public modules
-- [ ] Remove unused dependencies
-- [ ] Create optional dependency groups in pyproject.toml
-- [ ] Fix openai version pinning
+Two known downstream packages depend on kash:
 
-### Phase 2: Python Modernization
+**kash-docs** (jlevy/kash-docs) — Document analysis kit
+- Pinned to `kash-shell==0.3.37`
+- 70 of 82 Python files import from kash (393 import statements)
+- Uses ~150+ unique kash symbols from 12 submodules
+- Heavy integration: action decorators, model layer, exec framework, LLM utils,
+  preconditions, workspaces, embeddings, web content, web_gen, shell output
 
-- [ ] Add `from __future__ import annotations` to all files
-- [ ] Add `@override` to subclass method overrides
-- [ ] Extract named constants from magic numbers
-- [ ] Clean up dead code, TODO/FIXME comments
-- [ ] Review and fix atomic file write usage
-- [ ] Ensure all public APIs have concise docstrings
+**kash-media** (jlevy/kash-media) — Media transcription kit
+- Depends on `kash-docs[full]==0.1.20` (transitive kash dependency)
+- 23 Python files with kash imports (~80+ unique symbols)
+- Uses action decorators, model layer, preconditions, media_base, LLM utils,
+  workspaces, web content, config
 
-### Phase 3: Test Infrastructure and Coverage
+### Critical API Surface (Must Not Break)
 
-- [ ] Create tests/conftest.py with workspace, LLM, and item fixtures
-- [ ] **Quick wins (pure functions)**: model tests, fuzzy_parsing, llm_names,
-      completion_scoring, url parsing, canon_url, markdown_utils (~10 files)
-- [ ] **Mocked dependencies**: action_registry, resolve_args, precondition_checks,
-      selections, param_state, item_id_index, llm_completion (~8 files)
-- [ ] **Integration**: action_exec pipeline, web_fetch (mock httpx),
-      local_file_cache, MCP routes, workspace commands (~5 files)
+Based on the analysis of both downstream repos, these are the kash symbols that
+MUST remain stable and importable from their current paths:
 
-### Phase 4: Shell Decoupling and Standalone Access
+**Execution framework** (used in every action file):
+- `kash.exec`: `kash_action`, `kash_precondition`, `import_and_register`
+- `kash.exec`: `llm_transform_item`, `llm_transform_str`, `SkipItem`
+- `kash.exec`: `fetch_url_item`, `fetch_url_item_content`
+- `kash.exec.preconditions`: All named preconditions (`has_html_body`,
+  `has_markdown_body`, `has_simple_text_body`, `is_url_resource`,
+  `is_audio_resource`, `is_video_resource`, `has_timestamps`, etc.)
 
-- [ ] Design and implement ShellContext protocol
-- [ ] Decouple command execution from xonsh aliases
-- [ ] Create standalone CLI for individual actions
-- [ ] Add `--format json` output mode
-- [ ] Add `--non-interactive` flag support
-- [ ] Create KashTestRunner for testing loops
+**Model layer** (40+ files in each downstream):
+- `kash.model`: `Item`, `ItemType`, `Format`, `FileExt`
+- `kash.model`: `ActionInput`, `ActionResult`, `LLMOptions`
+- `kash.model`: `Param`, `TitleTemplate`, `common_params`, `common_param`
+- `kash.model`: `StorePath`, `PathOp`, `PathOpType`
+- `kash.model`: `ONE_OR_MORE_ARGS`, `TWO_OR_MORE_ARGS`, `NO_ARGS`
+- `kash.model.media_model`: `MediaMetadata`, `MediaService`, `MediaUrlType`, etc.
+- `kash.model.concept_model`: `Concept`, `normalize_concepts`
+- `kash.model.items_model`: `from_yaml_string`
 
-### Phase 5: Packaging and Publishing (if desired)
+**Config** (nearly all files):
+- `kash.config.logger`: `get_logger`
+- `kash.config.settings`: `global_settings`, `APP_NAME`
+- `kash.config.text_styles`: `COLOR_STATUS`, `COLOR_WARN`, `STYLE_HEADING`,
+  `STYLE_HINT`, `STYLE_KEY`, `EMOJI_WARN`
 
-- [ ] Extract web_content as standalone package
-- [ ] Extract llm_utils as standalone package
-- [ ] Create skill templates for Claude Code integration
-- [ ] Implement lightweight MCP mode (selective action loading)
+**LLM utilities**:
+- `kash.llm_utils`: `LLM`, `LLMName`, `Message`, `MessageTemplate`
+- `kash.llm_utils.llm_completion`: `llm_template_completion`
+- `kash.llm_utils.fuzzy_parsing`: `is_no_results`, `fuzzy_parse_json`
+- `kash.llm_utils.clean_headings`: `clean_heading`, `summary_heading`
+
+**Utils** (scattered across many files):
+- `kash.utils.common.url`: `Url`, `is_url`, `parse_s3_url`, `as_file_url`
+- `kash.utils.common.url_slice`: `Slice`
+- `kash.utils.common.type_utils`: `not_none`, `as_dataclass`
+- `kash.utils.common.format_utils`: `fmt_loc`
+- `kash.utils.common.testing`: `enable_if`
+- `kash.utils.errors`: `InvalidInput`, `InvalidOutput`, `ContentError`,
+  `FileNotFound`, `ApiResultError`, `UnexpectedError`
+- `kash.utils.text_handling.markdown_utils`: `extract_bullet_points`,
+  `extract_urls`, `find_markdown_text`, `markdown_link`, `as_bullet_points`
+- `kash.utils.text_handling.markdown_footnotes`: `MarkdownFootnotes`
+- `kash.utils.text_handling.markdownify_utils`: `markdownify_custom`
+- `kash.utils.api_utils.gather_limited`: `FuncTask`, `Limit`, `TaskResult`
+- `kash.utils.api_utils.multitask_gather`: `multitask_gather`
+- `kash.utils.api_utils.cache_requests_limited`: `CachingSession`
+- `kash.utils.api_utils.api_retries`: `RetrySettings`
+- `kash.utils.file_utils.file_formats_model`: `MediaType`
+
+**Workspaces**:
+- `kash.workspaces`: `current_ws`
+- `kash.workspaces.source_items`: `find_upstream_item`, `find_upstream_resource`
+
+**Other subsystems**:
+- `kash.shell`: `shell_main`, `cprint`, `print_h3`, `PrintHooks`
+- `kash.embeddings.embeddings`: `Embeddings`, `EmbValue`, `KeyVal`, `Key`
+- `kash.embeddings.cosine`: `cosine_relatedness`
+- `kash.web_content.canon_url`: `canonicalize_url`
+- `kash.web_content.file_cache_utils`: `cache_resource`
+- `kash.web_content.web_extract_readabilipy`: `extract_text_readabilipy`
+- `kash.web_gen.template_render`: `render_web_template`, `additional_template_dirs`
+- `kash.media_base.media_services`: `get_media_id`, `register_media_service`, etc.
+- `kash.media_base.timestamp_citations`: Various citation formatting functions
+- `kash.actions.core.strip_html`: `strip_html`
+- `kash.actions.core.markdownify_html`: `markdownify_html`
+
+### Backward Compatibility Policy
+
+Per `backward-compatibility-rules`:
+
+- **Code types, methods, and function signatures**: KEEP DEPRECATED during Tier 1.
+  All symbols listed above must remain importable from their current paths. New
+  paths may be added (re-exports from new locations), but old paths must continue
+  to work. DO NOT MAINTAIN after Tier 2 is explicitly approved.
+
+- **Library APIs**: KEEP DEPRECATED. Downstream packages pin to specific versions,
+  so we have some flexibility, but we should provide at least one release where
+  old imports still work (via re-exports) before removing them.
+
+- **File formats**: SUPPORT BOTH. Item YAML frontmatter format must remain
+  backward-compatible. Any new fields should be optional.
+
+- **Server APIs**: N/A (MCP is protocol-defined, local server is internal).
+
+- **Database schemas**: N/A.
+
+---
+
+## Implementation Plan (Restructured by Compatibility Tier)
+
+### Tier 1: Fully Compatible Changes (No API Impact)
+
+These changes are safe to merge immediately. They add tests, improve code quality,
+and fix bugs without changing any public API that downstream packages depend on.
+
+**Testing**:
+- [ ] Create tests/conftest.py with workspace, LLM, and item fixtures (kash-keim)
+- [ ] Pure function tests: model, fuzzy_parsing, llm_names, scoring, URLs (kash-ermq)
+- [ ] Mocked tests: action_registry, resolve_args, selections, llm_completion (kash-ppz9)
+- [ ] Integration tests: action_exec pipeline, web_fetch, MCP routes (kash-jlmn)
+
+**Python modernization (internal only)**:
+- [ ] Add `from __future__ import annotations` to all files (kash-aik9)
+- [ ] Add `@override` to subclass method overrides (kash-gpj8)
+- [ ] Extract named constants from magic numbers (kash-69rw)
+- [ ] Clean up dead code: lazy_imports.py, unused noqa, TODO/FIXME (kash-kngd)
+- [ ] Fix openai version pinning (kash-hv4e)
+
+**Guidelines conformance review (audit only, may produce new beads)**:
+- [ ] Review for python-modern-guidelines conformance (kash-ht5b)
+- [ ] Review for error-handling-rules conformance (kash-gzzs)
+- [ ] Review for python-cli-patterns conformance (kash-91re)
+
+### Tier 2: Additive API Changes (New Features, Old Paths Preserved)
+
+These add new capabilities without breaking existing imports. Old import paths
+continue to work. Downstream packages don't need to change.
+
+**New public API (additive)**:
+- [ ] Define clean public API surface in `__init__.py` — add `__all__` to all
+      modules, add canonical imports to root `__init__.py`. All existing import
+      paths remain valid. (kash-ymq4)
+- [ ] Create standalone action runner `kash.run()` — new function, no changes
+      to existing action execution (kash-8hh2)
+- [ ] Create KashTestRunner for testing loop integration (kash-j8st)
+
+**Lazy initialization (must preserve behavior)**:
+- [ ] Eliminate import side effects — make action/command registration lazy BUT
+      ensure that `import kash.actions` and `import kash.commands` still triggers
+      registration (via `__getattr__` or similar). The kits system
+      (`import_and_register()`) must continue to work identically. (kash-y80s)
+
+**Shell decoupling (new abstractions, old code unchanged)**:
+- [ ] Design ShellContext protocol — new abstraction layer. Existing shell code
+      continues to work via XonshShellContext implementation. (kash-0vb5)
+- [ ] Create standalone CLI for individual actions — new entry point, does not
+      change existing xonsh integration (kash-qejq)
+- [ ] Add `--format json` and `--non-interactive` flags — new flags on the
+      new standalone CLI only (kash-5ew2)
+
+**Dependency cleanup (careful)**:
+- [ ] Remove unused dependencies — only remove deps confirmed unused by BOTH kash
+      AND downstream packages. Create optional groups but keep current deps in the
+      default install for now. (kash-i7dr)
+
+### Tier 3: Breaking Changes (Require Downstream Updates)
+
+These change import paths, move modules, or restructure APIs. They require
+coordinated updates to kash-docs and kash-media.
+
+**Approach**: When ready, bump the kash minor version, update downstream packages
+to match, and pin them to the new version. Provide a migration guide.
+
+- [ ] Audit and reorganize utils/ directory — if any symbols move, downstream
+      must update imports (kash-zt0y)
+- [ ] Evaluate extracting web_content as standalone package — would change
+      `from kash.web_content.X import Y` to `from kash_scraper.X import Y`
+      or similar (kash-law6)
+- [ ] Evaluate extracting llm_utils as standalone package — would change
+      `from kash.llm_utils.X import Y` to `from kash_llm.X import Y`
+      or similar (kash-78wq)
+- [ ] Implement lightweight MCP mode — may change how action discovery works
+      internally (kash-s9q0)
 
 ## Testing Strategy
 
