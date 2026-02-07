@@ -5,12 +5,13 @@ dependencies:
     type: blocks
 id: is-01kgvpwe5f0hmnescfnbhkpdjk
 kind: feature
-labels: []
+labels:
+  - tier-2-additive
 priority: 2
 spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Design and implement ShellContext protocol for shell decoupling
 type: is
-updated_at: 2026-02-07T18:11:01.072Z
-version: 3
+updated_at: 2026-02-07T19:53:48.484Z
+version: 4
 ---
