@@ -85,7 +85,7 @@ dependencies = [
     "truststore>=0.10.4",
     # LLM and API essentials:
     "tiktoken>=0.9.0",
-    "openai==1.99.9", # FIXME: Pinning for now due to import errors (ImportError: cannot import name 'ResponseTextConfig' from 'openai.types.responses.response')
+    "openai>=1.99,<2.0", # Pin to 1.x; openai 2.x has breaking API changes that need litellm compatibility testing.
     "litellm>=1.74.15.post1",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
