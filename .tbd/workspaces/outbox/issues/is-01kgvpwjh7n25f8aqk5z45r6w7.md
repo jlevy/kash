@@ -13,3 +13,4 @@ type: is
 updated_at: 2026-02-07T19:53:48.565Z
 version: 3
 ---
+Evaluate extracting llm_utils/ as a standalone package (e.g. `kash-llm`). llm_utils has high independence (8/10 score) and is already a clean LiteLLM wrapper with multi-model support, structured output via Pydantic, citation tracking, and web search integration. TIER 3 BREAKING: would change `from kash.llm_utils.X import Y` to new package imports. Both kash-docs and kash-media use LLM, LLMName, Message, MessageTemplate, llm_template_completion, fuzzy_parsing functions. Requires migration guide and coordinated release.

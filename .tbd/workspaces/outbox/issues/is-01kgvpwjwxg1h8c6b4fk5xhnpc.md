@@ -13,3 +13,4 @@ type: is
 updated_at: 2026-02-07T19:53:48.573Z
 version: 3
 ---
+Implement a lightweight MCP mode that only loads requested actions instead of the full registry. Currently the MCP server requires full kash initialization including all registries, workspace system, and configuration. Goal: expose a single action as an MCP tool without loading everything. Also consider: direct Claude Code skill integration (wrap key actions as skills without running MCP server), skill template generation from @kash_action metadata. TIER 3 BREAKING: may change how action discovery works internally. Depends on lazy import elimination (kash-y80s).

@@ -13,3 +13,4 @@ type: is
 updated_at: 2026-02-07T19:53:48.534Z
 version: 3
 ---
+Create KashTestRunner for testing loop integration. Target: developers running kash in automated test/eval loops. Must support: no console output during test runs, deterministic behavior (mock LLM calls), easy workspace setup/teardown via tmp_path, assert-friendly return types. Enable running action pipelines in pytest with mocked dependencies. Per general-tdd-guidelines and general-testing-rules: support unit and integration test patterns.

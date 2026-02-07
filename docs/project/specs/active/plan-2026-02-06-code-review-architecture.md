@@ -773,7 +773,7 @@ def sample_item():
 
 ---
 
-## Part 7: Downstream Dependency Analysis and Backward Compatibility
+## Part 6: Downstream Dependency Analysis and Backward Compatibility
 
 ### Downstream Consumers
 
@@ -1015,7 +1015,7 @@ to match, and pin them to the new version. Provide a migration guide.
 - Speed target: <1 second for all unit tests
 - No tests requiring live API keys in CI
 
-## Part 6: Guidelines Conformance Review
+## Part 7: Guidelines Conformance Review
 
 The following tbd guidelines should be reviewed against the kash codebase.
 Each guideline review should verify conformance and create beads for gaps.
