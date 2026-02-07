@@ -15,6 +15,7 @@ from kash.model.paths_model import StorePath
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidInput
+from typing_extensions import override
 
 log = get_logger(__name__)
 
@@ -33,6 +34,7 @@ class SequenceAction(Action):
 
     action_names: tuple[str, ...] = ()
 
+    @override
     def __post_init__(self):
         super().__post_init__()
         if not self.action_names or len(self.action_names) <= 1:
@@ -49,6 +51,7 @@ class SequenceAction(Action):
         )
         self.description = seq_description
 
+    @override
     def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.workspaces import current_ws
@@ -127,6 +130,7 @@ class ComboAction(Action):
 
     combiner: Combiner | None = None
 
+    @override
     def __post_init__(self):
         super().__post_init__()
         if not self.action_names or len(self.action_names) <= 1:
@@ -143,6 +147,7 @@ class ComboAction(Action):
 
         self.description = combo_description
 
+    @override
     def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.exec.combiners import combine_as_paragraphs

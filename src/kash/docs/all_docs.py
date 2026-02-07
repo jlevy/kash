@@ -13,6 +13,7 @@ from kash.docs.load_source_code import SourceCode, load_source_code
 from kash.docs_base.docs_base import DocsBase
 from kash.help.help_types import CommandInfo
 from kash.utils.common.lazyobject import lazyobject
+from typing_extensions import override
 
 log = get_logger(__name__)
 
@@ -75,6 +76,7 @@ class AllDocs(DocsBase):
     source_code: SourceCode = field(default_factory=load_source_code)
     action_infos: list[CommandInfo] = field(default_factory=load_action_info)
 
+    @override
     def self_check(self) -> bool:
         return (
             super().self_check()
@@ -84,9 +86,11 @@ class AllDocs(DocsBase):
             and len(self.action_infos) > 5
         )
 
+    @override
     def load(self) -> None:
         super().load()
 
+    @override
     def __str__(self):
         return (
             "AllDocs("

@@ -7,6 +7,7 @@ from typing import Protocol
 from strif import atomic_output_file
 
 from kash.utils.common.format_utils import fmt_loc
+from typing_extensions import override
 
 log = logging.getLogger(__name__)
 
@@ -113,6 +114,7 @@ class IgnoreChecker(IgnoreFilter):
         lines = [line.strip() for line in self.lines]
         return [line for line in lines if line and not line.startswith("#")]
 
+    @override
     def __call__(self, path: str | Path, *, is_dir: bool = False) -> bool:
         return self.matches(path, is_dir=is_dir)
 

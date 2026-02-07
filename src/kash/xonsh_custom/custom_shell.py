@@ -91,6 +91,7 @@ class CustomPTKPromptFormatter(PTKPromptFormatter):
         super().__init__(shell)
         self.shell = shell
 
+    @override
     def __call__(  # pyright: ignore
         self,
         template: Callable | str | None = None,

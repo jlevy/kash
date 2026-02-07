@@ -103,6 +103,7 @@ class Faq(HelpDoc):
     def embedding_text(self) -> str:
         return f"{self.question}\n{self.answer}"
 
+    @override
     def completion_value(self) -> CompletionValue:
         from kash.shell.completions.completion_types import CompletionGroup, CompletionValue
 
