@@ -84,8 +84,8 @@ dependencies = [
     "truststore>=0.10.4",
     # LLM and API essentials:
     # tiktoken removed: token counting handled by litellm internally.
-    "openai>=1.99,<2.0", # Pin to 1.x; openai 2.x has breaking API changes that need litellm compatibility testing.
-    "litellm>=1.74.15.post1",
+    "openai>=2.15.0",
+    "litellm>=1.80.16",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
     # Basic text handling and web scraping:
@@ -118,8 +118,8 @@ dependencies = [
 
 [project.optional-dependencies]
 llm = [
-    "openai>=1.99,<2.0",
-    "litellm>=1.74.15.post1",
+    "openai>=2.15.0",
+    "litellm>=1.80.16",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
 ]
