@@ -8,6 +8,7 @@ making it difficult to mock without modifying the production code.
 
 from __future__ import annotations
 
+from kash.utils.common.url import Url
 from kash.web_content.web_fetch import HttpHeaders, download_url
 
 
@@ -20,7 +21,7 @@ class TestDownloadFileUrl:
         source.write_text("local file content")
         target = tmp_path / "target.txt"
 
-        result = download_url(f"file://{source}", str(target))
+        result = download_url(Url(f"file://{source}"), str(target))
 
         assert result is None  # file:// returns None (no HTTP headers)
         assert target.read_text() == "local file content"
@@ -31,7 +32,7 @@ class TestDownloadFileUrl:
         source.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
         target = tmp_path / "output.bin"
 
-        download_url(f"file://{source}", str(target))
+        download_url(Url(f"file://{source}"), str(target))
 
         assert target.read_bytes() == source.read_bytes()
 
@@ -42,7 +43,7 @@ class TestDownloadFileUrl:
         target = tmp_path / "target.txt"
         target.write_text("old content")
 
-        download_url(f"file://{source}", str(target))
+        download_url(Url(f"file://{source}"), str(target))
 
         assert target.read_text() == "new content"
 
@@ -52,7 +53,8 @@ class TestHttpHeaders:
 
     def test_mime_type_parsing(self):
         headers = HttpHeaders(headers={"content-type": "text/html; charset=utf-8"})
-        assert "text/html" in headers.mime_type
+        assert headers.mime_type is not None
+        assert "text/html" in str(headers.mime_type)
 
     def test_mime_type_missing(self):
         headers = HttpHeaders(headers={})
@@ -64,7 +66,8 @@ class TestHttpHeaders:
 
     def test_mime_type_with_boundary(self):
         headers = HttpHeaders(headers={"content-type": "multipart/form-data; boundary=abc"})
-        assert "multipart/form-data" in headers.mime_type
+        assert headers.mime_type is not None
+        assert "multipart/form-data" in str(headers.mime_type)
 
     def test_headers_are_frozen(self):
         headers = HttpHeaders(headers={"x-custom": "value"})

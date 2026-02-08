@@ -41,7 +41,7 @@ from kash.model.actions_model import Action, ActionInput, ActionResult, ExecCont
 from kash.model.exec_model import ActionContext, RuntimeSettings
 from kash.model.items_model import Item, ItemType
 from kash.model.operations_model import Input, Operation
-from kash.model.params_model import RawParamValues
+from kash.model.params_model import ALL_COMMON_PARAMS, RawParamValue, RawParamValues
 from kash.utils.common.url import Url, is_url
 from kash.utils.errors import InvalidInput
 from kash.utils.file_utils.file_formats_model import Format
@@ -85,7 +85,7 @@ def kash_run(
     action_name: str,
     inputs: list[str | Item] | None = None,
     *,
-    params: dict[str, str] | None = None,
+    params: dict[str, RawParamValue] | None = None,
     workspace_dir: Path | str | None = None,
     rerun: bool = False,
     no_format: bool = False,
@@ -124,8 +124,14 @@ def kash_run(
 
     # Look up the action class and instantiate with params.
     action_cls = look_up_action_class(action_name)
-    parsed_params = RawParamValues(values=params) if params else None
-    action = action_cls.create(parsed_params)
+    if params:
+        raw_params = RawParamValues(values=params)
+        # Get declared params from an unparameterized instance, then parse raw to typed.
+        declared_params = {p.name: p for p in action_cls.create(None).params}
+        typed_params = raw_params.parse_all({**ALL_COMMON_PARAMS, **declared_params})
+    else:
+        typed_params = None
+    action = action_cls.create(typed_params)
 
     # Build ActionInput from the provided inputs.
     action_input = _build_action_input(inputs, ws_path)
@@ -193,7 +199,7 @@ def _resolve_workspace_dir(workspace_dir: Path | str | None) -> Path:
 
 def _build_action_input(
     inputs: list[str | Item] | None,
-    ws_path: Path,
+    _ws_path: Path,
 ) -> ActionInput:
     """
     Build ActionInput from a list of strings (URLs or paths) and/or Item objects.

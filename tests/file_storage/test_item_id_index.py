@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from kash.file_storage.item_id_index import ItemIdIndex
 from kash.model.items_model import IdType, Item, ItemId, ItemType
+from kash.utils.common.url import Url
 from kash.model.paths_model import StorePath
 from kash.utils.errors import SkippableError
 from kash.utils.file_utils.file_formats_model import Format
@@ -17,7 +18,7 @@ def _url_resource(url: str) -> Item:
         title="Resource",
         type=ItemType.resource,
         format=Format.url,
-        url=url,
+        url=Url(url),
     )
 
 
@@ -62,6 +63,7 @@ class TestItemIdIndex:
         idx = ItemIdIndex()
         item = _url_resource("https://example.com/remove")
         item_id = item.item_id()
+        assert item_id is not None
         loader = MagicMock(return_value=item)
 
         idx.index_item(StorePath("test.resource.yml"), loader)
@@ -74,7 +76,7 @@ class TestItemIdIndex:
         """Items that fail to load are silently skipped."""
         idx = ItemIdIndex()
 
-        def bad_loader(sp):
+        def bad_loader(_sp):
             raise SkippableError("broken")
 
         result = idx.index_item(StorePath("bad.doc.md"), bad_loader)

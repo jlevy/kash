@@ -8,10 +8,10 @@ from kash.utils.errors import PreconditionFailure
 from kash.utils.file_utils.file_formats_model import Format
 
 
-def _make_item(**kwargs) -> Item:
-    defaults = dict(title="test", type=ItemType.doc, format=Format.markdown)
+def _make_item(**kwargs: object) -> Item:
+    defaults: dict[str, object] = dict(title="test", type=ItemType.doc, format=Format.markdown)
     defaults.update(kwargs)
-    return Item(**defaults)
+    return Item(**defaults)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
 
 def test_and_operator():
@@ -98,7 +98,7 @@ def test_check_raises_on_failure():
 
 def test_precondition_failure_suppressed_in_call():
     """A func that raises PreconditionFailure should return False, not raise."""
-    def raising_func(item: Item) -> bool:
+    def raising_func(_item: Item) -> bool:
         raise PreconditionFailure("test failure")
 
     p = Precondition(raising_func, "raiser")

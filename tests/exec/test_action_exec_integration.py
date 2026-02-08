@@ -180,14 +180,15 @@ class TestActionExecPipeline:
             kash_run(
                 "summarize",
                 inputs=["https://example.com"],
-                params={"model": "gpt-4o", "max_tokens": "500"},
+                params={"model": "gpt-4o"},
                 workspace_dir=tmp_path,
             )
 
         # Verify params were passed to create().
-        create_args = mock_cls.create.call_args
-        raw_params = create_args[0][0]
-        assert raw_params is not None
+        # create() is called twice: once to get declared_params, once with typed values.
+        assert mock_cls.create.call_count == 2
+        typed_params = mock_cls.create.call_args[0][0]
+        assert typed_params is not None
 
     def test_run_action_not_found(self, tmp_path):
         """Requesting a non-existent action should raise InvalidInput."""

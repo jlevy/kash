@@ -96,7 +96,10 @@ class TestLocalFileCacheBasics:
     def test_is_cached(self, tmp_path):
         cache = LocalFileCache(root=tmp_path, default_expiration_sec=NEVER)
 
-        loadable = Loadable(key="check.txt", save=lambda p: p.write_text("hi"))
+        def _save(p: Path) -> None:
+            p.write_text("hi")
+
+        loadable = Loadable(key="check.txt", save=_save)
 
         assert not cache.is_cached(loadable)
         cache.cache(loadable)

@@ -176,7 +176,6 @@ class StorePath(BasePath):  # pyright: ignore
 
         return Path(path_str), store_name
 
-    @override
     def __truediv__(self, key: str | PathLike[str]) -> StorePath:
         if isinstance(key, Path):
             if key.is_absolute():

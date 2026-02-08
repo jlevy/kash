@@ -80,7 +80,7 @@ class TestLLMCompletionResult:
 class TestLlmCompletion:
     @patch("litellm.completion")
     @patch("kash.llm_utils.llm_completion.init_litellm")
-    def test_basic_completion(self, mock_init, mock_litellm_completion):
+    def test_basic_completion(self, _mock_init, mock_litellm_completion):
         """Basic completion returns content from mocked API."""
         mock_litellm_completion.return_value = _mock_response("test output")
         model = LLMName("openai/gpt-4")
@@ -91,7 +91,7 @@ class TestLlmCompletion:
 
     @patch("litellm.completion")
     @patch("kash.llm_utils.llm_completion.init_litellm")
-    def test_completion_with_citations(self, mock_init, mock_litellm_completion):
+    def test_completion_with_citations(self, _mock_init, mock_litellm_completion):
         """Completion extracts citations from response."""
         mock_litellm_completion.return_value = _mock_response(
             "answer", citations=["https://example.com"]
@@ -106,7 +106,7 @@ class TestLlmCompletion:
 
     @patch("litellm.completion")
     @patch("kash.llm_utils.llm_completion.init_litellm")
-    def test_empty_content_raises(self, mock_init, mock_litellm_completion):
+    def test_empty_content_raises(self, _mock_init, mock_litellm_completion):
         """Raises ApiResultError when response has no content."""
         mock_litellm_completion.return_value = _mock_response(content=None)
         with pytest.raises(ApiResultError, match="LLM completion failed"):

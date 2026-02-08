@@ -21,7 +21,7 @@ def _make_action_class(name: str) -> type[Action]:
     cls = MagicMock(spec=Action)
     cls.name = name
     cls.create = MagicMock(return_value=MagicMock(name=name))
-    return cls
+    return cls  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
 
 class TestRegisterActionClass:
