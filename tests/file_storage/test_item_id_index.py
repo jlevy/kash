@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 from kash.file_storage.item_id_index import ItemIdIndex
 from kash.model.items_model import IdType, Item, ItemId, ItemType
-from kash.utils.common.url import Url
 from kash.model.paths_model import StorePath
+from kash.utils.common.url import Url
 from kash.utils.errors import SkippableError
 from kash.utils.file_utils.file_formats_model import Format
 

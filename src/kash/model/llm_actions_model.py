@@ -52,7 +52,7 @@ class ChunkedLLMAction(PerItemAction):
 
         return result_item
 
-    def process_chunk(self, chunk: "TextNode") -> str:
+    def process_chunk(self, chunk: TextNode) -> str:
         """
         Override to customize chunk handling.
         """

@@ -98,6 +98,7 @@ def test_check_raises_on_failure():
 
 def test_precondition_failure_suppressed_in_call():
     """A func that raises PreconditionFailure should return False, not raise."""
+
     def raising_func(_item: Item) -> bool:
         raise PreconditionFailure("test failure")
 

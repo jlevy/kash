@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from textwrap import dedent
 
 from pydantic.dataclasses import dataclass
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.exec.combiners import Combiner
@@ -15,7 +16,6 @@ from kash.model.paths_model import StorePath
 from kash.utils.common.task_stack import task_stack
 from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidInput
-from typing_extensions import override
 
 log = get_logger(__name__)
 

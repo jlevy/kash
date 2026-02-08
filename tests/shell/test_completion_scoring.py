@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 from kash.shell.completions.completion_scoring import (
     ONE_HOUR,
     ONE_YEAR,
@@ -54,7 +52,10 @@ def test_decaying_recency_bounds():
 
 def test_decaying_recency_decay():
     """Score should decrease monotonically with age."""
-    scores = [decaying_recency(age) for age in [ONE_HOUR, ONE_HOUR * 24, ONE_HOUR * 24 * 30, ONE_HOUR * 24 * 180]]
+    scores = [
+        decaying_recency(age)
+        for age in [ONE_HOUR, ONE_HOUR * 24, ONE_HOUR * 24 * 30, ONE_HOUR * 24 * 180]
+    ]
     for i in range(len(scores) - 1):
         assert scores[i] > scores[i + 1]
 

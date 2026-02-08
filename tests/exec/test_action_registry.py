@@ -12,7 +12,7 @@ from kash.exec.action_registry import (
     look_up_action_class,
     register_action_class,
 )
-from kash.model.actions_model import Action, ActionInput, ActionResult
+from kash.model.actions_model import Action
 from kash.utils.errors import InvalidInput
 
 

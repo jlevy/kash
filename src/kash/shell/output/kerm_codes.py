@@ -68,7 +68,6 @@ from __future__ import annotations
 # - Registering behaviors on regexes (e.g. local web server with info about
 #   files, so that legacy shell commands automatically have tooltips with info
 #   about files).
-
 from enum import StrEnum
 from html import escape
 from typing import Annotated, Literal, Self, TypeAlias

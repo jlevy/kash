@@ -13,10 +13,8 @@ from __future__ import annotations
 # SPDX-FileCopyrightText: 2023-2024 Christina Sørensen, eza contributors
 # SPDX-FileCopyrightText: 2014 Benjamin Sago
 # SPDX-License-Identifier: MIT
-
 # TODO: Consider using lsd icons instead?
 # https://github.com/lsd-rs/lsd/blob/master/src/theme/icon.rs
-
 import os
 from dataclasses import dataclass
 from enum import StrEnum

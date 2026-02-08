@@ -107,7 +107,7 @@ def _register_commands_in_shell(commands: dict[str, Callable]):
     update_aliases(kash_commands)
 
 
-def _register_actions_in_shell(actions: dict[str, type["Action"]]):
+def _register_actions_in_shell(actions: dict[str, type[Action]]):
     """
     Register all kash actions as xonsh commands.
     """

@@ -7,7 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from kash.model.actions_model import Action, ActionInput, ActionResult
+from kash.model.actions_model import Action, ActionResult
 from kash.model.items_model import Item, ItemType
 from kash.run import _build_action_input, _resolve_workspace_dir, kash_run
 from kash.utils.file_utils.file_formats_model import Format
@@ -171,9 +171,7 @@ def test_kash_run_with_inputs(tmp_path):
 
 def test_kash_run_no_save(tmp_path):
     """Test kash_run with save_results=False skips saving."""
-    output_item = Item(
-        type=ItemType.doc, title="r", body="b", format=Format.markdown
-    )
+    output_item = Item(type=ItemType.doc, title="r", body="b", format=Format.markdown)
 
     mock_action = MagicMock(spec=Action)
     mock_action.name = "test_action"

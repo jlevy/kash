@@ -21,7 +21,9 @@ def test_validate_value_enum():
 
 def test_validate_value_closed_str():
     param = Param(
-        name="size", description="Size", type=str,
+        name="size",
+        description="Size",
+        type=str,
         valid_str_values=["small", "medium", "large"],
     )
     param.validate_value("small")  # should not raise
@@ -35,7 +37,9 @@ def test_validate_value_closed_str():
 
 def test_validate_value_open_ended_str():
     param = Param(
-        name="query", description="Query", type=str,
+        name="query",
+        description="Query",
+        type=str,
         valid_str_values=["example1", "example2"],
         is_open_ended=True,
     )
@@ -67,7 +71,9 @@ def test_json_schema_enum():
 
 def test_json_schema_closed_str():
     param = Param(
-        name="level", description="Log level", type=str,
+        name="level",
+        description="Log level",
+        type=str,
         valid_str_values=["debug", "info", "warn"],
     )
     schema = param.json_schema()

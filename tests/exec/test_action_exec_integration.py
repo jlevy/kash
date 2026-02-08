@@ -8,7 +8,6 @@ handling all work together.
 
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,11 +15,9 @@ import pytest
 from kash.exec_model.args_model import NO_ARGS, ONE_OR_MORE_ARGS
 from kash.model.actions_model import (
     Action,
-    ActionInput,
     ActionResult,
 )
 from kash.model.items_model import Item, ItemType
-from kash.model.preconditions_model import Precondition
 from kash.run import kash_run
 from kash.utils.file_utils.file_formats_model import Format
 
@@ -180,7 +177,7 @@ class TestActionExecPipeline:
             kash_run(
                 "summarize",
                 inputs=["https://example.com"],
-                params={"model": "gpt-4o"},
+                params={"model": "gpt-5"},
                 workspace_dir=tmp_path,
             )
 

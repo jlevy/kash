@@ -85,7 +85,9 @@ class TestAssembleActionArgs:
     def test_no_selection_returns_empty(self):
         """When selection is empty and no args, returns empty list."""
         mock_ws = MagicMock()
-        mock_ws.selections.current.paths.__iter__ = MagicMock(side_effect=MissingInput("No selection"))
+        mock_ws.selections.current.paths.__iter__ = MagicMock(
+            side_effect=MissingInput("No selection")
+        )
         # Simulate MissingInput being raised
         type(mock_ws.selections.current).paths = property(
             lambda self: (_ for _ in ()).throw(MissingInput("No selection"))

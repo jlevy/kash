@@ -62,4 +62,3 @@ def fetch_page_content(
 
 # TODO: Consider a JS-enabled headless browser so it works on more sites.
 # Example: https://www.inc.com/atish-davda/5-questions-you-should-ask-before-taking-a-start-up-job-offer.html
-

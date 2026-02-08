@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from funlog import log_calls
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.docs.load_actions_info import load_action_info
@@ -13,7 +14,6 @@ from kash.docs.load_source_code import SourceCode, load_source_code
 from kash.docs_base.docs_base import DocsBase
 from kash.help.help_types import CommandInfo
 from kash.utils.common.lazyobject import lazyobject
-from typing_extensions import override
 
 log = get_logger(__name__)
 

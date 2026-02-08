@@ -8,11 +8,11 @@ from markdown_it.token import Token
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.padding import Padding
 from rich.text import Text
+from typing_extensions import override
 
 from kash.config.text_styles import STYLE_HINT
 from kash.shell.output.kerm_code_utils import clickable_script_block
 from kash.utils.rich_custom.rich_markdown_fork import FEATURES, CodeBlock, Markdown
-from typing_extensions import override
 
 Transform: TypeAlias = Callable[[str], Text]
 
@@ -24,7 +24,7 @@ class TransformingCodeBlock(CodeBlock):
 
     @override
     @classmethod
-    def create(cls, markdown: Markdown, token: Token) -> "TransformingCodeBlock":
+    def create(cls, markdown: Markdown, token: Token) -> TransformingCodeBlock:
         node_info = token.info or ""
         lexer_name = node_info.partition(" ")[0]
         # Retrieve the code_transform from the markdown instance.

@@ -6,9 +6,9 @@ Provides workspace, LLM, and item fixtures per the test infrastructure spec.
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 from kash.model.items_model import Item, ItemType
 from kash.utils.file_utils.file_formats_model import Format
@@ -54,6 +54,8 @@ def sample_item():
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+    )
     config.addinivalue_line("markers", "online: marks tests that need network access")
     config.addinivalue_line("markers", "golden: marks golden/snapshot tests")

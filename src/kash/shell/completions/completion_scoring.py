@@ -198,7 +198,11 @@ def score_exact_prefix(prefix: str, text: str) -> Score:
 
     completion_ratio = prefix_len / len(text)
     long_prefix_bonus = prefix_len - 2
-    score = PREFIX_BASE_SCORE + (PREFIX_COMPLETION_WEIGHT * completion_ratio) + min(MAX_PREFIX_BONUS, long_prefix_bonus)
+    score = (
+        PREFIX_BASE_SCORE
+        + (PREFIX_COMPLETION_WEIGHT * completion_ratio)
+        + min(MAX_PREFIX_BONUS, long_prefix_bonus)
+    )
 
     return Score(score)
 

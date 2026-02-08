@@ -257,8 +257,7 @@ def _validate_and_build_operation(
 
     # Build operation record.
     op_inputs = [
-        Input(path=None, source_info=item.url or item.title or "input")
-        for item in input_items
+        Input(path=None, source_info=item.url or item.title or "input") for item in input_items
     ]
 
     options = {**action.param_value_summary(), **exec_context.settings.non_default_options}

@@ -32,7 +32,7 @@ def test_strip_markdown_fence_language_tags():
 
 
 def test_fuzzy_parse_json_array():
-    result = fuzzy_parse_json('Here is the data: [1, 2, 3]')
+    result = fuzzy_parse_json("Here is the data: [1, 2, 3]")
     assert result == [1, 2, 3]
 
 

@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Protocol
 
 from strif import atomic_output_file
+from typing_extensions import override
 
 from kash.utils.common.format_utils import fmt_loc
-from typing_extensions import override
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ class IgnoreChecker(IgnoreFilter):
         self.spec = GitIgnoreSpec.from_lines(lines)
 
     @classmethod
-    def from_file(cls, path: Path) -> "IgnoreChecker":
+    def from_file(cls, path: Path) -> IgnoreChecker:
         with open(path) as f:
             lines = f.readlines()
 

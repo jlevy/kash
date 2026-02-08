@@ -42,9 +42,7 @@ class TestFilteredTransform:
     def test_no_windowing_no_filter(self):
         """Without windowing and without diff filter, transform is applied directly."""
         doc = TextDoc.from_text("Some input text.")
-        result = filtered_transform(
-            doc, _prefix_transform, windowing=None, diff_filter=None
-        )
+        result = filtered_transform(doc, _prefix_transform, windowing=None, diff_filter=None)
         assert "PREFIX" in result.reassemble()
 
 

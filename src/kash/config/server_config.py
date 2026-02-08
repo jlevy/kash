@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 def create_server_config(
     app: Callable[..., Any], host: str, port: int, _server_name: str, log_path: Path
-) -> "uvicorn.Config":
+) -> uvicorn.Config:
     """
     Create a common server configuration for both local and MCP servers.
     `app` can be a FastAPI or Starlette app.

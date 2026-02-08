@@ -306,7 +306,7 @@ reportPrivateImportUsage = false
 
 
 [tool.codespell]
-ignore-words-list = "iTerm,Numbe,caf"
+ignore-words-list = "iTerm,Numbe,caf,hel"
 # skip = "foo.py,bar.py"
 
 
