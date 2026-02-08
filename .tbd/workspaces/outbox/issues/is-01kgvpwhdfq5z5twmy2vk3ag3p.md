@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Add @override decorator to all subclass method overrides
 type: is
-updated_at: 2026-02-08T17:49:56.739Z
-version: 9
+updated_at: 2026-02-08T18:06:10.880Z
+version: 10
 ---
 Add @override decorator to all subclass method overrides. Per python-rules: 'ALWAYS use @override decorators to override methods from base classes. This is a modern Python practice and helps avoid bugs.' Import from typing_extensions for Python 3.11 compat. Currently only 14 files use it.

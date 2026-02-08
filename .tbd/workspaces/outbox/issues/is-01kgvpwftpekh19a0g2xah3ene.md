@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Fix openai version pinning (pyproject.toml FIXME)
 type: is
-updated_at: 2026-02-08T17:49:56.703Z
-version: 8
+updated_at: 2026-02-08T18:06:10.852Z
+version: 9
 ---
 Resolve the FIXME at pyproject.toml line 88 regarding `openai==1.99.9` version pinning. The pin exists due to a ResponseTextConfig import error in newer versions. Investigate the root cause: check if the import path changed in a newer openai release, find the correct import, and update to a version range (>=1.99) instead of an exact pin. No API changes—purely a dependency fix.

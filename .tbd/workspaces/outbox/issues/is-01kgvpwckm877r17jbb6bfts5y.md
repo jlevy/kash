@@ -16,7 +16,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Eliminate import side effects - make action/command registration lazy
 type: is
-updated_at: 2026-02-08T17:49:56.628Z
-version: 11
+updated_at: 2026-02-08T18:06:10.793Z
+version: 12
 ---
 Eliminate import side effects - make action/command registration lazy. BACKWARD COMPAT: must ensure 'import kash.actions' and 'import kash.commands' still triggers registration (via __getattr__ or equivalent). import_and_register() used by kash-docs and kash-media must work identically. kash_setup() -> kash_reload_all() initialization order must be preserved.

@@ -18,7 +18,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Create standalone action runner (kash.run()) for library use
 type: is
-updated_at: 2026-02-08T17:49:56.640Z
-version: 11
+updated_at: 2026-02-08T18:06:10.802Z
+version: 12
 ---
 Create a standalone action runner function `kash.run()` that can execute any kash action without the shell. Must work with explicit `kash.init()` initialization, no xonsh dependency. Return structured `ActionResult` with items, not console output. Minimal required configuration. BACKWARD COMPAT: does not change existing action execution—this is a new function alongside the existing pipeline. Depends on clean public API (kash-ymq4) and lazy imports (kash-y80s). Per python-cli-patterns: support structured return types for programmatic use.
