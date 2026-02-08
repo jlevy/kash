@@ -4,7 +4,7 @@
 
 **Author:** Code review by Claude (requested by Joshua Levy)
 
-**Status:** Draft
+**Status:** In Progress — Tier 1 complete (12/12), Tier 2 partially complete (4/8), Tier 3 evaluations complete (3/4)
 
 ## Overview
 
@@ -892,22 +892,22 @@ These changes are safe to merge immediately. They add tests, improve code qualit
 and fix bugs without changing any public API that downstream packages depend on.
 
 **Testing**:
-- [ ] Create tests/conftest.py with workspace, LLM, and item fixtures (kash-keim)
-- [ ] Pure function tests: model, fuzzy_parsing, llm_names, scoring, URLs (kash-ermq)
-- [ ] Mocked tests: action_registry, resolve_args, selections, llm_completion (kash-ppz9)
-- [ ] Integration tests: action_exec pipeline, web_fetch, MCP routes (kash-jlmn)
+- [x] Create tests/conftest.py with workspace, LLM, and item fixtures (kash-keim)
+- [x] Pure function tests: model, fuzzy_parsing, llm_names, scoring, URLs (kash-ermq)
+- [x] Mocked tests: action_registry, resolve_args, selections, llm_completion (kash-ppz9)
+- [x] Integration tests: action_exec pipeline, web_fetch, MCP routes (kash-jlmn)
 
 **Python modernization (internal only)**:
-- [ ] Add `from __future__ import annotations` to all files (kash-aik9)
-- [ ] Add `@override` to subclass method overrides (kash-gpj8)
-- [ ] Extract named constants from magic numbers (kash-69rw)
-- [ ] Clean up dead code: lazy_imports.py, unused noqa, TODO/FIXME (kash-kngd)
-- [ ] Fix openai version pinning (kash-hv4e)
+- [x] Add `from __future__ import annotations` to all files (kash-aik9)
+- [x] Add `@override` to subclass method overrides (kash-gpj8)
+- [x] Extract named constants from magic numbers (kash-69rw)
+- [x] Clean up dead code: lazy_imports.py, unused noqa, TODO/FIXME (kash-kngd)
+- [x] Fix openai version pinning (kash-hv4e)
 
 **Guidelines conformance review (audit only, may produce new beads)**:
-- [ ] Review for python-modern-guidelines conformance (kash-ht5b)
-- [ ] Review for error-handling-rules conformance (kash-gzzs)
-- [ ] Review for python-cli-patterns conformance (kash-91re)
+- [x] Review for python-modern-guidelines conformance (kash-ht5b)
+- [x] Review for error-handling-rules conformance (kash-gzzs)
+- [x] Review for python-cli-patterns conformance (kash-91re)
 
 ### Tier 2: Additive API Changes (New Features, Old Paths Preserved)
 
@@ -915,15 +915,15 @@ These add new capabilities without breaking existing imports. Old import paths
 continue to work. Downstream packages don't need to change.
 
 **New public API (additive)**:
-- [ ] Define clean public API surface in `__init__.py` — add `__all__` to all
+- [x] Define clean public API surface in `__init__.py` — add `__all__` to all
       modules, add canonical imports to root `__init__.py`. All existing import
       paths remain valid. (kash-ymq4)
-- [ ] Create standalone action runner `kash.run()` — new function, no changes
+- [x] Create standalone action runner `kash.run()` — new function, no changes
       to existing action execution (kash-8hh2)
 - [ ] Create KashTestRunner for testing loop integration (kash-j8st)
 
 **Lazy initialization (must preserve behavior)**:
-- [ ] Eliminate import side effects — make action/command registration lazy BUT
+- [x] Eliminate import side effects — make action/command registration lazy BUT
       ensure that `import kash.actions` and `import kash.commands` still triggers
       registration (via `__getattr__` or similar). The kits system
       (`import_and_register()`) must continue to work identically. (kash-y80s)
@@ -937,7 +937,7 @@ continue to work. Downstream packages don't need to change.
       new standalone CLI only (kash-5ew2)
 
 **Dependency cleanup (careful)**:
-- [ ] Remove unused dependencies — only remove deps confirmed unused by BOTH kash
+- [x] Remove unused dependencies — only remove deps confirmed unused by BOTH kash
       AND downstream packages. Create optional groups but keep current deps in the
       default install for now. (kash-i7dr)
 
@@ -949,14 +949,19 @@ coordinated updates to kash-docs and kash-media.
 **Approach**: When ready, bump the kash minor version, update downstream packages
 to match, and pin them to the new version. Provide a migration guide.
 
-- [ ] Audit and reorganize utils/ directory — if any symbols move, downstream
-      must update imports (kash-zt0y)
-- [ ] Evaluate extracting web_content as standalone package — would change
+- [x] Audit and reorganize utils/ directory — if any symbols move, downstream
+      must update imports (kash-zt0y) — **RESULT: No reorganization needed.
+      53 files well-organized. Breaking changes would affect 150+ downstream
+      imports with no architectural benefit.**
+- [x] Evaluate extracting web_content as standalone package — would change
       `from kash.web_content.X import Y` to `from kash_scraper.X import Y`
-      or similar (kash-law6)
-- [ ] Evaluate extracting llm_utils as standalone package — would change
+      or similar (kash-law6) — **RESULT: NOT ready for extraction (5/10
+      independence). Deep coupling to kash model layer (Item, StorePath) and
+      media_base.**
+- [x] Evaluate extracting llm_utils as standalone package — would change
       `from kash.llm_utils.X import Y` to `from kash_llm.X import Y`
-      or similar (kash-78wq)
+      or similar (kash-78wq) — **RESULT: Partially feasible but premature.
+      Blocked by workspace config coupling in llm_names.py.**
 - [ ] Implement lightweight MCP mode — may change how action discovery works
       internally (kash-s9q0)
 
