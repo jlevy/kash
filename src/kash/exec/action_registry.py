@@ -42,8 +42,10 @@ def register_action_class(cls: type[Action]):
 
 @cached(_action_classes_cache)
 def get_all_action_classes() -> dict[str, type[Action]]:
-    # Be sure actions are imported.
-    import kash.actions  # noqa: F401
+    # Ensure actions are registered (lazy — only runs on first call).
+    from kash.actions import ensure_actions_registered
+
+    ensure_actions_registered()
 
     # Returns a copy for safety.
     ac = action_classes.copy()

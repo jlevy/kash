@@ -13,7 +13,23 @@ from kash.utils.common.import_utils import import_namespace_modules
 
 log = get_logger(__name__)
 
-import_and_register(__package__, Path(__file__).parent, ["core", "meta"])
+_PACKAGE_NAME = __package__
+_PARENT_DIR = Path(__file__).parent
+
+_actions_registered = False
+
+
+def ensure_actions_registered() -> None:
+    """
+    Register all built-in actions and load kits. Idempotent — safe to call
+    multiple times. Called automatically by `get_all_action_classes()`.
+    """
+    global _actions_registered
+    if _actions_registered:
+        return
+    _actions_registered = True
+    import_and_register(_PACKAGE_NAME, _PARENT_DIR, ["core", "meta"])
+    load_kits()
 
 
 @dataclass(frozen=True)
@@ -97,6 +113,3 @@ def load_kits() -> dict[str, Kit]:
     _kits.update(lambda kits: {**kits, **new_kits})
 
     return new_kits
-
-
-load_kits()
