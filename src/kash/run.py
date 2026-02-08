@@ -124,7 +124,7 @@ def kash_run(
 
     # Look up the action class and instantiate with params.
     action_cls = look_up_action_class(action_name)
-    parsed_params = RawParamValues.from_dict(params) if params else None
+    parsed_params = RawParamValues(values=params) if params else None
     action = action_cls.create(parsed_params)
 
     # Build ActionInput from the provided inputs.
