@@ -10,7 +10,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: open
 title: Add --format json and --non-interactive flags for agent/CI use
 type: is
-updated_at: 2026-02-08T16:58:13.728Z
-version: 6
+updated_at: 2026-02-08T17:49:56.721Z
+version: 7
 ---
 Add --format json and --non-interactive flags per python-cli-patterns. Implement OutputManager for dual text/JSON output. Route data to stdout, errors/warnings to stderr. Disable spinners/progress in non-TTY contexts. Respect CI and NO_COLOR env vars.

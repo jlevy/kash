@@ -14,7 +14,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Define clean public API surface in __init__.py files
 type: is
-updated_at: 2026-02-08T16:58:13.634Z
-version: 9
+updated_at: 2026-02-08T17:49:56.617Z
+version: 10
 ---
 Define clean public API surface: add __all__ to all public modules, add canonical imports to root __init__.py. BACKWARD COMPAT: all existing import paths must remain valid. This is purely additive—new canonical paths, old paths still work. Apply python-rules and python-modern-guidelines.

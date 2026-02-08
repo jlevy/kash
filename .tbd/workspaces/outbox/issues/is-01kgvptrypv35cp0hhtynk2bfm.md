@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: "Add pure function tests: model, fuzzy_parsing, llm_names, scoring, URL parsing"
 type: is
-updated_at: 2026-02-08T16:58:13.577Z
-version: 8
+updated_at: 2026-02-08T17:49:56.554Z
+version: 9
 ---
 Add pure function tests (no mocks): model (items, params, preconditions, paths), llm_utils (fuzzy_parsing, llm_names), shell (completion_scoring), utils (url, markdown), web_content (canon_url). Follow: general-testing-rules (minimal tests with maximal coverage, no trivial tests, test edge cases), python-rules (testing: no pytest fixtures unless complex, no assert messages, no assert False), general-tdd-guidelines (unit tests: fast, focused, no network).
