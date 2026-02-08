@@ -62,7 +62,7 @@ dependencies = [
     "xonsh>=0.19.3",
     "prompt-toolkit>=3.0.50",
     "rich>=14.0.0",
-    "rich-argparse>=1.7.0",
+    # rich-argparse removed: not imported anywhere in codebase.
     "setproctitle>=1.3.5",
     "python-dotenv>=1.0.1",
     "send2trash>=1.8.3",
@@ -73,29 +73,28 @@ dependencies = [
     "tldr>=3.3.0",
     "jinja2>=3.1.6",
     "pygments>=2.19.1",
-    "tenacity>=9.0.0",
+    # tenacity removed: not used in codebase (retries handled elsewhere).
     "lazyasd>=0.1.4",
     "pathspec>=0.12.1",
     "patch-ng>=1.18.1",
     "inquirerpy>=0.3.4",
-    "questionary>=2.0.0",
     # HTTP clients:
     "httpx[brotli]>=0.28.1", # Include brotli for better compression and browser fingerprint.
     "curl-cffi>=0.11.4",
     "truststore>=0.10.4",
     # LLM and API essentials:
-    "tiktoken>=0.9.0",
+    # tiktoken removed: token counting handled by litellm internally.
     "openai>=1.99,<2.0", # Pin to 1.x; openai 2.x has breaking API changes that need litellm compatibility testing.
     "litellm>=1.74.15.post1",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
     # Basic text handling and web scraping:
-    "selectolax>=0.3.32",
+    # selectolax removed: HTML parsing handled by readabilipy and justext.
     "readabilipy>=0.3.0",
     "markdownify>=0.13.1",
     "justext>=3.0.2",
     "cssselect>=1.2.0",
-    "pluralizer>=1.2.0",
+    # pluralizer removed: not used in codebase.
     # Minimal media handling:
     "pydub>=0.25.1",
     # audioop-lts is a backport of audioop for Python 3.13 and later needed for pydub.
@@ -110,6 +109,53 @@ dependencies = [
     "mcp>=1.6.0",
     "anyio>=4.8.0",
     "mcp-proxy>=0.5.0",
+]
+
+# ---- Optional dependency groups ----
+# All deps above remain in the default install for backward compatibility.
+# These optional groups let new users install a minimal subset if desired.
+# Usage: pip install kash-shell[llm] or pip install kash-shell[web,media]
+
+[project.optional-dependencies]
+llm = [
+    "openai>=1.99,<2.0",
+    "litellm>=1.74.15.post1",
+    "pyrate-limiter>=3.7.0",
+    "aiolimiter>=1.2.1",
+]
+web = [
+    "httpx[brotli]>=0.28.1",
+    "curl-cffi>=0.11.4",
+    "truststore>=0.10.4",
+    "readabilipy>=0.3.0",
+    "markdownify>=0.13.1",
+    "justext>=3.0.2",
+    "cssselect>=1.2.0",
+]
+media = [
+    "pydub>=0.25.1",
+    "audioop-lts>=0.2.1; python_version >= '3.13'",
+    "deepgram-sdk>=3.10.1",
+]
+server = [
+    "fastapi>=0.115.11",
+    "uvicorn>=0.34.0",
+    "mcp>=1.6.0",
+    "anyio>=4.8.0",
+    "mcp-proxy>=0.5.0",
+]
+shell = [
+    "xonsh>=0.19.3",
+    "prompt-toolkit>=3.0.50",
+    "setproctitle>=1.3.5",
+    "pyperclip>=1.9.0",
+    "inquirerpy>=0.3.4",
+    "send2trash>=1.8.3",
+    "ripgrepy>=2.1.0",
+    "tldr>=3.3.0",
+]
+all = [
+    "kash-shell[llm,web,media,server,shell]",
 ]
 
 # ---- Dev dependencies ----
