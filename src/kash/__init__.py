@@ -24,6 +24,9 @@ from kash.exec.importing import import_and_register  # noqa: F401
 from kash.llm_utils.llm_names import LLMName  # noqa: F401
 from kash.llm_utils.llm_messages import Message, MessageTemplate  # noqa: F401
 
+# Standalone runner
+from kash.run import kash_init, kash_run  # noqa: F401
+
 # Errors
 from kash.utils.errors import InvalidInput, InvalidOutput, ContentError, ApiResultError  # noqa: F401
 
@@ -52,6 +55,9 @@ __all__ = [
     "LLMName",
     "Message",
     "MessageTemplate",
+    # Standalone runner
+    "kash_init",
+    "kash_run",
     # Errors
     "InvalidInput",
     "InvalidOutput",
