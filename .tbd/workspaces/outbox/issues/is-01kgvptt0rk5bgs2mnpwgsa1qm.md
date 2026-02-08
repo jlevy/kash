@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Review codebase for python-modern-guidelines conformance
 type: is
-updated_at: 2026-02-08T05:14:24.524Z
-version: 7
+updated_at: 2026-02-08T16:58:13.611Z
+version: 8
 ---
 Review codebase against python-modern-guidelines: (1) from __future__ import annotations on all typed files, (2) @override on all subclass method overrides, (3) atomic_output_file from strif for all file writes, (4) prettyfmt usage for log formatting, (5) modern union syntax X|None not Optional, (6) pathlib Path not strings. Also check python-rules: absolute imports, StrEnum, no if __name__=='__main__' for testing.

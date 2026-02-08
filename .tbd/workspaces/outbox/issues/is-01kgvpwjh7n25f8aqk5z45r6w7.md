@@ -33,7 +33,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Evaluate extracting llm_utils as standalone package
 type: is
-updated_at: 2026-02-08T05:14:24.686Z
-version: 6
+updated_at: 2026-02-08T16:58:13.770Z
+version: 7
 ---
 Evaluate extracting llm_utils/ as a standalone package (e.g. `kash-llm`). llm_utils has high independence (8/10 score) and is already a clean LiteLLM wrapper with multi-model support, structured output via Pydantic, citation tracking, and web search integration. TIER 3 BREAKING: would change `from kash.llm_utils.X import Y` to new package imports. Both kash-docs and kash-media use LLM, LLMName, Message, MessageTemplate, llm_template_completion, fuzzy_parsing functions. Requires migration guide and coordinated release.

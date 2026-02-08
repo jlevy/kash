@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Add from __future__ import annotations to all Python files
 type: is
-updated_at: 2026-02-08T05:14:24.606Z
-version: 7
+updated_at: 2026-02-08T16:58:13.688Z
+version: 8
 ---
 Add 'from __future__ import annotations' to all Python files with type hints (~215 files missing it). Per python-rules and python-modern-guidelines. Can be automated with a script.

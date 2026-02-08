@@ -12,7 +12,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: "Add integration tests: action_exec pipeline, web_fetch, MCP routes"
 type: is
-updated_at: 2026-02-08T05:14:24.515Z
-version: 7
+updated_at: 2026-02-08T16:58:13.601Z
+version: 8
 ---
 Add integration tests: action_exec pipeline (mocked ws+LLM), web_fetch (mock httpx), local_file_cache, MCP routes, workspace commands. Follow: general-tdd-guidelines (integration tests), golden-testing-guidelines (consider golden session tests for action pipelines—capture input/output Items as YAML, filter unstable fields like timestamps). File naming: test_*_integration.py.
