@@ -6,6 +6,8 @@
 
 **Status:** In Progress — Tier 1 complete (12/12), Tier 2 partially complete (4/8), Tier 3 evaluations complete (3/4)
 
+**Based on:** Initial code review conducted January 2026 (findings integrated below). Dependency upgrades completed February 2026 (openai 2.17.0, litellm 1.81.9, Python 3.14 support added).
+
 ## Overview
 
 Comprehensive senior engineering review of the kash codebase (~274 Python files,
@@ -1155,3 +1157,133 @@ Each guideline review should verify conformance and create beads for gaps.
 - `README.md`, `development.md` — Project documentation
 - `pyproject.toml` — Dependencies, tool configuration
 - `Makefile` — Development workflows
+
+---
+
+## Appendix A: January 2026 Code Review Findings
+
+*Originally documented in a standalone CODE_REVIEW_2026-01.md, now consolidated here.*
+
+### Overall Assessment
+
+**Score: 8.5/10** — Production-ready with recommended improvements.
+
+Kash is a well-architected, innovative AI-native shell that successfully combines
+Unix-style composability with modern LLM workflows. The codebase is mature, with
+zero type errors, passing tests, and generally clean code organization.
+
+### Dependency Upgrade Status (as of February 2026)
+
+| Package | Jan 2026 | Feb 2026 | Status |
+|---------|----------|----------|--------|
+| **openai** | 1.99.9 (pinned) | 2.17.0 | ✅ Upgraded |
+| **litellm** | 1.74.15 | 1.81.9 | ✅ Upgraded |
+| **xonsh** | 0.19.9 | 0.22.1 | ✅ Upgraded |
+| **mcp** | 1.19.0 | 1.25.0+ | ✅ Upgraded |
+| **fastapi** | 0.120.0 | 0.128.5 | ✅ Upgraded |
+| **pytest** | 8.4.2 | 9.0.2 | ✅ Upgraded |
+| **ruff** | 0.14.2 | 0.14.14 | ✅ Upgraded |
+| Python CI | 3.11-3.13 | 3.11-3.14 | ✅ Added 3.14 |
+| Tests | 145 passing | 301 passing | ✅ +156 tests |
+
+**Removed deps (unused):** tenacity, tiktoken, selectolax, pluralizer,
+rich-argparse, questionary.
+
+### TODO/FIXME Catalog (50+ items)
+
+**High Priority:**
+
+| Location | Type | Issue |
+|----------|------|-------|
+| `help/assistant.py:67` | FIXME | Need to support various sizes of preamble without the full manual |
+| `help/assistant.py:123` | FIXME | Add @-mentioned files into context |
+| `media_base/media_cache.py:25` | FIXME | Hard-coded dependency for now |
+| `shell/completions/completion_scoring.py:287` | FIXME | Add embedding scoring |
+
+**Medium Priority:**
+
+| Location | Type | Issue |
+|----------|------|-------|
+| `file_storage/item_id_index.py:25` | TODO | Should add a file system watcher |
+| `file_storage/file_store.py:64` | TODO | Consider using pluggable filesystem (fsspec) |
+| `help/assistant.py:210` | TODO | Stream response |
+| `config/settings.py:174` | TODO | Separate workspace cached content vs global files |
+
+**Low Priority:**
+
+| Location | Type | Issue |
+|----------|------|-------|
+| `local_server/local_server_routes.py:222` | TODO | Expose thumbnails for images, PDF |
+| `exec/action_decorators.py:60` | TODO | Add NoInputActionFunction convenience type |
+| `xonsh_custom/xonsh_completers.py:239` | TODO | Augment path completions with rich info |
+
+### Confirmed Issues (January 2026)
+
+1. **OpenAI SDK Import Error** — ✅ RESOLVED. Was blocking upgrade to OpenAI 2.x.
+   Root cause: `ResponseTextConfig` import error in older LiteLLM. Fixed by
+   upgrading LiteLLM to 1.80.16+.
+
+2. **Deprecated Ruff Rule UP038** — ✅ RESOLVED. Removed from pyproject.toml
+   ignore list.
+
+### Potential Issues (from TODO/FIXME)
+
+1. **File System Watcher Missing** (`item_id_index.py:25`) — ID index can become
+   inconsistent with disk state. Duplicate items may be created.
+
+2. **Thread Safety Gaps** — `FileStore` uses `@synchronized` but not everywhere.
+   Other modules may have race conditions.
+
+3. **Incomplete Assistant Features** (`help/assistant.py`) — @-mentioned files
+   not supported, no response streaming, variable preamble sizes not implemented.
+
+### Largest Files (Potential Refactoring Candidates)
+
+| File | Lines | Assessment |
+|------|-------|------------|
+| `model/items_model.py` | 1,094 | Core Item class — well-organized |
+| `file_storage/file_store.py` | 783 | **Consider splitting** — too many concerns |
+| `model/actions_model.py` | 668 | Action abstractions — well-organized |
+| `exec/action_exec.py` | 566 | Execution pipeline — complex but cohesive |
+| `web_content/web_fetch.py` | 546 | Web fetching — could extract retry logic |
+
+---
+
+## Appendix B: Creative Improvement Ideas
+
+*From the January 2026 code review. These are longer-term ideas, not part of the
+current implementation plan.*
+
+### Shell Usability
+
+1. **Interactive Action Builder** — Guided mode for action parameters
+2. **Smart Action Suggestions** — Context-aware action recommendations based on
+   selection type
+3. **Action Pipelines as First-Class** — Save reusable YAML pipelines
+4. **Workspace Templates** — Pre-configured workspace structures for common workflows
+
+### Architecture
+
+5. **Plugin System** — Entry points for external packages to register actions
+   (`pyproject.toml` `[project.entry-points."kash.actions"]`)
+6. **Action Versioning** — Run old versions of actions (`summarize@1.0`)
+7. **Workspace Sync** — S3 or git-based workspace synchronization
+
+### LLM Integration
+
+8. **Model Comparison Mode** — Side-by-side outputs from multiple models
+9. **Prompt Templates Library** — Reusable prompt templates
+10. **Cost Tracking** — Per-session and cumulative API cost reporting
+
+### Best Practices Alignment (from January 2026 review)
+
+| Guideline | Status at Review | Notes |
+|-----------|-----------------|-------|
+| Python 3.11-3.13 | COMPLIANT | Now 3.11-3.14 |
+| Use uv exclusively | COMPLIANT | |
+| Type annotations | COMPLIANT | Zero pyright errors |
+| `@override` decorators | Was PARTIAL | ✅ Now applied to 34 methods |
+| `from __future__ import annotations` | Was PARTIAL | ✅ Now in 184 files |
+| No `if __name__ == "__main__"` for testing | Was PARTIAL | ✅ Dead blocks removed |
+| CLI agent compatibility | MISSING | Tracked in kash-5ew2 (Tier 2) |
+| Named constants | Was PARTIAL | ✅ Completion scoring extracted |
