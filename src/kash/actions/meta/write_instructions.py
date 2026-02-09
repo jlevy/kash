@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.exec import kash_action
 from kash.model import NO_ARGS, ActionInput, ActionResult, Format, Item, ItemType
 from kash.shell.input.input_prompts import input_simple_string

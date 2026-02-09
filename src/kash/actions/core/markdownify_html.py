@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from prettyfmt import abbrev_on_words
 
 from kash.config.logger import get_logger

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from chopdiff.divs import CHUNK, ORIGINAL, RESULT, TextNode
 from pydantic.dataclasses import dataclass
 from typing_extensions import override
@@ -50,7 +52,7 @@ class ChunkedLLMAction(PerItemAction):
 
         return result_item
 
-    def process_chunk(self, chunk: "TextNode") -> str:
+    def process_chunk(self, chunk: TextNode) -> str:
         """
         Override to customize chunk handling.
         """

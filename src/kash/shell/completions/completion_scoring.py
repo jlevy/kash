@@ -22,15 +22,51 @@ log = get_logger(__name__)
 
 T = TypeVar("T")
 
-# Scores less than this can be dropped early.
+MAX_SCORE = Score(100)
+"""Maximum possible score for any completion."""
+
 MIN_CUTOFF = Score(70)
+"""Scores less than this can be dropped early."""
+
+SHORT_PREFIX_SCORE = Score(50)
+"""Score for very short prefix matches (< 2 chars)."""
+
+PREFIX_BASE_SCORE = 70
+"""Base score for prefix matches of 2+ chars."""
+
+PREFIX_COMPLETION_WEIGHT = 20
+"""Weight applied to the completion ratio (prefix_len / text_len)."""
+
+MAX_PREFIX_BONUS = 10
+"""Maximum additional bonus for long prefix matches."""
+
+DESCRIPTION_BONUS = Score(5)
+"""Bonus score for completions with command descriptions."""
+
+PATH_PHRASE_WEIGHT = 0.7
+"""Weight of phrase match score in path scoring."""
+
+PATH_RECENCY_WEIGHT = 0.3
+"""Weight of recency score in path scoring."""
+
+COMMENT_SCORE_WEIGHT = 0.7
+"""Weight applied to comment scores relative to command scores in snippet scoring."""
+
+SNIPPET_DISPLAY_MAX_LEN = 40
+"""Maximum display length for snippet completions."""
+
+DEFAULT_MAX_RESULTS = 10
+"""Default maximum number of completion results to return."""
+
+RECENCY_DECAY_CONSTANT = 5.0
+"""Decay constant for the exponential recency score (higher = faster decay)."""
 
 
 def linear_boost(score: Score, min_score: Score) -> Score:
     """
     Boost score linearly: [0, 100] -> [boost_min, 100]
     """
-    scaling_factor = (100 - min_score) / 100
+    scaling_factor = (MAX_SCORE - min_score) / MAX_SCORE
     return Score(min_score + (score * scaling_factor))
 
 
@@ -81,9 +117,9 @@ def score_completions(
             and completion.help_doc.doc_type == HelpDocType.command_info
             and completion.description
         ):
-            score = score + 5
+            score = score + DESCRIPTION_BONUS
 
-        score = min(score, 100)
+        score = min(score, MAX_SCORE)
 
         completion.score = Score(score)
 
@@ -105,7 +141,7 @@ def truncate_completions(
 def get_scored_snippet_completions(
     snippets: Iterable[RecipeSnippet],
     query: str,
-    max_results: int = 10,
+    max_results: int = DEFAULT_MAX_RESULTS,
     min_cutoff: Score = MIN_CUTOFF,
 ) -> list[ScoredCompletion]:
     """
@@ -124,7 +160,7 @@ def get_scored_snippet_completions(
     return [
         ScoredCompletion(
             snippet.command.command_line,
-            display=abbrev_str(snippet.command.command_line, max_len=40),
+            display=abbrev_str(snippet.command.command_line, max_len=SNIPPET_DISPLAY_MAX_LEN),
             description=snippet.command.comment or "",
             append_space=True,
             replace_input=True,  # Snippets should replace the entire input.
@@ -158,11 +194,15 @@ def score_exact_prefix(prefix: str, text: str) -> Score:
 
     prefix_len = len(prefix)
     if prefix_len < 2:
-        return Score(50)
+        return SHORT_PREFIX_SCORE
 
     completion_ratio = prefix_len / len(text)
     long_prefix_bonus = prefix_len - 2
-    score = 70 + (20 * completion_ratio) + min(10, long_prefix_bonus)
+    score = (
+        PREFIX_BASE_SCORE
+        + (PREFIX_COMPLETION_WEIGHT * completion_ratio)
+        + min(MAX_PREFIX_BONUS, long_prefix_bonus)
+    )
 
     return Score(score)
 
@@ -232,7 +272,7 @@ def score_path(prefix: str, path: Path, timestamp: datetime | None = None) -> Sc
 
     # For approx matches, use a blended prefix and full match along with recency.
     path_score = max(score_phrase(prefix, path_str), score_phrase(prefix, name_str))
-    approx_match_score = 0.7 * path_score + 0.3 * recency
+    approx_match_score = PATH_PHRASE_WEIGHT * path_score + PATH_RECENCY_WEIGHT * recency
 
     return Score(max(exact_prefix_score, approx_match_score))
 
@@ -249,16 +289,16 @@ def decaying_recency(
     Uses an exponential decay curve to give higher weights to more recent changes.
     """
     if age_in_seconds <= min_age_sec:
-        return Score(100.0)
+        return MAX_SCORE
     if age_in_seconds >= max_age_sec:
         return Score(0.0)
 
     age_after_min = age_in_seconds - min_age_sec
     time_range = max_age_sec - min_age_sec
 
-    decay_constant = 5.0 / time_range
+    decay_constant = RECENCY_DECAY_CONSTANT / time_range
 
-    return Score(100.0 * math.exp(-decay_constant * age_after_min))
+    return Score(MAX_SCORE * math.exp(-decay_constant * age_after_min))
 
 
 def score_paths(prefix: str, paths: Iterable[Path], min_cutoff: Score) -> list[tuple[Score, Path]]:
@@ -300,7 +340,7 @@ def score_snippet(query: str, snippet: CommentedCommand) -> Score:
         score_subphrase(normalized_query, normalized_comment),
     )
     # Bias a little toward command matches.
-    return Score(max(command_score, 0.7 * comment_score))
+    return Score(max(command_score, COMMENT_SCORE_WEIGHT * comment_score))
 
 
 ## Tests

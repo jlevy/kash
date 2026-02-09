@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.actions.core.tabbed_webpage_config import tabbed_webpage_config
 from kash.actions.core.tabbed_webpage_generate import tabbed_webpage_generate
 from kash.config.logger import get_logger

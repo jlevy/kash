@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import subprocess
 from importlib import metadata
 
@@ -46,7 +48,3 @@ def get_full_version_name(with_kits: bool = False):
                 version_items.append(f"{kit.distribution_name} v{kit.version}")
 
     return ", ".join(version_items)
-
-
-if __name__ == "__main__":
-    print(get_version_tag())

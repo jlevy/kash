@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from kash.utils.common.parse_shell_args import shell_quote

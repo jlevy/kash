@@ -10,6 +10,8 @@ Run `kash --help` for this page.
 More information at: github.com/jlevy/kash
 """
 
+from __future__ import annotations
+
 import argparse
 import threading
 

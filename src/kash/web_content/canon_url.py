@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funlog import log_if_modifies
 
 from kash.utils.common.url import Url, normalize_url

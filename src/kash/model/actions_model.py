@@ -645,6 +645,7 @@ class PerItemAction(Action, ABC):
 
     run_per_item: bool = True
 
+    @override
     def __post_init__(self):
         super().__post_init__()
 

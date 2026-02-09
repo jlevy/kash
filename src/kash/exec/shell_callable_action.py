@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funlog import log_tallies
 
 from kash.config.env_settings import KashEnv

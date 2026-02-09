@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from funlog import log_calls
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.docs.load_actions_info import load_action_info
@@ -75,6 +76,7 @@ class AllDocs(DocsBase):
     source_code: SourceCode = field(default_factory=load_source_code)
     action_infos: list[CommandInfo] = field(default_factory=load_action_info)
 
+    @override
     def self_check(self) -> bool:
         return (
             super().self_check()
@@ -84,9 +86,11 @@ class AllDocs(DocsBase):
             and len(self.action_infos) > 5
         )
 
+    @override
     def load(self) -> None:
         super().load()
 
+    @override
     def __str__(self):
         return (
             "AllDocs("

@@ -3,6 +3,8 @@ Tiny parsing library for key-value pairs. Useful for command-line handling of
 options like `foo=123` or `bar="some value"`.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from enum import Enum
 from typing import Any, TypeVar, cast

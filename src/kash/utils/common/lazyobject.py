@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Portions of this code are from xonsh:
 #
 # Copyright (c) 2016, xonsh
@@ -27,11 +29,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 # Based on the xonsh implementation but with Python 3 type improvements:
 # https://github.com/xonsh/lazyasd/blob/main/lazyasd-py3.py
 # Updated by github.com/jlevy for kash.
-
 from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Generic, TypeVar, cast
 

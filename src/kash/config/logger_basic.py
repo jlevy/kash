@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import sys
 from logging import FileHandler, Formatter, LogRecord

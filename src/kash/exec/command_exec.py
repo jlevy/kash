@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.exec.action_registry import look_up_action_class
 from kash.exec.command_registry import CommandFunction, look_up_command
 from kash.exec.shell_callable_action import ShellCallableAction

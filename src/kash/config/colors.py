@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from types import SimpleNamespace
 
 from colour import Color
@@ -367,7 +369,3 @@ def generate_css_vars(overrides: dict[str, str] | None = None) -> str:
     css_parts.append("}")
 
     return "\n".join(css_parts)
-
-
-if __name__ == "__main__":
-    print(generate_css_vars())

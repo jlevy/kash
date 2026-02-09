@@ -2,6 +2,8 @@
 Layout of the metadata files and directories with the file store.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from pydantic.dataclasses import dataclass

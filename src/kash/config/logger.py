@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextvars
 import logging
 import os
@@ -230,6 +232,7 @@ def _do_logging_setup(log_settings: LogSettings):
     _file_handler = basic_file_handler(log_settings.log_file_path, log_settings.log_file_level)
 
     class PrefixedRichHandler(RichHandler):
+        @override
         def emit(self, record: LogRecord):
             demote_warnings(record)
             # Can add an extra indent to differentiate logs but it's a little messier looking.

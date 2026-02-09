@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.docs.all_docs import DocSelection
 from kash.exec import kash_action
 from kash.exec.preconditions import is_chat

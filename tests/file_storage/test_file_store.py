@@ -1,5 +1,7 @@
 """Comprehensive test of FileStore import and frontmatter functionality."""
 
+from __future__ import annotations
+
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path

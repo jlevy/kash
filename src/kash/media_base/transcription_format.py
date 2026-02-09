@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import NamedTuple
 
 from kash.config.logger import CustomLogger, get_logger

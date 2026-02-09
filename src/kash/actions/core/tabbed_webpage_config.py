@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.config.logger import get_logger
 from kash.exec import kash_action
 from kash.exec_model.args_model import ONE_OR_MORE_ARGS

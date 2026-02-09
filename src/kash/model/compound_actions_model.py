@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
 from textwrap import dedent
 
 from pydantic.dataclasses import dataclass
+from typing_extensions import override
 
 from kash.config.logger import get_logger
 from kash.exec.combiners import Combiner
@@ -31,6 +34,7 @@ class SequenceAction(Action):
 
     action_names: tuple[str, ...] = ()
 
+    @override
     def __post_init__(self):
         super().__post_init__()
         if not self.action_names or len(self.action_names) <= 1:
@@ -47,6 +51,7 @@ class SequenceAction(Action):
         )
         self.description = seq_description
 
+    @override
     def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.workspaces import current_ws
@@ -125,6 +130,7 @@ class ComboAction(Action):
 
     combiner: Combiner | None = None
 
+    @override
     def __post_init__(self):
         super().__post_init__()
         if not self.action_names or len(self.action_names) <= 1:
@@ -141,6 +147,7 @@ class ComboAction(Action):
 
         self.description = combo_description
 
+    @override
     def run(self, input: ActionInput, context: ActionContext) -> ActionResult:
         from kash.exec.action_exec import run_action_with_shell_context
         from kash.exec.combiners import combine_as_paragraphs

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.actions.core.render_as_html import render_as_html
 from kash.commands.base.show_command import show
 from kash.exec import kash_action

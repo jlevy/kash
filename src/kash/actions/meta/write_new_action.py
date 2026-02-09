@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flowmark import Wrap, fill_text
 
 from kash.actions.meta.write_instructions import write_instructions

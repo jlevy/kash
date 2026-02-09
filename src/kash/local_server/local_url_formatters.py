@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
@@ -106,6 +108,7 @@ class DefaultLinkFormatter(PlaintextFormatter):
             Text("`", style=STYLE_HINT),
         )
 
+    @override
     def __repr__(self) -> str:
         return "DefaultFormatter()"
 
@@ -135,6 +138,7 @@ class WorkspaceLinkFormatter(DefaultLinkFormatter):
         else:
             return super().path_link(path, link_text, style=style)
 
+    @override
     def __repr__(self):
         return f"WorkspaceLinkFormatter(ws_name={self.ws_name})"
 

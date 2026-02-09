@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import difflib
 from io import BytesIO
 from pathlib import Path

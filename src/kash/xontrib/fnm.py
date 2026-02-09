@@ -7,6 +7,8 @@ Currently fnm doesn't support xonsh directly. This parses the bash output
 of fnm and uses it within xonsh.
 """
 
+from __future__ import annotations
+
 import subprocess
 from pathlib import Path
 from typing import Any, TypedDict

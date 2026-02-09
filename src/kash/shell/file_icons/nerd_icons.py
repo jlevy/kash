@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Based on https://github.com/eza-community/eza/blob/1780411a76fe9d5f3967f3130ed1d4cdc79b493a/src/output/icons.rs
 #
 # Modified version license:
@@ -11,10 +13,8 @@
 # SPDX-FileCopyrightText: 2023-2024 Christina Sørensen, eza contributors
 # SPDX-FileCopyrightText: 2014 Benjamin Sago
 # SPDX-License-Identifier: MIT
-
 # TODO: Consider using lsd icons instead?
 # https://github.com/lsd-rs/lsd/blob/master/src/theme/icon.rs
-
 import os
 from dataclasses import dataclass
 from enum import StrEnum

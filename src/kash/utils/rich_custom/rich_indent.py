@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -25,7 +27,7 @@ class Indent(JupyterMixin):
 
     def __init__(
         self,
-        renderable: "RenderableType",
+        renderable: RenderableType,
         indent: str = "    ",
         style: Style | None = None,
     ):
@@ -38,7 +40,7 @@ class Indent(JupyterMixin):
     def __repr__(self) -> str:
         return f"Indent({self.renderable!r}, {self.indent!r})"
 
-    def __rich_console__(self, console: "Console", options: "ConsoleOptions") -> "RenderResult":
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         indent_width = len(self.indent)
 
         # Calculate available width for content
@@ -54,7 +56,7 @@ class Indent(JupyterMixin):
             yield from line
             yield Segment.line()
 
-    def __rich_measure__(self, console: "Console", options: "ConsoleOptions") -> "Measurement":
+    def __rich_measure__(self, console: Console, options: ConsoleOptions) -> Measurement:
         # Get the width of the indent string
         indent_width = len(self.indent)
 

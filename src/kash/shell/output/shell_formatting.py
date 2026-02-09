@@ -2,6 +2,8 @@
 Output to the shell UI. These are for user interaction, not logging.
 """
 
+from __future__ import annotations
+
 import textwrap
 
 from flowmark import Wrap, fill_text

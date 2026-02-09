@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from InquirerPy.utils import InquirerPyKeybindings, InquirerPyStyle
 from prompt_toolkit.application import get_app
 

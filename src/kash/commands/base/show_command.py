@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.config.logger import get_logger
 from kash.config.text_styles import STYLE_HINT
 from kash.exec import assemble_path_args, kash_command

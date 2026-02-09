@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from InquirerPy.prompts.checkbox import CheckboxPrompt
 from InquirerPy.prompts.confirm import ConfirmPrompt
 from InquirerPy.prompts.input import InputPrompt

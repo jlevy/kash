@@ -8,6 +8,8 @@ to test the look and feel of the interface.
 Run with: uv run python tests/shell/input/interactive_input_test.py
 """
 
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 from typing import Any

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from kash.commands.help.welcome import welcome
 from kash.config.logger import get_logger
 from kash.docs.all_docs import DocSelection, all_docs

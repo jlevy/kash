@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from textwrap import dedent
 from typing import TypeAlias
@@ -6,6 +8,7 @@ from markdown_it.token import Token
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.padding import Padding
 from rich.text import Text
+from typing_extensions import override
 
 from kash.config.text_styles import STYLE_HINT
 from kash.shell.output.kerm_code_utils import clickable_script_block
@@ -19,18 +22,21 @@ class TransformingCodeBlock(CodeBlock):
     CodeBlock that applies a transform to its content.
     """
 
+    @override
     @classmethod
-    def create(cls, markdown: Markdown, token: Token) -> "TransformingCodeBlock":
+    def create(cls, markdown: Markdown, token: Token) -> TransformingCodeBlock:
         node_info = token.info or ""
         lexer_name = node_info.partition(" ")[0]
         # Retrieve the code_transform from the markdown instance.
         code_transform = getattr(markdown, "code_transform", None)
         return cls(lexer_name or "text", markdown.code_theme, transform=code_transform)
 
+    @override
     def __init__(self, lexer_name: str, theme: str, transform: Transform | None = None) -> None:
         super().__init__(lexer_name, theme)
         self.transform = transform
 
+    @override
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         code = str(self.text).lstrip("\n").rstrip()
 
@@ -63,6 +69,7 @@ class TransformingMarkdown(Markdown):
     elements["fence"] = TransformingCodeBlock
     elements["code_block"] = TransformingCodeBlock
 
+    @override
     def __init__(self, markup: str, code_transform: Transform | None = None, **kwargs) -> None:
         super().__init__(markup, **kwargs)
         self.code_transform = code_transform  # Store the transform function.
@@ -74,6 +81,7 @@ class KMarkdown(TransformingMarkdown):
     Currently just to make code lines clickable.
     """
 
+    @override
     def __init__(self, markup: str, **kwargs) -> None:
         super().__init__(markup, code_transform=clickable_script_block, **kwargs)
 

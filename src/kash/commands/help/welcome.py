@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from rich.box import SQUARE
 from rich.console import Group
 from rich.panel import Panel

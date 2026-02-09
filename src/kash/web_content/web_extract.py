@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funlog import log_calls
 
 from kash.utils.common.url import Url
@@ -60,20 +62,3 @@ def fetch_page_content(
 
 # TODO: Consider a JS-enabled headless browser so it works on more sites.
 # Example: https://www.inc.com/atish-davda/5-questions-you-should-ask-before-taking-a-start-up-job-offer.html
-
-if __name__ == "__main__":
-    sample_urls = [
-        "https://hbr.org/2016/12/think-strategically-about-your-career-development",
-        "https://www.chicagobooth.edu/review/how-answer-one-toughest-interview-questions",
-        "https://www.inc.com/atish-davda/5-questions-you-should-ask-before-taking-a-start-up-job-offer.html",
-        "https://www.investopedia.com/terms/r/risktolerance.asp",
-        "https://www.upcounsel.com/employee-offer-letter",
-        "https://rework.withgoogle.com/guides/pay-equity/steps/introduction/",
-        "https://www.forbes.com/sites/tanyatarr/2017/12/31/here-are-five-negotiation-myths-we-can-leave-behind-in-2017/",
-        "https://archive.nytimes.com/dealbook.nytimes.com/2009/08/19/googles-ipo-5-years-later/",
-    ]
-
-    for url in sample_urls:
-        print(f"URL: {url}")
-        print(fetch_page_content(Url(url)))
-        print()

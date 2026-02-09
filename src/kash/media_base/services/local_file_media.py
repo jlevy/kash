@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import shlex
 import subprocess  # Add this import
@@ -46,6 +48,7 @@ class LocalFileMedia(MediaService):
         else:
             return None
 
+    @override
     def get_media_id(self, url: Url) -> str | None:
         path = self._parse_file_url(url)
         if path:
@@ -53,6 +56,7 @@ class LocalFileMedia(MediaService):
         else:
             return None
 
+    @override
     def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
         path = self._parse_file_url(url)
         if path:
@@ -66,9 +70,11 @@ class LocalFileMedia(MediaService):
         else:
             return None, None
 
+    @override
     def thumbnail_url(self, url: Url) -> Url | None:
         return None
 
+    @override
     def timestamp_url(self, url: Url, timestamp: float) -> Url:
         return url
 
@@ -156,6 +162,7 @@ class LocalFileMedia(MediaService):
         else:
             raise InvalidInput(f"Unsupported file format: {format}")
 
+    @override
     def metadata(self, url: Url, full: bool = False) -> MediaMetadata:
         path = self._parse_file_url(url)
         if not path:
@@ -169,5 +176,6 @@ class LocalFileMedia(MediaService):
             media_service=None,
         )
 
+    @override
     def list_channel_items(self, url: Url) -> list[MediaMetadata]:
         raise NotImplementedError()

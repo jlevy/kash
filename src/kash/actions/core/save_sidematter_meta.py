@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from prettyfmt import fmt_lines
 from sidematter_format import Sidematter
 

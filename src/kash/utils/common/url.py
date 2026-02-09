@@ -3,6 +3,8 @@ A simple `Url` type and basic URL handling with no dependencies.
 Simply a few convenience types and functions around `urllib`.
 """
 
+from __future__ import annotations
+
 import re
 from pathlib import Path
 from typing import NewType

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import overload
 
@@ -43,15 +45,17 @@ def kash_command(func: CommandFunction) -> CommandFunction:
 
 def register_all_commands() -> None:
     """
-    Ensure all commands are registered and imported.
+    Ensure all commands are registered and imported (lazy — only runs once).
     """
-    with _commands.updates() as commands:
-        import kash.commands  # noqa: F401
+    from kash.commands import ensure_commands_registered
 
-        global _has_logged
-        if not _has_logged:
+    ensure_commands_registered()
+
+    global _has_logged
+    if not _has_logged:
+        with _commands.updates() as commands:
             log.info("Command registry: %d commands registered.", len(commands))
-            _has_logged = True
+        _has_logged = True
 
 
 def get_all_commands() -> dict[str, CommandFunction]:

@@ -4,6 +4,8 @@ shell syntax that is compatible with Python and xonsh (but not quite the same
 as bash!).
 """
 
+from __future__ import annotations
+
 import ast
 import re
 from collections.abc import Iterable

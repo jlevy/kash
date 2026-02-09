@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from chopdiff.html import rewrite_html_img_urls
 from sidematter_format import Sidematter, copy_sidematter
 

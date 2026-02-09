@@ -8,6 +8,8 @@ Sets up all commands and actions for use in xonsh.
 Can run from the custom kash shell (main.py) or from a regular xonsh shell.
 """
 
+from __future__ import annotations
+
 # Using absolute imports to avoid polluting the user's shell namespace.
 import kash.exec.command_registry
 import kash.xonsh_custom.load_into_xonsh

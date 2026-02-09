@@ -2,6 +2,8 @@
 Settings that define the visual appearance of text outputs.
 """
 
+from __future__ import annotations
+
 import re
 import shutil
 from pathlib import Path

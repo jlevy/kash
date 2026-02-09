@@ -9,6 +9,7 @@ import regex
 from frontmatter_format import add_default_yaml_representer
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
+from typing_extensions import override
 
 from kash.utils.common.parse_shell_args import shell_quote
 from kash.utils.common.url import is_url
@@ -70,6 +71,7 @@ class StorePath(BasePath):  # pyright: ignore
 
     store_name: str | None = None
 
+    @override
     def __new__(
         cls,
         value: str | Path,
@@ -109,6 +111,7 @@ class StorePath(BasePath):  # pyright: ignore
 
         return self
 
+    @override
     def __init__(  # pyright: ignore
         self,
         value: str | Path,
@@ -204,6 +207,7 @@ class StorePath(BasePath):  # pyright: ignore
             return value
         return cls(value)
 
+    @override
     def resolve(self) -> Path:  # pyright: ignore
         """
         If we resolve a StorePath, it must be a plain Path again, since StorePaths are relative.
@@ -211,6 +215,7 @@ class StorePath(BasePath):  # pyright: ignore
         return Path(self).resolve()
 
     @property
+    @override
     def parent(self) -> Path:  # pyright: ignore
         """
         The parent of a StorePath is a Path, for simplicity.
@@ -231,21 +236,25 @@ class StorePath(BasePath):  # pyright: ignore
             display = AT_PREFIX + display
         return display
 
+    @override
     def __str__(self) -> str:
         """
         The default str representation remains compatible with Path.
         """
         return super().__str__()
 
+    @override
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({str(self)!r})"
 
+    @override
     def __eq__(self, other):
         if isinstance(other, StorePath):
             return super().__eq__(other) and self.store_name == other.store_name
         else:
             return False
 
+    @override
     def __hash__(self):
         return hash((super().__str__(), self.store_name))
 

@@ -50,6 +50,8 @@ https://github.com/chromium/hterm/blob/main/doc/ControlSequences.md#OSC
 https://www.ethanheilman.com/x/28/index.html
 """
 
+from __future__ import annotations
+
 # TODO: Think through more use cases:
 # - Toggle boxes around content in a terminal (e.g. log details hidden by
 #   default that can be expanded; in xterm.js this would be a combo of
@@ -66,7 +68,6 @@ https://www.ethanheilman.com/x/28/index.html
 # - Registering behaviors on regexes (e.g. local web server with info about
 #   files, so that legacy shell commands automatically have tooltips with info
 #   about files).
-
 from enum import StrEnum
 from html import escape
 from typing import Annotated, Literal, Self, TypeAlias
