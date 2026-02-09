@@ -26,7 +26,7 @@ spec_path: docs/project/specs/active/plan-2026-02-06-code-review-architecture.md
 status: closed
 title: Audit and reorganize utils/ directory (72 files across 7 subdirs)
 type: is
-updated_at: 2026-02-08T18:06:10.887Z
-version: 10
+updated_at: 2026-02-09T05:32:59.090Z
+version: 11
 ---
 Audit and reorganize utils/ directory (72 files across 7 subdirs). TIER 3 BREAKING: if any symbols move, kash-docs (uses Url, MarkdownFootnotes, gather_limited, etc in 74 import statements) and kash-media (uses Url, errors, format_utils, etc) must update imports. Requires coordinated release.
