@@ -17,13 +17,15 @@ from rich.progress import BarColumn, Progress, ProgressColumn, Task, TaskID
 from rich.spinner import Spinner
 from rich.text import Text
 
-from kash.config.unified_live import get_unified_live
-from kash.utils.api_utils.progress_protocol import (
+from kash.config.text_styles import (
     EMOJI_FAILURE,
     EMOJI_RETRY,
     EMOJI_SKIP,
     EMOJI_SUCCESS,
     EMOJI_WAITING,
+)
+from kash.config.unified_live import get_unified_live
+from kash.utils.api_utils.progress_protocol import (
     TaskInfo,
     TaskState,
     TaskSummary,
