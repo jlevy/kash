@@ -140,11 +140,13 @@ from this package).
 - **Drop `TaskResult[T]` cache-bypass wrapper** from v1 (~30 LOC). Niche;
   prose-eval doesn't need it.
 - **Move inline `test_*` functions out of `api_retries.py`** into a real
-  `tests/` directory (~250 LOC out of the published wheel).
+  `tests/` directory (~250 LOC out of the published wheel). *Done in
+  kash ahead of extraction: tests now live at
+  `tests/kash/utils/api_utils/test_api_retries.py`.*
 - **Delete from kash entirely:** `multitask_gather.py` (134 LOC) and
   `cache_requests_limited.py` (84 LOC). Zero production callers; both
   drag `kash.config.settings` / `kash.shell.output` / `kash.web_content`
-  into the otherwise-clean bundle.
+  into the otherwise-clean bundle. *Done in kash ahead of extraction.*
 
 Realistic v1: ~1100 LOC of production code in 3 files.
 
