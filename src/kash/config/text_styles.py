@@ -274,6 +274,10 @@ EMOJI_SKIP = "[-]"
 
 EMOJI_FAILURE = "[✘]"
 
+EMOJI_RETRY = "⟲"
+
+EMOJI_WAITING = " ⧖ "
+
 EMOJI_SNIPPET = "❯"
 
 EMOJI_HELP = "?"

@@ -12,13 +12,21 @@ TaskId = TypeVar("TaskId")
 TaskSpec = TypeVar("TaskSpec")
 Labeler: TypeAlias = Callable[[int, TaskSpec], str]
 
-# Progress display symbols (consistent with text_styles.py)
-EMOJI_SUCCESS = "[✔︎]"
-EMOJI_FAILURE = "[✘]"
-EMOJI_SKIP = "[-]"
-EMOJI_WAITING = " ⧖ "
-EMOJI_WARN = "∆"
-EMOJI_RETRY = "⟲"
+
+@dataclass(frozen=True)
+class ProgressSymbols:
+    """
+    Display symbols used by progress trackers for task state transitions.
+
+    Defaults work in most modern terminals. Override to match a host
+    application's iconography (e.g. kash passes its own set from
+    `kash.config.text_styles`) or to use plain ASCII.
+    """
+
+    success: str = "[✔︎]"
+    failure: str = "[✘]"
+    skip: str = "[-]"
+    retry: str = "⟲"
 
 
 class TaskState(Enum):
@@ -175,9 +183,16 @@ class SimpleProgressTracker:
     Useful for testing or when Rich is not available.
     """
 
-    def __init__(self, *, verbose: bool = True, print_fn: Callable[[str], None] = print):
+    def __init__(
+        self,
+        *,
+        verbose: bool = True,
+        print_fn: Callable[[str], None] = print,
+        symbols: ProgressSymbols | None = None,
+    ):
         self.verbose = verbose
         self.print_fn = print_fn
+        self.symbols = symbols or ProgressSymbols()
         self._next_id = 1
         self._tasks: dict[int, TaskInfo] = {}
 
@@ -235,7 +250,7 @@ class SimpleProgressTracker:
             task_info.failures.append(error_msg)
 
             if self.verbose:
-                retry_indicator = EMOJI_RETRY * task_info.retry_count
+                retry_indicator = self.symbols.retry * task_info.retry_count
                 self.print_fn(f"Retry {retry_indicator} {task_info.label}: {error_msg}")
 
     async def finish(
@@ -252,11 +267,11 @@ class SimpleProgressTracker:
 
         if self.verbose:
             if state == TaskState.COMPLETED:
-                symbol = EMOJI_SUCCESS
+                symbol = self.symbols.success
             elif state == TaskState.FAILED:
-                symbol = EMOJI_FAILURE
+                symbol = self.symbols.failure
             elif state == TaskState.SKIPPED:
-                symbol = EMOJI_SKIP
+                symbol = self.symbols.skip
             else:
                 symbol = "?"
 
@@ -273,13 +288,22 @@ class SimpleProgressContext:
     Simple async context manager for SimpleProgressTracker.
     """
 
-    def __init__(self, *, verbose: bool = True, print_fn: Callable[[str], None] = print):
+    def __init__(
+        self,
+        *,
+        verbose: bool = True,
+        print_fn: Callable[[str], None] = print,
+        symbols: ProgressSymbols | None = None,
+    ):
         self.verbose = verbose
         self.print_fn = print_fn
+        self.symbols = symbols
         self._tracker: SimpleProgressTracker | None = None
 
     async def __aenter__(self) -> SimpleProgressTracker:
-        self._tracker = SimpleProgressTracker(verbose=self.verbose, print_fn=self.print_fn)
+        self._tracker = SimpleProgressTracker(
+            verbose=self.verbose, print_fn=self.print_fn, symbols=self.symbols
+        )
         return self._tracker
 
     async def __aexit__(
