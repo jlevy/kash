@@ -2,7 +2,7 @@
 # Automated GitHub CLI setup for Claude Code sessions
 # This script runs on SessionStart to ensure gh CLI is available and authenticated
 #
-# Supply-chain policy (see SUPPLY-CHAIN-SECURITY.md): the gh version is PINNED to
+# Supply-chain policy (see https://github.com/jlevy/supply-chain-hardening): the gh version is PINNED to
 # a release at least 14 days old, and every download is verified against a pinned
 # SHA-256 checksum. Do NOT change this to fetch "latest" from the API at runtime;
 # that bypasses the cool-off window. To bump the pin, pick a release that is >=14
@@ -40,15 +40,20 @@ else
     [ "$ARCH" = "x86_64" ] && ARCH="amd64"
     [ "$ARCH" = "aarch64" ] && ARCH="arm64"
 
+    # Private scratch dir, auto-cleaned on exit: avoids fixed /tmp paths that
+    # can collide across sessions or be pre-created before checksum verification.
+    WORK_DIR=$(mktemp -d)
+    trap 'rm -rf "$WORK_DIR"' EXIT
+
     # Build the asset suffix and archive type per platform.
     if [ "$OS" = "darwin" ]; then
         PLATFORM="macOS_${ARCH}.zip"
         ARCHIVE_EXT="zip"
-        EXTRACT_DIR="/tmp/gh_${GH_VERSION}_macOS_${ARCH}"
+        EXTRACT_DIR="${WORK_DIR}/gh_${GH_VERSION}_macOS_${ARCH}"
     else
         PLATFORM="${OS}_${ARCH}.tar.gz"
         ARCHIVE_EXT="tar.gz"
-        EXTRACT_DIR="/tmp/gh_${GH_VERSION}_${OS}_${ARCH}"
+        EXTRACT_DIR="${WORK_DIR}/gh_${GH_VERSION}_${OS}_${ARCH}"
     fi
 
     echo "[gh] Detected platform: ${PLATFORM}"
@@ -64,28 +69,28 @@ else
     DOWNLOAD_URL="https://github.com/cli/cli/releases/download/v${GH_VERSION}/${ASSET}"
 
     echo "[gh] Downloading from ${DOWNLOAD_URL}..."
-    curl -fsSL -o "/tmp/${ASSET}" "$DOWNLOAD_URL"
+    curl -fsSL -o "${WORK_DIR}/${ASSET}" "$DOWNLOAD_URL"
 
     # Verify the download against the pinned checksum before extracting.
     if command -v sha256sum &> /dev/null; then
-        ACTUAL=$(sha256sum "/tmp/${ASSET}" | awk '{print $1}')
+        ACTUAL=$(sha256sum "${WORK_DIR}/${ASSET}" | awk '{print $1}')
     else
-        ACTUAL=$(shasum -a 256 "/tmp/${ASSET}" | awk '{print $1}')
+        ACTUAL=$(shasum -a 256 "${WORK_DIR}/${ASSET}" | awk '{print $1}')
     fi
     if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "[gh] ERROR: checksum mismatch for ${ASSET}"
         echo "[gh]   expected ${EXPECTED}"
         echo "[gh]   actual   ${ACTUAL}"
-        rm -f "/tmp/${ASSET}"
+        rm -f "${WORK_DIR}/${ASSET}"
         exit 1
     fi
     echo "[gh] Checksum verified for ${ASSET}"
 
     # Extract based on archive type
     if [ "$ARCHIVE_EXT" = "zip" ]; then
-        unzip -q "/tmp/${ASSET}" -d /tmp
+        unzip -q "${WORK_DIR}/${ASSET}" -d "$WORK_DIR"
     else
-        tar -xzf "/tmp/${ASSET}" -C /tmp
+        tar -xzf "${WORK_DIR}/${ASSET}" -C "$WORK_DIR"
     fi
 
     # Install to ~/.local/bin (works in cloud and local)
@@ -93,8 +98,6 @@ else
     cp "${EXTRACT_DIR}/bin/gh" ~/.local/bin/gh
     chmod +x ~/.local/bin/gh
 
-    # Clean up
-    rm -rf "${EXTRACT_DIR}" "/tmp/${ASSET}"
 
     echo "[gh] Installed to ~/.local/bin/gh"
 fi

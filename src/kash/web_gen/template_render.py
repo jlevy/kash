@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
@@ -28,7 +28,7 @@ def get_template_dirs(*dirs: Path) -> list[Path]:
 
 
 @contextmanager
-def additional_template_dirs(*dirs: Path) -> Iterator[None]:
+def additional_template_dirs(*dirs: Path) -> Generator[None, None, None]:
     """
     Context manager for temporarily adding template directories to the search path.
     """

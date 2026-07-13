@@ -106,7 +106,7 @@ def llm_completion(
         enable_web_search: If True, automatically add web search tools for the model
         **kwargs: Additional LiteLLM parameters
     """
-    from litellm.types.utils import Choices, ModelResponse
+    from litellm.types.utils import ModelResponse
 
     init_litellm()
 
@@ -168,7 +168,7 @@ def llm_completion(
     )
     elapsed = time.time() - start_time
 
-    choices = cast(Choices, llm_output.choices[0])
+    choices = llm_output.choices[0]
 
     message = choices.message
 

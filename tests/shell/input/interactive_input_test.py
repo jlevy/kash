@@ -194,7 +194,7 @@ def demo_checkbox_input(impl_name: str, module: Any) -> dict[str, Any]:
         "Select features to enable",
         choices=features,
         default=defaults,
-        instruction="Some features are pre-selected",
+        instruction="Some features are preselected",
     )
 
     return results
