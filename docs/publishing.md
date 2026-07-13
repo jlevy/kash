@@ -195,9 +195,12 @@ template).
    ```
 
    Then trigger `publish.yml` on the tag ref via the GitHub Actions UI or API
-   (`workflow_dispatch` is enabled). A Releases-page entry can be added from the
-   existing tag later; if that re-fires `publish.yml`, the duplicate run fails
-   harmlessly on "file already exists".
+   (`workflow_dispatch` is enabled). The workflow publishes to PyPI and then
+   auto-creates the matching GitHub Release from the annotated tag's message, so
+   every PyPI release has a Release page either way. To backfill a Release page
+   for an older tag, dispatch `github-release.yml` with the tag as input.
+   Publishing is idempotent (`--check-url`), so re-runs never fail on existing
+   files.
 
 3. **Confirm on PyPI, scriptably** (the JSON API updates within ~a minute):
 
