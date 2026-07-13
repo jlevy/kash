@@ -7,19 +7,6 @@ src="https://github.com/user-attachments/assets/a5d62ae4-17e6-46bb-a9cb-3b6ec8d8
 
 </div>
 
-## Hello!
-
-If you’re seeing this, you there’s a good chance I shared it with you for feedback.
-Thank you for checking out Kash.
-
-It’s new, the result of some experimentation over the past few months.
-I like a lot of things about it but it isn’t mature and I’d love your help to make it
-more usable. If you try it please **let me know** what works and what doesn’t work.
-Or if you just don’t get it, where you lost interest or got stuck.
-My contact info is at [github.com/jlevy](https://github.com/jlevy) or [follow or DM
-me](https://x.com/ojoshe) (I’m fastest on Twitter DMs).
-Thank you. :)
-
 ## What is Kash?
 
 > “*Simple should be simple.
