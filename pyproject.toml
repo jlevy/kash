@@ -91,7 +91,7 @@ dependencies = [
     # Basic text handling and web scraping:
     # selectolax removed: HTML parsing handled by readabilipy and justext.
     "readabilipy>=0.3.0",
-    "markdownify>=0.13.1",
+    "markdownify>=1.2.2",  # table_infer_header option requires 1.x
     "justext>=3.0.2",
     "cssselect>=1.2.0",
     # pluralizer removed: not used in codebase.
@@ -128,7 +128,7 @@ web = [
     "curl-cffi>=0.11.4",
     "truststore>=0.10.4",
     "readabilipy>=0.3.0",
-    "markdownify>=0.13.1",
+    "markdownify>=1.2.2",  # table_infer_header option requires 1.x
     "justext>=3.0.2",
     "cssselect>=1.2.0",
 ]

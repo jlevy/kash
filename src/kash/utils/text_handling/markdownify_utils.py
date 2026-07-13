@@ -43,6 +43,9 @@ MARKDOWNIFY_OPTIONS: dict[str, Any] = {
     "escape_asterisks": True,
     "escape_misc": False,  # This suppresses gratuitous escaping of -, ., etc.
     "newline_style": "BACKSLASH",
+    # markdownify 1.x stopped promoting the first row of th-less tables to a header;
+    # this restores the old behavior (important for docx and scraped-HTML tables).
+    "table_infer_header": True,
 }
 
 
