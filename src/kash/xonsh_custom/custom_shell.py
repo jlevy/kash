@@ -301,7 +301,7 @@ class CustomShell(Shell):
         return CustomAssistantShell(**kwargs)
 
 
-@events.on_command_not_found
+@events.on_command_not_found  # pyright: ignore[reportUntypedFunctionDecorator]
 def not_found(cmd: list[str]):
     # Don't call assistant on one-word typos. It's annoying.
     if len(cmd) >= 2:

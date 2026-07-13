@@ -173,7 +173,7 @@ def get_nonfatal_exceptions() -> tuple[type[Exception], ...]:
         pass
 
     try:
-        import yt_dlp.utils
+        import yt_dlp.utils  # pyright: ignore[reportMissingModuleSource]
 
         exceptions.append(yt_dlp.utils.DownloadError)
     except ImportError:

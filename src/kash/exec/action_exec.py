@@ -509,7 +509,7 @@ def run_action_with_shell_context(
     # Collect args from the provided args or otherwise the current selection.
     args, from_selection = assemble_action_args(*provided_args, use_selection=action.uses_selection)
 
-    # As a special case for convenience, if the action expects no args, ignore any pre-selected inputs.
+    # As a special case for convenience, if the action expects no args, ignore any preselected inputs.
     if action.expected_args == NO_ARGS and from_selection:
         log.message(
             "Not using current selection since action `%s` expects no args.",

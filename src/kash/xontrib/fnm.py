@@ -113,11 +113,9 @@ def _unload_xontrib_(_xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ign
     Clean up the fnm xontrib.
     """
     handlers_to_remove = [
-        handler
-        for handler in events.on_chdir.handlers
-        if handler.__name__ == "fnm_use_if_file_found"
+        handler for handler in events.on_chdir if handler.__name__ == "fnm_use_if_file_found"
     ]
     for handler in handlers_to_remove:
-        events.on_chdir.remove(handler)
+        events.on_chdir.discard(handler)
 
     return {}
