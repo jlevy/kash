@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .codex/tbd-session.sh"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.codex/tbd-session.sh\""
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .codex/ensure-gh-cli.sh",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.codex/ensure-gh-cli.sh\"",
             "timeout": 120
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .codex/tbd-session.sh --brief"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.codex/tbd-session.sh --brief"
           }
         ]
       }
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .codex/tbd-closing-reminder.sh"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.codex/tbd-closing-reminder.sh\""
           }
         ]
       }

@@ -17,6 +17,12 @@ if command -v tbd &> /dev/null; then
 fi
 
 # Pinned zero-install fallback. Never use an unpinned runner here.
+# Supply-chain cool-off EXCEPTION (on the record per policy): get-tbd@0.4.0 was
+# published 2026-07-12, inside the 14-day window. Approved by @jlevy (the package's
+# author and this repo's owner) on 2026-07-13 to dogfood his own release across the
+# kash repos. Provenance verified: npm trusted publisher (GitHub Actions OIDC);
+# integrity sha512-hFZb0cgq7FH6Zp/rsj1ri7o6gSqoGPU13QYfy/wpc1QXIMkUV5wtT+fYevWlur8SlmT2l/0fLgeETy6TbS4g1Q==
+# Follow-up: exception expires once 0.4.0 clears the window (2026-07-26).
 if command -v npx &> /dev/null; then
     npx --yes get-tbd@0.4.0 prime "$@"
     exit $?
