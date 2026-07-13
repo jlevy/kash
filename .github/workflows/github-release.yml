@@ -1,0 +1,41 @@
+name: Create GitHub Release
+
+# Utility: create a GitHub Release page for an EXISTING tag, using the annotated
+# tag's message as the release notes. Used to backfill Release pages when a
+# release was published via tag + workflow_dispatch (see docs/publishing.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag (vX.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (official GitHub action)
+        # Pinned to a full commit SHA (see supply-chain notes in
+        # docs/development.md); bump deliberately when updating.
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create release from annotated tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          git tag -l --format='%(contents)' "$TAG" > /tmp/release-notes.md
+          if ! [ -s /tmp/release-notes.md ]; then
+            echo "No annotated tag message found for $TAG" && exit 1
+          fi
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" \
+              --notes-file /tmp/release-notes.md --verify-tag
