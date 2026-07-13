@@ -1,9 +1,11 @@
 # Changes here will be overwritten by Copier. Do not edit manually.
-_commit: v0.2.19
+_commit: v0.4.0
 _src_path: gh:jlevy/simple-modern-uv
 package_author_email: joshua@cal.berkeley.edu
 package_author_name: Joshua Levy
 package_description: The knowledge agent shell (core)
 package_github_org: jlevy
+package_license: AGPL-3.0-or-later
 package_module: kash_shell
 package_name: kash-shell
+publish_to_pypi: true
