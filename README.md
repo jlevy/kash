@@ -753,13 +753,17 @@ Kash uses Markdown files with YAML frontmatter, which is fully compatible with
 
 <br/>
 
-<div align="center">
+For how to install uv and Python, see [installation.md](docs/installation.md).
 
-⛭
+For development workflows, see [development.md](docs/development.md).
 
-</div>
+For instructions on publishing to PyPI, see [publishing.md](docs/publishing.md).
 
 * * *
 
 *This project was built from
 [simple-modern-uv](https://github.com/jlevy/simple-modern-uv).*
+
+<!-- This document follows common-doc-guidelines.md.
+See github.com/jlevy/practical-prose and review guidelines before editing.
+-->

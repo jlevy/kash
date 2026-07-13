@@ -29,6 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
     # Include this to avoid accidentally publishing to PyPI:
     # "Private :: Do Not Upload",
@@ -161,26 +162,23 @@ all = [
 # ---- Dev dependencies ----
 
 [dependency-groups]
+build = [
+    "hatchling==1.30.1",
+    "uv-dynamic-versioning==0.14.0",
+]
 dev = [
-    "pytest>=9.1.0",
+    "pytest>=9.1.1",
     "pytest-sugar>=1.1.1",
     "ruff>=0.15.20",
     "codespell>=2.4.2",
-    "rich>=14.0.0",
+    "rich>=15.0.0",
     "basedpyright>=1.39.9",
-    "funlog>=0.2.0",
+    "funlog>=0.2.1",
 ]
 
 [project.scripts]
 kash = "kash.shell.shell_main:main"
 kash-mcp = "kash.mcp.mcp_cli:main"
-
-[tool.uv]
-# Supply-chain cool-off: never resolve releases newer than this date, so freshly
-# published (possibly compromised) versions get time to be vetted or yanked.
-# Bump this date (~2 weeks back from today) whenever upgrading dependencies.
-# See: https://github.com/jlevy/supply-chain-hardening
-exclude-newer = "2026-06-29T00:00:00Z"
 
 [tool.uv.sources]
 # For local development:
@@ -197,7 +195,7 @@ exclude-newer = "2026-06-29T00:00:00Z"
 # https://github.com/ninoseki/uv-dynamic-versioning/
 
 [build-system]
-requires = ["hatchling", "uv-dynamic-versioning"]
+requires = ["hatchling==1.30.1", "uv-dynamic-versioning==0.14.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -220,6 +218,14 @@ packages = ["src/kash"]
 
 # ---- Settings ----
 
+[tool.uv]
+# Fail fast on old uv versions rather than misbehave. 0.9 is the floor where
+# exclude-newer accepts a relative duration like "14 days".
+required-version = ">=0.9"
+# Safe project-level default for every uv command. CI and the Makefile repeat it so
+# copied commands and tool execution outside project discovery retain the same policy.
+exclude-newer = "14 days"
+
 [tool.ruff]
 # Set as desired, typically 88 (black standard) or 100 (wide).
 line-length = 100
@@ -234,9 +240,9 @@ select = [
     "B", # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
     "I", # https://docs.astral.sh/ruff/rules/#isort-i
     # Other possibilities:
-    # "D" # https://docs.astral.sh/ruff/rules/#pydocstyle-d
-    # "Q" # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
-    # "COM" # https://docs.astral.sh/ruff/rules/#flake8-commas-com
+    # "D", # https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    # "Q", # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
+    # "COM", # https://docs.astral.sh/ruff/rules/#flake8-commas-com
     # "SIM", # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
 
 ]
