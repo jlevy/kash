@@ -119,3 +119,21 @@ def _unload_xontrib_(_xsh: XonshSession, **_) -> dict[str, Any]:  # pyright: ign
         events.on_chdir.discard(handler)
 
     return {}
+
+
+## Tests
+
+
+def test_unload_removes_on_chdir_handler() -> None:
+    # Guards the xonsh 0.23 Event API usage: handlers are found by iterating the
+    # event and removed with discard() (Event.handlers no longer exists).
+    def fnm_use_if_file_found(**_kwargs: Any) -> None:
+        pass
+
+    events.on_chdir(fnm_use_if_file_found)
+    assert any(h.__name__ == "fnm_use_if_file_found" for h in events.on_chdir)
+
+    dummy_session: Any = None
+    _unload_xontrib_(dummy_session)
+
+    assert not any(h.__name__ == "fnm_use_if_file_found" for h in events.on_chdir)

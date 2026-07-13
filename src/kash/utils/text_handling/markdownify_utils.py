@@ -89,3 +89,15 @@ def markdownify_custom(html: str) -> str:
     preprocessed_html = markdownify_preprocess(html)
     md_text = markdownify_convert(preprocessed_html, **MARKDOWNIFY_OPTIONS)
     return markdownify_postprocess(md_text)
+
+
+## Tests
+
+
+def test_table_infer_header() -> None:
+    # markdownify 1.x only promotes the first row of a th-less table to a header
+    # because MARKDOWNIFY_OPTIONS sets table_infer_header=True; this guards the
+    # option against regressing in a future dependency upgrade.
+    html = "<table><tr><td>Name</td><td>Value</td></tr><tr><td>a</td><td>1</td></tr></table>"
+    md = markdownify_custom(html)
+    assert md == "| Name | Value |\n| --- | --- |\n| a | 1 |"
