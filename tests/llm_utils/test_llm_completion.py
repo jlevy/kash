@@ -83,7 +83,7 @@ class TestLlmCompletion:
     def test_basic_completion(self, _mock_init, mock_litellm_completion):
         """Basic completion returns content from mocked API."""
         mock_litellm_completion.return_value = _mock_response("test output")
-        model = LLMName("openai/gpt-4")
+        model = LLMName("openai/gpt-5.6-terra")
         messages = [{"role": "user", "content": "hello"}]
         result = llm_completion(model, messages, save_objects=False)
         assert result.content == "test output"
@@ -97,7 +97,7 @@ class TestLlmCompletion:
             "answer", citations=["https://example.com"]
         )
         result = llm_completion(
-            LLMName("openai/gpt-4"),
+            LLMName("openai/gpt-5.6-terra"),
             [{"role": "user", "content": "q"}],
             save_objects=False,
         )
@@ -111,7 +111,7 @@ class TestLlmCompletion:
         mock_litellm_completion.return_value = _mock_response(content=None)
         with pytest.raises(ApiResultError, match="LLM completion failed"):
             llm_completion(
-                LLMName("openai/gpt-4"),
+                LLMName("openai/gpt-5.6-terra"),
                 [{"role": "user", "content": "q"}],
                 save_objects=False,
             )
@@ -125,7 +125,7 @@ class TestLlmTemplateCompletion:
             message=MagicMock(), content="result", citations=None
         )
         result = llm_template_completion(
-            model=LLMName("openai/gpt-4"),
+            model=LLMName("openai/gpt-5.6-terra"),
             system_message=Message("You are helpful"),
             input="test input",
             body_template=MessageTemplate("Process: {body}"),
@@ -145,7 +145,7 @@ class TestLlmTemplateCompletion:
             message=MagicMock(), content="no results", citations=None
         )
         result = llm_template_completion(
-            model=LLMName("openai/gpt-4"),
+            model=LLMName("openai/gpt-5.6-terra"),
             system_message=Message("sys"),
             input="x",
             check_no_results=True,
@@ -156,7 +156,7 @@ class TestLlmTemplateCompletion:
     def test_missing_system_message_raises(self):
         with pytest.raises(ValueError, match="system_message is required"):
             llm_template_completion(
-                model=LLMName("openai/gpt-4"),
+                model=LLMName("openai/gpt-5.6-terra"),
                 system_message=Message(""),
                 input="x",
             )

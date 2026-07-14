@@ -92,10 +92,10 @@ quick to install via uv.
 - **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
   You can use it with any models or APIs you like, and is already set up to use the APIs
-  of **OpenAI** (GPT-5 is now the default model), **Anthropic Claude**, **Google
-  Gemini**, **xAI Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via
-  **LiteLLM**), **Deepgram**, **Perplexity**, **Firecrawl**, **Exa**, and any Python
-  libraries. There is also some experimental support for **LlamaIndex** and **ChromaDB**.
+  of **OpenAI** (GPT-5.6), **Anthropic Claude**, **Google Gemini**, **xAI Grok**,
+  **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**
+  (Nova-3), **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries. There is
+  also some experimental support for **LlamaIndex** and **ChromaDB**.
 
 - **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
   in any MCP client, like Anthropic Desktop or Cursor.

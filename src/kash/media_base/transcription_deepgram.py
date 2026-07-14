@@ -41,9 +41,9 @@ def deepgram_transcribe_raw(
 
     response = deepgram.listen.v1.media.transcribe_file(
         request=buffer_data,
-        model="nova-2",
+        model="nova-3",
         smart_format=True,
-        diarize=True,
+        diarize_model="latest",
         language=language,
         request_options=RequestOptions(timeout_in_seconds=500),
     )

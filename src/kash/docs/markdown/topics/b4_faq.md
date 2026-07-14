@@ -65,7 +65,16 @@ Give it a try and let me know!
 ### What models are available?
 
 You can use kash with any APIs or models you like!
-By default it uses APIs from OpenAI, Deepgram, and Anthropic.
+The default Anthropic profile uses `claude-fable-5` for careful work,
+`claude-sonnet-5` for standard and structured work, and
+`claude-haiku-4-5-20251001` for fast work. To use OpenAI instead, run:
+
+```shell
+kash set_params careful_llm=gpt-5.6-sol structured_llm=gpt-5.6-terra standard_llm=gpt-5.6-terra fast_llm=gpt-5.6-luna
+```
+
+Transcription uses Deepgram `nova-3` and the newest generally available batch
+diarizer.
 
 ### How can I transcribe a YouTube video or podcast?
 

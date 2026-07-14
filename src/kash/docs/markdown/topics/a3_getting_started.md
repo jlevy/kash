@@ -144,8 +144,8 @@ show_webpage --show_source
 # Sometimes we may want to browse more detailed system logs:
 logs
 
-# Note transcription works with multiple speakers, thanks to Deepgram
-# diarization. 
+# Note transcription uses Deepgram Nova-3 and works with multiple speakers,
+# thanks to the newest generally available batch diarizer.
 transcribe https://www.youtube.com/watch?v=_8djNYprRDI
 show
 
@@ -259,7 +259,8 @@ A few of the most important commands for managing files and work are these:
 
 If you use the `kash-media` kit and its dependencies, you get additional actions like:
 
-- `transcribe` transcribes video or audio as text document, using Deepgram.
+- `transcribe` transcribes video or audio as a text document using Deepgram Nova-3 and
+  its newest generally available batch diarizer.
 
 - `create_pdf` formats Markdown or HTML documents as a PDF.
 

@@ -218,7 +218,7 @@ inquirerpy, questionary, patch-ng, tiktoken for actual usage.
 ```toml
 [project.optional-dependencies]
 llm = ["litellm>=1.74", "openai>=1.99", "tiktoken>=0.9"]
-media = ["pydub>=0.25", "deepgram-sdk>=3.10"]
+media = ["pydub>=0.25", "deepgram-sdk>=7.4"]
 web = ["curl-cffi>=0.11", "selectolax>=0.3", "justext>=3.0", "readabilipy>=0.3"]
 server = ["fastapi>=0.115", "uvicorn>=0.34", "mcp>=1.6"]
 shell = ["xonsh>=0.19"]
@@ -386,7 +386,7 @@ result = kash.run("summarize_as_bullets", "https://example.com/article")
 print(result.items[0].body)
 
 # Use LLM utilities
-response = kash.llm_completion("claude-sonnet-4-20250514", messages=[...])
+response = kash.llm_completion("claude-sonnet-5", messages=[...])
 
 # Use web content extraction
 page = kash.fetch_page("https://example.com")
@@ -409,7 +409,7 @@ kash run strip_html --input my_file.html --output clean.md --format json
 
 # Use specific utilities
 kash fetch https://example.com --format json
-kash llm "Summarize this" --model claude-sonnet-4-20250514 --input doc.md
+kash llm "Summarize this" --model claude-sonnet-5 --input doc.md
 kash workspace create my_project
 kash workspace import *.md
 ```
@@ -459,7 +459,7 @@ assert result.format == Format.markdown
 result = runner.run_pipeline([
     ("fetch_url", {"url": "https://example.com"}),
     ("strip_html", {}),
-    ("summarize_as_bullets", {"model": "gpt-4o"}),
+    ("summarize_as_bullets", {"model": "gpt-5.6-terra"}),
 ])
 ```
 
