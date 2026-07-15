@@ -101,6 +101,11 @@ def cache_resource(
         if not ext_path.is_file():
             raise FileNotFound(f"External path not found: {ext_path}")
         cache_result = cache_file(ext_path, global_cache, expiration_sec)
+    elif item.store_path:
+        stored_path = item.absolute_path()
+        if not stored_path.is_file():
+            raise FileNotFound(f"Workspace resource not found: {stored_path}")
+        cache_result = cache_file(stored_path, global_cache, expiration_sec)
     elif item.original_filename:
         orig_path = Path(item.original_filename)
         if not orig_path.is_file():
