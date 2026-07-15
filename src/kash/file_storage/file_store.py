@@ -12,8 +12,8 @@ from typing import Concatenate, ParamSpec, TypeVar
 
 from funlog import format_duration, log_calls
 from prettyfmt import fmt_lines, fmt_path
-from sidematter_format import copy_sidematter, move_sidematter, remove_sidematter
-from strif import copyfile_atomic, hash_file
+from sidematter_format import Sidematter, copy_sidematter, move_sidematter, remove_sidematter
+from strif import copyfile_atomic, hash_file, hash_string
 from typing_extensions import override
 
 from kash.config.logger import get_log_settings, get_logger
@@ -466,9 +466,19 @@ class FileStore(Workspace):
 
     def hash(self, store_path: StorePath) -> str:
         """
-        Get a hash of the item at the given path.
+        Get a hash of the item content and its resolved sidematter metadata.
+
+        Metadata can affect an action without changing a binary primary file. Assets are
+        excluded because actions that consume them should declare them as explicit inputs.
         """
-        return hash_file(self.base_dir / store_path, algorithm="sha1").with_prefix
+        path = self.base_dir / store_path
+        primary_hash = hash_file(path, algorithm="sha1").with_prefix
+        metadata_path = Sidematter(path).resolve(parse_meta=False).meta_path
+        if not metadata_path:
+            return primary_hash
+
+        metadata_hash = hash_file(metadata_path, algorithm="sha1").with_prefix
+        return hash_string(f"{primary_hash}\n{metadata_hash}", algorithm="sha1").with_prefix
 
     def import_item(
         self,
@@ -570,8 +580,10 @@ class FileStore(Workspace):
 
                 # Optimization: Don't import an identical file twice.
                 if old_store_path:
-                    old_hash = self.hash(old_store_path)
-                    new_hash = self.hash(store_path)
+                    old_hash = hash_file(
+                        self.base_dir / old_store_path, algorithm="sha1"
+                    ).with_prefix
+                    new_hash = hash_file(self.base_dir / store_path, algorithm="sha1").with_prefix
                     if old_hash == new_hash:
                         log.message(
                             "Imported resource is identical to the previous import: %s",

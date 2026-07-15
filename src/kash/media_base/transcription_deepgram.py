@@ -9,6 +9,7 @@ from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from kash.config.logger import CustomLogger, get_logger
 from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
+from kash.media_base.transcription_settings import TranscriptionSettings
 from kash.utils.errors import ContentError
 
 if TYPE_CHECKING:
@@ -19,7 +20,10 @@ log: CustomLogger = get_logger(__name__)
 
 
 def deepgram_transcribe_raw(
-    audio_file_path: Path, language: str | None = None
+    audio_file_path: Path,
+    language: str | None = None,
+    *,
+    settings: TranscriptionSettings | None = None,
 ) -> ListenV1Response | ListenV1AcceptedResponse:
     """
     Transcribe an audio file using Deepgram and return the raw response.
@@ -28,9 +32,13 @@ def deepgram_transcribe_raw(
     from deepgram import DeepgramClient
     from deepgram.core.request_options import RequestOptions
 
+    settings = settings or TranscriptionSettings.create(language=language)
     size = getsize(audio_file_path)
     log.info(
-        "Transcribing via Deepgram (language %r): %s (size %s)", language, audio_file_path, size
+        "Transcribing via Deepgram (settings %r): %s (size %s)",
+        settings,
+        audio_file_path,
+        size,
     )
 
     load_dotenv_paths(True, True, global_settings().system_config_dir)
@@ -41,18 +49,24 @@ def deepgram_transcribe_raw(
 
     response = deepgram.listen.v1.media.transcribe_file(
         request=buffer_data,
-        model="nova-3",
-        smart_format=True,
-        diarize_model="latest",
-        language=language,
+        model=settings.model,
+        smart_format=settings.smart_format,
+        diarize_model=settings.diarize_model,
+        language=settings.language,
+        keyterm=list(settings.key_terms) or None,
         request_options=RequestOptions(timeout_in_seconds=500),
     )
 
     return response
 
 
-def deepgram_transcribe_audio(audio_file_path: Path, language: str | None = None) -> str:
-    response = deepgram_transcribe_raw(audio_file_path, language)
+def deepgram_transcribe_audio(
+    audio_file_path: Path,
+    language: str | None = None,
+    *,
+    settings: TranscriptionSettings | None = None,
+) -> str:
+    response = deepgram_transcribe_raw(audio_file_path, language, settings=settings)
 
     log.save_object("Deepgram response", None, response)
 

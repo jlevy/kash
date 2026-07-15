@@ -15,6 +15,7 @@ from kash.media_base.media_services import (
     download_media_by_service,
     get_media_services,
 )
+from kash.media_base.transcription_settings import TranscriptionSettings
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, as_file_url, is_url
 from kash.utils.common.url_slice import parse_url_slice
@@ -54,16 +55,16 @@ class MediaCache(DirStore):
     def __init__(self, root):
         super().__init__(root)
 
-    def _write_transcript(self, url: Url, content: str) -> None:
-        key = str(url)  # Cache key is the URL (with slice fragment if present)
+    def _write_transcript(self, url: Url, content: str, settings: TranscriptionSettings) -> None:
+        key = settings.cache_key(url)
         transcript_path = self.path_for(key, suffix=SUFFIX_TRANSCRIPT)
         with atomic_output_file(transcript_path) as temp_output:
             with open(temp_output, "w") as f:
                 f.write(content)
         log.message("Transcript saved to cache: %s", fmt_path(transcript_path))
 
-    def _read_transcript(self, url: Url) -> str | None:
-        key = str(url)  # Cache key is the URL (with slice fragment if present)
+    def _read_transcript(self, url: Url, settings: TranscriptionSettings) -> str | None:
+        key = settings.cache_key(url)
         transcript_file = self.find(key, suffix=SUFFIX_TRANSCRIPT)
         if transcript_file:
             log.message("Video transcript already in cache: %s: %s", url, fmt_path(transcript_file))
@@ -87,7 +88,7 @@ class MediaCache(DirStore):
             downsample_to_16khz(full_audio_file, downsampled_audio_file)
         return downsampled_audio_file
 
-    def _do_transcription(self, url: Url, language: str | None = None) -> str:
+    def _do_transcription(self, url: Url, settings: TranscriptionSettings) -> str:
         """
         Transcribe the audio file (from cache if available) for the given media URL.
         """
@@ -97,8 +98,8 @@ class MediaCache(DirStore):
             url,
             fmt_path(downsampled_audio_file),
         )
-        transcript = get_transcriber()(downsampled_audio_file, language=language)
-        self._write_transcript(url, transcript)
+        transcript = get_transcriber()(downsampled_audio_file, settings=settings)
+        self._write_transcript(url, transcript, settings)
         return transcript
 
     def cache(
@@ -171,12 +172,18 @@ class MediaCache(DirStore):
         return cached_paths
 
     def transcribe(
-        self, url_or_path: Url | Path, refetch=False, language: str | None = None
+        self,
+        url_or_path: Url | Path,
+        refetch: bool = False,
+        language: str | None = None,
+        *,
+        settings: TranscriptionSettings | None = None,
     ) -> str:
         """
         Transcribe the audio file, caching audio, downsampled audio, and the transcription.
         Return the cached transcript if available, unless `refetch` is True.
         """
+        settings = settings or TranscriptionSettings.create(language=language)
         if not isinstance(url_or_path, Path) and is_url(url_or_path):
             # If it is a URL, cache it locally.
             url_or_slice = url_or_path
@@ -190,7 +197,7 @@ class MediaCache(DirStore):
             url_or_slice = canon
 
             if not refetch:
-                transcript = self._read_transcript(url_or_slice)
+                transcript = self._read_transcript(url_or_slice, settings)
                 if transcript:
                     return transcript
             # Cache all formats since we usually will want them.
@@ -205,7 +212,7 @@ class MediaCache(DirStore):
             raise InvalidInput(f"Not a media URL or path: {fmt_loc(url_or_path)}")
 
         # Now do the transcription.
-        transcript = self._do_transcription(url_or_slice, language=language)
+        transcript = self._do_transcription(url_or_slice, settings)
         if not transcript:
             raise UnexpectedError("No transcript found for: %s" % url_or_slice)
         return transcript

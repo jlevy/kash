@@ -3,9 +3,8 @@ from __future__ import annotations
 import re
 
 from chopdiff.divs import CHUNK
-from chopdiff.docs import first_wordtok
-from chopdiff.docs.wordtoks import is_div
-from chopdiff.html import has_timestamp
+from flexdoc.docs.wordtoks import first_wordtok, is_div
+from flexdoc.html import has_timestamp
 
 from kash.exec.precondition_registry import kash_precondition
 from kash.model.items_model import Item, ItemType

@@ -49,7 +49,8 @@ dependencies = [
     "flowmark>=0.7.2",
     "frontmatter-format>=0.3.0",
     "sidematter-format>=0.1.0",
-    "chopdiff>=0.3.1",
+    "flexdoc>=0.3.0",
+    "chopdiff>=0.4.0",
     "clideps>=0.1.8",
     "tminify>=0.1.6",
     # Shell and file essentials:
@@ -226,6 +227,25 @@ required-version = ">=0.9"
 # copied commands and tool execution outside project discovery retain the same policy.
 exclude-newer = "14 days"
 
+[tool.uv.exclude-newer-package]
+# Packages owned and released by jlevy bypass the third-party cool-off.
+chopdiff = "2099-12-31T00:00:00Z"
+clideps = "2099-12-31T00:00:00Z"
+deep-transcribe = "2099-12-31T00:00:00Z"
+flexdoc = "2099-12-31T00:00:00Z"
+flowmark-rs = "2099-12-31T00:00:00Z"
+flowmark = "2099-12-31T00:00:00Z"
+frontmatter-format = "2099-12-31T00:00:00Z"
+funlog = "2099-12-31T00:00:00Z"
+kash-docs = "2099-12-31T00:00:00Z"
+kash-media = "2099-12-31T00:00:00Z"
+kash-shell = "2099-12-31T00:00:00Z"
+pprose = "2099-12-31T00:00:00Z"
+prettyfmt = "2099-12-31T00:00:00Z"
+sidematter-format = "2099-12-31T00:00:00Z"
+strif = "2099-12-31T00:00:00Z"
+tminify = "2099-12-31T00:00:00Z"
+
 [tool.ruff]
 # Set as desired, typically 88 (black standard) or 100 (wide).
 line-length = 100
@@ -332,6 +352,11 @@ testpaths = [
     "tests",
 ]
 norecursedirs = ["src/kash/xontrib"]
+markers = [
+    "integration: tests that exercise multiple components",
+    "online: tests that require external services",
+    "slow: tests that are unsuitable for the fast suite",
+]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore:.*deprecated.*",

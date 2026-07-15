@@ -7,9 +7,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
+from sidematter_format import Sidematter
+
+from kash.file_storage.file_store import FileStore
 from kash.file_storage.item_file_format import read_item, write_item
 from kash.model.items_model import Format, Item, ItemType
 from kash.model.operations_model import OperationSummary
+from kash.model.paths_model import StorePath
 from kash.utils.common.url import Url
 
 
@@ -62,6 +66,51 @@ def list_workspace_contents(workspace_dir: Path) -> WorkspaceListing:
             total_size += size
 
     return WorkspaceListing(files, total_files, total_dirs, total_size)
+
+
+def test_file_store_hash_includes_sidematter_metadata() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        store = FileStore(Path(tmpdir) / "workspace", is_global_ws=False, auto_init=True)
+        store_path = StorePath("resources/interview.mp3")
+        primary_path = store.base_dir / store_path
+        primary_path.parent.mkdir(parents=True)
+        primary_path.write_bytes(b"audio")
+
+        content_only_hash = store.hash(store_path)
+        sidematter = Sidematter(primary_path)
+        sidematter.write_meta({"additional_context": "Alice interviews Bob."})
+        first_metadata_hash = store.hash(store_path)
+        sidematter.write_meta({"additional_context": "Alice interviews Chen."})
+
+        assert first_metadata_hash != content_only_hash
+        assert store.hash(store_path) != first_metadata_hash
+
+
+def test_reimport_binary_with_sidematter_reuses_resource() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        source = root / "interview.mp3"
+        source.write_bytes(b"\xff\xfbmock audio")
+        store = FileStore(root / "workspace", is_global_ws=False, auto_init=True)
+
+        first_path = store.import_item(source)
+        stored_file = store.base_dir / first_path
+        Sidematter(stored_file).write_meta(
+            {
+                "type": "resource",
+                "format": "mp3",
+                "title": "Interview",
+                "additional_context": "Alice interviews Bob.",
+            }
+        )
+
+        loaded = store.load(first_path)
+        second_path = store.import_item(source)
+
+        assert loaded.body is None
+        assert loaded.additional_context == "Alice interviews Bob."
+        assert second_path == first_path
+        assert list((store.base_dir / "resources").glob("*.mp3")) == [stored_file]
 
 
 def test_file_store_imports_and_frontmatter():

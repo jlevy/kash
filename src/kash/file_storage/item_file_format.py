@@ -151,11 +151,15 @@ def _read_item_uncached(
     frontmatter_meta = prefer_frontmatter and has_frontmatter and fmf_read_frontmatter(path)
     if sidematter.meta and not frontmatter_meta:
         metadata = sidematter.meta
-        body, _frontmatter_metadata = fmf_read(path)
+        inferred_format = Item.from_external_path(path).format
+        if inferred_format and inferred_format.is_binary:
+            body = None
+        else:
+            body, _frontmatter_metadata = fmf_read(path)
         log.debug(
             "Read item from sidematter %s: body length %s, metadata %s",
             sidematter.meta_path,
-            len(body),
+            len(body or ""),
             metadata,
         )
     elif has_frontmatter:

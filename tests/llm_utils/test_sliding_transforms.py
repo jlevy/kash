@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from chopdiff.docs import TextDoc, TextUnit
 from chopdiff.transforms import WindowSettings
+from flexdoc import FlexDoc as TextDoc
+from flexdoc import TextUnit
 
 from kash.llm_utils.custom_sliding_transforms import (
     filtered_transform,

@@ -7,7 +7,7 @@ from textwrap import dedent
 from typing import Any, TypeAlias
 
 import regex
-from chopdiff.html import rewrite_html_img_urls
+from flexdoc.html import rewrite_html_img_urls
 from flowmark import flowmark_markdown, line_wrap_by_sentence
 from marko.block import Heading, LinkRefDef, ListItem
 from marko.inline import AutoLink, Image, Link

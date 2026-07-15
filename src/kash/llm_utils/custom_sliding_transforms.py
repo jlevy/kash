@@ -3,23 +3,24 @@ from __future__ import annotations
 from collections.abc import Callable
 from math import ceil
 
-from chopdiff.docs import (
-    DIFF_FILTER_NONE,
-    DiffFilter,
-    Paragraph,
-    TextDoc,
-    TextUnit,
-    diff_docs,
-    join_wordtoks,
-)
 from chopdiff.transforms import (
+    FlexDocTransform,
     WindowSettings,
     remove_window_br,
     sliding_para_window,
     sliding_window_transform,
     sliding_word_window,
 )
-from chopdiff.transforms.sliding_transforms import TextDocTransform, find_best_alignment
+from flexdoc import FlexDoc as TextDoc
+from flexdoc import TextUnit
+from flexdoc.docs import Paragraph
+from flexdoc.docs.token_diffs import (
+    DIFF_FILTER_NONE,
+    DiffFilter,
+    diff_docs,
+    find_best_alignment,
+)
+from flexdoc.docs.wordtoks import join_wordtoks
 from flowmark import fill_markdown
 from prettyfmt import fmt_lines
 
@@ -28,6 +29,8 @@ from kash.utils.common.task_stack import task_stack
 from kash.utils.errors import ContentError
 
 log = get_logger(__name__)
+
+TextDocTransform = FlexDocTransform
 
 # TODO: Remove these and use chopdiff. For now using a copy to add support
 # more customized logging and task stack.

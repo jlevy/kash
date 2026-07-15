@@ -5,8 +5,8 @@ from typing import TypeAlias
 
 from chopdiff.divs import GROUP, ORIGINAL, div, div_insert_wrapped
 from chopdiff.divs.parse_divs import parse_divs_single
-from chopdiff.html import div_wrapper
-from chopdiff.html.html_in_md import Wrapper
+from flexdoc.html import div_wrapper
+from flexdoc.html.html_in_md import Wrapper
 
 from kash.config.logger import get_logger
 from kash.model.actions_model import ActionResult

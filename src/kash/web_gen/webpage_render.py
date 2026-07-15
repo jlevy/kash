@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from chopdiff.html import rewrite_html_img_urls
+from flexdoc.html import rewrite_html_img_urls
 from sidematter_format import Sidematter, copy_sidematter
 
 from kash.config.logger import get_logger

@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Generic, TypeAlias, TypeVar
 
-from chopdiff.docs import TextUnit
+from flexdoc import TextUnit
 from prettyfmt import fmt_lines
 from pydantic.dataclasses import dataclass
 from pydantic.json_schema import JsonSchemaValue

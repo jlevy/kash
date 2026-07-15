@@ -7,8 +7,8 @@ from enum import Enum
 from textwrap import dedent
 from typing import Any, TypeVar, cast
 
-from chopdiff.docs import DiffFilter
 from chopdiff.transforms import WINDOW_NONE, WindowSettings
+from flexdoc.docs.token_diffs import DiffFilter
 from flowmark import fill_text
 from prettyfmt import abbrev_obj, fmt_lines
 from pydantic.dataclasses import dataclass, rebuild_dataclass
@@ -172,6 +172,7 @@ class LLMOptions:
     windowing: WindowSettings = WINDOW_NONE
     diff_filter: DiffFilter | None = None
     enable_web_search: bool = False
+    use_item_context: bool = False
 
     def updated_with(self, param_name: str, value: Any) -> LLMOptions:
         """Update option from an action parameter."""

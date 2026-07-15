@@ -148,6 +148,7 @@ class ItemUpdateOptions(TypedDict, total=False):
     title: NotRequired[str | None]
     url: NotRequired[Url | None]
     description: NotRequired[str | None]
+    additional_context: NotRequired[str | None]
     format: NotRequired[Format | None]
     file_ext: NotRequired[FileExt | None]
     body: NotRequired[str | None]
@@ -262,6 +263,7 @@ class Item:
     title: str | None = None
     url: Url | None = None
     description: str | None = None
+    additional_context: str | None = None
     format: Format | None = None
     file_ext: FileExt | None = None
 
@@ -698,6 +700,22 @@ class Item:
         """
         return abbrev_on_words(html_to_plaintext(self.description or self.body or ""), max_len)
 
+    def prompt_context(self, max_len: int = 4000) -> str:
+        """
+        Format source metadata as bounded reference context for semantic model actions.
+
+        This is deliberately separate from the transient action `context`. Callers must
+        still tell the model that source metadata is reference material, not instructions.
+        """
+        parts: list[str] = []
+        if self.title:
+            parts.append(f"Title: {self.title}")
+        if self.description:
+            parts.append(f"Description: {self.description}")
+        if self.additional_context:
+            parts.append(f"Additional context: {self.additional_context}")
+        return abbrev_on_words("\n".join(parts), max_len)
+
     def abbrev_body(self, max_len: int) -> str:
         """
         Get an abbreviated version of the body text. Must not be a binary Item.
@@ -778,7 +796,12 @@ class Item:
         Get the full text of the item, including any title, description, and body.
         Use for embeddings.
         """
-        parts = [self.title, self.description, self.body_text().strip()]
+        parts = [
+            self.title,
+            self.description,
+            self.additional_context,
+            self.body_text().strip(),
+        ]
         return "\n\n".join(part for part in parts if part)
 
     def body_text(self) -> str:
@@ -1092,3 +1115,28 @@ def test_item_metadata_serialization():
         "derived_from": [StorePath("docs/filename.doc.md")],
         "diff_of": None,
     }
+
+
+def test_item_context_metadata_round_trip_and_derivation():
+    item = Item(
+        type=ItemType.doc,
+        title="Acme review",
+        description="Weekly product meeting.",
+        additional_context="Alice facilitates and Bob presents metrics.",
+        extra={
+            "transcription": {
+                "key_terms": ["Alice Chen", "SignalFlow"],
+                "speaker_hints": {"0": "Alice Chen"},
+            }
+        },
+        body="Transcript body.",
+    )
+
+    restored = Item.from_dict(item.metadata(), body=item.body)
+    derived = restored.derived_copy(body="Updated transcript.")
+
+    assert restored.additional_context == item.additional_context
+    assert restored.extra == item.extra
+    assert derived.additional_context == item.additional_context
+    assert derived.extra == item.extra
+    assert "Alice facilitates" in derived.prompt_context()
