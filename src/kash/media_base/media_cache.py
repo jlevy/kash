@@ -110,6 +110,13 @@ class MediaCache(DirStore):
         for each media type (video or audio). Returns cached copies if available,
         unless `refetch` is True.
         """
+        canonical_url_or_slice = canonicalize_media_url(url_or_slice)
+        if not canonical_url_or_slice:
+            log.error("Unrecognized media, current services: %s", get_media_services())
+            raise InvalidInput(
+                "Unrecognized media URL (is this media service configured?): %s" % url_or_slice
+            )
+        url_or_slice = canonical_url_or_slice
         key = str(url_or_slice)  # Cache key is the URL (with slice fragment if present)
 
         # Extract base URL and slice information
@@ -216,3 +223,32 @@ class MediaCache(DirStore):
         if not transcript:
             raise UnexpectedError("No transcript found for: %s" % url_or_slice)
         return transcript
+
+
+## Tests
+
+
+def test_cache_reuses_media_for_equivalent_canonical_urls() -> None:
+    from tempfile import TemporaryDirectory
+    from unittest.mock import patch
+
+    share_url = Url("https://youtu.be/kq9Q9-U0vrc?si=tracking-token")
+    canonical_url = Url("https://www.youtube.com/watch?v=kq9Q9-U0vrc")
+
+    with TemporaryDirectory() as temp_dir:
+        media_cache = MediaCache(Path(temp_dir))
+        cached_video = media_cache.path_for(str(canonical_url), suffix=SUFFIX_MP4)
+        cached_video.write_bytes(b"cached-video")
+
+        with (
+            patch(
+                "kash.media_base.media_cache.canonicalize_media_url",
+                return_value=canonical_url,
+            ) as canonicalize,
+            patch("kash.media_base.media_cache.download_media_by_service") as download,
+        ):
+            result = media_cache.cache(share_url, media_types=[MediaType.video])
+
+    assert result == {MediaType.video: cached_video}
+    canonicalize.assert_called_once_with(share_url)
+    download.assert_not_called()
