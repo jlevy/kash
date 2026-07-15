@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
 
 from kash.media_base.transcription_deepgram import deepgram_transcribe_raw
+from kash.media_base.transcription_settings import TranscriptionSettings
 
 
 def test_deepgram_request_uses_current_transcription_and_diarization_models():
@@ -25,3 +26,24 @@ def test_deepgram_request_uses_current_transcription_and_diarization_models():
     assert call.kwargs["diarize_model"] == "latest"
     assert "diarize" not in call.kwargs
     assert call.kwargs["language"] == "multi"
+
+
+def test_deepgram_request_uses_context_keyterms():
+    client = MagicMock()
+    response = MagicMock()
+    client.listen.v1.media.transcribe_file.return_value = response
+    settings = TranscriptionSettings.create(
+        language="multi",
+        key_terms=["Alice Chen", "SignalFlow"],
+    )
+
+    with TemporaryDirectory() as temp_dir:
+        audio_path = Path(temp_dir) / "audio.mp3"
+        audio_path.write_bytes(b"audio")
+
+        with patch("deepgram.DeepgramClient", return_value=client):
+            deepgram_transcribe_raw(audio_path, settings=settings)
+
+    call = client.listen.v1.media.transcribe_file.call_args
+    assert call.kwargs["language"] == "multi"
+    assert call.kwargs["keyterm"] == ["Alice Chen", "SignalFlow"]

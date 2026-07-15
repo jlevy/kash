@@ -270,6 +270,14 @@ You can also run `self_configure` inside kash to choose interactively from model
 API keys are configured. Media transcription uses Deepgram `nova-3` and the newest
 generally available batch diarizer.
 
+### Item Context for Model Actions
+
+Items may carry `title`, `description`, and `additional_context` metadata. Semantic
+actions opt into a bounded prompt representation of those fields; mechanical transforms
+do not. Treat fetched or user-supplied metadata as reference material, never as model
+instructions. For feature-specific metadata, use a namespaced mapping in `Item.extra` so
+downstream packages can evolve without adding fields to kash core.
+
 ### Running Kash as an MCP Server
 
 You can use kash from your MCP client (such as Anthropic Desktop or Cursor).

@@ -19,7 +19,6 @@ class LLM(LLMName, Enum):
 
     # https://platform.claude.com/docs/en/about-claude/models/overview
     claude_fable_5 = LLMName("claude-fable-5")
-    claude_opus_4_8 = LLMName("claude-opus-4-8")
     claude_sonnet_5 = LLMName("claude-sonnet-5")
     claude_haiku_4_5 = LLMName("claude-haiku-4-5-20251001")
 

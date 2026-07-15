@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from chopdiff.html.html_in_md import div_wrapper
+from flexdoc.html.html_in_md import div_wrapper
 
 from kash.config.logger import get_logger
 from kash.exec import kash_action

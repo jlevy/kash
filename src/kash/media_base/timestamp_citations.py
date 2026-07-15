@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from chopdiff.html import html_a, html_span
+from flexdoc.html import html_a, html_span
 
 from kash.media_base.media_services import timestamp_media_url
 from kash.utils.common.url import Url
