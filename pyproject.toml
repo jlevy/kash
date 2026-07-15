@@ -86,7 +86,7 @@ dependencies = [
     # LLM and API essentials:
     # tiktoken removed: token counting handled by litellm internally.
     "openai>=2.15.0",
-    "litellm>=1.84.0",
+    "litellm>=1.84.0,<1.92.0", # 1.92.0's PyO3 build does not support Python 3.14.
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
     # Basic text handling and web scraping:
@@ -120,7 +120,7 @@ dependencies = [
 [project.optional-dependencies]
 llm = [
     "openai>=2.15.0",
-    "litellm>=1.84.0",
+    "litellm>=1.84.0,<1.92.0",
     "pyrate-limiter>=3.7.0",
     "aiolimiter>=1.2.1",
 ]
