@@ -64,7 +64,7 @@ I’ve tried to build independently useful pieces that fit together in a simple 
     diffed consistently
 
   - A **content and media cache**, which for downloading saving cached versions of video
-    or audio and **audio transcriptions** (using Whisper or Deepgram)
+    or audio and **audio transcriptions** (using Deepgram Nova-3)
 
 - An optional **enhanced terminal UI** some major enhancements to the terminal
   experience:

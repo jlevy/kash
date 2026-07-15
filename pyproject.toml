@@ -100,7 +100,7 @@ dependencies = [
     "pydub>=0.25.1",
     # audioop-lts is a backport of audioop for Python 3.13 and later needed for pydub.
     "audioop-lts>=0.2.1; python_version >= '3.13'",
-    "deepgram-sdk>=3.10.1",
+    "deepgram-sdk>=7.4.0",
     # Data science:
     "pandas>=2.2.3",
     # Server deps:
@@ -136,7 +136,7 @@ web = [
 media = [
     "pydub>=0.25.1",
     "audioop-lts>=0.2.1; python_version >= '3.13'",
-    "deepgram-sdk>=3.10.1",
+    "deepgram-sdk>=7.4.0",
 ]
 server = [
     "fastapi>=0.115.11",
@@ -319,7 +319,7 @@ reportPrivateImportUsage = false
 
 
 [tool.codespell]
-ignore-words-list = "iTerm,Numbe,caf,hel"
+ignore-words-list = "iTerm,Numbe,caf,hel,te"
 # skip = "foo.py,bar.py"
 
 

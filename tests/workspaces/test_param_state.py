@@ -10,10 +10,10 @@ class TestParamState:
     def test_set_and_get(self, tmp_path):
         """Can set parameters and retrieve them."""
         ps = ParamState(tmp_path / "params.yml")
-        ps.set({"model": "gpt-4", "language": "en"})
+        ps.set({"model": "gpt-5.6-terra", "language": "en"})
         result = ps.get_raw_values()
         assert isinstance(result, RawParamValues)
-        assert result.values.get("model") == "gpt-4"
+        assert result.values.get("model") == "gpt-5.6-terra"
         assert result.values.get("language") == "en"
 
     def test_get_missing_file_returns_empty(self, tmp_path):
@@ -26,10 +26,10 @@ class TestParamState:
     def test_overwrite(self, tmp_path):
         """Setting new values overwrites previous ones."""
         ps = ParamState(tmp_path / "params.yml")
-        ps.set({"model": "gpt-4"})
-        ps.set({"model": "claude-3"})
+        ps.set({"model": "gpt-5.6-terra"})
+        ps.set({"model": "claude-sonnet-5"})
         result = ps.get_raw_values()
-        assert result.values.get("model") == "claude-3"
+        assert result.values.get("model") == "claude-sonnet-5"
 
     def test_persistence_across_instances(self, tmp_path):
         """Data persists across ParamState instances."""

@@ -121,6 +121,21 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    Use the `self_configure` command as a quick way to fill in additional values in your
    .env file and to set workspace parameters on what LLMs to use by default.
 
+### Model Configuration
+
+Actions select models by workload role. The default Anthropic profile uses
+`claude-fable-5` for careful work, `claude-sonnet-5` for structured and standard work,
+and `claude-haiku-4-5-20251001` for fast work.
+
+To use OpenAI instead, set the equivalent current profile:
+
+```shell
+kash set_params careful_llm=gpt-5.6-sol structured_llm=gpt-5.6-terra standard_llm=gpt-5.6-terra fast_llm=gpt-5.6-luna
+```
+
+You need an API key only for the provider profile you use. Media transcription uses
+Deepgram `nova-3` and the newest generally available batch diarizer.
+
 ### Running Kash as an MCP Server
 
 You can use kash from your MCP client (such as Anthropic Desktop or Cursor).

@@ -15,7 +15,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-29T20:23:45.218378396Z"
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
 exclude-newer-span = "P14D"
 
 [[package]]
@@ -1562,9 +1562,9 @@ requires-dist = [
     { name = "curl-cffi", specifier = ">=0.11.4" },
     { name = "curl-cffi", marker = "extra == 'all'", specifier = ">=0.11.4" },
     { name = "curl-cffi", marker = "extra == 'web'", specifier = ">=0.11.4" },
-    { name = "deepgram-sdk", specifier = ">=3.10.1" },
-    { name = "deepgram-sdk", marker = "extra == 'all'", specifier = ">=3.10.1" },
-    { name = "deepgram-sdk", marker = "extra == 'media'", specifier = ">=3.10.1" },
+    { name = "deepgram-sdk", specifier = ">=7.4.0" },
+    { name = "deepgram-sdk", marker = "extra == 'all'", specifier = ">=7.4.0" },
+    { name = "deepgram-sdk", marker = "extra == 'media'", specifier = ">=7.4.0" },
     { name = "dunamai", specifier = ">=1.23.0" },
     { name = "fastapi", specifier = ">=0.115.11" },
     { name = "fastapi", marker = "extra == 'all'", specifier = ">=0.115.11" },

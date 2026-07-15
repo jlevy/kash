@@ -88,10 +88,10 @@ quick to install via uv.
 - **Support for any API:** Kash is tool agnostic and runs locally, on file inputs in
   simple formats, so you own and manage your data and workspaces however you like.
   You can use it with any models or APIs you like, and is already set up to use the APIs
-  of **OpenAI** (GPT-5 is now the default model), **Anthropic Claude**, **Google
-  Gemini**, **xAI Grok**, **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via
-  **LiteLLM**), **Deepgram**, **Perplexity**, **Firecrawl**, **Exa**, and any Python
-  libraries. There is also some experimental support for **LlamaIndex** and **ChromaDB**.
+  of **OpenAI** (GPT-5.6), **Anthropic Claude**, **Google Gemini**, **xAI Grok**,
+  **Mistral**, **Groq (Llama, Qwen, Deepseek)** (via **LiteLLM**), **Deepgram**
+  (Nova-3), **Perplexity**, **Firecrawl**, **Exa**, and any Python libraries. There is
+  also some experimental support for **LlamaIndex** and **ChromaDB**.
 
 - **MCP support:** Finally, an action is also an **MCP tool server** so you can use it
   in any MCP client, like Anthropic Desktop or Cursor.
@@ -247,6 +247,28 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
 
    Use the `self_configure` command as a quick way to fill in additional values in your
    .env file and to set workspace parameters on what LLMs to use by default.
+
+### Model Configuration
+
+Actions select models by workload role, so one configuration controls all actions that
+need a careful, structured, standard, or fast model. The default Anthropic profile is:
+
+| Role | Model |
+| --- | --- |
+| Careful | `claude-fable-5` |
+| Structured | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5` |
+| Fast | `claude-haiku-4-5-20251001` |
+
+To use the equivalent current OpenAI profile, set these workspace parameters:
+
+```shell
+kash set_params careful_llm=gpt-5.6-sol structured_llm=gpt-5.6-terra standard_llm=gpt-5.6-terra fast_llm=gpt-5.6-luna
+```
+
+You can also run `self_configure` inside kash to choose interactively from models whose
+API keys are configured. Media transcription uses Deepgram `nova-3` and the newest
+generally available batch diarizer.
 
 ### Running Kash as an MCP Server
 

@@ -103,7 +103,7 @@ def kash_run(
         inputs: List of input items. Each can be a URL string, a file path string,
             or an existing Item object. If None or empty, runs the action with no inputs.
         params: Optional action parameters as key-value pairs
-            (e.g. {"model": "claude-sonnet-4-20250514"}).
+            (e.g. {"model": "claude-sonnet-5"}).
         workspace_dir: Workspace directory for storing results. If not provided,
             uses a temporary directory.
         rerun: If True, force re-execution even if cached results exist.

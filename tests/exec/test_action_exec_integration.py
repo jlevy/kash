@@ -177,7 +177,7 @@ class TestActionExecPipeline:
             kash_run(
                 "summarize",
                 inputs=["https://example.com"],
-                params={"model": "gpt-5"},
+                params={"model": "gpt-5.6-terra"},
                 workspace_dir=tmp_path,
             )
 
