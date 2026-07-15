@@ -6,7 +6,12 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
+from kash.model import Format, Item, ItemType
+from kash.model.media_model import MediaType
+from kash.web_content.file_cache_utils import cache_resource
 from kash.web_content.local_file_cache import (
     Loadable,
     LocalFileCache,
@@ -120,6 +125,30 @@ class TestLocalFileCachePaths:
         assert result.content.path.read_text() == "local file data"
         # Cached file should be in cache dir, not the original.
         assert str(result.content.path).startswith(str(cache_dir))
+
+    def test_cache_resource_resolves_workspace_store_path(self, tmp_path):
+        workspace_dir = tmp_path / "workspace"
+        resource_path = workspace_dir / "resources/recording.resource.mp4"
+        resource_path.parent.mkdir(parents=True)
+        resource_path.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+        item = Item(
+            type=ItemType.resource,
+            format=Format.mp4,
+            store_path="resources/recording.resource.mp4",
+            original_filename=resource_path.name,
+        )
+        cache = LocalFileCache(tmp_path / "cache", default_expiration_sec=NEVER)
+
+        with (
+            patch("kash.web_content.file_cache_utils._content_cache", cache),
+            patch(
+                "kash.workspaces.current_ws",
+                return_value=SimpleNamespace(base_dir=workspace_dir),
+            ),
+        ):
+            paths = cache_resource(item)
+
+        assert paths[MediaType.video].read_bytes() == resource_path.read_bytes()
 
 
 class TestReadMtime:
