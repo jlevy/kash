@@ -46,6 +46,15 @@
   text-decoration: underline;
 }
 
+@media print {
+  .timestamp-link,
+  .timestamp-link:hover {
+    color: var(--color-tertiary) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 8pt;
+  }
+}
+
 {# Useful for debugging chunking #}
 {# .chunk {
   padding-top: 0.5rem;

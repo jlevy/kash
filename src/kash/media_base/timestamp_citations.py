@@ -62,7 +62,7 @@ def format_timestamp_citation(base_url: Url | None, source_path: str, timestamp:
             formatted_timestamp = html_a(formatted_timestamp, timestamp_url)
 
     return html_span(
-        f"{formatted_timestamp}&nbsp;",
+        formatted_timestamp,
         [CITATION, TIMESTAMP_LINK],
         attrs={DATA_SOURCE_PATH: source_path, DATA_TIMESTAMP: f"{timestamp:.2f}"},
         safe=True,
@@ -101,6 +101,7 @@ def test_format_timestamp_citation_leaves_local_media_unlinked() -> None:
     assert "02:03" in citation
     assert "⏱️" not in citation
     assert "<a " not in citation
+    assert "&nbsp;" not in citation
 
 
 def test_format_timestamp_citation_links_seekable_web_media() -> None:
@@ -116,3 +117,4 @@ def test_format_timestamp_citation_links_seekable_web_media() -> None:
 
     assert '<a href="https://example.com/video?t=123">02:03</a>' in citation
     assert "⏱️" not in citation
+    assert "&nbsp;" not in citation
