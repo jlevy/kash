@@ -28,6 +28,9 @@ CITATION = "citation"
 TIMESTAMP_LINK = "timestamp-link"
 """Inline class name for a timestamp link."""
 
+TIMESTAMP_ICON = "timestamp-icon"
+"""Inline class name for the decorative timestamp icon."""
+
 
 def add_citation_to_text(text: str, citation: str) -> str:
     return f"{text}{NBSP}{citation}"
@@ -62,8 +65,12 @@ def format_timestamp_citation(
         timestamp_url = timestamp_media_url(base_url, timestamp)
         formatted_timestamp = html_a(formatted_timestamp, timestamp_url)
 
+    formatted_icon = (
+        html_span(emoji, TIMESTAMP_ICON, attrs={"aria-hidden": "true"}) if emoji else ""
+    )
+
     return html_span(
-        f"{emoji}{formatted_timestamp}&nbsp;",
+        f"{formatted_icon}{formatted_timestamp}&nbsp;",
         [CITATION, TIMESTAMP_LINK],
         attrs={DATA_SOURCE_PATH: source_path, DATA_TIMESTAMP: f"{timestamp:.2f}"},
         safe=True,
@@ -83,3 +90,10 @@ def html_speaker_id_span(text: str, speaker_id: str, safe: bool = False) -> str:
 
 def test_format_timestamp_span():
     assert html_timestamp_span("text", 123.456) == '<span data-timestamp="123.46">text</span>'
+
+
+def test_format_timestamp_citation_marks_decorative_icon() -> None:
+    citation = format_timestamp_citation(None, "resources/video.yml", 123.456)
+
+    assert '<span class="timestamp-icon" aria-hidden="true">⏱️</span>' in citation
+    assert "02:03" in citation
