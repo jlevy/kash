@@ -54,16 +54,15 @@ def add_citation_to_sentence(
     )
 
 
-def format_timestamp_citation(
-    base_url: Url | None, source_path: str, timestamp: float, emoji: str = "⏱️"
-) -> str:
+def format_timestamp_citation(base_url: Url | None, source_path: str, timestamp: float) -> str:
     formatted_timestamp = format_timestamp(timestamp)
     if base_url:
         timestamp_url = timestamp_media_url(base_url, timestamp)
-        formatted_timestamp = html_a(formatted_timestamp, timestamp_url)
+        if timestamp_url != base_url:
+            formatted_timestamp = html_a(formatted_timestamp, timestamp_url)
 
     return html_span(
-        f"{emoji}{formatted_timestamp}&nbsp;",
+        f"{formatted_timestamp}&nbsp;",
         [CITATION, TIMESTAMP_LINK],
         attrs={DATA_SOURCE_PATH: source_path, DATA_TIMESTAMP: f"{timestamp:.2f}"},
         safe=True,
@@ -83,3 +82,37 @@ def html_speaker_id_span(text: str, speaker_id: str, safe: bool = False) -> str:
 
 def test_format_timestamp_span():
     assert html_timestamp_span("text", 123.456) == '<span data-timestamp="123.46">text</span>'
+
+
+def test_format_timestamp_citation_leaves_local_media_unlinked() -> None:
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    from kash.utils.common.url import as_file_url
+
+    with TemporaryDirectory() as temp_dir:
+        media_path = Path(temp_dir) / "video.mp4"
+        media_path.touch()
+
+        citation = format_timestamp_citation(
+            as_file_url(media_path), "resources/video.yml", 123.456
+        )
+
+    assert "02:03" in citation
+    assert "⏱️" not in citation
+    assert "<a " not in citation
+
+
+def test_format_timestamp_citation_links_seekable_web_media() -> None:
+    from unittest.mock import patch
+
+    base_url = Url("https://example.com/video")
+    timestamp_url = Url("https://example.com/video?t=123")
+
+    with patch(
+        "kash.media_base.timestamp_citations.timestamp_media_url", return_value=timestamp_url
+    ):
+        citation = format_timestamp_citation(base_url, "resources/video.yml", 123.456)
+
+    assert '<a href="https://example.com/video?t=123">02:03</a>' in citation
+    assert "⏱️" not in citation

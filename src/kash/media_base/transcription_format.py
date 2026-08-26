@@ -59,17 +59,56 @@ def format_speaker_segments(speaker_segments: list[SpeakerSegment]) -> str:
     ids and timestamps.
     """
 
-    # Use \n\n for readability between segments so each speaker is its own
-    # paragraph.
-    SEGMENT_SEP = "\n\n"
-
     speakers = set(segment.speaker for segment in speaker_segments)
     if len(speakers) > 1:
-        lines = []
+        turns: list[str] = []
+        previous_speaker: int | None = None
         for segment in speaker_segments:
-            lines.append(
-                f"{html_speaker_id_span(f'SPEAKER {segment.speaker}:', str(segment.speaker))}\n{_format_words(segment.words)}"
-            )
-        return SEGMENT_SEP.join(lines)
+            segment_text = _format_words(segment.words)
+            if segment.speaker == previous_speaker:
+                turns[-1] += f"\n{segment_text}"
+            else:
+                turns.append(
+                    f"{html_speaker_id_span(f'SPEAKER {segment.speaker}:', str(segment.speaker))}\n{segment_text}"
+                )
+                previous_speaker = segment.speaker
+        return "\n\n".join(turns)
     else:
-        return SEGMENT_SEP.join(_format_words(segment.words) for segment in speaker_segments)
+        return "\n".join(_format_words(segment.words) for segment in speaker_segments)
+
+
+## Tests
+
+
+def test_format_words_uses_single_line_breaks_between_sentences() -> None:
+    formatted = _format_words(
+        [
+            (1.0, "First"),
+            (1.5, "sentence."),
+            (2.0, "Second"),
+            (2.5, "sentence."),
+        ]
+    )
+
+    assert formatted == (
+        '<span data-timestamp="1.50">First sentence.</span>\n'
+        '<span data-timestamp="2.50">Second sentence.</span>'
+    )
+
+
+def test_format_speaker_segments_uses_paragraph_breaks_only_for_speaker_changes() -> None:
+    segments = [
+        SpeakerSegment([(1.0, "First.")], 1.0, 1.5, 0, 0.9),
+        SpeakerSegment([(2.0, "Still"), (2.5, "speaking.")], 2.0, 2.5, 0, 0.9),
+        SpeakerSegment([(3.0, "Reply.")], 3.0, 3.5, 1, 0.9),
+    ]
+
+    formatted = format_speaker_segments(segments)
+
+    assert formatted.count("SPEAKER 0:") == 1
+    assert formatted.count("SPEAKER 1:") == 1
+    assert (
+        '<span data-timestamp="1.00">First.</span>\n'
+        '<span data-timestamp="2.50">Still speaking.</span>'
+    ) in formatted
+    assert '</span>\n\n<span class="speaker-label" data-speaker-id="1">' in formatted
