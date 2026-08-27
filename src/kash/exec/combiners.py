@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeAlias
 
 from chopdiff.divs import GROUP, ORIGINAL, div, div_insert_wrapped
 from chopdiff.divs.parse_divs import parse_divs_single
@@ -10,6 +9,7 @@ from flexdoc.html.html_in_md import Wrapper
 
 from kash.config.logger import get_logger
 from kash.model.actions_model import ActionResult
+from kash.model.compound_actions_model import Combiner
 from kash.model.items_model import Item, ItemRelations, ItemType
 from kash.model.operations_model import OperationSummary
 from kash.model.paths_model import StorePath
@@ -17,8 +17,6 @@ from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
-
-Combiner: TypeAlias = Callable[[list[Item], list[ActionResult]], Item]
 
 
 def combine_items(
