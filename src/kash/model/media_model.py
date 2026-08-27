@@ -62,7 +62,11 @@ class MediaMetadata:
 
     # Extra media fields.
     upload_date: date | None = None
+    channel: str | None = None
+    uploader: str | None = None
     channel_url: Url | None = None
+    categories: list[str] | None = None
+    tags: list[str] | None = None
     view_count: int | None = None
     duration: int | None = None
     heatmap: list[HeatmapValue] | None = None

@@ -469,7 +469,11 @@ class Item:
                 "media_id": media_metadata.media_id,
                 "media_service": media_metadata.media_service,
                 "upload_date": media_metadata.upload_date,
+                "channel": media_metadata.channel,
+                "uploader": media_metadata.uploader,
                 "channel_url": media_metadata.channel_url,
+                "categories": media_metadata.categories,
+                "tags": media_metadata.tags,
                 "view_count": media_metadata.view_count,
                 "duration": media_metadata.duration,
                 "heatmap": media_metadata.heatmap,
@@ -1140,3 +1144,22 @@ def test_item_context_metadata_round_trip_and_derivation():
     assert derived.additional_context == item.additional_context
     assert derived.extra == item.extra
     assert "Alice facilitates" in derived.prompt_context()
+
+
+def test_item_preserves_media_discovery_metadata() -> None:
+    metadata = MediaMetadata(
+        title="Hotel Check In - SNL",
+        url=Url("https://www.youtube.com/watch?v=abcdefghijk"),
+        channel="Saturday Night Live",
+        uploader="Saturday Night Live",
+        categories=["Entertainment"],
+        tags=["SNL", "comedy", "hotel"],
+    )
+
+    item = Item.from_media_metadata(metadata)
+
+    assert item.extra is not None
+    assert item.extra["channel"] == "Saturday Night Live"
+    assert item.extra["uploader"] == "Saturday Night Live"
+    assert item.extra["categories"] == ["Entertainment"]
+    assert item.extra["tags"] == ["SNL", "comedy", "hotel"]
