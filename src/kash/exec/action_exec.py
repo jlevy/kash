@@ -181,6 +181,8 @@ def run_action_operation(
 
     # Record the operation and add to the history of each item.
     for i, item in enumerate(result.items):
+        if i in result.skipped_indexes:
+            continue
         # A per-item action should be recorded as if it ran on each item individually.
         if action.run_per_item:
             this_op = replace(operation, arguments=[operation.arguments[i]])
@@ -231,6 +233,7 @@ def _run_for_each_item(context: ActionContext, input: ActionInput) -> ActionResu
 
     with task_stack().context(action.name, len(items), "item") as ts:
         result_items: list[Item] = []
+        skipped_indexes: set[int] = set()
         errors: list[Exception] = []
         multiple_inputs = len(items) > 1
 
@@ -249,6 +252,7 @@ def _run_for_each_item(context: ActionContext, input: ActionInput) -> ActionResu
             except SkipItem:
                 log.info("Caught SkipItem exception, skipping run on this item")
                 result_items.append(item)
+                skipped_indexes.add(len(result_items) - 1)
                 continue
             except get_nonfatal_exceptions() as e:
                 errors.append(e)
@@ -276,7 +280,7 @@ def _run_for_each_item(context: ActionContext, input: ActionInput) -> ActionResu
     if len(result_items) < 1:
         raise ContentError(f"Action `{action.name}` returned no items")
 
-    return ActionResult(result_items)
+    return ActionResult(result_items, skipped_indexes=skipped_indexes)
 
 
 def save_action_result(
@@ -302,7 +306,9 @@ def save_action_result(
     input_items = action_input.items
 
     skipped_paths = []
-    for item in result.items:
+    for index, item in enumerate(result.items):
+        if index in result.skipped_indexes:
+            continue
         if result.skip_duplicates:
             store_path = ws.find_by_id(item)
             if store_path:

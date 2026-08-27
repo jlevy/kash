@@ -10,7 +10,10 @@ from kash.utils.errors import InvalidInput
 log = get_logger(__name__)
 
 
-@kash_action(precondition=has_html_body | has_simple_text_body)
+@kash_action(
+    precondition=has_html_body | has_simple_text_body,
+    output_format=Format.markdown,
+)
 def strip_html(item: Item) -> Item:
     """
     Strip HTML tags from HTML or Markdown. This is a simple filter, simply searching
@@ -24,3 +27,13 @@ def strip_html(item: Item) -> Item:
     output_item = item.derived_copy(format=Format.markdown, body=clean_body)
 
     return output_item
+
+
+## Tests
+
+
+def test_strip_html_declares_markdown_output() -> None:
+    action_class = getattr(strip_html, "__action_class__")  # noqa: B009
+    action = action_class.create(None)
+
+    assert action.output_format is Format.markdown

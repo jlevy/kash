@@ -112,6 +112,9 @@ class ActionResult:
     shell_result: ShellResult | None = None
     """Customize control of how the action's result is displayed in the shell."""
 
+    skipped_indexes: set[int] = field(default_factory=set)
+    """Result positions passed through unchanged because a per-item action skipped them."""
+
     def get_by_format(self, *formats: Format) -> Item:
         """Convenience method to get an item for actions that return multiple formats."""
         return next(item for item in self.items if item.format in formats)
