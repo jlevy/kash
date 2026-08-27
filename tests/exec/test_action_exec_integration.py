@@ -12,12 +12,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from kash.exec.action_exec import SkipItem, run_action_operation, save_action_result
 from kash.exec_model.args_model import NO_ARGS, ONE_OR_MORE_ARGS
 from kash.model.actions_model import (
     Action,
+    ActionInput,
     ActionResult,
 )
+from kash.model.exec_model import ActionContext
 from kash.model.items_model import Item, ItemType
+from kash.model.operations_model import Operation
 from kash.run import kash_run
 from kash.utils.file_utils.file_formats_model import Format
 
@@ -207,3 +211,34 @@ class TestActionExecPipeline:
         assert result.items[0].body == "generated"
         action_input = mock_cls.create.return_value.run.call_args[0][0]
         assert action_input.items == []
+
+
+def test_skipped_item_preserves_source_and_is_not_saved() -> None:
+    item = Item(
+        type=ItemType.doc,
+        title="Input",
+        body="Already formatted.",
+        format=Format.markdown,
+        store_path="docs/input.doc.md",
+    )
+    original_source = item.source
+    action = MagicMock(spec=Action)
+    action.name = "noop"
+    action.run_per_item = True
+    action.cacheable = True
+    action.run.side_effect = SkipItem()
+    action_input = ActionInput([item])
+    operation = Operation("noop", [], {})
+    context = MagicMock(spec=ActionContext)
+    context.action = action
+    context.settings = MagicMock()
+
+    result = run_action_operation(context, action_input, operation)
+
+    assert result.items == [item]
+    assert result.skipped_indexes == {0}
+    assert item.source is original_source
+
+    workspace = MagicMock()
+    save_action_result(workspace, result, action_input)
+    workspace.save.assert_not_called()

@@ -158,7 +158,8 @@ class Operation:
     def as_str(self):
         args_str = ",".join(self.hashed_args())
         options_str = ",".join(
-            format_key_value(k, v, value_formatter=shell_quote) for k, v in self.options.items()
+            format_key_value(k, self.options[k], value_formatter=shell_quote)
+            for k in sorted(self.options)
         )
         if options_str:
             options_str = ";" + options_str
