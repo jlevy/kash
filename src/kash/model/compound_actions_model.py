@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from textwrap import dedent
+from typing import TypeAlias
 
 from pydantic.dataclasses import dataclass
 from typing_extensions import override
 
 from kash.config.logger import get_logger
-from kash.exec.combiners import Combiner
 from kash.model.actions_model import Action, ActionInput, ActionResult
 from kash.model.exec_model import ActionContext
 from kash.model.items_model import Item, State
@@ -18,6 +18,8 @@ from kash.utils.common.type_utils import not_none
 from kash.utils.errors import InvalidInput
 
 log = get_logger(__name__)
+
+Combiner: TypeAlias = Callable[[list[Item], list[ActionResult]], Item]
 
 
 def look_up_actions(action_names: Iterable[str]) -> list[type[Action]]:

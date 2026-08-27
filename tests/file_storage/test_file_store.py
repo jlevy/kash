@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +18,33 @@ from kash.model.items_model import Format, Item, ItemType
 from kash.model.operations_model import OperationSummary
 from kash.model.paths_model import StorePath
 from kash.utils.common.url import Url
+
+
+def test_file_store_import_survives_namespace_initializer() -> None:
+    project_root = Path(__file__).parents[2]
+    with tempfile.TemporaryDirectory() as temp_dir:
+        namespace_root = Path(temp_dir)
+        kash_package = namespace_root / "kash"
+        kash_package.mkdir()
+        (kash_package / "__init__.py").write_text(
+            '__path__ = __import__("pkgutil").extend_path(__path__, __name__)\n'
+        )
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join([str(namespace_root), str(project_root / "src")])
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from kash.file_storage.file_store import FileStore; print(FileStore.__name__)",
+            ],
+            cwd=project_root,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "FileStore"
 
 
 @dataclass
