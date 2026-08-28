@@ -84,6 +84,45 @@ class LLMCompletionResult:
         return names
 
 
+# Anthropic serves web search as a server-side tool block; OpenAI-style providers take a
+# `web_search_options` parameter. litellm's capability table reports no web search for
+# Anthropic models even though the tool works, so consulting it disabled search for every
+# Claude model while logging only a single warning line.
+ANTHROPIC_WEB_SEARCH_TOOL: dict[str, Any] = {
+    "type": "web_search_20250305",
+    "name": "web_search",
+    "max_uses": 5,
+}
+
+
+def _is_anthropic_model(model: LLMName) -> bool:
+    name = model.litellm_name.lower()
+    return name.startswith("anthropic/") or "claude" in name
+
+
+def _add_web_search(
+    model: LLMName,
+    tools: list[dict[str, Any]] | None,
+    completion_params: dict[str, Any],
+) -> list[dict[str, Any]] | None:
+    """
+    Turn on server-side web search the way this model's provider accepts it, returning the
+    tool list to use. Never fails silently: a model that cannot search says so.
+    """
+    if _is_anthropic_model(model):
+        log.message("Enabling Anthropic web search tool for model %s", model.litellm_name)
+        return [*(tools or []), ANTHROPIC_WEB_SEARCH_TOOL]
+
+    import litellm
+
+    if litellm.supports_web_search(model=model.litellm_name):
+        log.message("Enabling web search for model %s", model.litellm_name)
+        completion_params["web_search_options"] = {"search_context_size": "medium"}
+    else:
+        log.warning("Web search requested but not supported by model %s", model.litellm_name)
+    return tools
+
+
 @log_calls(level="info")
 def llm_completion(
     model: LLMName,
@@ -117,15 +156,9 @@ def llm_completion(
         **kwargs,
     }
 
-    # Auto-enable web search if requested
+    # Auto-enable web search if requested.
     if enable_web_search:
-        import litellm
-
-        if litellm.supports_web_search(model=model.litellm_name):
-            log.message("Enabling web search for model %s", model.litellm_name)
-            completion_params["web_search_options"] = {"search_context_size": "medium"}
-        else:
-            log.warning("Web search requested but not supported by model %s", model.litellm_name)
+        tools = _add_web_search(model, tools, completion_params)
 
     chat_history = ChatHistory.from_dicts(messages)
 
@@ -190,13 +223,16 @@ def llm_completion(
         tool_calls=tool_calls_list,
     )
 
-    # Log tool calls if present
+    # Log tool calls if present. Server-side tools such as Anthropic's web search are run
+    # by the provider and answered before the response returns, so they need no handler
+    # here and must not be reported as unimplemented.
     if result.has_tool_calls:
         tool_count = len(result.tool_calls or [])
         log.message("LLM executed %d function calls: %s", tool_count, result.tool_call_names)
-        log.message(
-            "⚠️  Function calls require implementation - LLM requested tools but no handlers are implemented"
-        )
+        if not enable_web_search:
+            log.message(
+                "⚠️  Function calls require implementation - LLM requested tools but no handlers are implemented"
+            )
 
     # Performance logging
     total_input_len = sum(len(m["content"]) for m in messages)
@@ -273,3 +309,42 @@ def llm_template_completion(
         result.content = ""
 
     return result
+
+
+## Tests
+
+
+def test_web_search_routes_by_provider() -> None:
+    from kash.llm_utils.llm_names import LLMName
+
+    # Anthropic takes a server-side tool block, and must not receive the OpenAI parameter.
+    params: dict[str, Any] = {}
+    tools = _add_web_search(LLMName("claude-sonnet-5"), None, params)
+    assert tools == [ANTHROPIC_WEB_SEARCH_TOOL]
+    assert "web_search_options" not in params
+
+    # Existing tools are preserved, not replaced.
+    existing = [{"type": "function", "function": {"name": "lookup"}}]
+    tools = _add_web_search(LLMName("anthropic/claude-opus-4-5"), existing, {})
+    assert tools == [*existing, ANTHROPIC_WEB_SEARCH_TOOL]
+
+
+def test_web_search_keeps_openai_style_for_other_providers() -> None:
+    from unittest.mock import patch
+
+    from kash.llm_utils.llm_names import LLMName
+
+    params: dict[str, Any] = {}
+    with patch("litellm.supports_web_search", return_value=True):
+        tools = _add_web_search(LLMName("gpt-5.6-sol"), None, params)
+
+    assert tools is None
+    assert params["web_search_options"] == {"search_context_size": "medium"}
+
+
+def test_anthropic_models_are_recognized_by_name() -> None:
+    from kash.llm_utils.llm_names import LLMName
+
+    assert _is_anthropic_model(LLMName("claude-sonnet-5"))
+    assert _is_anthropic_model(LLMName("anthropic/claude-opus-4-5"))
+    assert not _is_anthropic_model(LLMName("gpt-5.6-sol"))
