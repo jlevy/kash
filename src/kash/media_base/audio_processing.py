@@ -167,6 +167,21 @@ def slice_audio_segments(
 ## Tests
 
 
+def _require_ffmpeg() -> None:
+    """
+    Skip when the ffmpeg tools are absent.
+
+    They are an external system dependency that kash checks for at runtime rather than
+    installing, so a machine without them should skip these rather than fail.
+    """
+    import shutil
+
+    import pytest
+
+    if not (shutil.which("ffmpeg") and shutil.which("ffprobe")):
+        pytest.skip("ffmpeg and ffprobe are required for audio conversion tests")
+
+
 def _write_test_tone(path: Path, seconds: float = 1.0) -> None:
     """A small stereo 44.1kHz mp3, so tests do not depend on any fixture file."""
     subprocess.run(
@@ -189,6 +204,7 @@ def _write_test_tone(path: Path, seconds: float = 1.0) -> None:
 
 
 def test_audio_duration_reads_metadata_without_decoding(tmp_path: Path) -> None:
+    _require_ffmpeg()
     tone = tmp_path / "tone.mp3"
     _write_test_tone(tone, seconds=2.0)
 
@@ -207,6 +223,7 @@ def test_audio_duration_degrades_rather_than_raising(tmp_path: Path) -> None:
 
 
 def test_downsample_produces_mono_at_the_target_rate(tmp_path: Path) -> None:
+    _require_ffmpeg()
     tone = tmp_path / "tone.mp3"
     _write_test_tone(tone, seconds=2.0)
     out = tmp_path / "out.mp3"
@@ -240,6 +257,7 @@ def test_downsample_produces_mono_at_the_target_rate(tmp_path: Path) -> None:
 
 
 def test_downsample_honors_a_caller_supplied_rate(tmp_path: Path) -> None:
+    _require_ffmpeg()
     tone = tmp_path / "tone.mp3"
     _write_test_tone(tone, seconds=1.0)
     out = tmp_path / "out8k.mp3"
