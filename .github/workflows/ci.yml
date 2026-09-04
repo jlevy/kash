@@ -82,6 +82,12 @@ jobs:
         # Check-only mode so CI fails on unformatted code instead of fixing it.
         run: uv run python devtools/lint.py --check
 
+      - name: Install ffmpeg
+        # An external system dependency kash checks for at runtime rather than
+        # installing. Audio conversion tests skip without it, so install it here to
+        # keep them meaningful in CI.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Run tests
         run: uv run pytest
         env:

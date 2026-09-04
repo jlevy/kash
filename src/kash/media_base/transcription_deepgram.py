@@ -9,7 +9,9 @@ from clideps.env_vars.dotenv_utils import load_dotenv_paths
 from kash.config.logger import CustomLogger, get_logger
 from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
+from kash.media_base.transcription_limits import DEFAULT_LIMITS, TranscriptionLimits
 from kash.media_base.transcription_settings import TranscriptionSettings
+from kash.utils.common.format_utils import fmt_path
 from kash.utils.errors import ContentError
 
 if TYPE_CHECKING:
@@ -24,6 +26,8 @@ def deepgram_transcribe_raw(
     language: str | None = None,
     *,
     settings: TranscriptionSettings | None = None,
+    audio_duration_s: float | None = None,
+    limits: TranscriptionLimits | None = None,
 ) -> ListenV1Response | ListenV1AcceptedResponse:
     """
     Transcribe an audio file using Deepgram and return the raw response.
@@ -44,6 +48,14 @@ def deepgram_transcribe_raw(
     load_dotenv_paths(True, True, global_settings().system_config_dir)
     deepgram = DeepgramClient()
 
+    timeout_s = (limits or DEFAULT_LIMITS).timeout_for(audio_duration_s)
+    log.message(
+        "Transcribing %s of audio with a %s second request budget: %s",
+        f"{audio_duration_s / 60:.0f} min" if audio_duration_s else "unknown duration",
+        f"{timeout_s:.0f}",
+        fmt_path(audio_file_path),
+    )
+
     with open(audio_file_path, "rb") as audio_file:
         buffer_data = audio_file.read()
 
@@ -54,7 +66,8 @@ def deepgram_transcribe_raw(
         diarize_model=settings.diarize_model,
         language=settings.language,
         keyterm=list(settings.key_terms) or None,
-        request_options=RequestOptions(timeout_in_seconds=500),
+        # RequestOptions takes whole seconds.
+        request_options=RequestOptions(timeout_in_seconds=round(timeout_s)),
     )
 
     return response
@@ -65,8 +78,16 @@ def deepgram_transcribe_audio(
     language: str | None = None,
     *,
     settings: TranscriptionSettings | None = None,
+    audio_duration_s: float | None = None,
+    limits: TranscriptionLimits | None = None,
 ) -> str:
-    response = deepgram_transcribe_raw(audio_file_path, language, settings=settings)
+    response = deepgram_transcribe_raw(
+        audio_file_path,
+        language,
+        settings=settings,
+        audio_duration_s=audio_duration_s,
+        limits=limits,
+    )
 
     log.save_object("Deepgram response", None, response)
 
