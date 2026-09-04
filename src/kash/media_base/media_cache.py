@@ -9,7 +9,7 @@ from prettyfmt.prettyfmt import fmt_size_dual
 from strif import atomic_output_file
 
 from kash.config.logger import get_logger
-from kash.media_base.audio_processing import downsample_to_16khz
+from kash.media_base.audio_processing import audio_duration, downsample_to_16khz
 from kash.media_base.media_services import (
     canonicalize_media_url,
     download_media_by_service,
@@ -98,7 +98,13 @@ class MediaCache(DirStore):
             url,
             fmt_path(downsampled_audio_file),
         )
-        transcript = get_transcriber()(downsampled_audio_file, settings=settings)
+        # The request budget scales with the audio, so long media does not abort
+        # mid-transcription on a timeout meant for short clips.
+        transcript = get_transcriber()(
+            downsampled_audio_file,
+            settings=settings,
+            audio_duration_s=audio_duration(downsampled_audio_file),
+        )
         self._write_transcript(url, transcript, settings)
         return transcript
 

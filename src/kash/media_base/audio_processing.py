@@ -20,6 +20,22 @@ class AudioFileStats:
         return f"duration {self.duration:.2f}s, size {fmt_size_human(self.size)}"
 
 
+def audio_duration(audio_file_path: Path) -> float | None:
+    """
+    Duration of an audio file in seconds, or None if it cannot be determined.
+
+    Best effort by design: callers use this to size budgets, so an unreadable or
+    unusual file should degrade to a default rather than fail a run.
+    """
+    from pydub import AudioSegment
+
+    try:
+        return len(AudioSegment.from_file(audio_file_path)) / 1000.0
+    except Exception as e:
+        log.info("Could not determine audio duration for %s: %s", audio_file_path, e)
+        return None
+
+
 def downsample_to_16khz(
     audio_file_path: Path, downsampled_out_path: Path
 ) -> tuple[AudioFileStats, AudioFileStats]:
