@@ -15,6 +15,7 @@ from kash.media_base.media_services import (
     download_media_by_service,
     get_media_services,
 )
+from kash.media_base.transcription_limits import TranscriptionLimits
 from kash.media_base.transcription_settings import TranscriptionSettings
 from kash.utils.common.format_utils import fmt_loc
 from kash.utils.common.url import Url, as_file_url, is_url
@@ -88,7 +89,12 @@ class MediaCache(DirStore):
             downsample_to_16khz(full_audio_file, downsampled_audio_file)
         return downsampled_audio_file
 
-    def _do_transcription(self, url: Url, settings: TranscriptionSettings) -> str:
+    def _do_transcription(
+        self,
+        url: Url,
+        settings: TranscriptionSettings,
+        limits: TranscriptionLimits | None = None,
+    ) -> str:
         """
         Transcribe the audio file (from cache if available) for the given media URL.
         """
@@ -104,6 +110,7 @@ class MediaCache(DirStore):
             downsampled_audio_file,
             settings=settings,
             audio_duration_s=audio_duration(downsampled_audio_file),
+            limits=limits,
         )
         self._write_transcript(url, transcript, settings)
         return transcript
@@ -191,10 +198,14 @@ class MediaCache(DirStore):
         language: str | None = None,
         *,
         settings: TranscriptionSettings | None = None,
+        limits: TranscriptionLimits | None = None,
     ) -> str:
         """
         Transcribe the audio file, caching audio, downsampled audio, and the transcription.
         Return the cached transcript if available, unless `refetch` is True.
+
+        `limits` tunes the request budget only; it never affects the transcript or its
+        cache identity, so changing it cannot invalidate a cached transcription.
         """
         settings = settings or TranscriptionSettings.create(language=language)
         if not isinstance(url_or_path, Path) and is_url(url_or_path):
@@ -225,7 +236,7 @@ class MediaCache(DirStore):
             raise InvalidInput(f"Not a media URL or path: {fmt_loc(url_or_path)}")
 
         # Now do the transcription.
-        transcript = self._do_transcription(url_or_slice, settings)
+        transcript = self._do_transcription(url_or_slice, settings, limits)
         if not transcript:
             raise UnexpectedError("No transcript found for: %s" % url_or_slice)
         return transcript

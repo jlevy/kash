@@ -7,6 +7,7 @@ from prettyfmt import fmt_path
 
 from kash.config.settings import atomic_global_settings, global_settings
 from kash.media_base.media_cache import MediaCache
+from kash.media_base.transcription_limits import TranscriptionLimits
 from kash.media_base.transcription_settings import TranscriptionSettings
 from kash.utils.common.url import Url
 from kash.utils.file_utils.file_formats_model import MediaType
@@ -36,16 +37,21 @@ def cache_and_transcribe(
     language: str | None = None,
     *,
     settings: TranscriptionSettings | None = None,
+    limits: TranscriptionLimits | None = None,
 ) -> str:
     """
     Download and transcribe audio or video, saving in cache. If `refetch` is
     True, force fresh download.
+
+    `limits` tunes the request budget (see `TranscriptionLimits`); it does not affect
+    the transcript or its cache identity.
     """
     return _media_cache.transcribe(
         url_or_path,
         refetch=refetch,
         language=language,
         settings=settings,
+        limits=limits,
     )
 
 
