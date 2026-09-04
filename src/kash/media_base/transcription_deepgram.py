@@ -65,7 +65,8 @@ def deepgram_transcribe_raw(
         diarize_model=settings.diarize_model,
         language=settings.language,
         keyterm=list(settings.key_terms) or None,
-        request_options=RequestOptions(timeout_in_seconds=timeout_s),
+        # RequestOptions takes whole seconds.
+        request_options=RequestOptions(timeout_in_seconds=round(timeout_s)),
     )
 
     return response
