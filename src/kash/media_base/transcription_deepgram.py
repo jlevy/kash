@@ -10,8 +10,8 @@ from kash.config.logger import CustomLogger, get_logger
 from kash.config.settings import global_settings
 from kash.media_base.transcription_format import SpeakerSegment, format_speaker_segments
 from kash.media_base.transcription_limits import DEFAULT_LIMITS, TranscriptionLimits
-from kash.utils.common.format_utils import fmt_path
 from kash.media_base.transcription_settings import TranscriptionSettings
+from kash.utils.common.format_utils import fmt_path
 from kash.utils.errors import ContentError
 
 if TYPE_CHECKING:
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from deepgram.types.listen_v1response import ListenV1Response
 
 log: CustomLogger = get_logger(__name__)
+
 
 def deepgram_transcribe_raw(
     audio_file_path: Path,
