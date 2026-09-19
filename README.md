@@ -208,10 +208,14 @@ These are for `kash-media` but you can use a `kash-shell` for a more basic setup
    media tools (like yt-dlp and Deepgram support):
 
    ```shell
-   uv tool install kash-media --upgrade --python=3.13
+   # Pin GIL 3.13. Bare `uv tool install` / `uvx` / `uv python find 3.14`
+   # may pick freethreaded 3.14t, which is unsupported.
+   uv tool install kash-media --upgrade --python 3.13
    ```
 
-   Other versions of Python should work but 3.13 is recommended.
+   kash-shell supports GIL CPython 3.11–3.14, not free-threaded 3.14t.
+   GIL 3.14 also works if you pass that interpreter explicitly.
+   `--python 3.14` is not enough when uv resolves 3.14t.
    For a setup without the media tools, just install `kash-shell` instead.
 
 4. **Set up API keys:**
