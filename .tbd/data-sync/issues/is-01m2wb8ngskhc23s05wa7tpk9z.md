@@ -3,9 +3,9 @@ type: is
 id: is-01m2wb8ngskhc23s05wa7tpk9z
 title: Fix kash-media/kash-shell install startup failures
 kind: epic
-status: open
+status: closed
 priority: 0
-version: 9
+version: 10
 labels: []
 dependencies: []
 child_order_hints:
@@ -18,6 +18,10 @@ child_order_hints:
   - is-01m2wb8r218w1gmtzq3cpsctnb
   - is-01m2wbddbqpe9zyj7gjn9s492r
 created_at: 2026-09-19T08:07:01.400Z
-updated_at: 2026-09-19T08:09:36.886Z
+updated_at: 2026-09-19T08:28:24.643Z
+closed_at: 2026-09-19T08:28:24.642Z
+close_reason: "Startup crashes fixed and released: kash-shell v0.4.13, kash-media v0.4.12 requires kash-shell>=0.4.13. MCP 2 migration remains as kash-cwh1."
+resolution: null
+duplicate_of: null
 ---
 uv tool install kash-media on Python 3.14 starts kash then fails: mcp 2.x drops StructuredContent, and a stale file:// recording in the global workspace crashes xontrib load, leaving a broken unsubstituted xonsh prompt.
