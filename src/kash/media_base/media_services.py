@@ -10,7 +10,7 @@ from kash.media_base.services.local_file_media import LocalFileMedia
 from kash.model.media_model import MediaMetadata, MediaService
 from kash.utils.common.url import Url
 from kash.utils.common.url_slice import Slice, add_slice_to_url, parse_url_slice
-from kash.utils.errors import InvalidInput
+from kash.utils.errors import InvalidInput, SelfExplanatoryError
 from kash.utils.file_utils.file_formats_model import MediaType
 
 log = logging.getLogger(__name__)
@@ -42,9 +42,14 @@ def canonicalize_media_url(url_or_slice: Url) -> Url | None:
     """
     base_url, slice = parse_url_slice(url_or_slice)
 
-    # Canonicalize the base URL
+    # Canonicalize the base URL. A service must not abort identity/index
+    # work if one URL is unusable (missing local file, unsupported format).
     for service in _media_services.copy():
-        canonical_url = service.canonicalize(base_url)
+        try:
+            canonical_url = service.canonicalize(base_url)
+        except (SelfExplanatoryError, OSError) as e:
+            log.debug("Skipping media service %s for %s: %s", type(service).__name__, base_url, e)
+            continue
         if canonical_url:
             # Add slice back to canonical URL if it existed
             if slice:
@@ -159,3 +164,43 @@ def test_canonicalize_media_url_preserves_slice():
 
     # The actual slice functionality is thoroughly tested in url_slice.py
     # This test ensures canonicalize_media_url doesn't break with slice URLs
+
+
+def test_canonicalize_media_url_missing_local_file():
+    missing = Url("file:///tmp/does-not-exist-kash-recording.mp4")
+    assert canonicalize_media_url(missing) == missing
+
+
+def test_canonicalize_media_url_swallows_service_errors():
+    from kash.model.media_model import MediaUrlType
+    from kash.utils.errors import FileNotFound
+
+    class _BrokenService(MediaService):
+        def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
+            raise FileNotFound(f"File not found: {url}")
+
+        def get_media_id(self, url: Url) -> str | None:
+            return None
+
+        def metadata(self, url: Url) -> MediaMetadata:
+            raise NotImplementedError()
+
+        def thumbnail_url(self, url: Url) -> Url | None:
+            return None
+
+        def timestamp_url(self, url: Url, timestamp: float) -> Url:
+            return url
+
+        def download_media(self, url: Url, target_dir: Path, **_kwargs) -> dict[MediaType, Path]:
+            raise NotImplementedError()
+
+        def list_channel_items(self, url: Url) -> list[MediaMetadata]:
+            raise NotImplementedError()
+
+    broken = _BrokenService()
+    original = _media_services.copy()
+    _media_services.update(lambda services: [broken, *services])
+    try:
+        assert canonicalize_media_url(Url("file:///tmp/does-not-exist-kash-recording.mp4"))
+    finally:
+        _media_services.update(lambda _services: list(original))

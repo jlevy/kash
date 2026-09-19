@@ -12,11 +12,11 @@ from kash.commands.base.general_commands import self_check
 from kash.commands.help.welcome import welcome
 from kash.config.logger import get_logger
 from kash.config.settings import RECOMMENDED_PKGS, check_kerm_code_support
-from kash.config.text_styles import LOGO_NAME, STYLE_HINT
+from kash.config.text_styles import STYLE_HINT
 from kash.mcp.mcp_server_commands import start_mcp_server
 from kash.shell.output.shell_output import PrintHooks, cprint
 from kash.workspaces import current_ws
-from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt
+from kash.xonsh_custom.customize_prompt import get_prompt_info, kash_xonsh_prompt, kash_xonsh_title
 from kash.xonsh_custom.shell_load_commands import (
     is_interactive,
     log_command_action_info,
@@ -30,21 +30,50 @@ from kash.xonsh_custom.xonsh_modern_tools import modernize_shell
 log = get_logger(__name__)
 
 
-def _shell_interactive_setup():
-    # Set up a prompt field for the workspace string.
-    fields = PromptFields(XSH)
-    prompt_info = get_prompt_info()
-    fields["workspace_str"] = prompt_info.workspace_name
-    fields["cwd_short_str"] = prompt_info.cwd_short_str
-    set_env("PROMPT_FIELDS", fields)
+def recover_from_init_failure(exc: Exception) -> None:
+    """
+    Keep the shell usable after a failed xontrib init.
 
-    # Set up the prompt and title template.
+    Xonsh treats a raised xontrib exception as a failed load and then renders
+    its default prompt template unsubstituted.
+    """
+    log.error("Could not initialize kash: %s", exc, exc_info=exc)
+    try:
+        _install_prompt()
+    except Exception as prompt_error:
+        log.error("Could not install fallback prompt: %s", prompt_error)
+
+
+def _install_prompt() -> None:
+    """
+    Install the kash prompt first so later init failures cannot leave xonsh
+    rendering an unsubstituted default template.
+    """
     set_env("PROMPT", kash_xonsh_prompt)
-    set_env("TITLE", LOGO_NAME + " - {workspace_str} - {cwd_short_str}")
+    set_env("TITLE", kash_xonsh_title)
 
-    add_key_bindings()
 
-    modernize_shell()
+def _shell_interactive_setup():
+    _install_prompt()
+
+    try:
+        fields = PromptFields(XSH)
+        prompt_info = get_prompt_info()
+        fields["workspace_str"] = prompt_info.workspace_name
+        fields["cwd_short_str"] = prompt_info.cwd_short_str
+        set_env("PROMPT_FIELDS", fields)
+    except Exception as e:
+        log.warning("Could not initialize prompt fields: %s", e)
+
+    try:
+        add_key_bindings()
+    except Exception as e:
+        log.warning("Could not add key bindings: %s", e)
+
+    try:
+        modernize_shell()
+    except Exception as e:
+        log.warning("Could not modernize shell: %s", e)
 
 
 def load_into_xonsh():
@@ -53,58 +82,86 @@ def load_into_xonsh():
     """
 
     if is_interactive():
-        # Do welcome first since init could take a few seconds.
-        welcome()
+        # Prompt first so any later exception still leaves a usable shell.
+        try:
+            _install_prompt()
+        except Exception as e:
+            log.warning("Could not install kash prompt: %s", e)
 
-        # Do first so in case there is an error, the shell prompt etc works as expected.
-        _shell_interactive_setup()
+        try:
+            welcome()
+        except Exception as e:
+            log.warning("Could not show welcome: %s", e)
 
-        def load():
+        try:
+            _shell_interactive_setup()
+        except Exception as e:
+            log.warning("Could not complete interactive setup: %s", e)
+            try:
+                _install_prompt()
+            except Exception:
+                pass
+
+        try:
             load_start_time = time.time()
-
             reload_shell_commands_and_actions()
-
             load_time = time.time() - load_start_time
             log.info(f"Action and command loading took {load_time:.2f}s.")
-
-            # Completers depend on commands and actions being loaded.
             load_completers()
+        except Exception as e:
+            log.error("Could not load commands and actions: %s", e, exc_info=True)
 
-            # TODO: Consider preloading but handle failure?
-            # all_docs.load()
+        try:
+            PrintHooks.after_interactive()
+        except Exception as e:
+            log.debug("after_interactive hook failed: %s", e)
 
-        load()
-        # Another idea was to try to seem a little faster starting up when interactive
-        # but doesn't seem worth it.
-        # load_thread = threading.Thread(target=load)
-        # load_thread.start()
+        try:
+            self_check(brief=True)
+        except Exception as e:
+            log.warning("self_check failed: %s", e)
 
-        PrintHooks.after_interactive()
+        try:
+            # Currently only Kerm supports our advanced UI with Kerm codes.
+            supports_kerm_codes = check_kerm_code_support()
+            if supports_kerm_codes:
+                # Don't pay for import until needed.
+                from kash.local_server.local_server import start_ui_server
+                from kash.local_server.local_url_formatters import enable_local_urls
 
-        self_check(brief=True)
+                start_ui_server()
+                enable_local_urls(True)
+            else:
+                cprint(
+                    "If your terminal supports it, you may use `start_ui_server` to enable local links.",
+                    style=STYLE_HINT,
+                )
+        except Exception as e:
+            log.warning("Could not start UI server: %s", e)
 
-        # Currently only Kerm supports our advanced UI with Kerm codes.
-        supports_kerm_codes = check_kerm_code_support()
-        if supports_kerm_codes:
-            # Don't pay for import until needed.
-            from kash.local_server.local_server import start_ui_server
-            from kash.local_server.local_url_formatters import enable_local_urls
+        try:
+            start_mcp_server()
+        except Exception as e:
+            log.warning("Could not start MCP server: %s", e)
 
-            start_ui_server()
-            enable_local_urls(True)
-        else:
-            cprint(
-                "If your terminal supports it, you may use `start_ui_server` to enable local links.",
-                style=STYLE_HINT,
-            )
-        start_mcp_server()
+        try:
+            cprint()
+            log_command_action_info()
+        except Exception as e:
+            log.debug("Could not log command info: %s", e)
 
-        cprint()
-        log_command_action_info()
+        try:
+            current_ws()  # Validates and logs info for user.
+        except Exception as e:
+            log.warning("Could not load workspace: %s", e)
 
-        current_ws()  # Validates and logs info for user.
-
-        pkg_check().warn_if_missing(*RECOMMENDED_PKGS)
+        try:
+            pkg_check().warn_if_missing(*RECOMMENDED_PKGS)
+        except Exception as e:
+            log.debug("Package check failed: %s", e)
 
     else:
-        reload_shell_commands_and_actions()
+        try:
+            reload_shell_commands_and_actions()
+        except Exception as e:
+            log.error("Could not load commands and actions: %s", e, exc_info=True)

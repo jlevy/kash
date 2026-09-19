@@ -112,7 +112,9 @@ dependencies = [
     "fastapi>=0.115.11",
     "uvicorn>=0.34.0",
     # MCP:
-    "mcp>=1.6.0",
+    # 2.x rebuilt the low-level Server: StructuredContent and the decorator
+    # APIs are gone. Stay on 1.x until the kash MCP server is migrated.
+    "mcp>=1.6.0,<2",
     "anyio>=4.8.0",
     "mcp-proxy>=0.5.0",
 ]
@@ -146,7 +148,7 @@ media = [
 server = [
     "fastapi>=0.115.11",
     "uvicorn>=0.34.0",
-    "mcp>=1.6.0",
+    "mcp>=1.6.0,<2",
     "anyio>=4.8.0",
     "mcp-proxy>=0.5.0",
 ]

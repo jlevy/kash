@@ -8,10 +8,15 @@ from pathlib import Path
 from prompt_toolkit.formatted_text import FormattedText
 
 from kash.config import colors
-from kash.config.logger import get_console
-from kash.config.text_styles import PROMPT_MAIN
+from kash.config.logger import get_console, get_logger
+from kash.config.text_styles import LOGO_NAME, PROMPT_MAIN
 from kash.shell.output.kerm_code_utils import text_with_tooltip
 from kash.workspaces import current_ws
+
+log = get_logger(__name__)
+
+_FALLBACK_PROMPT = FormattedText([("", f"{LOGO_NAME} ")])
+_prompt_failure_logged = False
 
 # Xonsh default prompt for reference:
 # dp = (
@@ -38,19 +43,14 @@ class PromptInfo:
     cwd_in_home: bool
 
 
-def get_prompt_info() -> PromptInfo:
-    # Could do this faster with current_workspace_info() but actually it's nicer to load
-    # and log info about the whole workspace after a cd so we do that.
-    ws = current_ws()
-    ws_name = ws.name
-    is_global_ws = ws.is_global_ws
-    workspace_details = f"Workspace at {ws.base_dir}"
-
-    cwd = Path(".").resolve()
+def _cwd_display(cwd: Path, ws_base_dir: Path | None) -> tuple[str, str, bool, bool]:
+    """
+    cwd_str, cwd_short_str, cwd_in_workspace, cwd_in_home.
+    """
     cwd_in_home = cwd.is_relative_to(Path.home())
-    cwd_in_workspace = cwd.is_relative_to(ws.base_dir)
-    if cwd_in_workspace:
-        rel_cwd = cwd.relative_to(ws.base_dir)
+    cwd_in_workspace = bool(ws_base_dir and cwd.is_relative_to(ws_base_dir))
+    if cwd_in_workspace and ws_base_dir:
+        rel_cwd = cwd.relative_to(ws_base_dir)
         if rel_cwd != Path("."):
             cwd_str = str(rel_cwd)
         else:
@@ -68,19 +68,51 @@ def get_prompt_info() -> PromptInfo:
             cwd_short_str = os.path.join(cwd.parent.name, cwd.name)
     else:
         cwd_str = cwd_short_str = str(cwd)
+    return cwd_str, cwd_short_str, cwd_in_workspace, cwd_in_home
 
-    cwd_details = f"Current directory at {cwd}"
 
+def _prompt_info_for_workspace(
+    ws_name: str, workspace_details: str, is_global_ws: bool, ws_base_dir: Path | None
+) -> PromptInfo:
+    cwd = Path(".").resolve()
+    cwd_str, cwd_short_str, cwd_in_workspace, cwd_in_home = _cwd_display(cwd, ws_base_dir)
     return PromptInfo(
         ws_name,
         workspace_details,
         is_global_ws,
         cwd_str,
         cwd_short_str,
-        cwd_details,
+        f"Current directory at {cwd}",
         cwd_in_workspace,
         cwd_in_home,
     )
+
+
+def _fallback_prompt_info() -> PromptInfo:
+    return _prompt_info_for_workspace("kash", "Workspace unavailable", False, None)
+
+
+def _log_prompt_failure(message: str, exc: Exception) -> None:
+    global _prompt_failure_logged
+    if not _prompt_failure_logged:
+        log.warning("%s: %s", message, exc)
+        _prompt_failure_logged = True
+    else:
+        log.debug("%s: %s", message, exc)
+
+
+def get_prompt_info() -> PromptInfo:
+    # Could do this faster with current_workspace_info() but actually it's nicer to load
+    # and log info about the whole workspace after a cd so we do that.
+    # Must not raise: this runs on every prompt render.
+    try:
+        ws = current_ws()
+        return _prompt_info_for_workspace(
+            ws.name, f"Workspace at {ws.base_dir}", ws.is_global_ws, ws.base_dir
+        )
+    except Exception as e:
+        _log_prompt_failure("Could not get workspace prompt info", e)
+        return _fallback_prompt_info()
 
 
 @dataclass(frozen=True)
@@ -171,9 +203,30 @@ def get_prompt_style() -> PromptStyle:
         return PromptStyle.plain
 
 
-def kash_xonsh_prompt() -> FormattedText:
-    # Prepare the workspace string with appropriate coloring
+def kash_xonsh_title() -> str:
+    """
+    Window title. Callable so xonsh does not interpolate unset prompt fields.
+    """
+    try:
+        info = get_prompt_info()
+        parts = [LOGO_NAME, info.workspace_name, info.cwd_short_str]
+        return " - ".join(part for part in parts if part)
+    except Exception as e:
+        _log_prompt_failure("Error rendering kash title", e)
+        return LOGO_NAME
 
+
+def kash_xonsh_prompt() -> FormattedText:
+    # Prepare the workspace string with appropriate coloring.
+    # Must not raise: a prompt exception leaves xonsh showing raw template text.
+    try:
+        return _kash_xonsh_prompt()
+    except Exception as e:
+        _log_prompt_failure("Error rendering kash prompt", e)
+        return _FALLBACK_PROMPT
+
+
+def _kash_xonsh_prompt() -> FormattedText:
     settings = get_prompt_style().settings
     info = get_prompt_info()
 

@@ -82,6 +82,15 @@ class TestItemIdIndex:
         result = idx.index_item(StorePath("bad.doc.md"), bad_loader)
         assert result is None
 
+    def test_item_id_error_skipped(self):
+        """item_id() failures must not abort workspace indexing."""
+        idx = ItemIdIndex()
+        item = _url_resource("https://example.com/id-error")
+        item.item_id = lambda: (_ for _ in ()).throw(SkippableError("id failed"))
+
+        result = idx.index_item(StorePath("bad.resource.yml"), MagicMock(return_value=item))
+        assert result is None
+
     def test_find_nonexistent_returns_none(self):
         idx = ItemIdIndex()
         item_id = ItemId(ItemType.resource, IdType.url, "https://nonexistent.com")

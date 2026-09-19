@@ -35,7 +35,7 @@ upgrade:
 	uv sync --upgrade --all-extras --all-groups
 
 build: install
-	uv build --no-build-isolation
+	uv build --no-build-isolation --python .venv/bin/python
 
 clean:
 	-rm -rf dist/
