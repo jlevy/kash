@@ -77,9 +77,11 @@ class ItemIdIndex:
 
         log.info("ItemIdIndex: indexing %s", fmt_path(store_path))
 
-        # Load item outside the lock to avoid holding it during potentially slow I/O
+        # Load and identify outside the lock. item_id() may canonicalize URLs
+        # and must not abort workspace load if one item is unusable.
         try:
             item = load_item(store_path)
+            item_id = item.item_id()
         except (ValueError, SkippableError) as e:
             log.warning(
                 "ItemIdIndex: could not index file, skipping: %s: %s",
@@ -90,7 +92,6 @@ class ItemIdIndex:
 
         dup_path: StorePath | None = None
         with self._lock:
-            item_id = item.item_id()
             if item_id:
                 old_path = self.id_map.get(item_id)
                 if old_path and old_path != store_path:

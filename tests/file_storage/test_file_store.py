@@ -639,3 +639,23 @@ def test_file_store_imports_and_frontmatter():
         print(final_listing)
 
         print("\n✅ All tests passed!")
+
+
+def test_reload_survives_missing_local_file_url():
+    """A stale file:// URL must not prevent workspace load (kash startup)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        workspace_dir = Path(tmpdir) / "workspace"
+        store = FileStore(workspace_dir, is_global_ws=False, auto_init=True)
+        store_path = store.save(
+            Item(
+                title="recording",
+                type=ItemType.resource,
+                format=Format.url,
+                url=Url("file:///tmp/does-not-exist-kash-recording.mp4"),
+            )
+        )
+
+        reloaded = FileStore(workspace_dir, is_global_ws=False, auto_init=False)
+        loaded = reloaded.load(store_path)
+        assert loaded.url == Url("file:///tmp/does-not-exist-kash-recording.mp4")
+        assert loaded.item_id() is not None

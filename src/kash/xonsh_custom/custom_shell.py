@@ -269,26 +269,34 @@ class CustomAssistantShell(PromptToolkitShell):
     # XXX Copied and overriding this method.
     @override
     def _get_prompt_tokens(self, env_name: str, prompt_name: str, **kwargs):
-        env = XSH.env
-        assert env
+        try:
+            env = XSH.env
+            assert env
 
-        p = env.get(env_name)
+            p = env.get(env_name)
 
-        if not p and "default" in kwargs:
-            return kwargs.pop("default")
+            if not p and "default" in kwargs:
+                return kwargs.pop("default")
 
-        p = self.prompt_formatter(
-            template=cast(Callable, p),
-            threaded=env["ENABLE_ASYNC_PROMPT"],
-            prompt_name=prompt_name,
-        )
+            p = self.prompt_formatter(
+                template=cast(Callable, p),
+                threaded=env["ENABLE_ASYNC_PROMPT"],
+                prompt_name=prompt_name,
+            )
 
-        # From __super__._get_prompt_tokens: Skipping this: ptk's tokenize_ansi can't
-        # handle OSC8 links.
-        # toks = partial_color_tokenize(p)
-        # return tokenize_ansi(PygmentsTokens(toks))
+            # From __super__._get_prompt_tokens: Skipping this: ptk's tokenize_ansi can't
+            # handle OSC8 links.
+            # toks = partial_color_tokenize(p)
+            # return tokenize_ansi(PygmentsTokens(toks))
 
-        return p
+            return p
+        except Exception as e:
+            log.warning("Error formatting %s: %s", prompt_name, e)
+            if env_name == "TITLE":
+                from kash.config.text_styles import LOGO_NAME
+
+                return LOGO_NAME
+            return FormattedText([("", "kash> ")])
 
 
 # XXX xonsh's Shell class hard-codes available shell types, but does have some
@@ -477,7 +485,16 @@ def start_shell(single_command: str | None = None, ready_event: threading.Event 
     events.on_pre_cmdloop.fire()
 
     # Load kash xontrib for rest of kash functionality.
-    xontribs_load(["kash.xontrib.kash_extension"], full_module=True)
+    try:
+        xontribs_load(["kash.xontrib.kash_extension"], full_module=True)
+    except Exception as e:
+        log.error("Failed to load kash xontrib: %s", e, exc_info=True)
+        try:
+            from kash.xonsh_custom.load_into_xonsh import recover_from_init_failure
+
+            recover_from_init_failure(e)
+        except Exception:
+            pass
 
     # If we want to replicate all the xonsh settings including .xonshrc, we could call
     # start_services(). It may be problematic to support all xonsh enhancements, however,

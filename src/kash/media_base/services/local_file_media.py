@@ -38,11 +38,11 @@ class LocalFileMedia(MediaService):
     Handle local media files as file:// URLs.
     """
 
-    def _parse_file_url(self, url: Url) -> Path | None:
+    def _parse_file_url(self, url: Url, *, must_exist: bool = True) -> Path | None:
         parsed_url = urlparse(url)
         if parsed_url.scheme == "file":
             path = Path(parsed_url.path)
-            if not path.exists():
+            if must_exist and not path.exists():
                 raise FileNotFound(f"File not found: {path}")
             return path
         else:
@@ -50,7 +50,7 @@ class LocalFileMedia(MediaService):
 
     @override
     def get_media_id(self, url: Url) -> str | None:
-        path = self._parse_file_url(url)
+        path = self._parse_file_url(url, must_exist=False)
         if path:
             return path.name
         else:
@@ -58,7 +58,9 @@ class LocalFileMedia(MediaService):
 
     @override
     def canonicalize_and_type(self, url: Url) -> tuple[Url | None, MediaUrlType | None]:
-        path = self._parse_file_url(url)
+        # Existence is not required: item identity uses canonicalize on stored
+        # file:// URLs, and those sources (temp recordings, etc.) often vanish.
+        path = self._parse_file_url(url, must_exist=False)
         if path:
             _name, _item_type, format, _file_ext = parse_item_filename(path)
             if format and format.is_audio:
@@ -66,7 +68,7 @@ class LocalFileMedia(MediaService):
             elif format and format.is_video:
                 return url, MediaUrlType.video
             else:
-                raise InvalidInput(f"Unsupported file format: {format}")
+                return None, None
         else:
             return None, None
 
@@ -179,3 +181,38 @@ class LocalFileMedia(MediaService):
     @override
     def list_channel_items(self, url: Url) -> list[MediaMetadata]:
         raise NotImplementedError()
+
+
+## Tests
+
+
+def test_canonicalize_missing_local_media_file():
+    """file:// identity must not require the source file to still exist."""
+    from kash.utils.common.url import Url
+
+    missing = Url("file:///tmp/does-not-exist-kash-recording.mp4")
+    service = LocalFileMedia()
+
+    canonical, media_type = service.canonicalize_and_type(missing)
+    assert canonical == missing
+    assert media_type == MediaUrlType.video
+    assert service.get_media_id(missing) == "does-not-exist-kash-recording.mp4"
+    assert service.canonicalize(missing) == missing
+
+
+def test_canonicalize_non_media_file_url():
+    service = LocalFileMedia()
+    text_url = Url("file:///tmp/notes.txt")
+    assert service.canonicalize_and_type(text_url) == (None, None)
+
+
+def test_parse_file_url_requires_existence_for_download():
+    from kash.utils.common.url import Url
+
+    missing = Url("file:///tmp/does-not-exist-kash-recording.mp4")
+    service = LocalFileMedia()
+    try:
+        service._parse_file_url(missing)
+    except FileNotFound:
+        return
+    raise AssertionError("expected FileNotFound when the local media file is gone")
