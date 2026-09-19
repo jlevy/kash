@@ -3,13 +3,17 @@ type: is
 id: is-01m133txk5795m8sata5nbqfxj
 title: Web search is a silent no-op for Anthropic models
 kind: bug
-status: open
+status: closed
 priority: 2
-version: 1
+version: 2
 labels: []
 dependencies: []
 created_at: 2026-08-28T02:40:28.240Z
-updated_at: 2026-08-28T02:40:28.240Z
+updated_at: 2026-09-19T08:10:29.370Z
+closed_at: 2026-09-19T08:10:29.367Z
+close_reason: "Already shipped in PR #22 (6afc914). Not part of the startup-failure work."
+resolution: null
+duplicate_of: null
 ---
 llm_completion accepts enable_web_search, then does two things that together make it inert for Claude models.
 
