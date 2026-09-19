@@ -13,7 +13,10 @@ authors = [
 ]
 readme = "README.md"
 license = "AGPL-3.0-or-later"
-requires-python = ">=3.11,<4.0"
+# GIL CPython 3.11–3.14. Freethreaded 3.14t is not supported (cydifflib on
+# the flexdoc[diff] path). requires-python cannot express GIL vs freethreaded;
+# see the install docs.
+requires-python = ">=3.11,<3.15"
 dynamic = ["version"]
 
 # https://pypi.org/classifiers/
@@ -49,8 +52,9 @@ dependencies = [
     "flowmark>=0.7.2",
     "frontmatter-format>=0.3.0",
     "sidematter-format>=0.1.0",
-    "flexdoc>=0.3.0",
-    "chopdiff>=0.4.0",
+    # [diff] keeps cydifflib on the token-diff path (flexdoc 0.4.1 made it optional).
+    "flexdoc[diff]>=0.4.1",
+    "chopdiff>=0.4.1,<0.5",
     "clideps>=0.1.8",
     "tminify>=0.1.6",
     # Shell and file essentials:
