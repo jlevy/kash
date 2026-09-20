@@ -327,7 +327,12 @@ reportUnnecessaryTypeIgnoreComment = false
 # Seem generally harmless:
 reportImplicitStringConcatenation = false
 reportUnknownLambdaType = false
-# Typically noisy:
+# Typically noisy. reportAny would flag `**obj.__dict__` constructor copies
+# (the hole that hid xonsh RichCompletion.provider from Tab completion) but
+# it is hundreds of hits repo-wide. reportUnknownArgumentType does not catch
+# that pattern: `__dict__` is `dict[str, Any]`, and Any is not Unknown.
+# Completions pin the RichCompletion constructor contract in
+# tests/shell/test_completion_types.py instead.
 reportMissingTypeStubs = false
 reportUnusedCallResult = false
 reportMissingImports = false
