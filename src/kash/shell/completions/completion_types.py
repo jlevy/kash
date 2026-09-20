@@ -73,9 +73,19 @@ class ScoredCompletion(RichCompletion):
         style: str = "",
         append_closing_quote: bool = True,
         append_space: bool = False,
+        provider: str | None = None,
+        **rich_kwargs: Any,
     ):
         super().__init__(
-            value, prefix_len, display, description, style, append_closing_quote, append_space
+            value,
+            prefix_len,
+            display,
+            description,
+            style,
+            append_closing_quote,
+            append_space,
+            provider,
+            **rich_kwargs,
         )
         self.score = score
         self.relatedness = relatedness
@@ -86,6 +96,8 @@ class ScoredCompletion(RichCompletion):
     @classmethod
     def from_unscored(cls, completion: RichCompletion | str) -> ScoredCompletion:
         if isinstance(completion, RichCompletion):
+            # RichCompletion.__dict__ is the xonsh field set (including `provider`).
+            # Named params plus **rich_kwargs must stay a superset of that set.
             return cls(completion, **completion.__dict__)
         else:
             return cls(completion)
@@ -113,7 +125,7 @@ class ScoredCompletion(RichCompletion):
     def from_help_doc(cls, help_doc: HelpDoc, relatedness: float | None = None):
         return cls.from_value(help_doc.completion_value(), relatedness=relatedness)
 
-    def replace(self, **kwargs: dict[str, Any]) -> ScoredCompletion:
+    def replace(self, **kwargs: Any) -> ScoredCompletion:
         default_kwargs: dict[str, Any] = dict(
             value=self.value,
             **self.__dict__,
